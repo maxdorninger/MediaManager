@@ -9,6 +9,8 @@ tv/*
 log.txt
 res/*
 media_manager/indexer/indexers/prowlarr.http
+*.egg-info
+.env
 
 
 web/cache/
@@ -35,3 +37,9 @@ web/!.env.test
 # Vite
 web/vite.config.js.timestamp-*
 web/vite.config.ts.timestamp-*
+
+# pycache
+__pycache__
+
+# Postgres
+/postgres

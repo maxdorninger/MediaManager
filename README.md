@@ -40,6 +40,41 @@ other services.
    docker compose up -d
 ```
 
+## Developer Quick Start
+
+```bash
+  pip install uv
+  uv venv
+  # Activate the virtual environment
+  uv pip install -e .
+```
+```bash
+docker compose up db -d
+```
+
+```bash
+uv run alembic upgrade head
+```
+
+## Get the frontend up and running
+
+TODO: provide an env.example to copy
+
+```bash
+cd /web && npm install
+```
+
+## Now start the backend and frontend
+```bash
+fastapi dev /media_manager/main.py --reload --host
+```
+
+```bash
+cd /web && npm run dev
+```
+
+
+
 ### [View the docs for installation instructions and more](https://maxdorninger.github.io/MediaManager/configuration-overview.html#configuration-overview)
 
 <!-- ROADMAP -->

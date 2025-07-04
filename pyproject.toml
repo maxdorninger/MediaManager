@@ -32,3 +32,7 @@ dependencies = [
     "pillow>=11.2.1",
     "pillow-avif-plugin>=1.5.2",
 ]
+
+[tool.setuptools.packages.find]
+include = ["media_manager*"]
+exclude = ["web*", "Writerside*", "metadata_relay*", "tests*"]
