@@ -524,7 +524,7 @@ class MovieService:
             # import subtitles
             for subtitle_file in subtitle_files:
                 language_code_match = re.search(
-                    r"\.([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
+                    r"[. ]([a-z]{2})[. ]srt$", subtitle_file.name, re.IGNORECASE
                 )
                 if not language_code_match:
                     log.warning(

@@ -553,13 +553,13 @@ class TvService:
                 if season_file.file_path_suffix != "":
                     episode_file_name += f" - {season_file.file_path_suffix}"
                 pattern = (
-                    r".*[.]S0?"
+                    r".*[. ]S0?"
                     + str(season.number)
                     + r"E0?"
                     + str(episode.number)
-                    + r"[.].*"
+                    + r"[. ].*"
                 )
-                subtitle_pattern = pattern + r"[.]([A-Za-z]{2})[.]srt"
+                subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
                 target_file_name = season_path / episode_file_name
 
                 # import subtitles
