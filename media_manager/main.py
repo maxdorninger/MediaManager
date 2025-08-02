@@ -50,6 +50,7 @@ log = logging.getLogger(__name__)
 
 from media_manager.database import init_db  # noqa: E402
 from media_manager.config import AllEncompassingConfig  # noqa: E402
+from media_manager.plugins.manager import plugin_manager  # noqa: E402
 import media_manager.torrent.router as torrent_router  # noqa: E402
 import media_manager.movies.router as movies_router  # noqa: E402
 import media_manager.tv.router as tv_router  # noqa: E402
@@ -113,18 +114,46 @@ if config.misc.development:
 else:
     log.info("Development Mode not activated!")
 
+# Initialize plugin system
+log.info("Initializing plugin system...")
+plugin_configs = {}
+for plugin_name in config.media_plugins.get_enabled_plugins():
+    plugin_configs[plugin_name] = config.media_plugins.get_plugin_config(plugin_name)
+
+plugin_manager.load_all_plugins(plugin_configs)
+log.info(f"Plugin system initialized with {len(plugin_manager.get_all_plugins())} plugins")
+
 
 def hourly_tasks():
     log.info(f"Hourly tasks are running at {datetime.now()}")
-    auto_download_all_approved_season_requests()
-    import_all_show_torrents()
-    import_all_movie_torrents()
+    # Run plugin-specific auto download and import tasks
+    for plugin_name, plugin in plugin_manager.get_all_plugins().items():
+        try:
+            log.info(f"Running hourly tasks for {plugin_name}")
+            # Get service instances with proper dependencies
+            from media_manager.database import get_session
+            session = next(get_session())
+            service = plugin.get_service(session=session)
+            service.auto_download_approved_requests()
+            service.import_downloaded_files()
+        except Exception as e:
+            log.error(f"Error running hourly tasks for plugin {plugin_name}: {e}")
 
 
 def weekly_tasks():
     log.info(f"Weekly tasks are running at {datetime.now()}")
-    update_all_non_ended_shows_metadata()
-    update_all_movies_metadata()
+    # Run plugin-specific metadata update tasks
+    for plugin_name, plugin in plugin_manager.get_all_plugins().items():
+        try:
+            log.info(f"Running weekly metadata updates for {plugin_name}")
+            # Note: This would need to be implemented per plugin
+            # For now, fall back to existing functions for TV/Movies
+            if plugin_name == "tv":
+                update_all_non_ended_shows_metadata()
+            elif plugin_name == "movies":
+                update_all_movies_metadata()
+        except Exception as e:
+            log.error(f"Error running weekly tasks for plugin {plugin_name}: {e}")
 
 
 jobstores = {"default": SQLAlchemyJobStore(engine=media_manager.database.engine)}
@@ -181,7 +210,10 @@ async def lifespan(app: FastAPI):
     await create_default_admin_user()
     yield
     # Shutdown
+    log.info("Shutting down application...")
     scheduler.shutdown()
+    plugin_manager.shutdown_all_plugins()
+    log.info("Application shutdown complete")
 
 
 BASE_PATH = os.getenv("BASE_PATH", "")
@@ -217,6 +249,24 @@ async def hello_world() -> dict:
     A simple endpoint to check if the API is running.
     """
     return {"message": "Hello World!", "version": os.getenv("PUBLIC_VERSION")}
+
+
+@api_app.get("/plugins")
+async def get_plugins() -> dict:
+    """
+    Get information about all loaded plugins.
+    """
+    plugins = {}
+    for plugin_name, plugin in plugin_manager.get_all_plugins().items():
+        plugins[plugin_name] = {
+            "info": plugin.plugin_info.model_dump(),
+            "enabled": True
+        }
+    
+    return {
+        "plugins": plugins,
+        "total_count": len(plugins)
+    }
 
 
 # ----------------------------
@@ -280,9 +330,18 @@ if openid_client is not None:
         tags=["openid"],
     )
 
-api_app.include_router(tv_router.router, prefix="/tv", tags=["tv"])
+# Include plugin routers
+for plugin_name, router in plugin_manager.get_all_routers():
+    plugin_info = plugin_manager.get_plugin(plugin_name).plugin_info
+    api_app.include_router(
+        router, 
+        prefix=f"/{plugin_name}", 
+        tags=[plugin_info.media_type]
+    )
+    log.info(f"Registered router for plugin: {plugin_info.display_name}")
+
+# Keep existing routers for backward compatibility
 api_app.include_router(torrent_router.router, prefix="/torrent", tags=["torrent"])
-api_app.include_router(movies_router.router, prefix="/movies", tags=["movie"])
 api_app.include_router(
     notification_router, prefix="/notification", tags=["notification"]
 )

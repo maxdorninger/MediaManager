@@ -16,6 +16,7 @@ from media_manager.indexer.config import IndexerConfig
 from media_manager.metadataProvider.config import MetadataProviderConfig
 from media_manager.notification.config import NotificationConfig
 from media_manager.torrent.config import TorrentConfig
+from media_manager.plugins.config import MediaPluginsConfig
 
 config_path = os.getenv("CONFIG_FILE")
 
@@ -61,6 +62,7 @@ class AllEncompassingConfig(BaseSettings):
     indexers: IndexerConfig = IndexerConfig()
     database: DbConfig = DbConfig()
     auth: AuthConfig = AuthConfig()
+    media_plugins: MediaPluginsConfig = MediaPluginsConfig()
 
     @classmethod
     def settings_customise_sources(

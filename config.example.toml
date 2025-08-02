@@ -18,9 +18,8 @@ torrent_directory = "/data/torrents" # this is where MediaManager will search fo
 # you probaly don't need to change this
 development = false
 
-# Custom Media Libraries
+# Legacy library configuration - will be migrated to media_plugins section
 # These paths should match your volume mounts in docker-compose.yaml
-# Example: if you mount "./movies:/media/movies" then use path = "/media/movies/subdirectory"
 [[misc.tv_libraries]]
 name = "Live Action"
 path = "/data/tv/live-action"  # Change this to match your actual TV shows location
@@ -28,6 +27,98 @@ path = "/data/tv/live-action"  # Change this to match your actual TV shows locat
 [[misc.movie_libraries]]
 name = "Documentary"
 path = "/data/movies/documentary"  # Change this to match your actual movies location
+
+# ==============================================================================
+# MEDIA PLUGINS CONFIGURATION
+# ==============================================================================
+# This section configures the new plugin-based media management system
+# Each media type (TV, Movies, Music, etc.) is handled by a separate plugin
+
+[media_plugins]
+# Global media settings
+base_media_directory = "/data/media"
+enable_auto_discovery = true
+enable_background_tasks = true
+
+# TV Shows Plugin
+[media_plugins.tv]
+enabled = true
+auto_download = true
+update_metadata_interval = "weekly"
+import_check_interval = "15min"
+preferred_quality = "1080p"
+minimum_quality = "720p"
+create_subdirectories = true
+file_naming_pattern = "{show_name}/Season {season_number}/{show_name} - S{season_number:02d}E{episode_number:02d} - {episode_title}"
+
+[[media_plugins.tv.libraries]]
+name = "TV Shows"
+path = "/data/media/tv"
+enabled = true
+
+[[media_plugins.tv.libraries]]
+name = "Anime"
+path = "/data/media/anime"
+enabled = false
+
+# Movies Plugin
+[media_plugins.movies]
+enabled = true
+auto_download = true
+update_metadata_interval = "weekly"
+import_check_interval = "15min"
+preferred_quality = "1080p"
+minimum_quality = "720p"
+create_subdirectories = true
+file_naming_pattern = "{movie_name} ({year})"
+
+[[media_plugins.movies.libraries]]
+name = "Movies"
+path = "/data/media/movies"
+enabled = true
+
+[[media_plugins.movies.libraries]]
+name = "Documentaries"
+path = "/data/media/documentaries"
+enabled = false
+
+# Music Plugin (Example of new media type)
+[media_plugins.music]
+enabled = false  # Set to true to enable music management
+auto_download = true
+update_metadata_interval = "weekly"
+import_check_interval = "30min"
+preferred_quality = "lossless"
+minimum_quality = "320kbps"
+create_subdirectories = true
+file_naming_pattern = "{artist}/{album}/{track_number:02d} - {track_title}"
+
+[[media_plugins.music.libraries]]
+name = "Music"
+path = "/data/media/music"
+enabled = true
+
+# Audiobooks Plugin (Example - not implemented yet)
+[media_plugins.audiobooks]
+enabled = false
+auto_download = false
+file_naming_pattern = "{author}/{book_title}"
+
+[[media_plugins.audiobooks.libraries]]
+name = "Audiobooks"
+path = "/data/media/audiobooks"
+enabled = true
+
+# Ebooks Plugin (Example - not implemented yet)
+[media_plugins.ebooks]
+enabled = false
+auto_download = false
+file_naming_pattern = "{author}/{book_title}"
+
+[[media_plugins.ebooks.libraries]]
+name = "Ebooks"
+path = "/data/media/ebooks"
+enabled = true
 
 [database]
 host = "db"
