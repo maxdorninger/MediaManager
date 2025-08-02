@@ -4,6 +4,13 @@ import { env } from '$env/dynamic/public';
 import { goto } from '$app/navigation';
 import { base } from '$app/paths';
 import { toast } from 'svelte-sonner';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type WithoutChild<T> = T extends { child?: any } ? Omit<T, "child"> : T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, "children"> : T;
+export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
+export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
+
 
 const apiUrl = env.PUBLIC_API_URL;
 

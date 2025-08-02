@@ -3,15 +3,15 @@
 		type CarouselAPI,
 		type CarouselProps,
 		type EmblaContext,
-		setEmblaContext
-	} from './context.js';
-	import { cn } from '$lib/utils.js';
+		setEmblaContext,
+	} from "./context.js";
+	import { cn } from "$lib/utils.js";
 
 	let {
 		opts = {},
 		plugins = [],
 		setApi = () => {},
-		orientation = 'horizontal',
+		orientation = "horizontal",
 		class: className,
 		children,
 		...restProps
@@ -30,7 +30,7 @@
 		onInit,
 		scrollSnaps: [],
 		selectedIndex: 0,
-		scrollTo
+		scrollTo,
 	});
 
 	setEmblaContext(carouselState);
@@ -38,11 +38,9 @@
 	function scrollPrev() {
 		carouselState.api?.scrollPrev();
 	}
-
 	function scrollNext() {
 		carouselState.api?.scrollNext();
 	}
-
 	function scrollTo(index: number, jump?: boolean) {
 		carouselState.api?.scrollTo(index, jump);
 	}
@@ -57,16 +55,16 @@
 	$effect(() => {
 		if (carouselState.api) {
 			onSelect(carouselState.api);
-			carouselState.api.on('select', onSelect);
-			carouselState.api.on('reInit', onSelect);
+			carouselState.api.on("select", onSelect);
+			carouselState.api.on("reInit", onSelect);
 		}
 	});
 
 	function handleKeyDown(e: KeyboardEvent) {
-		if (e.key === 'ArrowLeft') {
+		if (e.key === "ArrowLeft") {
 			e.preventDefault();
 			scrollPrev();
-		} else if (e.key === 'ArrowRight') {
+		} else if (e.key === "ArrowRight") {
 			e.preventDefault();
 			scrollNext();
 		}
@@ -84,11 +82,11 @@
 
 	$effect(() => {
 		return () => {
-			carouselState.api?.off('select', onSelect);
+			carouselState.api?.off("select", onSelect);
 		};
 	});
 </script>
 
-<div {...restProps} aria-roledescription="carousel" class={cn('relative', className)} role="region">
+<div class={cn("relative", className)} role="region" aria-roledescription="carousel" {...restProps}>
 	{@render children?.()}
 </div>

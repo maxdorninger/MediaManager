@@ -44,7 +44,7 @@
 	</div>
 </header>
 
-<div class="flex w-full flex-1 flex-col items-center gap-4 p-4 pt-0">
+<div class="mx-auto flex w-full flex-1 flex-col gap-4 p-4 md:max-w-[80em]">
 	<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
 		TV Torrents
 	</h1>

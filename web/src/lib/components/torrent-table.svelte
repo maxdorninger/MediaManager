@@ -28,7 +28,7 @@
 		{#each torrents as torrent}
 			<Table.Row>
 				<Table.Cell class="font-medium">
-					{isShow ? torrent.torrent_title : torrent.title}
+					{torrent.torrent_title}
 				</Table.Cell>
 				{#if isShow}
 					<Table.Cell>

@@ -33,7 +33,7 @@
 	</div>
 </header>
 
-<div class="flex w-full flex-col items-center justify-center px-4 py-12">
+<main class="mx-auto flex w-full flex-1 flex-col gap-4 items-center p-4 md:max-w-[80em]">
 	<img alt="Media Manager Logo" class="mb-4 h-24 w-24" src={logo} />
 	<h1 class="mb-2 text-4xl font-bold">About Media Manager</h1>
 	<p class="mb-6 mt-10 max-w-2xl text-center text-lg">
@@ -107,4 +107,4 @@
 			>
 		</a>
 	</div>
-</div>
+</main>

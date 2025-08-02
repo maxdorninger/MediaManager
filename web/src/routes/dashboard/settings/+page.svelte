@@ -40,7 +40,7 @@
 	</div>
 </header>
 
-<div class="mx-auto flex w-full max-w-[1000px] flex-1 flex-col gap-4 p-4 pt-0">
+<main class="mx-auto flex w-full flex-1 flex-col gap-4 p-4 md:max-w-[80em]">
 	<h1 class="my-6 scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
 		Settings
 	</h1>
@@ -64,4 +64,4 @@
 			</Card.Content>
 		</Card.Root>
 	{/if}
-</div>
+</main>

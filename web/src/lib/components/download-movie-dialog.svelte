@@ -243,6 +243,7 @@
 								<Table.Head>Title</Table.Head>
 								<Table.Head>Size</Table.Head>
 								<Table.Head>Seeders</Table.Head>
+								<Table.Head>Score</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
 								<Table.Head class="text-right">Actions</Table.Head>
 							</Table.Row>
@@ -253,6 +254,7 @@
 									<Table.Cell class="max-w-[300px] font-medium">{torrent.title}</Table.Cell>
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 									<Table.Cell>{torrent.seeders}</Table.Cell>
+									<Table.Cell>{torrent.score}</Table.Cell>
 									<Table.Cell>
 										{#each torrent.flags as flag}
 											<Badge variant="outline">{flag}</Badge>
@@ -274,6 +276,8 @@
 						</Table.Body>
 					</Table.Root>
 				</div>
+				{:else}
+				<p>No torrents found!</p>
 			{/if}
 		</div>
 	</Dialog.Content>

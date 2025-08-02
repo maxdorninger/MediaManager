@@ -97,7 +97,7 @@
 				role="combobox"
 				aria-expanded={open}
 			>
-				{selectedLabel || 'Select Library'}
+				{'Select Library'}
 				<ChevronsUpDownIcon class="opacity-50" />
 			</Button>
 		{/snippet}

@@ -163,5 +163,6 @@ class PublicShow(BaseModel):
 
     ended: bool = False
     continuous_download: bool = False
+    library: str
 
     seasons: list[PublicSeason]

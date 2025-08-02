@@ -75,6 +75,7 @@ export interface PublicIndexerQueryResult {
 	size: number;
 	usenet: boolean;
 	age: number;
+	score: number;
 }
 
 export interface Season {
@@ -149,6 +150,7 @@ export interface PublicMovie {
 	id: string; // type: string, format: uuid
 	downloaded: boolean;
 	library: string;
+	torrents: Torrent[];
 }
 
 export interface Torrent {

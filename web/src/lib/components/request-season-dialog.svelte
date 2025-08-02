@@ -97,7 +97,7 @@
 		</Dialog.Header>
 		<div class="grid gap-4 py-4">
 			<!-- Season Select -->
-			<div class="grid grid-cols-[1fr,3fr] items-center gap-4 md:grid-cols-[100px,1fr]">
+			<div class="grid grid-cols-[1fr_3fr] items-center gap-4 md:grid-cols-[100px_1fr]">
 				<Label class="text-right" for="season">Season</Label>
 				<Select.Root bind:value={selectedSeasonsIds} type="multiple">
 					<Select.Trigger class="w-full" id="season">
@@ -120,7 +120,7 @@
 			</div>
 
 			<!-- Min Quality Select -->
-			<div class="grid grid-cols-[1fr,3fr] items-center gap-4 md:grid-cols-[100px,1fr]">
+			<div class="grid grid-cols-[1fr_3fr] items-center gap-4 md:grid-cols-[100px_1fr]">
 				<Label class="text-right" for="min-quality">Min Quality</Label>
 				<Select.Root bind:value={minQuality} type="single">
 					<Select.Trigger class="w-full" id="min-quality">
@@ -135,7 +135,7 @@
 			</div>
 
 			<!-- Wanted Quality Select -->
-			<div class="grid grid-cols-[1fr,3fr] items-center gap-4 md:grid-cols-[100px,1fr]">
+			<div class="grid grid-cols-[1fr_3fr] items-center gap-4 md:grid-cols-[100px_1fr]">
 				<Label class="text-right" for="wanted-quality">Wanted Quality</Label>
 				<Select.Root bind:value={wantedQuality} type="single">
 					<Select.Trigger class="w-full" id="wanted-quality">

@@ -96,7 +96,7 @@
 	</div>
 </header>
 
-<div class="flex w-full max-w-[90vw] flex-1 flex-col items-center gap-4 p-4 pt-0">
+<main class="flex w-full max-w-[90vw] flex-1 flex-col items-center gap-4 p-4 pt-0">
 	<div class="grid w-full max-w-sm items-center gap-12">
 		<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
 			Add a Show
@@ -151,4 +151,4 @@
 			{/each}
 		</div>
 	{/if}
-</div>
+</main>

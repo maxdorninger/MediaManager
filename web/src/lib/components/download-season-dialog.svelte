@@ -126,18 +126,6 @@
 		}
 	}
 
-	$effect(() => {
-		if (show?.id) {
-			console.log('selectedSeasonNumber changed:', selectedSeasonNumber);
-			getTorrents(selectedSeasonNumber).then((fetchedTorrents) => {
-				if (!isLoadingTorrents) {
-					torrents = fetchedTorrents;
-				} else if (fetchedTorrents.length > 0 || torrentsError) {
-					torrents = fetchedTorrents;
-				}
-			});
-		}
-	});
 </script>
 
 {#snippet saveDirectoryPreview(
@@ -166,15 +154,34 @@
 				<div class="grid w-full items-center gap-1.5">
 					{#if show?.seasons?.length > 0}
 						<Label for="season-number"
-							>Enter a season number from 1 to {show.seasons.at(-1).number}</Label
+						>Enter a season number from 1 to {show.seasons.at(-1).number}</Label
 						>
-						<Input
-							type="number"
-							class="max-w-sm"
-							id="season-number"
-							bind:value={selectedSeasonNumber}
-							max={show.seasons.at(-1).number}
-						/>
+						<div class="flex w-full max-w-sm items-center space-x-2">
+							<Input
+								type="number"
+								class="max-w-sm"
+								id="season-number"
+								bind:value={selectedSeasonNumber}
+								max={show.seasons.at(-1).number}
+							/>
+							<Button
+									variant="secondary"
+									onclick={async () => {
+										isLoadingTorrents = true;
+										torrentsError = null;
+										torrents = [];
+										try {
+											torrents = await getTorrents(selectedSeasonNumber, false);
+										} catch (error) {
+											console.log(error);
+										} finally {
+											isLoadingTorrents = false;
+										}
+									}}
+							>
+								Search
+							</Button>
+						</div>
 						<p class="text-sm text-muted-foreground">
 							Enter the season's number you want to search for. The first, usually 1, or the last
 							season number usually yield the most season packs. Note that only Seasons which are
@@ -283,6 +290,7 @@
 								<Table.Head>Usenet</Table.Head>
 								<Table.Head>Seeders</Table.Head>
 								<Table.Head>Age</Table.Head>
+								<Table.Head>Score</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
 								<Table.Head>Seasons</Table.Head>
 								<Table.Head class="text-right">Actions</Table.Head>
@@ -298,6 +306,7 @@
 									<Table.Cell
 										>{torrent.usenet ? formatSecondsToOptimalUnit(torrent.age) : 'N/A'}</Table.Cell
 									>
+									<Table.Cell>{torrent.score}</Table.Cell>
 									<Table.Cell>
 										{#each torrent.flags as flag}
 											<Badge variant="outline">{flag}</Badge>

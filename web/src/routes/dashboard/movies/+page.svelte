@@ -73,7 +73,7 @@
 	<Skeleton class="h-[50vh] w-full " />
 	<Skeleton class="h-[50vh] w-full " />
 {/snippet}
-<div class="flex w-full flex-1 flex-col gap-4 p-4 pt-0">
+<main class="flex w-full flex-1 flex-col gap-4 p-4 pt-0">
 	<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">Movies</h1>
 	<div
 		class="grid w-full auto-rows-min gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
@@ -98,4 +98,4 @@
 			{/each}
 		{/if}
 	</div>
-</div>
+</main>
