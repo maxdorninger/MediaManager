@@ -14,7 +14,8 @@ volumes:
   - ./config:/app/config
 ```
 
-Though you can change the location of the configuration file's directory by setting the `CONFIG_DIR` env variable to another path,
+Though you can change the location of the configuration file's directory by setting the `CONFIG_DIR` env variable to
+another path,
 e.g. `/etc/mediamanager/`.
 
 ## Configuration Sections
@@ -43,7 +44,7 @@ token_secret = "your_super_secret_key_here"
 But you can also set it through an environment variable:
 
 ```
-AUTH__TOKEN_SECRET = "your_super_secret_key_here"
+MEDIAMANAGER_AUTH__TOKEN_SECRET = "your_super_secret_key_here"
 ```
 
 or another example with the OIDC client secret:
@@ -58,10 +59,15 @@ client_secret = "your_client_secret_from_provider"
 env variable:
 
 ```
-AUTH__OPENID_CONNECT__CLIENT_SECRET = "your_client_secret_from_provider"
+MEDIAMANAGER_AUTH__OPENID_CONNECT__CLIENT_SECRET = "your_client_secret_from_provider"
 ```
 
 So for every config "level", you basically have to take the name of the value and prepend it with the section names in
-uppercase with 2 underscores as delimiters.
+uppercase with 2 underscores as delimiters and `MEDIAMANAGER_` as the prefix.
+
+<warning>Note that not every env variable starts with <code>MEDIAMANAGER_</code>,
+this prefix only applies to env variables which replace/overwrite values in the config file.
+Variables like the <code>CONFIG_DIR</code> env variable must not be prefixed.
+</warning>
 
 
