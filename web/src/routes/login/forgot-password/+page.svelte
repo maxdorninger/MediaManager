@@ -1,6 +1,4 @@
 <script lang="ts">
-	import logo from '$lib/images/logo.svg';
-	import background from '$lib/images/pawel-czerwinski-NTYYL9Eb9y8-unsplash.jpg?enhanced';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';

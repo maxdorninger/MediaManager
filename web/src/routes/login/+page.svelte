@@ -1,6 +1,5 @@
 <script lang="ts">
 	import LoginCard from '$lib/components/login-card.svelte';
-	import { page } from '$app/state';
 	import {getContext} from "svelte";
 
 	let oauthProvider: () => {oauth_name: string} = getContext("oauthProvider");

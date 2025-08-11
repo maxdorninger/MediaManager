@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { UserCheck } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import Logo from '$lib/components/logo-side-by-side.svelte';
 	import { handleLogout } from '$lib/utils.ts';
 	import { base } from '$app/paths';
 </script>
