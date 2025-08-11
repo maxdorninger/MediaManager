@@ -166,14 +166,14 @@
 							<Select.Item value="360P">360p</Select.Item>
 						</Select.Content>
 					</Select.Root>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						This is necessary to differentiate between versions of the same movie, for example a
 						1080p and a 4K version.
 					</p>
 					<Label for="file-suffix-display"
 						>The files will be saved in the following directory:</Label
 					>
-					<p class="text-sm text-muted-foreground" id="file-suffix-display">
+					<p class="text-muted-foreground text-sm" id="file-suffix-display">
 						{@render saveDirectoryPreview(movie, filePathSuffix)}
 					</p>
 				</div>
@@ -201,7 +201,7 @@
 							Search
 						</Button>
 					</div>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						The custom query will override the default search string like "A Minecraft Movie
 						(2025)".
 					</p>
@@ -213,7 +213,7 @@
 						placeholder="1080P"
 						type="text"
 					/>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						This is necessary to differentiate between versions of the same movie, for example a
 						1080p and a 4K version.
 					</p>
@@ -221,7 +221,7 @@
 					<Label for="file-suffix-display"
 						>The files will be saved in the following directory:</Label
 					>
-					<p class="text-sm text-muted-foreground" id="file-suffix-display">
+					<p class="text-muted-foreground text-sm" id="file-suffix-display">
 						{@render saveDirectoryPreview(movie, filePathSuffix)}
 					</p>
 				</div>
@@ -277,7 +277,7 @@
 						</Table.Body>
 					</Table.Root>
 				</div>
-				{:else}
+			{:else}
 				<p>No torrents found!</p>
 			{/if}
 		</div>

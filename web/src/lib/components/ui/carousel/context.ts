@@ -1,11 +1,11 @@
-import type { EmblaCarouselSvelteType } from "embla-carousel-svelte";
-import type emblaCarouselSvelte from "embla-carousel-svelte";
-import { getContext, hasContext, setContext } from "svelte";
-import type { WithElementRef } from "bits-ui";
-import type { HTMLAttributes } from "svelte/elements";
+import type { EmblaCarouselSvelteType } from 'embla-carousel-svelte';
+import type emblaCarouselSvelte from 'embla-carousel-svelte';
+import { getContext, hasContext, setContext } from 'svelte';
+import type { WithElementRef } from 'bits-ui';
+import type { HTMLAttributes } from 'svelte/elements';
 
 export type CarouselAPI =
-	NonNullable<NonNullable<EmblaCarouselSvelteType["$$_attributes"]>["on:emblaInit"]> extends (
+	NonNullable<NonNullable<EmblaCarouselSvelteType['$$_attributes']>['on:emblaInit']> extends (
 		evt: CustomEvent<infer CarouselAPI>
 	) => void
 		? CarouselAPI
@@ -13,8 +13,8 @@ export type CarouselAPI =
 
 type EmblaCarouselConfig = NonNullable<Parameters<typeof emblaCarouselSvelte>[1]>;
 
-export type CarouselOptions = EmblaCarouselConfig["options"];
-export type CarouselPlugins = EmblaCarouselConfig["plugins"];
+export type CarouselOptions = EmblaCarouselConfig['options'];
+export type CarouselPlugins = EmblaCarouselConfig['plugins'];
 
 ////
 
@@ -22,14 +22,14 @@ export type CarouselProps = {
 	opts?: CarouselOptions;
 	plugins?: CarouselPlugins;
 	setApi?: (api: CarouselAPI | undefined) => void;
-	orientation?: "horizontal" | "vertical";
+	orientation?: 'horizontal' | 'vertical';
 } & WithElementRef<HTMLAttributes<HTMLDivElement>>;
 
-const EMBLA_CAROUSEL_CONTEXT = Symbol("EMBLA_CAROUSEL_CONTEXT");
+const EMBLA_CAROUSEL_CONTEXT = Symbol('EMBLA_CAROUSEL_CONTEXT');
 
 export type EmblaContext = {
 	api: CarouselAPI | undefined;
-	orientation: "horizontal" | "vertical";
+	orientation: 'horizontal' | 'vertical';
 	scrollNext: () => void;
 	scrollPrev: () => void;
 	canScrollNext: boolean;
@@ -48,7 +48,7 @@ export function setEmblaContext(config: EmblaContext): EmblaContext {
 	return config;
 }
 
-export function getEmblaContext(name = "This component") {
+export function getEmblaContext(name = 'This component') {
 	if (!hasContext(EMBLA_CAROUSEL_CONTEXT)) {
 		throw new Error(`${name} must be used within a <Carousel.Root> component`);
 	}

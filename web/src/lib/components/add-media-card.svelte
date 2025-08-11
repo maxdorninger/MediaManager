@@ -62,7 +62,7 @@
 			</div>
 		{/if}
 	</Card.Content>
-	<Card.Footer class="flex flex-col items-start gap-2 rounded-b-lg border-t bg-card p-4">
+	<Card.Footer class="bg-card flex flex-col items-start gap-2 rounded-b-lg border-t p-4">
 		<Button
 			class="w-full font-semibold"
 			disabled={result.added || loading}

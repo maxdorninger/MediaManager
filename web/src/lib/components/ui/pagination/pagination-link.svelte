@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { Pagination as PaginationPrimitive, type WithoutChild } from "bits-ui";
-	import {
-		type Props as ButtonProps,
-		buttonVariants,
-	} from "$lib/components/ui/button/index.js";
-	import { cn } from "$lib/utils.js";
+	import { Pagination as PaginationPrimitive, type WithoutChild } from 'bits-ui';
+	import { type Props as ButtonProps, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { cn } from '$lib/utils.js';
 
 	type Props = WithoutChild<PaginationPrimitive.PageProps> &
 		ButtonProps & {
@@ -14,7 +11,7 @@
 	let {
 		ref = $bindable(null),
 		class: className,
-		size = "icon",
+		size = 'icon',
 		isActive = false,
 		page,
 		children,
@@ -31,8 +28,8 @@
 	bind:ref
 	class={cn(
 		buttonVariants({
-			variant: isActive ? "outline" : "ghost",
-			size,
+			variant: isActive ? 'outline' : 'ghost',
+			size
 		}),
 		className
 	)}

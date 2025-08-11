@@ -9,7 +9,7 @@
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import LoadingBar from '$lib/components/loading-bar.svelte';
 	import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
-	import {base} from "$app/paths";
+	import { base } from '$app/paths';
 
 	const apiUrl = env.PUBLIC_API_URL;
 
@@ -97,11 +97,23 @@
 			</div>
 			<div class="grid gap-2">
 				<Label for="password">Password</Label>
-				<Input bind:value={password} id="password" required type="password" autocomplete="new-password" />
+				<Input
+					bind:value={password}
+					id="password"
+					required
+					type="password"
+					autocomplete="new-password"
+				/>
 			</div>
 			<div class="grid gap-2">
 				<Label for="password">Confirm Password</Label>
-				<Input bind:value={confirmPassword} id="confirm-password" required type="password" autocomplete="new-password" />
+				<Input
+					bind:value={confirmPassword}
+					id="confirm-password"
+					required
+					type="password"
+					autocomplete="new-password"
+				/>
 			</div>
 			{#if errorMessage}
 				<Alert.Root variant="destructive">
@@ -120,28 +132,30 @@
 			{#if isLoading}
 				<LoadingBar />
 			{/if}
-			<Button class="w-full" disabled={isLoading||password!==confirmPassword||password===''} type="submit">Create an account</Button>
+			<Button
+				class="w-full"
+				disabled={isLoading || password !== confirmPassword || password === ''}
+				type="submit">Create an account</Button
+			>
 		</form>
 		{#await oauthProvider}
 			<LoadingBar />
 		{:then result}
 			{#if result.oauth_name != null}
 				<div
-						class="relative mt-2 text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border"
+					class="after:border-border relative mt-2 text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t"
 				>
-					<span class="relative z-10 bg-background px-2 text-muted-foreground">
+					<span class="bg-background text-muted-foreground relative z-10 px-2">
 						Or continue with
 					</span>
 				</div>
 				<Button class="mt-2 w-full" onclick={() => handleOauth()} variant="outline"
-				>Login with {result.oauth_name}</Button
+					>Login with {result.oauth_name}</Button
 				>
 			{/if}
 		{/await}
 		<div class="mt-4 text-center text-sm">
-			<Button href="{base}/login/" variant="link">
-				Already have an account? Login
-			</Button>
+			<Button href="{base}/login/" variant="link">Already have an account? Login</Button>
 		</div>
 	</Card.Content>
 </Card.Root>

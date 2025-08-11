@@ -131,7 +131,13 @@
 						Forgot your password?
 					</a>
 				</div>
-				<Input bind:value={password} id="password" required type="password" autocomplete="current-password" />
+				<Input
+					bind:value={password}
+					id="password"
+					required
+					type="password"
+					autocomplete="current-password"
+				/>
 			</div>
 
 			{#if errorMessage}
@@ -151,9 +157,9 @@
 		{:then result}
 			{#if result.oauth_name != null}
 				<div
-					class="relative mt-2 text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border"
+					class="after:border-border relative mt-2 text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t"
 				>
-					<span class="relative z-10 bg-background px-2 text-muted-foreground">
+					<span class="bg-background text-muted-foreground relative z-10 px-2">
 						Or continue with
 					</span>
 				</div>
@@ -163,9 +169,7 @@
 			{/if}
 		{/await}
 		<div class="mt-4 text-center text-sm">
-			<Button href="{base}/login/signup/" variant="link">
-				Don't have an account? Sign up
-			</Button>
+			<Button href="{base}/login/signup/" variant="link">Don't have an account? Sign up</Button>
 		</div>
 	</Card.Content>
 </Card.Root>

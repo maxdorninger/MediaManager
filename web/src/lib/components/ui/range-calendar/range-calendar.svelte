@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { RangeCalendar as RangeCalendarPrimitive, type WithoutChildrenOrChild } from "bits-ui";
-	import * as RangeCalendar from "./index.js";
-	import { cn } from "$lib/utils.js";
+	import { RangeCalendar as RangeCalendarPrimitive, type WithoutChildrenOrChild } from 'bits-ui';
+	import * as RangeCalendar from './index.js';
+	import { cn } from '$lib/utils.js';
 
 	let {
 		ref = $bindable(null),
 		value = $bindable(),
 		placeholder = $bindable(),
 		class: className,
-		weekdayFormat = "short",
+		weekdayFormat = 'short',
 		...restProps
 	}: WithoutChildrenOrChild<RangeCalendarPrimitive.RootProps> = $props();
 </script>
@@ -18,7 +18,7 @@
 	bind:value
 	bind:placeholder
 	{weekdayFormat}
-	class={cn("p-3", className)}
+	class={cn('p-3', className)}
 	{...restProps}
 >
 	{#snippet children({ months, weekdays })}

@@ -126,7 +126,6 @@
 			isLoadingTorrents = false;
 		}
 	}
-
 </script>
 
 {#snippet saveDirectoryPreview(
@@ -155,7 +154,7 @@
 				<div class="grid w-full items-center gap-1.5">
 					{#if show?.seasons?.length > 0}
 						<Label for="season-number"
-						>Enter a season number from 1 to {show.seasons.at(-1).number}</Label
+							>Enter a season number from 1 to {show.seasons.at(-1).number}</Label
 						>
 						<div class="flex w-full max-w-sm items-center space-x-2">
 							<Input
@@ -166,24 +165,24 @@
 								max={show.seasons.at(-1).number}
 							/>
 							<Button
-									variant="secondary"
-									onclick={async () => {
-										isLoadingTorrents = true;
-										torrentsError = null;
-										torrents = [];
-										try {
-											torrents = await getTorrents(selectedSeasonNumber, false);
-										} catch (error) {
-											console.log(error);
-										} finally {
-											isLoadingTorrents = false;
-										}
-									}}
+								variant="secondary"
+								onclick={async () => {
+									isLoadingTorrents = true;
+									torrentsError = null;
+									torrents = [];
+									try {
+										torrents = await getTorrents(selectedSeasonNumber, false);
+									} catch (error) {
+										console.log(error);
+									} finally {
+										isLoadingTorrents = false;
+									}
+								}}
 							>
 								Search
 							</Button>
 						</div>
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							Enter the season's number you want to search for. The first, usually 1, or the last
 							season number usually yield the most season packs. Note that only Seasons which are
 							listed in the "Seasons" cell will be imported!
@@ -200,18 +199,18 @@
 								<Select.Item value="360P">360p</Select.Item>
 							</Select.Content>
 						</Select.Root>
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							This is necessary to differentiate between versions of the same season/show, for
 							example a 1080p and a 4K version of a season.
 						</p>
 						<Label for="file-suffix-display"
 							>The files will be saved in the following directory:</Label
 						>
-						<p class="text-sm text-muted-foreground" id="file-suffix-display">
+						<p class="text-muted-foreground text-sm" id="file-suffix-display">
 							{@render saveDirectoryPreview(show, filePathSuffix)}
 						</p>
 					{:else}
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							No season information available for this show.
 						</p>
 					{/if}
@@ -241,7 +240,7 @@
 								Search
 							</Button>
 						</div>
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							The custom query will override the default search string like "The Simpsons Season 3".
 							Note that only Seasons which are listed in the "Seasons" cell will be imported!
 						</p>
@@ -253,7 +252,7 @@
 							bind:value={filePathSuffix}
 							placeholder="1080P"
 						/>
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							This is necessary to differentiate between versions of the same season/show, for
 							example a 1080p and a 4K version of a season.
 						</p>
@@ -261,11 +260,11 @@
 						<Label for="file-suffix-display"
 							>The files will be saved in the following directory:</Label
 						>
-						<p class="text-sm text-muted-foreground" id="file-suffix-display">
+						<p class="text-muted-foreground text-sm" id="file-suffix-display">
 							{@render saveDirectoryPreview(show, filePathSuffix)}
 						</p>
 					{:else}
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							No season information available for this show.
 						</p>
 					{/if}
