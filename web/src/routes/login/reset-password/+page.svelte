@@ -110,11 +110,7 @@
 					minlength={1}
 				/>
 			</div>
-			<Button
-				type="submit"
-				class="w-full"
-				disabled={isLoading || !newPassword || !confirmPassword}
-			>
+			<Button type="submit" class="w-full" disabled={isLoading || !newPassword || !confirmPassword}>
 				{#if isLoading}
 					Resetting Password...
 				{:else}
@@ -123,10 +119,8 @@
 			</Button>
 		</form>
 		<div class="mt-4 text-center text-sm">
-			<a href="{base}/login" class="font-semibold text-primary hover:underline">
-				Back to Login
-			</a>
-			<span class="mx-2 text-muted-foreground">•</span>
+			<a href="{base}/login" class="text-primary font-semibold hover:underline"> Back to Login </a>
+			<span class="text-muted-foreground mx-2">•</span>
 			<a href="{base}/login/forgot-password" class="text-primary hover:underline">
 				Request New Reset Link
 			</a>

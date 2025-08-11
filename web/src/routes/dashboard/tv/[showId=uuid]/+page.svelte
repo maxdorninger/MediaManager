@@ -96,12 +96,12 @@
 </h1>
 <main class="mx-auto flex w-full flex-1 flex-col gap-4 p-4 md:max-w-[80em]">
 	<div class="flex flex-col gap-4 md:flex-row md:items-stretch">
-		<div class="w-full overflow-hidden rounded-xl bg-muted/50 md:w-1/3 md:max-w-sm">
+		<div class="bg-muted/50 w-full overflow-hidden rounded-xl md:w-1/3 md:max-w-sm">
 			{#if show().id}
 				<MediaPicture media={show()} />
 			{:else}
 				<div
-					class="aspect-9/16 flex h-auto w-full items-center justify-center rounded-lg bg-gray-200 text-gray-500"
+					class="flex aspect-9/16 h-auto w-full items-center justify-center rounded-lg bg-gray-200 text-gray-500"
 				>
 					<ImageOff size={48} />
 				</div>

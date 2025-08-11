@@ -70,10 +70,9 @@
 		<CardTitle class="text-2xl">Forgot Password</CardTitle>
 		<CardDescription>
 			{#if isSuccess}
-				We've sent a password reset link to your email address if a SMTP server is
-				configured. Check your inbox and follow the instructions to reset your password. If
-				you didn't receive an email, please contact an administrator, the reset link will be
-				in the logs of MediaManager.
+				We've sent a password reset link to your email address if a SMTP server is configured. Check
+				your inbox and follow the instructions to reset your password. If you didn't receive an
+				email, please contact an administrator, the reset link will be in the logs of MediaManager.
 			{:else}
 				Enter your email address and we'll send you a link to reset your password.
 			{/if}
@@ -87,7 +86,7 @@
 						Password reset email sent successfully!
 					</p>
 				</div>
-				<div class="text-center text-sm text-muted-foreground">
+				<div class="text-muted-foreground text-center text-sm">
 					<p>Didn't receive the email? Check your spam folder or</p>
 					<button
 						class="text-primary hover:underline"
@@ -123,9 +122,7 @@
 			</form>
 		{/if}
 		<div class="mt-4 text-center text-sm">
-			<a href="{base}/login" class="font-semibold text-primary hover:underline">
-				Back to Login
-			</a>
+			<a href="{base}/login" class="text-primary font-semibold hover:underline"> Back to Login </a>
 		</div>
 	</CardContent>
 </Card>

@@ -33,15 +33,15 @@
 	</div>
 </header>
 
-<main class="mx-auto flex w-full flex-1 flex-col gap-4 items-center p-4 md:max-w-[80em]">
+<main class="mx-auto flex w-full flex-1 flex-col items-center gap-4 p-4 md:max-w-[80em]">
 	<img alt="Media Manager Logo" class="mb-4 h-24 w-24" src={logo} />
 	<h1 class="mb-2 text-4xl font-bold">About Media Manager</h1>
-	<p class="mb-6 mt-10 max-w-2xl text-center text-lg">
+	<p class="mt-10 mb-6 max-w-2xl text-center text-lg">
 		<strong>Media Manager</strong> is an all-in-one solution for organizing and building your media library.
 		Built for simplicity and modernity, it helps you keep track of your favorite shows and movies and
 		explore trending content—all in one place.
 	</p>
-	<p class="mb-2 text-sm text-muted-foreground">
+	<p class="text-muted-foreground mb-2 text-sm">
 		Version: v{PUBLIC_VERSION}
 	</p>
 	<h2
@@ -80,7 +80,7 @@
 		Metadata sources of MediaManager
 	</h2>
 
-	<div class="my-6 mb-6 flex items-center gap-2 text-sm text-muted-foreground sm:w-1/2 lg:w-1/3">
+	<div class="text-muted-foreground my-6 mb-6 flex items-center gap-2 text-sm sm:w-1/2 lg:w-1/3">
 		<a class="flex items-center gap-2" href="https://www.themoviedb.org/" target="_blank">
 			<img
 				alt="TMDB Logo"
@@ -92,7 +92,7 @@
 			>
 		</a>
 	</div>
-	<div class="my-6 mb-6 flex items-center gap-2 text-sm text-muted-foreground sm:w-1/2 lg:w-1/3">
+	<div class="text-muted-foreground my-6 mb-6 flex items-center gap-2 text-sm sm:w-1/2 lg:w-1/3">
 		<a class="flex items-center gap-2" href="https://thetvdb.com/subscribe" target="_blank">
 			<img
 				alt="TheTVDB Logo"
