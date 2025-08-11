@@ -1,6 +1,5 @@
 <script lang="ts" module>
 	import { type VariantProps, tv } from 'tailwind-variants';
-
 	export const badgeVariants = tv({
 		base: 'focus:ring-ring inline-flex select-none items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
 		variants: {
@@ -40,10 +39,10 @@
 
 <svelte:element
 	this={href ? 'a' : 'span'}
-	{...restProps}
 	bind:this={ref}
-	class={cn(badgeVariants({ variant }), className)}
 	{href}
+	class={cn(badgeVariants({ variant }), className)}
+	{...restProps}
 >
 	{@render children?.()}
 </svelte:element>

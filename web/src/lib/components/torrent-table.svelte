@@ -25,10 +25,10 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each torrents as torrent}
+		{#each torrents as torrent (torrent.id)}
 			<Table.Row>
 				<Table.Cell class="font-medium">
-					{isShow ? torrent.torrent_title : torrent.title}
+					{torrent.torrent_title}
 				</Table.Cell>
 				{#if isShow}
 					<Table.Cell>
@@ -41,7 +41,7 @@
 				<Table.Cell class="font-medium">
 					{getTorrentQualityString(torrent.quality)}
 				</Table.Cell>
-				<Table.Cell class="font-medium">
+				<Table.Cell>
 					{torrent.file_path_suffix}
 				</Table.Cell>
 				<Table.Cell>

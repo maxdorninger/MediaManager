@@ -259,8 +259,10 @@ class MovieService:
         :return: A public movie.
         """
         movie = self.movie_repository.get_movie_by_id(movie_id=movie_id)
+        torrents = self.get_torrents_for_movie(movie=movie).torrents
         public_movie = PublicMovie.model_validate(movie)
         public_movie.downloaded = self.is_movie_downloaded(movie_id=movie.id)
+        public_movie.torrents = torrents
         return public_movie
 
     def get_movie_by_id(self, movie_id: MovieId) -> Movie:

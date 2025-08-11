@@ -18,7 +18,6 @@
 <!-- svelte-ignore event_directive_deprecated -->
 <div
 	class="overflow-hidden"
-	on:emblaInit={emblaCtx.onInit}
 	use:emblaCarouselSvelte={{
 		options: {
 			container: '[data-embla-container]',
@@ -28,9 +27,9 @@
 		},
 		plugins: emblaCtx.plugins
 	}}
+	on:emblaInit={emblaCtx.onInit}
 >
 	<div
-		{...restProps}
 		bind:this={ref}
 		class={cn(
 			'flex',
@@ -38,6 +37,7 @@
 			className
 		)}
 		data-embla-container=""
+		{...restProps}
 	>
 		{@render children?.()}
 	</div>

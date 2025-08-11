@@ -5,6 +5,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	import type { PublicIndexerQueryResult } from '$lib/types.js';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
@@ -24,7 +25,7 @@
 	let filePathSuffix: string = $state('');
 
 	async function downloadTorrent(result_id: string) {
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 		urlParams.append('public_indexer_result_id', result_id);
 		if (filePathSuffix !== '') {
 			urlParams.append('override_file_path_suffix', filePathSuffix);
@@ -72,7 +73,7 @@
 		torrentsError = null;
 		torrents = [];
 
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 		if (override) {
 			urlParams.append('search_query_override', queryOverride);
 		}
@@ -165,14 +166,14 @@
 							<Select.Item value="360P">360p</Select.Item>
 						</Select.Content>
 					</Select.Root>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						This is necessary to differentiate between versions of the same movie, for example a
 						1080p and a 4K version.
 					</p>
 					<Label for="file-suffix-display"
 						>The files will be saved in the following directory:</Label
 					>
-					<p class="text-sm text-muted-foreground" id="file-suffix-display">
+					<p class="text-muted-foreground text-sm" id="file-suffix-display">
 						{@render saveDirectoryPreview(movie, filePathSuffix)}
 					</p>
 				</div>
@@ -200,7 +201,7 @@
 							Search
 						</Button>
 					</div>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						The custom query will override the default search string like "A Minecraft Movie
 						(2025)".
 					</p>
@@ -212,7 +213,7 @@
 						placeholder="1080P"
 						type="text"
 					/>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						This is necessary to differentiate between versions of the same movie, for example a
 						1080p and a 4K version.
 					</p>
@@ -220,7 +221,7 @@
 					<Label for="file-suffix-display"
 						>The files will be saved in the following directory:</Label
 					>
-					<p class="text-sm text-muted-foreground" id="file-suffix-display">
+					<p class="text-muted-foreground text-sm" id="file-suffix-display">
 						{@render saveDirectoryPreview(movie, filePathSuffix)}
 					</p>
 				</div>
@@ -243,6 +244,7 @@
 								<Table.Head>Title</Table.Head>
 								<Table.Head>Size</Table.Head>
 								<Table.Head>Seeders</Table.Head>
+								<Table.Head>Score</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
 								<Table.Head class="text-right">Actions</Table.Head>
 							</Table.Row>
@@ -253,8 +255,9 @@
 									<Table.Cell class="max-w-[300px] font-medium">{torrent.title}</Table.Cell>
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 									<Table.Cell>{torrent.seeders}</Table.Cell>
+									<Table.Cell>{torrent.score}</Table.Cell>
 									<Table.Cell>
-										{#each torrent.flags as flag}
+										{#each torrent.flags as flag (flag)}
 											<Badge variant="outline">{flag}</Badge>
 										{/each}
 									</Table.Cell>
@@ -274,6 +277,8 @@
 						</Table.Body>
 					</Table.Root>
 				</div>
+			{:else}
+				<p>No torrents found!</p>
 			{/if}
 		</div>
 	</Dialog.Content>

@@ -12,12 +12,12 @@
 </script>
 
 <span
-	{...restProps}
-	aria-current="page"
-	aria-disabled="true"
 	bind:this={ref}
-	class={cn('font-normal text-foreground', className)}
 	role="link"
+	aria-disabled="true"
+	aria-current="page"
+	class={cn('text-foreground font-normal', className)}
+	{...restProps}
 >
 	{@render children?.()}
 </span>

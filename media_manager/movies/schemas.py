@@ -38,10 +38,6 @@ class PublicMovieFile(MovieFile):
     downloaded: bool = False
 
 
-class PublicMovie(Movie):
-    downloaded: bool = False
-
-
 class MovieRequestBase(BaseModel):
     min_quality: Quality
     wanted_quality: Quality
@@ -85,6 +81,11 @@ class MovieTorrent(BaseModel):
     imported: bool
     file_path_suffix: str
     usenet: bool
+
+
+class PublicMovie(Movie):
+    downloaded: bool = False
+    torrents: list[MovieTorrent] = []
 
 
 class RichMovieTorrent(BaseModel):

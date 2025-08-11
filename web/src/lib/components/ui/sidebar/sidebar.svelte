@@ -26,7 +26,7 @@
 {#if collapsible === 'none'}
 	<div
 		class={cn(
-			'flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar text-sidebar-foreground',
+			'bg-sidebar text-sidebar-foreground flex h-full w-[var(--sidebar-width)] flex-col',
 			className
 		)}
 		bind:this={ref}
@@ -39,7 +39,7 @@
 		<Sheet.Content
 			data-sidebar="sidebar"
 			data-mobile="true"
-			class="w-[var(--sidebar-width)] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+			class="bg-sidebar text-sidebar-foreground w-[var(--sidebar-width)] p-0 [&>button]:hidden"
 			style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"
 			{side}
 		>
@@ -51,7 +51,7 @@
 {:else}
 	<div
 		bind:this={ref}
-		class="group peer hidden text-sidebar-foreground md:block"
+		class="text-sidebar-foreground group peer hidden md:block"
 		data-state={sidebar.state}
 		data-collapsible={sidebar.state === 'collapsed' ? collapsible : ''}
 		data-variant={variant}
@@ -84,7 +84,7 @@
 		>
 			<div
 				data-sidebar="sidebar"
-				class="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+				class="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow"
 			>
 				{@render children?.()}
 			</div>

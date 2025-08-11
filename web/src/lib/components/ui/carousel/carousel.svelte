@@ -38,11 +38,9 @@
 	function scrollPrev() {
 		carouselState.api?.scrollPrev();
 	}
-
 	function scrollNext() {
 		carouselState.api?.scrollNext();
 	}
-
 	function scrollTo(index: number, jump?: boolean) {
 		carouselState.api?.scrollTo(index, jump);
 	}
@@ -89,6 +87,6 @@
 	});
 </script>
 
-<div {...restProps} aria-roledescription="carousel" class={cn('relative', className)} role="region">
+<div class={cn('relative', className)} role="region" aria-roledescription="carousel" {...restProps}>
 	{@render children?.()}
 </div>

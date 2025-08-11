@@ -8,5 +8,6 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	});
 	if (!res.ok) throw error(res.status, `Failed to load movie`);
 	const movieData = await res.json();
-	return { movie: movieData, torrents: [] };
+	console.log('got movie data', movieData);
+	return { movie: movieData };
 };

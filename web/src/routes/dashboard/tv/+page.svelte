@@ -51,7 +51,7 @@
 	<Skeleton class="h-[50vh] w-full " />
 	<Skeleton class="h-[50vh] w-full " />
 {/snippet}
-<div class="flex w-full flex-1 flex-col gap-4 p-4 pt-0">
+<main class="flex w-full flex-1 flex-col gap-4 p-4 pt-0">
 	<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
 		TV Shows
 	</h1>
@@ -64,7 +64,7 @@
 			{#await tvShowsJson.json()}
 				{@render loadingbar()}
 			{:then tvShows}
-				{#each tvShows as show}
+				{#each tvShows as show (show.id)}
 					<a href={base + '/dashboard/tv/' + show.id}>
 						<Card.Root class="col-span-full max-w-[90vw] ">
 							<Card.Header>
@@ -82,4 +82,4 @@
 			{/await}
 		{/await}
 	</div>
-</div>
+</main>

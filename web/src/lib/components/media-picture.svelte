@@ -12,7 +12,7 @@
 	<source srcset="{apiUrl}/static/image/{media.id}.webp" type="image/webp" />
 	<img
 		alt="{getFullyQualifiedMediaName(media)}'s Poster Image"
-		class="aspect-9/16 center h-auto w-full rounded-lg object-cover"
+		class="h-full w-full rounded-lg object-cover"
 		src="{apiUrl}/static/image/{media.id}.jpeg"
 	/>
 </picture>

@@ -6,9 +6,8 @@
 </script>
 
 <Sonner
-	{...restProps}
-	class="toaster group"
 	theme={mode.current}
+	class="toaster group"
 	toastOptions={{
 		classes: {
 			toast:
@@ -18,4 +17,5 @@
 			cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground'
 		}
 	}}
+	{...restProps}
 />

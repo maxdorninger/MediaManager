@@ -70,7 +70,7 @@
 	<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
 		Dashboard
 	</h1>
-	<div class="min-h-[100vh] flex-1 items-center justify-center rounded-xl p-4 md:min-h-min">
+	<main class="min-h-screen flex-1 items-center justify-center rounded-xl p-4 md:min-h-min">
 		<div class="mx-auto max-w-[70vw] md:max-w-[80vw]">
 			<h3 class="my-4 text-center text-2xl font-semibold">Trending Shows</h3>
 			<RecommendedMediaCarousel isLoading={showsLoading} isShow={true} media={recommendedShows} />
@@ -82,7 +82,7 @@
 				media={recommendedMovies}
 			/>
 		</div>
-	</div>
+	</main>
 
 	<!---
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">

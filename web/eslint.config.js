@@ -1,45 +1,18 @@
-import prettier from 'eslint-config-prettier';
+// eslint.config.js
 import js from '@eslint/js';
-import { includeIgnoreFile } from '@eslint/compat';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
-import { fileURLToPath } from 'node:url';
 import ts from 'typescript-eslint';
-import unusedImports from 'eslint-plugin-unused-imports';
+import svelteConfig from './svelte.config.js';
+import { fileURLToPath } from 'node:url';
+import { includeIgnoreFile } from '@eslint/compat';
 
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
-
 export default ts.config(
-	{
-		plugins: {
-			'unused-imports': unusedImports
-		},
-		rules: {
-			'@typescript-eslint/no-unused-vars': 'off',
-			'unused-imports/no-unused-imports': 'error',
-			'unused-imports/no-unused-vars': [
-				'warn',
-				{
-					vars: 'all',
-					varsIgnorePattern: '^_',
-					args: 'after-used',
-					argsIgnorePattern: '^_'
-				}
-			],
-			'sort-imports': [
-				'error',
-				{
-					ignoreDeclarationSort: true
-				}
-			]
-		}
-	},
-	includeIgnoreFile(gitignorePath),
+	includeIgnoreFile(gitignorePath, 'Imported .gitignore patterns'),
 	js.configs.recommended,
 	...ts.configs.recommended,
-	...svelte.configs['flat/recommended'],
-	prettier,
-	...svelte.configs['flat/prettier'],
+	...svelte.configs.recommended,
 	{
 		languageOptions: {
 			globals: {
@@ -49,12 +22,32 @@ export default ts.config(
 		}
 	},
 	{
-		files: ['**/*.svelte'],
-
+		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
+		// See more details at: https://typescript-eslint.io/packages/parser/
 		languageOptions: {
 			parserOptions: {
-				parser: ts.parser
+				projectService: true,
+				extraFileExtensions: ['.svelte'], // Add support for additional file extensions, such as .svelte
+				parser: ts.parser,
+				// Specify a parser for each language, if needed:
+				// parser: {
+				//   ts: ts.parser,
+				//   js: espree,    // Use espree for .js files (add: import espree from 'espree')
+				//   typescript: ts.parser
+				// },
+
+				// We recommend importing and specifying svelte.config.js.
+				// By doing so, some rules in eslint-plugin-svelte will automatically read the configuration and adjust their behavior accordingly.
+				// While certain Svelte settings may be statically loaded from svelte.config.js even if you don’t specify it,
+				// explicitly specifying it ensures better compatibility and functionality.
+				svelteConfig
 			}
+		}
+	},
+	{
+		rules: {
+			// Override or add rule settings here, such as:
+			// 'svelte/rule-name': 'error'
 		}
 	}
 );

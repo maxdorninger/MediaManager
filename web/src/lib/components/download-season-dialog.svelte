@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	import type { PublicIndexerQueryResult } from '$lib/types.js';
 	import {
@@ -29,7 +30,7 @@
 	let filePathSuffix: string = $state('');
 
 	async function downloadTorrent(result_id: string) {
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 		urlParams.append('public_indexer_result_id', result_id);
 		urlParams.append('show_id', show.id);
 		if (filePathSuffix !== '') {
@@ -82,7 +83,7 @@
 		torrentsError = null;
 		torrents = [];
 
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 		urlParams.append('show_id', show.id);
 		if (override) {
 			urlParams.append('search_query_override', queryOverride);
@@ -125,19 +126,6 @@
 			isLoadingTorrents = false;
 		}
 	}
-
-	$effect(() => {
-		if (show?.id) {
-			console.log('selectedSeasonNumber changed:', selectedSeasonNumber);
-			getTorrents(selectedSeasonNumber).then((fetchedTorrents) => {
-				if (!isLoadingTorrents) {
-					torrents = fetchedTorrents;
-				} else if (fetchedTorrents.length > 0 || torrentsError) {
-					torrents = fetchedTorrents;
-				}
-			});
-		}
-	});
 </script>
 
 {#snippet saveDirectoryPreview(
@@ -168,14 +156,33 @@
 						<Label for="season-number"
 							>Enter a season number from 1 to {show.seasons.at(-1).number}</Label
 						>
-						<Input
-							type="number"
-							class="max-w-sm"
-							id="season-number"
-							bind:value={selectedSeasonNumber}
-							max={show.seasons.at(-1).number}
-						/>
-						<p class="text-sm text-muted-foreground">
+						<div class="flex w-full max-w-sm items-center space-x-2">
+							<Input
+								type="number"
+								class="max-w-sm"
+								id="season-number"
+								bind:value={selectedSeasonNumber}
+								max={show.seasons.at(-1).number}
+							/>
+							<Button
+								variant="secondary"
+								onclick={async () => {
+									isLoadingTorrents = true;
+									torrentsError = null;
+									torrents = [];
+									try {
+										torrents = await getTorrents(selectedSeasonNumber, false);
+									} catch (error) {
+										console.log(error);
+									} finally {
+										isLoadingTorrents = false;
+									}
+								}}
+							>
+								Search
+							</Button>
+						</div>
+						<p class="text-muted-foreground text-sm">
 							Enter the season's number you want to search for. The first, usually 1, or the last
 							season number usually yield the most season packs. Note that only Seasons which are
 							listed in the "Seasons" cell will be imported!
@@ -192,18 +199,18 @@
 								<Select.Item value="360P">360p</Select.Item>
 							</Select.Content>
 						</Select.Root>
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							This is necessary to differentiate between versions of the same season/show, for
 							example a 1080p and a 4K version of a season.
 						</p>
 						<Label for="file-suffix-display"
 							>The files will be saved in the following directory:</Label
 						>
-						<p class="text-sm text-muted-foreground" id="file-suffix-display">
+						<p class="text-muted-foreground text-sm" id="file-suffix-display">
 							{@render saveDirectoryPreview(show, filePathSuffix)}
 						</p>
 					{:else}
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							No season information available for this show.
 						</p>
 					{/if}
@@ -233,7 +240,7 @@
 								Search
 							</Button>
 						</div>
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							The custom query will override the default search string like "The Simpsons Season 3".
 							Note that only Seasons which are listed in the "Seasons" cell will be imported!
 						</p>
@@ -245,7 +252,7 @@
 							bind:value={filePathSuffix}
 							placeholder="1080P"
 						/>
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							This is necessary to differentiate between versions of the same season/show, for
 							example a 1080p and a 4K version of a season.
 						</p>
@@ -253,11 +260,11 @@
 						<Label for="file-suffix-display"
 							>The files will be saved in the following directory:</Label
 						>
-						<p class="text-sm text-muted-foreground" id="file-suffix-display">
+						<p class="text-muted-foreground text-sm" id="file-suffix-display">
 							{@render saveDirectoryPreview(show, filePathSuffix)}
 						</p>
 					{:else}
-						<p class="text-sm text-muted-foreground">
+						<p class="text-muted-foreground text-sm">
 							No season information available for this show.
 						</p>
 					{/if}
@@ -283,6 +290,7 @@
 								<Table.Head>Usenet</Table.Head>
 								<Table.Head>Seeders</Table.Head>
 								<Table.Head>Age</Table.Head>
+								<Table.Head>Score</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
 								<Table.Head>Seasons</Table.Head>
 								<Table.Head class="text-right">Actions</Table.Head>
@@ -298,8 +306,9 @@
 									<Table.Cell
 										>{torrent.usenet ? formatSecondsToOptimalUnit(torrent.age) : 'N/A'}</Table.Cell
 									>
+									<Table.Cell>{torrent.score}</Table.Cell>
 									<Table.Cell>
-										{#each torrent.flags as flag}
+										{#each torrent.flags as flag (flag)}
 											<Badge variant="outline">{flag}</Badge>
 										{/each}
 									</Table.Cell>

@@ -14,6 +14,7 @@
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const apiUrl = env.PUBLIC_API_URL;
 	let searchTerm: string = $state('');
@@ -26,7 +27,7 @@
 
 	async function search(query: string) {
 		let urlString = apiUrl + '/movies/recommended';
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 
 		if (query.length > 0) {
 			urlString = apiUrl + '/movies/search';
@@ -96,7 +97,7 @@
 	</div>
 </header>
 
-<div class="flex w-full max-w-[90vw] flex-1 flex-col items-center gap-4 p-4 pt-0">
+<main class="flex w-full max-w-[90vw] flex-1 flex-col items-center gap-4 p-4 pt-0">
 	<div class="grid w-full max-w-sm items-center gap-12">
 		<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
 			Add a Movie
@@ -104,7 +105,7 @@
 		<section>
 			<Label for="search-box">Movie Name</Label>
 			<Input bind:value={searchTerm} id="search-box" placeholder="Show Name" type="text" />
-			<p class="text-sm text-muted-foreground">Search for a Movie to add.</p>
+			<p class="text-muted-foreground text-sm">Search for a Movie to add.</p>
 		</section>
 		<section>
 			<Collapsible.Root class="w-full space-y-1">
@@ -146,9 +147,9 @@
 			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1
 		 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
-			{#each results as result}
+			{#each results as result (result.external_id)}
 				<AddMediaCard {result} isShow={false} />
 			{/each}
 		</div>
 	{/if}
-</div>
+</main>
