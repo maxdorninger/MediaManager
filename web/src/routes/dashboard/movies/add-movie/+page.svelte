@@ -14,6 +14,7 @@
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const apiUrl = env.PUBLIC_API_URL;
 	let searchTerm: string = $state('');
@@ -26,7 +27,7 @@
 
 	async function search(query: string) {
 		let urlString = apiUrl + '/movies/recommended';
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 
 		if (query.length > 0) {
 			urlString = apiUrl + '/movies/search';
@@ -146,7 +147,7 @@
 			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1
 		 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
-			{#each results as result}
+			{#each results as result (result.external_id)}
 				<AddMediaCard {result} isShow={false} />
 			{/each}
 		</div>

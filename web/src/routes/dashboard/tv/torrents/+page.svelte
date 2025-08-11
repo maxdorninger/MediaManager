@@ -52,7 +52,7 @@
 		Loading...
 	{:then shows}
 		<Accordion.Root type="single" class="w-full">
-			{#each shows as show}
+			{#each shows as show (show.show_id)}
 				<div class="p-6">
 					<Card.Root>
 						<Card.Header>

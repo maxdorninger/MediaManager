@@ -64,7 +64,7 @@
 		Movie Torrents
 	</h1>
 	<Accordion.Root class="w-full" type="single">
-		{#each torrents as movie}
+		{#each torrents as movie (movie.movie_id)}
 			<div class="p-6">
 				<Card.Root>
 					<Card.Header>

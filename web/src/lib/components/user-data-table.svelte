@@ -72,7 +72,7 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each sortedUsers as user}
+		{#each sortedUsers as user (user.id)}
 			<Table.Row>
 				<Table.Cell class="font-medium">
 					{user.email}

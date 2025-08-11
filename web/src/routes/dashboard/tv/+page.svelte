@@ -64,7 +64,7 @@
 			{#await tvShowsJson.json()}
 				{@render loadingbar()}
 			{:then tvShows}
-				{#each tvShows as show}
+				{#each tvShows as show (show.id)}
 					<a href={base + '/dashboard/tv/' + show.id}>
 						<Card.Root class="col-span-full max-w-[90vw] ">
 							<Card.Header>

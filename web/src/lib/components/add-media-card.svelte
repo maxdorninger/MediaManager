@@ -6,6 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
 	import type { MetaDataProviderSearchResult } from '$lib/types.js';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const apiUrl = env.PUBLIC_API_URL;
 	let loading = $state(false);
@@ -17,7 +18,7 @@
 	async function addMedia() {
 		loading = true;
 		const endpoint = isShow ? '/tv/shows' : '/movies';
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 		urlParams.append(isShow ? 'show_id' : 'movie_id', String(result.external_id));
 		urlParams.append('metadata_provider', result.metadata_provider);
 		const urlString = `${apiUrl}${endpoint}?${urlParams.toString()}`;

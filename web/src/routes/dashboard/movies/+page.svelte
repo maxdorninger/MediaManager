@@ -81,7 +81,7 @@
 		{#if loading}
 			{@render loadingbar()}
 		{:else}
-			{#each movies as movie}
+			{#each movies as movie (movie.id)}
 				<a href={base + '/dashboard/movies/' + movie.id}>
 					<Card.Root class="col-span-full max-w-[90vw] ">
 						<Card.Header>

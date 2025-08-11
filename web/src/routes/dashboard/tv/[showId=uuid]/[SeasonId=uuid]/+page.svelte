@@ -104,7 +104,7 @@
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each seasonFiles as file}
+							{#each seasonFiles as file (file)}
 								<Table.Row>
 									<Table.Cell class="w-[50px]">
 										{getTorrentQualityString(file.quality)}

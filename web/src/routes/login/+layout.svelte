@@ -9,7 +9,7 @@
     import {setContext} from "svelte";
 
     setContext("oauthProvider", () => page.data.oauthProvider)
-    let {data, children} = $props();
+    let { children } = $props();
 </script>
 
 <div class="grid min-h-svh lg:grid-cols-2">

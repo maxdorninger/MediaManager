@@ -26,7 +26,6 @@
 			oauth_name: string;
 		};
 	} = $props();
-	let oauthProviderName = $derived(oauthProvider.oauth_name);
 
 	async function handleSignup(event: Event) {
 		event.preventDefault();
@@ -71,6 +70,10 @@
 		} finally {
 			isLoading = false;
 		}
+	}
+
+	function handleOauth() {
+		// Implement OAuth logic or leave as stub if not needed
 	}
 </script>
 
@@ -142,4 +145,3 @@
 		</div>
 	</Card.Content>
 </Card.Root>
-

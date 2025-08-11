@@ -9,6 +9,7 @@
 	import { onMount } from 'svelte';
 	import { env } from '$env/dynamic/public';
 	import { toast } from 'svelte-sonner';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const apiUrl = env.PUBLIC_API_URL;
 
@@ -58,7 +59,7 @@
 
 		const endpoint =
 			mediaType === 'tv' ? `/tv/shows/${media.id}/library` : `/movies/${media.id}/library`;
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 		urlParams.append('library', selectedLabel);
 		const urlString = `${apiUrl}${endpoint}?${urlParams.toString()}`;
 		try {
@@ -97,7 +98,7 @@
 				role="combobox"
 				aria-expanded={open}
 			>
-				{'Select Library'}
+				Select Library
 				<ChevronsUpDownIcon class="opacity-50" />
 			</Button>
 		{/snippet}

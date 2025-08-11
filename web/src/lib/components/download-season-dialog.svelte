@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	import type { PublicIndexerQueryResult } from '$lib/types.js';
 	import {
@@ -29,7 +30,7 @@
 	let filePathSuffix: string = $state('');
 
 	async function downloadTorrent(result_id: string) {
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 		urlParams.append('public_indexer_result_id', result_id);
 		urlParams.append('show_id', show.id);
 		if (filePathSuffix !== '') {
@@ -82,7 +83,7 @@
 		torrentsError = null;
 		torrents = [];
 
-		const urlParams = new URLSearchParams();
+		const urlParams = new SvelteURLSearchParams();
 		urlParams.append('show_id', show.id);
 		if (override) {
 			urlParams.append('search_query_override', queryOverride);
@@ -308,7 +309,7 @@
 									>
 									<Table.Cell>{torrent.score}</Table.Cell>
 									<Table.Cell>
-										{#each torrent.flags as flag}
+										{#each torrent.flags as flag (flag)}
 											<Badge variant="outline">{flag}</Badge>
 										{/each}
 									</Table.Cell>

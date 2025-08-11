@@ -10,6 +10,7 @@
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import LoadingBar from '$lib/components/loading-bar.svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const apiUrl = env.PUBLIC_API_URL;
 
@@ -20,7 +21,6 @@
 			oauth_name: string;
 		};
 	} = $props();
-	let oauthProviderName = $derived(oauthProvider.oauth_name);
 
 	let email = $state('');
 	let password = $state('');
@@ -33,7 +33,7 @@
 		isLoading = true;
 		errorMessage = '';
 
-		const formData = new URLSearchParams();
+		const formData = new SvelteURLSearchParams();
 		formData.append('username', email);
 		formData.append('password', password);
 		try {
@@ -75,7 +75,7 @@
 	async function handleOauth() {
 		try {
 			const response = await fetch(
-				apiUrl + '/auth/cookie/' + oauthProviderName + '/authorize?scopes=email',
+				apiUrl + '/auth/cookie/' + oauthProvider.oauth_name + '/authorize?scopes=email',
 				{
 					method: 'GET',
 					headers: {
@@ -87,11 +87,11 @@
 				let result = await response.json();
 				console.log(
 					'Redirecting to OAuth provider:',
-					oauthProviderName,
+					oauthProvider.oauth_name,
 					'url: ',
 					result.authorization_url
 				);
-				toast.success('Redirecting to ' + oauthProviderName + ' for authentication...');
+				toast.success('Redirecting to ' + oauthProvider.oauth_name + ' for authentication...');
 				window.location = result.authorization_url;
 			} else {
 				let errorText = await response.text();

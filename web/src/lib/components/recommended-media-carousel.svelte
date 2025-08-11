@@ -26,7 +26,7 @@
 		<Skeleton class="h-[70vh] w-full" />
 		<Skeleton class="h-[70vh] w-full" />
 	{:else}
-		{#each media.slice(0, 3) as mediaItem}
+		{#each media.slice(0, 3) as mediaItem (mediaItem.external_id)}
 			<AddMediaCard {isShow} result={mediaItem} />
 		{/each}
 	{/if}
