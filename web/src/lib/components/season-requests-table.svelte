@@ -39,8 +39,8 @@
 				const requestIndex = requests.findIndex((r) => r.id === requestId);
 				if (requestIndex !== -1) {
 					let newAuthorizedStatus = !currentAuthorizedStatus;
-					requests[requestIndex].authorized = newAuthorizedStatus;
-					requests[requestIndex].authorized_by = newAuthorizedStatus ? user() : undefined;
+					requests[requestIndex]!.authorized = newAuthorizedStatus;
+					requests[requestIndex]!.authorized_by = newAuthorizedStatus ? user() : undefined;
 				}
 				toast.success(
 					`Request ${!currentAuthorizedStatus ? 'approved' : 'unapproved'} successfully.`
