@@ -11,7 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "eslint --fix . && prettier --check .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"openapi": "npx openapi-typescript http://localhost:8000/openapi.json -o src/lib/api/api.d.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -46,6 +47,7 @@
 		"globals": "^15.14.0",
 		"joi": "^17.13.3",
 		"mode-watcher": "^1.0.7",
+		"openapi-typescript": "^7.9.1",
 		"paneforge": "^1.0.0-next.6",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
@@ -73,6 +75,7 @@
 		"embla-carousel-autoplay": "^8.6.0",
 		"eslint-plugin-unused-imports": "^4.1.4",
 		"lucide-svelte": "^0.507.0",
+		"openapi-fetch": "^0.14.0",
 		"sharp": "^0.34.1",
 		"sveltekit-image-optimize": "^0.0.7",
 		"uuid": "^11.1.0"
