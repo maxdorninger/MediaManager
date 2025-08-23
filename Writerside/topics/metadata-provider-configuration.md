@@ -14,7 +14,7 @@ TMDB (The Movie Database) is the primary metadata provider for MediaManager. It 
 
 If you want to use your own TMDB relay service, set this to the URL of your own MetadataRelay. Otherwise, use the default relay.
 
-- **Default:** `https://metadata-relay.maxid.me/tmdb`
+- **Default:** `https://metadata-relay.dorninger.co/tmdb`
 - **Example:** `https://your-own-relay.example.com/tmdb`
 
 ## TVDB Settings (`[metadata.tvdb]`)
@@ -27,7 +27,7 @@ If you want to use your own TMDB relay service, set this to the URL of your own 
 
 If you want to use your own TVDB relay service, set this to the URL of your own MetadataRelay. Otherwise, use the default relay.
 
-- **Default:** `https://metadata-relay.maxid.me/tvdb`
+- **Default:** `https://metadata-relay.dorninger.co/tvdb`
 - **Example:** `https://your-own-relay.example.com/tvdb`
 
 ## MetadataRelay
@@ -57,11 +57,11 @@ Here's a complete example of the metadata section in your `config.toml`:
 [metadata]
     # TMDB configuration
     [metadata.tmdb]
-    tmdb_relay_url = "https://metadata-relay.maxid.me/tmdb"
+    tmdb_relay_url = "https://metadata-relay.dorninger.co/tmdb"
 
     # TVDB configuration  
     [metadata.tvdb]
-    tvdb_relay_url = "https://metadata-relay.maxid.me/tvdb"
+    tvdb_relay_url = "https://metadata-relay.dorninger.co/tvdb"
 ```
 
 <note>

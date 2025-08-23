@@ -2,7 +2,7 @@
 
 This is a service that provides metadata for movies and TV shows. It caches the metadata to not overload the TMDB and
 TVDB APIs. This service is used by MediaManager to fetch metadata for movies and TV shows. I (the developer) run a
-public instance of this service at https://metadata-relay.maxid.me, but you can also run your
+public instance of this service at https://metadata-relay.dorninger.co, but you can also run your
 own instance.
 
 ## Example Docker Compose Configuration
