@@ -7,11 +7,12 @@
 	import { base } from '$app/paths';
 	import type { MetaDataProviderSearchResult } from '$lib/types.js';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import type {components} from "$lib/api/api";
 
 	const apiUrl = env.PUBLIC_API_URL;
 	let loading = $state(false);
 	let errorMessage = $state<string | null>(null);
-	let { result, isShow = true }: { result: MetaDataProviderSearchResult; isShow: boolean } =
+	let { result, isShow = true }: { result: components['schemas']['MetaDataProviderSearchResult']; isShow: boolean } =
 		$props();
 	console.log('Add Show Card Result: ', result);
 

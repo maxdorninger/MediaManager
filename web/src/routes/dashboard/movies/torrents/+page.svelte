@@ -11,20 +11,14 @@
 	import { env } from '$env/dynamic/public';
 	import { toast } from 'svelte-sonner';
 	import { base } from '$app/paths';
+	import client from "$lib/api";
+	import type {components} from "$lib/api/api";
 
 	const apiUrl = env.PUBLIC_API_URL;
-	let torrents: RichMovieTorrent[] = [];
+	let torrents: components["schemas"]["RichMovieTorrent"][] = [];
 	onMount(async () => {
-		const res = await fetch(apiUrl + '/movies/torrents', {
-			method: 'GET',
-			credentials: 'include'
-		});
-		if (!res.ok) {
-			toast.error('Failed to fetch torrents');
-			throw new Error(`Failed to fetch torrents: ${res.status} ${res.statusText}`);
-		}
-		torrents = await res.json();
-		console.log('got torrents: ', torrents);
+		const { data } = await client.GET('/api/v1/movies/torrents');
+		torrents = data as components["schemas"]["RichMovieTorrent"][];
 	});
 </script>
 

@@ -15,53 +15,33 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import client from "$lib/api";
+	import type {components} from "$lib/api/api";
 
 	const apiUrl = env.PUBLIC_API_URL;
 	let searchTerm: string = $state('');
-	let metadataProvider: string = $state('tmdb');
-	let results: MetaDataProviderSearchResult[] | null = $state(null);
+	let metadataProvider: "tmdb" | "tvdb" = $state('tmdb');
+	let results: components['schemas']['MetaDataProviderSearchResult'][] | null = $state(null);
 
 	onMount(() => {
 		search('');
 	});
 
 	async function search(query: string) {
-		let urlString = apiUrl + '/movies/recommended';
-		const urlParams = new SvelteURLSearchParams();
-
-		if (query.length > 0) {
-			urlString = apiUrl + '/movies/search';
-			urlParams.append('query', query);
-			toast.info(`Searching for "${query}" using ${metadataProvider.toUpperCase()}...`);
-		}
-		urlParams.append('metadata_provider', metadataProvider);
-		urlString += `?${urlParams.toString()}`;
-
-		try {
-			const response = await fetch(urlString, {
-				method: 'GET',
-				credentials: 'include'
-			});
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`Search failed: ${response.status} ${errorText || response.statusText}`);
+		const {data} = query.length > 0 ? await client.GET('/api/v1/movies/search', {
+			params: {
+				query: {
+					query: query,
+					metadata_provider: metadataProvider
+				}
 			}
-			results = await response.json();
-			console.log('Fetched results:', results);
-			if (query.length === 0) {
-				return;
-			}
-			if (results && results.length > 0) {
-				toast.success(`Found ${results.length} result(s) for "${query}".`);
-			} else {
-				toast.info(`No results found for "${query}".`);
-			}
-		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'An unknown error occurred during search.';
-			console.error('Search error:', error);
-			toast.error(errorMessage);
-			results = null; // Clear previous results on error
+		}) : await client.GET('/api/v1/tv/recommended');
+		if (data && data.length > 0) {
+			toast.success(`Found ${data.length} result(s) for "${query}".`);
+			results = data as components['schemas']['MetaDataProviderSearchResult'][];
+		} else {
+			toast.info(`No results found for "${query}".`);
+			results = null;
 		}
 	}
 </script>
