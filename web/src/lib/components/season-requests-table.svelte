@@ -23,7 +23,7 @@
 
 	async function approveRequest(requestId: string, currentAuthorizedStatus: boolean) {
 		let response;
-		if (!isShow) {
+		if (isShow) {
 			const data = await client.PATCH('/api/v1/tv/seasons/requests/{season_request_id}', {
 				params: {
 					path: {
