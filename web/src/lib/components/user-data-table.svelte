@@ -10,7 +10,7 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { invalidateAll } from '$app/navigation';
-
+	import client from '$lib/api';
 	const apiUrl = env.PUBLIC_API_URL;
 	let { users }: { users: User[] } = $props();
 	let sortedUsers = $derived(users.sort((a, b) => a.email.localeCompare(b.email)));
@@ -21,43 +21,26 @@
 
 	async function saveUser() {
 		if (!selectedUser) return;
-
-		try {
-			const response = await fetch(`${apiUrl}/users/${selectedUser.id}`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include',
-				body: JSON.stringify({
-					is_verified: selectedUser.is_verified,
-					is_active: selectedUser.is_active,
-					is_superuser: selectedUser.is_superuser,
-					...(newPassword !== '' && { password: newPassword }),
-					...(newEmail !== '' && { email: newEmail })
-				})
-			});
-
-			if (response.ok) {
-				toast.success(`User ${selectedUser.email} updated successfully.`);
-				dialogOpen = false;
-				selectedUser = null;
-				newPassword = '';
-				newEmail = '';
-				await invalidateAll();
-			} else {
-				const errorText = await response.text();
-				console.error(`Failed to update user ${response.statusText}`, errorText);
-				toast.error(`Failed to update user: ${response.statusText}`);
+		const {data} = await client.PATCH("/api/v1/users/{id}", {
+			params: {
+				query: {
+					id: selectedUser.id
+				}
+			},
+			body: {
+				is_verified: selectedUser.is_verified,
+				is_active: selectedUser.is_active,
+				is_superuser: selectedUser.is_superuser,
+				...(newPassword !== '' && { password: newPassword }),
+				...(newEmail !== '' && { email: newEmail })
 			}
-		} catch (error) {
-			console.error('Error updating user:', error);
-			toast.error(
-				'Error updating user: ' + (error instanceof Error ? error.message : String(error))
-			);
-		} finally {
-			newPassword = '';
-		}
+		})
+		toast.success(`User ${selectedUser.email} updated successfully.`);
+		dialogOpen = false;
+		selectedUser = null;
+		newPassword = '';
+		newEmail = '';
+		await invalidateAll();
 	}
 </script>
 

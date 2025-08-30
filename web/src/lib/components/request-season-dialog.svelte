@@ -8,6 +8,7 @@
 	import type { CreateSeasonRequest, PublicShow, Quality } from '$lib/types.js';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils.js';
 	import { toast } from 'svelte-sonner';
+	import client from "$lib/api";
 
 	const apiUrl = env.PUBLIC_API_URL;
 	let { show }: { show: PublicShow } = $props();
@@ -35,34 +36,18 @@
 		isSubmittingRequest = true;
 		submitRequestError = null;
 
-		const payloads: CreateSeasonRequest[] = selectedSeasonsIds.map((seasonId) => ({
-			season_id: seasonId,
-			min_quality: parseInt(minQuality!) as Quality,
-			wanted_quality: parseInt(wantedQuality!) as Quality
-		}));
-		for (const payload of payloads) {
-			try {
-				const response = await fetch(`${apiUrl}/tv/seasons/requests`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include',
-					body: JSON.stringify(payload)
-				});
-
-				if (!response.ok) {
-					const errorData = await response.json().catch(() => ({ message: response.statusText }));
-					submitRequestError = `Failed to submit request: ${errorData.message || response.statusText}`;
-					toast.error(submitRequestError);
-					console.error('Failed to submit request', response.statusText, errorData);
-					break;
+		for (const id of selectedSeasonsIds) {
+			const { response, error } = await client.POST("/api/v1/tv/seasons/requests", {
+				body: {
+					season_id: id,
+					min_quality: parseInt(minQuality!) as Quality,
+					wanted_quality: parseInt(wantedQuality!) as Quality
 				}
-			} catch (error) {
-				submitRequestError = `Error submitting request: ${error instanceof Error ? error.message : String(error)}`;
-				toast.error(submitRequestError);
-				console.error('Error submitting request:', error);
-				break;
+			});
+
+			if (!response.ok) {
+				toast.error("Failed to submit request: " + error);
+				submitRequestError = `Failed to submit request for season ID ${id}: ${error}`;
 			}
 		}
 
