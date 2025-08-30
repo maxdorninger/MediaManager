@@ -10,6 +10,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
+
 	let { users }: { users: User[] } = $props();
 	let sortedUsers = $derived(users.sort((a, b) => a.email.localeCompare(b.email)));
 	let selectedUser: User | null = $state(null);
@@ -19,6 +20,9 @@
 
 	async function saveUser() {
 		if (!selectedUser) return;
+
+		const { error } = await client.PATCH('/api/v1/users/{id}', {
+			params: {
 				path: {
 					id: selectedUser.id
 				}
