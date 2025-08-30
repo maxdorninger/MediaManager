@@ -12,7 +12,9 @@
 		"strict": true,
 		"moduleResolution": "bundler",
 		"types": ["svelte"],
-		"allowImportingTsExtensions": true
+		"allowImportingTsExtensions": true,
+		"module": "ESNext",
+		"noUncheckedIndexedAccess": true
 	}
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
 	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
