@@ -34,7 +34,7 @@
 							}
 						}
 					})
-				: await client.GET('/api/v1/tv/recommended');
+				: await client.GET('/api/v1/movies/recommended');
 		if (data && data.length > 0) {
 			toast.success(`Found ${data.length} result(s) for "${query}".`);
 			results = data as components['schemas']['MetaDataProviderSearchResult'][];
