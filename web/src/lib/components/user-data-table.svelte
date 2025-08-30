@@ -19,9 +19,7 @@
 
 	async function saveUser() {
 		if (!selectedUser) return;
-		const { error } = await client.PATCH('/api/v1/users/{id}', {
-			params: {
-				query: {
+				path: {
 					id: selectedUser.id
 				}
 			},
