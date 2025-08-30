@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label';
@@ -8,8 +7,8 @@
 	import type { PublicMovie, Quality } from '$lib/types.js';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils.js';
 	import { toast } from 'svelte-sonner';
+	import client from '$lib/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let { movie }: { movie: PublicMovie } = $props();
 	let dialogOpen = $state(false);
 	let minQuality = $state<string | undefined>(undefined);
@@ -28,38 +27,22 @@
 	async function handleRequestMovie() {
 		isSubmittingRequest = true;
 		submitRequestError = null;
-
-		try {
-			const response = await fetch(`${apiUrl}/movies/requests`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include',
-				body: JSON.stringify({
-					movie_id: movie.id,
-					min_quality: parseInt(minQuality!),
-					wanted_quality: parseInt(wantedQuality!)
-				})
-			});
-
-			if (response.ok) {
-				dialogOpen = false;
-				minQuality = undefined;
-				wantedQuality = undefined;
-				toast.success('Movie request submitted successfully!');
-			} else {
-				const errorData = await response.json().catch(() => ({ message: response.statusText }));
-				submitRequestError = `Failed to submit request: ${errorData.message || response.statusText}`;
-				toast.error(submitRequestError);
-				console.error('Failed to submit request', response.statusText, errorData);
+		const { response } = await client.POST('/api/v1/movies/requests', {
+			body: {
+				movie_id: movie.id,
+				min_quality: parseInt(minQuality!),
+				wanted_quality: parseInt(wantedQuality!)
 			}
-		} catch (error) {
-			submitRequestError = `Error submitting request: ${error instanceof Error ? error.message : String(error)}`;
-			toast.error(submitRequestError);
-			console.error('Error submitting request:', error);
-		} finally {
-			isSubmittingRequest = false;
+		});
+		isSubmittingRequest = false;
+
+		if (response.ok) {
+			dialogOpen = false;
+			minQuality = undefined;
+			wantedQuality = undefined;
+			toast.success('Movie request submitted successfully!');
+		} else {
+			toast.error('Failed to submit request');
 		}
 	}
 </script>

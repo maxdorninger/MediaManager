@@ -1,34 +1,10 @@
-import { env } from '$env/dynamic/public';
 import type { PageLoad } from './$types';
+import client from '$lib/api';
 
-const apiUrl = env.PUBLIC_API_URL;
 export const load: PageLoad = async ({ fetch }) => {
-	try {
-		const requests = await fetch(`${apiUrl}/movies/requests`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			credentials: 'include'
-		});
+	const { data } = await client.GET('/api/v1/movies/requests', { fetch: fetch });
 
-		if (!requests.ok) {
-			console.error(`Failed to fetch season requests ${requests.statusText}`);
-			return {
-				requestsData: null
-			};
-		}
-
-		const requestsData = await requests.json();
-		console.log('Fetched season requests:', requestsData);
-
-		return {
-			requestsData: requestsData
-		};
-	} catch (error) {
-		console.error('Error fetching season requests:', error);
-		return {
-			requestsData: null
-		};
-	}
+	return {
+		requestsData: data
+	};
 };

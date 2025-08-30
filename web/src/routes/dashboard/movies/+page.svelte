@@ -6,29 +6,18 @@
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import { onMount } from 'svelte';
-	import { toast } from 'svelte-sonner';
-	import { env } from '$env/dynamic/public';
 	import { Skeleton } from '$lib/components/ui/skeleton';
-	import type { PublicMovie } from '$lib/types';
 	import { base } from '$app/paths';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api.d.ts';
 
-	const apiUrl = env.PUBLIC_API_URL;
-	let movies: PublicMovie[] = [];
+	let movies: components['schemas']['PublicMovie'][] = [];
 	let loading = false;
 	onMount(async () => {
 		loading = true;
-		const response = await fetch(apiUrl + '/movies', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			credentials: 'include'
-		});
-		if (!response.ok) {
-			toast.error(`Failed to fetch movies`);
-			throw new Error(`Failed to fetch movies: ${response.status} ${response.statusText}`);
-		}
-		movies = await response.json();
+		const { data } = await client.GET('/api/v1/movies', { fetch: fetch });
+
+		movies = data as components['schemas']['PublicMovie'][];
 		console.log('got movies: ', movies);
 		loading = false;
 	});

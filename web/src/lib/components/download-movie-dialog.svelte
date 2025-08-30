@@ -1,120 +1,93 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
-	import type { PublicIndexerQueryResult } from '$lib/types.js';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import { LoaderCircle } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let { movie } = $props();
 	let dialogueState = $state(false);
-	let torrents: PublicIndexerQueryResult[] = $state([]);
+	let torrents: components['schemas']['PublicIndexerQueryResult'][] = $state([]);
 	let isLoadingTorrents: boolean = $state(false);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
 	let filePathSuffix: string = $state('');
 
 	async function downloadTorrent(result_id: string) {
-		const urlParams = new SvelteURLSearchParams();
-		urlParams.append('public_indexer_result_id', result_id);
-		if (filePathSuffix !== '') {
-			urlParams.append('override_file_path_suffix', filePathSuffix);
-		}
-		const urlString = `${apiUrl}/movies/${movie.id}/torrents?${urlParams.toString()}`;
-		try {
-			const response = await fetch(urlString, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
+		const { data, response } = await client.POST(`/api/v1/movies/{movie_id}/torrents`, {
+			params: {
+				path: {
+					movie_id: movie.id
 				},
-				credentials: 'include'
-			});
-			if (response.status === 409) {
-				const errorMessage = `There already is a Movie File using the Filepath Suffix '${filePathSuffix}'. Try again with a different Filepath Suffix.`;
-				console.warn(errorMessage);
-				torrentsError = errorMessage;
-				if (dialogueState) toast.info(errorMessage);
-				return [];
+				query: {
+					public_indexer_result_id: result_id,
+					override_file_path_suffix: filePathSuffix === '' ? undefined : filePathSuffix
+				}
 			}
-
-			if (!response.ok && response.status !== 409) {
-				const errorMessage = `Failed to download torrent for movie ${movie.id}: ${response.statusText}`;
-				console.error(errorMessage);
-				torrentsError = errorMessage;
-				toast.error(errorMessage);
-				return false;
-			}
-
-			const data: PublicIndexerQueryResult[] = await response.json();
+		});
+		if (response.status === 409) {
+			const errorMessage = `There already is a Movie File using the Filepath Suffix '${filePathSuffix}'. Try again with a different Filepath Suffix.`;
+			console.warn(errorMessage);
+			torrentsError = errorMessage;
+			if (dialogueState) toast.info(errorMessage);
+			return [];
+		} else if (!response.ok) {
+			const errorMessage = `Failed to download torrent for movie ${movie.id}: ${response.statusText}`;
+			console.error(errorMessage);
+			torrentsError = errorMessage;
+			toast.error(errorMessage);
+			return false;
+		} else {
 			console.log('Downloading torrent:', data);
 			toast.success('Torrent download started successfully!');
 
 			return true;
-		} catch (err) {
-			const errorMessage = `Error downloading torrent: ${err instanceof Error ? err.message : 'An unknown error occurred'}`;
-			console.error(errorMessage);
-			toast.error(errorMessage);
-			return false;
 		}
 	}
 
-	async function getTorrents(override: boolean = false): Promise<PublicIndexerQueryResult[]> {
+	async function getTorrents(
+		override: boolean = false
+	): Promise<components['schemas']['PublicIndexerQueryResult'][]> {
 		isLoadingTorrents = true;
 		torrentsError = null;
 		torrents = [];
-
-		const urlParams = new SvelteURLSearchParams();
-		if (override) {
-			urlParams.append('search_query_override', queryOverride);
-		}
-		const urlString = `${apiUrl}/movies/${movie.id}/torrents?${urlParams.toString()}`;
-
-		try {
-			const response = await fetch(urlString, {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json'
+		let { response, data } = await client.GET('/api/v1/movies/{movie_id}/torrents', {
+			params: {
+				query: {
+					search_query_override: override ? queryOverride : undefined
 				},
-				credentials: 'include'
-			});
-
-			if (!response.ok) {
-				const errorMessage = `Failed to fetch torrents for movie ${movie.id}: ${response.statusText}`;
-				console.error(errorMessage);
-				torrentsError = errorMessage;
-				if (dialogueState) toast.error(errorMessage);
-				return [];
-			}
-
-			const data: PublicIndexerQueryResult[] = await response.json();
-			console.log('Fetched torrents:', data);
-			if (dialogueState) {
-				if (data.length > 0) {
-					toast.success(`Found ${data.length} torrents.`);
-				} else {
-					toast.info('No torrents found for your query.');
+				path: {
+					movie_id: movie.id
 				}
 			}
-			return data;
-		} catch (err) {
-			const errorMessage = `Error fetching torrents: ${err instanceof Error ? err.message : 'An unknown error occurred'}`;
-			console.error(errorMessage);
+		});
+		data = data as components['schemas']['PublicIndexerQueryResult'][];
+		isLoadingTorrents = false;
+
+		if (!response.ok) {
+			const errorMessage = `Failed to fetch torrents for movie ${movie.id}: ${response.statusText}`;
 			torrentsError = errorMessage;
 			if (dialogueState) toast.error(errorMessage);
 			return [];
-		} finally {
-			isLoadingTorrents = false;
 		}
+
+		if (dialogueState) {
+			if (data.length > 0) {
+				toast.success(`Found ${data.length} torrents.`);
+			} else {
+				toast.info('No torrents found for your query.');
+			}
+		}
+		return data;
 	}
 
 	$effect(() => {
@@ -130,10 +103,7 @@
 	});
 </script>
 
-{#snippet saveDirectoryPreview(
-	movie: { name: string; metadata_provider: string; external_id: number; year: number | null },
-	filePathSuffix: string
-)}
+{#snippet saveDirectoryPreview(movie: components['schemas']['Movie'], filePathSuffix: string)}
 	/{getFullyQualifiedMediaName(movie)} [{movie.metadata_provider}id-{movie.external_id}
 	]/{movie.name}{filePathSuffix === '' ? '' : ' - ' + filePathSuffix}.mkv
 {/snippet}

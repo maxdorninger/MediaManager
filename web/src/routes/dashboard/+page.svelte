@@ -5,39 +5,24 @@
 	import RecommendedMediaCarousel from '$lib/components/recommended-media-carousel.svelte';
 	import { base } from '$app/paths';
 	import { onMount } from 'svelte';
-	import { env } from '$env/dynamic/public';
-	import type { MetaDataProviderSearchResult } from '$lib/types';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api.d.ts';
 
-	const apiUrl = env.PUBLIC_API_URL;
-
-	let recommendedShows: MetaDataProviderSearchResult[] = [];
+	let recommendedShows: components['schemas']['MetaDataProviderSearchResult'][] = [];
 	let showsLoading = true;
 
-	let recommendedMovies: MetaDataProviderSearchResult[] = [];
+	let recommendedMovies: components['schemas']['MetaDataProviderSearchResult'][] = [];
 	let moviesLoading = true;
 
 	onMount(async () => {
-		const showsRes = await fetch(apiUrl + '/tv/recommended', {
-			headers: {
-				'Content-Type': 'application/json',
-				Accept: 'application/json'
-			},
-			credentials: 'include',
-			method: 'GET'
+		client.GET('/api/v1/tv/recommended').then((res) => {
+			recommendedShows = res.data as components['schemas']['MetaDataProviderSearchResult'][];
+			showsLoading = false;
 		});
-		recommendedShows = await showsRes.json();
-		showsLoading = false;
-
-		const moviesRes = await fetch(apiUrl + '/movies/recommended', {
-			headers: {
-				'Content-Type': 'application/json',
-				Accept: 'application/json'
-			},
-			credentials: 'include',
-			method: 'GET'
+		client.GET('/api/v1/movies/recommended').then((res) => {
+			recommendedMovies = res.data as components['schemas']['MetaDataProviderSearchResult'][];
+			moviesLoading = false;
 		});
-		recommendedMovies = await moviesRes.json();
-		moviesLoading = false;
 	});
 </script>
 

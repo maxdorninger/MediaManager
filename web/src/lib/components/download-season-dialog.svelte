@@ -1,12 +1,8 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
 	import { toast } from 'svelte-sonner';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
-
-	import type { PublicIndexerQueryResult } from '$lib/types.js';
 	import {
 		convertTorrentSeasonRangeToIntegerRange,
 		formatSecondsToOptimalUnit,
@@ -17,121 +13,86 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
-	import { Badge } from '$lib/components/ui/badge';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
-	let { show } = $props();
+	let { show }: { show: components['schemas']['Show'] } = $props();
 	let dialogueState = $state(false);
 	let selectedSeasonNumber: number = $state(1);
-	let torrents: PublicIndexerQueryResult[] = $state([]);
+	let torrents: components['schemas']['PublicIndexerQueryResult'][] = $state([]);
 	let isLoadingTorrents: boolean = $state(false);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
 	let filePathSuffix: string = $state('');
 
 	async function downloadTorrent(result_id: string) {
-		const urlParams = new SvelteURLSearchParams();
-		urlParams.append('public_indexer_result_id', result_id);
-		urlParams.append('show_id', show.id);
-		if (filePathSuffix !== '') {
-			urlParams.append('override_file_path_suffix', filePathSuffix);
-		}
-		const urlString = `${apiUrl}/tv/torrents?${urlParams.toString()}`;
-		try {
-			const response = await fetch(urlString, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include'
-			});
-
-			if (response.status === 409) {
-				const errorMessage = `There already is a Season File using the Filepath Suffix '${filePathSuffix}'. Try again with a different Filepath Suffix.`;
-				console.warn(errorMessage);
-				torrentsError = errorMessage;
-				if (dialogueState) toast.info(errorMessage);
-				return [];
+		const { response } = await client.POST('/api/v1/tv/torrents', {
+			params: {
+				query: {
+					show_id: show.id!,
+					public_indexer_result_id: result_id,
+					override_file_path_suffix: filePathSuffix === '' ? undefined : filePathSuffix
+				}
 			}
-
-			if (!response.ok && response.status !== 409) {
-				const errorMessage = `Failed to download torrent for show ${show.id} and season ${selectedSeasonNumber}: ${response.statusText}`;
-				console.error(errorMessage);
-				torrentsError = errorMessage;
-				toast.error(errorMessage);
-				return false;
-			}
-
-			const data: PublicIndexerQueryResult[] = await response.json();
-			console.log('Downloading torrent:', data);
-			toast.success('Torrent download started successfully!');
-
-			return true;
-		} catch (err) {
-			const errorMessage = `Error downloading torrent: ${err instanceof Error ? err.message : 'An unknown error occurred'}`;
+		});
+		if (response.status === 409) {
+			const errorMessage = `There already is a Season File using the Filepath Suffix '${filePathSuffix}'. Try again with a different Filepath Suffix.`;
+			console.warn(errorMessage);
+			torrentsError = errorMessage;
+			if (dialogueState) toast.info(errorMessage);
+			return false;
+		} else if (!response.ok) {
+			const errorMessage = `Failed to download torrent for show ${show.id} and season ${selectedSeasonNumber}: ${response.statusText}`;
 			console.error(errorMessage);
+			torrentsError = errorMessage;
 			toast.error(errorMessage);
 			return false;
+		} else {
+			toast.success('Torrent download started successfully!');
+			return true;
 		}
 	}
 
 	async function getTorrents(
 		season_number: number,
 		override: boolean = false
-	): Promise<PublicIndexerQueryResult[]> {
+	): Promise<components['schemas']['PublicIndexerQueryResult'][]> {
 		isLoadingTorrents = true;
 		torrentsError = null;
 		torrents = [];
 
-		const urlParams = new SvelteURLSearchParams();
-		urlParams.append('show_id', show.id);
-		if (override) {
-			urlParams.append('search_query_override', queryOverride);
-		} else {
-			urlParams.append('season_number', season_number.toString());
-		}
-		const urlString = `${apiUrl}/tv/torrents?${urlParams.toString()}`;
-
-		try {
-			const response = await fetch(urlString, {
-				method: 'GET',
-				credentials: 'include'
-			});
-
-			if (!response.ok) {
-				const errorMessage = `Failed to fetch torrents for show ${show.id} and season ${selectedSeasonNumber}: ${response.statusText}`;
-				console.error(errorMessage);
-				torrentsError = errorMessage;
-				if (dialogueState) toast.error(errorMessage);
-				return [];
-			}
-
-			const data: PublicIndexerQueryResult[] = await response.json();
-			console.log('Fetched torrents:', data);
-			if (dialogueState) {
-				if (data.length > 0) {
-					toast.success(`Found ${data.length} torrents.`);
-				} else {
-					toast.info('No torrents found for your query.');
+		let { response, data } = await client.GET('/api/v1/tv/torrents', {
+			params: {
+				query: {
+					show_id: show.id!,
+					search_query_override: override ? queryOverride : undefined,
+					season_number: override ? undefined : season_number
 				}
 			}
-			return data;
-		} catch (err) {
-			const errorMessage = `Error fetching torrents: ${err instanceof Error ? err.message : 'An unknown error occurred'}`;
-			console.error(errorMessage);
+		});
+		data = data as components['schemas']['PublicIndexerQueryResult'][];
+		isLoadingTorrents = false;
+
+		if (!response.ok) {
+			const errorMessage = `Failed to fetch torrents for show ${show.id} and season ${selectedSeasonNumber}: ${response.statusText}`;
 			torrentsError = errorMessage;
 			if (dialogueState) toast.error(errorMessage);
 			return [];
-		} finally {
-			isLoadingTorrents = false;
 		}
+
+		if (dialogueState) {
+			if (data.length > 0) {
+				toast.success(`Found ${data.length} torrents.`);
+			} else {
+				toast.info('No torrents found for your query.');
+			}
+		}
+		return data;
 	}
 </script>
 
-{#snippet saveDirectoryPreview(
-	show: { name: string; metadata_provider: string; external_id: number; year: number | null },
-	filePathSuffix: string
-)}
+{#snippet saveDirectoryPreview(show: components['schemas']['Show'], filePathSuffix: string)}
 	/{getFullyQualifiedMediaName(show)} [{show.metadata_provider}id-{show.external_id}]/ Season XX/{show.name}
 	SXXEXX {filePathSuffix === '' ? '' : ' - ' + filePathSuffix}.mkv
 {/snippet}
@@ -154,7 +115,7 @@
 				<div class="grid w-full items-center gap-1.5">
 					{#if show?.seasons?.length > 0}
 						<Label for="season-number"
-							>Enter a season number from 1 to {show.seasons.at(-1).number}</Label
+							>Enter a season number from 1 to {show.seasons.at(-1)?.number}</Label
 						>
 						<div class="flex w-full max-w-sm items-center space-x-2">
 							<Input
@@ -162,7 +123,7 @@
 								class="max-w-sm"
 								id="season-number"
 								bind:value={selectedSeasonNumber}
-								max={show.seasons.at(-1).number}
+								max={show.seasons.at(-1)?.number}
 							/>
 							<Button
 								variant="secondary"
@@ -304,16 +265,24 @@
 									<Table.Cell>{torrent.usenet}</Table.Cell>
 									<Table.Cell>{torrent.usenet ? 'N/A' : torrent.seeders}</Table.Cell>
 									<Table.Cell
-										>{torrent.usenet ? formatSecondsToOptimalUnit(torrent.age) : 'N/A'}</Table.Cell
+										>{torrent.age
+											? formatSecondsToOptimalUnit(torrent.age)
+											: torrent.usenet
+												? 'N/A'
+												: ''}</Table.Cell
 									>
 									<Table.Cell>{torrent.score}</Table.Cell>
 									<Table.Cell>
-										{#each torrent.flags as flag (flag)}
-											<Badge variant="outline">{flag}</Badge>
-										{/each}
+										{#if torrent.flags}
+											{#each torrent.flags as flag (flag)}
+												<Badge variant="outline">{flag}</Badge>
+											{/each}
+										{/if}
 									</Table.Cell>
 									<Table.Cell>
-										{convertTorrentSeasonRangeToIntegerRange(torrent)}
+										{#if torrent.season}
+											{convertTorrentSeasonRangeToIntegerRange(torrent)}
+										{/if}
 									</Table.Cell>
 									<Table.Cell class="text-right">
 										<Button

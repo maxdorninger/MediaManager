@@ -10,10 +10,9 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import { toast } from 'svelte-sonner';
-	import { env } from '$env/dynamic/public';
 	import { base } from '$app/paths';
+	import client from '$lib/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let email = $state('');
 	let isLoading = $state(false);
 	let isSuccess = $state(false);
@@ -25,30 +24,15 @@
 		}
 
 		isLoading = true;
+		const { error } = await client.POST('/api/v1/auth/forgot-password', { body: { email: email } });
 
-		try {
-			const response = await fetch(apiUrl + '/auth/forgot-password', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ email }),
-				credentials: 'include'
-			});
-
-			if (response.ok) {
-				isSuccess = true;
-				toast.success('Password reset email sent! Check your inbox for instructions.');
-			} else {
-				const errorText = await response.text();
-				toast.error(`Failed to send reset email: ${errorText}`);
-			}
-		} catch (error) {
-			console.error('Error requesting password reset:', error);
-			toast.error('An error occurred while sending the reset email. Please try again.');
-		} finally {
-			isLoading = false;
+		if (error) {
+			toast.error(`Failed to send reset email`);
+		} else {
+			isSuccess = true;
+			toast.success('Password reset email sent! Check your inbox for instructions.');
 		}
+		isLoading = false;
 	}
 
 	const handleSubmit = (event: Event) => {
@@ -122,7 +106,7 @@
 			</form>
 		{/if}
 		<div class="mt-4 text-center text-sm">
-			<a href="{base}/login" class="text-primary font-semibold hover:underline"> Back to Login </a>
+			<a class="text-primary font-semibold hover:underline" href="{base}/login"> Back to Login </a>
 		</div>
 	</CardContent>
 </Card>

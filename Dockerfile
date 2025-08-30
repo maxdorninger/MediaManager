@@ -7,7 +7,7 @@ COPY web/package*.json ./
 RUN npm ci && npm cache clean --force
 
 COPY web/ ./
-RUN env PUBLIC_VERSION=${VERSION} PUBLIC_API_URL=${BASE_PATH}/api/v1 BASE_PATH=${BASE_PATH}/web npm run build
+RUN env PUBLIC_VERSION=${VERSION} PUBLIC_API_URL=${BASE_PATH} BASE_PATH=${BASE_PATH}/web npm run build
 
 FROM ghcr.io/astral-sh/uv:debian-slim
 ARG VERSION

@@ -4,15 +4,12 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { goto } from '$app/navigation';
-	import { env } from '$env/dynamic/public';
 	import { toast } from 'svelte-sonner';
 	import { base } from '$app/paths';
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import LoadingBar from '$lib/components/loading-bar.svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
-
-	const apiUrl = env.PUBLIC_API_URL;
+	import client from '$lib/api';
 
 	let {
 		oauthProvider
@@ -33,75 +30,49 @@
 		isLoading = true;
 		errorMessage = '';
 
-		const formData = new SvelteURLSearchParams();
-		formData.append('username', email);
-		formData.append('password', password);
-		try {
-			const response = await fetch(apiUrl + '/auth/cookie/login', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded'
-				},
-				body: formData.toString(),
-				credentials: 'include'
-			});
-
-			if (response.ok) {
-				console.log('Login successful!');
-				console.log('Received User Data: ', response);
-				errorMessage = 'Login successful! Redirecting...';
-				toast.success(errorMessage);
-				goto(base + '/dashboard');
-			} else {
-				let errorText = await response.text();
-				try {
-					const errorData = JSON.parse(errorText);
-					errorMessage = errorData.message || 'Login failed. Please check your credentials.';
-				} catch {
-					errorMessage = errorText || 'Login failed. Please check your credentials.';
+		const { response } = await client.POST('/api/v1/auth/cookie/login', {
+			requestBody: {
+				content: {
+					'application/x-www-form-urlencoded': {
+						username: email,
+						password: password
+					}
 				}
-				toast.error(errorMessage);
-				console.error('Login failed:', response.status, errorText);
 			}
-		} catch (error) {
-			console.error('Login request failed:', error);
-			errorMessage = 'An error occurred during the login request.';
+		});
+		isLoading = false;
+
+		if (response.ok) {
+			console.log('Login successful!');
+			console.log('Received User Data: ', response);
+			errorMessage = 'Login successful! Redirecting...';
+			toast.success(errorMessage);
+			goto(base + '/dashboard');
+		} else {
+			let errorText = await response.text();
+			try {
+				const errorData = JSON.parse(errorText);
+				errorMessage = errorData.message || 'Login failed. Please check your credentials.';
+			} catch {
+				errorMessage = errorText || 'Login failed. Please check your credentials.';
+			}
 			toast.error(errorMessage);
-		} finally {
-			isLoading = false;
+			console.error('Login failed:', response.status, errorText);
 		}
 	}
 
 	async function handleOauth() {
-		try {
-			const response = await fetch(
-				apiUrl + '/auth/cookie/' + oauthProvider.oauth_name + '/authorize?scopes=email',
-				{
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json'
-					}
+		const { response, data } = await client.GET('/api/v1/auth/cookie/OpenID/authorize', {
+			params: {
+				query: {
+					scopes: 'email'
 				}
-			);
-			if (response.ok) {
-				let result = await response.json();
-				console.log(
-					'Redirecting to OAuth provider:',
-					oauthProvider.oauth_name,
-					'url: ',
-					result.authorization_url
-				);
-				toast.success('Redirecting to ' + oauthProvider.oauth_name + ' for authentication...');
-				window.location = result.authorization_url;
-			} else {
-				let errorText = await response.text();
-				toast.error(errorMessage);
-				console.error('Login failed:', response.status, errorText);
 			}
-		} catch (error) {
-			console.error('Login request failed:', error);
-			errorMessage = 'An error occurred during the login request.';
-			toast.error(errorMessage);
+		});
+		if (response.ok) {
+			window.location = data.authorization_url;
+		} else {
+			toast.error(data);
 		}
 	}
 </script>
@@ -116,12 +87,12 @@
 			<div class="grid gap-2">
 				<Label for="email">Email</Label>
 				<Input
+					autocomplete="email"
 					bind:value={email}
 					id="email"
 					placeholder="m@example.com"
 					required
 					type="email"
-					autocomplete="email"
 				/>
 			</div>
 			<div class="grid gap-2">
@@ -132,11 +103,11 @@
 					</a>
 				</div>
 				<Input
+					autocomplete="current-password"
 					bind:value={password}
 					id="password"
 					required
 					type="password"
-					autocomplete="current-password"
 				/>
 			</div>
 

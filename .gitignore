@@ -43,3 +43,6 @@ __pycache__
 
 # Postgres
 /postgres
+
+# Node modules
+/node_modules/*

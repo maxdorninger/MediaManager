@@ -1,13 +1,15 @@
 import type { PageLoad } from './$types';
-import { env } from '$env/dynamic/public';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api';
 
 export const load: PageLoad = async ({ params, fetch }) => {
-	const res = await fetch(`${env.PUBLIC_API_URL}/movies/${params.movieId}`, {
-		credentials: 'include'
+	const { data } = await client.GET('/api/v1/movies/{movie_id}', {
+		fetch: fetch,
+		params: {
+			path: {
+				movie_id: params.movieId
+			}
+		}
 	});
-	if (!res.ok) throw error(res.status, `Failed to load movie`);
-	const movieData = await res.json();
-	console.log('got movie data', movieData);
-	return { movie: movieData };
+
+	return { movie: data };
 };

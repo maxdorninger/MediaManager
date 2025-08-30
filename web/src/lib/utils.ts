@@ -1,17 +1,9 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { env } from '$env/dynamic/public';
 import { goto } from '$app/navigation';
 import { base } from '$app/paths';
 import { toast } from 'svelte-sonner';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, 'children'> : T;
-export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
-export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
-
-const apiUrl = env.PUBLIC_API_URL;
+import client from '$lib/api';
 
 export const qualityMap: { [key: number]: string } = {
 	1: '4K/UHD',
@@ -67,17 +59,12 @@ export function convertTorrentSeasonRangeToIntegerRange(torrent: {
 }
 
 export async function handleLogout() {
-	const response = await fetch(apiUrl + '/auth/cookie/logout', {
-		method: 'POST',
-		credentials: 'include'
-	});
-	if (response.ok) {
-		console.log('Logout successful!');
+	const { error } = await client.POST('/api/v1/auth/cookie/logout');
+	if (error) {
+		toast.error('Logout failed');
+	} else {
 		toast.success('Logout successful!');
 		await goto(base + '/login');
-	} else {
-		console.error('Logout failed:', response.status);
-		toast.error('Logout failed: ' + response.status);
 	}
 }
 
