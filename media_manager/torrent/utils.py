@@ -2,7 +2,7 @@ import hashlib
 import logging
 import mimetypes
 import re
-from pathlib import Path
+from pathlib import Path, UnsupportedOperation
 import shutil
 
 import bencoder
@@ -65,31 +65,33 @@ def get_torrent_filepath(torrent: Torrent):
 def import_file(target_file: Path, source_file: Path):
     if target_file.exists():
         target_file.unlink()
+
     try:
         target_file.hardlink_to(source_file)
     except FileExistsError:
-        log.error(f"File already exists at {target_file}. ")
-    except OSError as e:
+        log.error(f"File already exists at {target_file}.")
+    except (OSError, UnsupportedOperation, NotImplementedError) as e:
         log.error(
-            f"Failed to create hardlink from {source_file} to {target_file}: {e}. "
-            "Falling back to copying the file."
+            f"Failed to create hardlink from {source_file} to {target_file}: {e}. Falling back to copying the file."
         )
         shutil.copy(src=source_file, dst=target_file)
 
 
-def import_torrent(torrent: Torrent) -> (list[Path], list[Path], list[Path]):
+def import_torrent(torrent: Torrent) -> tuple[list[Path], list[Path], list[Path]]:
     """
     Extracts all files from the torrent download directory, including extracting archives.
     Returns a tuple containing: seperated video files, subtitle files, and all files found in the torrent directory.
     """
     log.info(f"Importing torrent {torrent}")
-    all_files = list_files_recursively(path=get_torrent_filepath(torrent=torrent))
+    all_files: list[Path] = list_files_recursively(
+        path=get_torrent_filepath(torrent=torrent)
+    )
     log.debug(f"Found {len(all_files)} files downloaded by the torrent")
     extract_archives(all_files)
     all_files = list_files_recursively(path=get_torrent_filepath(torrent=torrent))
 
-    video_files = []
-    subtitle_files = []
+    video_files: list[Path] = []
+    subtitle_files: list[Path] = []
     for file in all_files:
         file_type, _ = mimetypes.guess_type(str(file))
         if file_type is not None:
