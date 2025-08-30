@@ -3,7 +3,6 @@
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { env } from '$env/dynamic/public';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
@@ -11,7 +10,6 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
-	const apiUrl = env.PUBLIC_API_URL;
 	let { users }: { users: User[] } = $props();
 	let sortedUsers = $derived(users.sort((a, b) => a.email.localeCompare(b.email)));
 	let selectedUser: User | null = $state(null);
@@ -21,7 +19,7 @@
 
 	async function saveUser() {
 		if (!selectedUser) return;
-		const {data} = await client.PATCH("/api/v1/users/{id}", {
+		const { error } = await client.PATCH('/api/v1/users/{id}', {
 			params: {
 				query: {
 					id: selectedUser.id
@@ -34,13 +32,18 @@
 				...(newPassword !== '' && { password: newPassword }),
 				...(newEmail !== '' && { email: newEmail })
 			}
-		})
-		toast.success(`User ${selectedUser.email} updated successfully.`);
-		dialogOpen = false;
-		selectedUser = null;
-		newPassword = '';
-		newEmail = '';
-		await invalidateAll();
+		});
+
+		if (error) {
+			toast.error(`Failed to update user ${selectedUser.email}: ${error}`);
+		} else {
+			toast.success(`User ${selectedUser.email} updated successfully.`);
+			dialogOpen = false;
+			selectedUser = null;
+			newPassword = '';
+			newEmail = '';
+			await invalidateAll();
+		}
 	}
 </script>
 

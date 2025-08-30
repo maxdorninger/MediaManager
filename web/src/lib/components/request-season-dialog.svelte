@@ -1,16 +1,14 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-	import type { CreateSeasonRequest, PublicShow, Quality } from '$lib/types.js';
+	import type { PublicShow, Quality } from '$lib/types.js';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils.js';
 	import { toast } from 'svelte-sonner';
-	import client from "$lib/api";
+	import client from '$lib/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let { show }: { show: PublicShow } = $props();
 
 	let dialogOpen = $state(false);
@@ -37,7 +35,7 @@
 		submitRequestError = null;
 
 		for (const id of selectedSeasonsIds) {
-			const { response, error } = await client.POST("/api/v1/tv/seasons/requests", {
+			const { response, error } = await client.POST('/api/v1/tv/seasons/requests', {
 				body: {
 					season_id: id,
 					min_quality: parseInt(minQuality!) as Quality,
@@ -46,7 +44,7 @@
 			});
 
 			if (!response.ok) {
-				toast.error("Failed to submit request: " + error);
+				toast.error('Failed to submit request: ' + error);
 				submitRequestError = `Failed to submit request for season ID ${id}: ${error}`;
 			}
 		}

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
@@ -8,19 +7,16 @@
 	import { Button } from '$lib/components/ui/button';
 	import { ChevronDown } from 'lucide-svelte';
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
-	import type { MetaDataProviderSearchResult } from '$lib/types.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
-	import client from "$lib/api";
-	import type {components} from "$lib/api/api";
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let searchTerm: string = $state('');
-	let metadataProvider: "tmdb" | "tvdb" = $state('tmdb');
+	let metadataProvider: 'tmdb' | 'tvdb' = $state('tmdb');
 	let results: components['schemas']['MetaDataProviderSearchResult'][] | null = $state(null);
 
 	onMount(() => {
@@ -28,14 +24,17 @@
 	});
 
 	async function search(query: string) {
-		const {data} = query.length > 0 ? await client.GET('/api/v1/movies/search', {
-			params: {
-				query: {
-					query: query,
-					metadata_provider: metadataProvider
-				}
-			}
-		}) : await client.GET('/api/v1/tv/recommended');
+		const { data } =
+			query.length > 0
+				? await client.GET('/api/v1/movies/search', {
+						params: {
+							query: {
+								query: query,
+								metadata_provider: metadataProvider
+							}
+						}
+					})
+				: await client.GET('/api/v1/tv/recommended');
 		if (data && data.length > 0) {
 			toast.success(`Found ${data.length} result(s) for "${query}".`);
 			results = data as components['schemas']['MetaDataProviderSearchResult'][];

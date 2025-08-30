@@ -92,10 +92,7 @@
 	}
 </script>
 
-{#snippet saveDirectoryPreview(
-	show: components['schemas']['Show'],
-	filePathSuffix: string
-)}
+{#snippet saveDirectoryPreview(show: components['schemas']['Show'], filePathSuffix: string)}
 	/{getFullyQualifiedMediaName(show)} [{show.metadata_provider}id-{show.external_id}]/ Season XX/{show.name}
 	SXXEXX {filePathSuffix === '' ? '' : ' - ' + filePathSuffix}.mkv
 {/snippet}

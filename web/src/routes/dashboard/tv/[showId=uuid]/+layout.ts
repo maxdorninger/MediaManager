@@ -1,20 +1,18 @@
-import {env} from '$env/dynamic/public';
-import type {LayoutLoad} from './$types';
-import client from "$lib/api";
+import type { LayoutLoad } from './$types';
+import client from '$lib/api';
 
-const apiUrl = env.PUBLIC_API_URL;
-export const load: LayoutLoad = async ({params, fetch}) => {
-    const show = await client.GET('/api/v1/tv/shows/{show_id}', {
-        fetch: fetch,
-        params: {path: {show_id: params.showId}}
-    });
-    const torrents = await client.GET('/api/v1/tv/shows/{show_id}/torrents', {
-        fetch: fetch,
-        params: {path: {show_id: params.showId}}
-    });
+export const load: LayoutLoad = async ({ params, fetch }) => {
+	const show = await client.GET('/api/v1/tv/shows/{show_id}', {
+		fetch: fetch,
+		params: { path: { show_id: params.showId } }
+	});
+	const torrents = await client.GET('/api/v1/tv/shows/{show_id}/torrents', {
+		fetch: fetch,
+		params: { path: { show_id: params.showId } }
+	});
 
-    return {
-        showData: show.data,
-        torrentsData: torrents.data
-    };
+	return {
+		showData: show.data,
+		torrentsData: torrents.data
+	};
 };

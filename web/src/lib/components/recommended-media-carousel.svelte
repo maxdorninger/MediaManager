@@ -1,11 +1,10 @@
 <script lang="ts">
-	import type { MetaDataProviderSearchResult } from '$lib/types';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
 	import { ChevronRight } from 'lucide-svelte';
 	import { base } from '$app/paths';
-	import type {components} from "$lib/api/api";
+	import type { components } from '$lib/api/api';
 
 	let {
 		media,

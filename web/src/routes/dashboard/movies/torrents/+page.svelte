@@ -2,23 +2,19 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import type { RichMovieTorrent } from '$lib/types';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import TorrentTable from '$lib/components/torrent-table.svelte';
 	import { onMount } from 'svelte';
-	import { env } from '$env/dynamic/public';
-	import { toast } from 'svelte-sonner';
 	import { base } from '$app/paths';
-	import client from "$lib/api";
-	import type {components} from "$lib/api/api";
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
-	let torrents: components["schemas"]["RichMovieTorrent"][] = [];
+	let torrents: components['schemas']['RichMovieTorrent'][] = [];
 	onMount(async () => {
 		const { data } = await client.GET('/api/v1/movies/torrents');
-		torrents = data as components["schemas"]["RichMovieTorrent"][];
+		torrents = data as components['schemas']['RichMovieTorrent'][];
 	});
 </script>
 

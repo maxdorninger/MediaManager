@@ -1,8 +1,5 @@
-import { env } from '$env/dynamic/public';
 import type { PageLoad } from './$types';
-import client from "$lib/api";
-
-const apiUrl = env.PUBLIC_API_URL;
+import client from '$lib/api';
 
 export const load: PageLoad = async ({ fetch, params }) => {
 	const season = await client.GET('/api/v1/tv/seasons/{season_id}', {
@@ -10,7 +7,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
 		params: {
 			path: {
 				season_id: params.SeasonId
-			},
+			}
 		}
 	});
 	const seasonFiles = await client.GET('/api/v1/tv/seasons/{season_id}/files', {
@@ -18,7 +15,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
 		params: {
 			path: {
 				season_id: params.SeasonId
-			},
+			}
 		}
 	});
 	return {

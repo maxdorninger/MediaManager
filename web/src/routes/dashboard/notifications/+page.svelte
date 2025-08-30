@@ -1,260 +1,264 @@
 <script lang="ts">
-    import {onMount} from 'svelte';
-    import {env} from '$env/dynamic/public';
-    import {Button} from '$lib/components/ui/button/index.js';
-    import {Separator} from '$lib/components/ui/separator';
-    import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-    import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
+	import { onMount } from 'svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Separator } from '$lib/components/ui/separator';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 
-    const apiUrl = env.PUBLIC_API_URL;
-    import {base} from '$app/paths';
-    import client from "$lib/api";
-    import type {components} from "$lib/api/api";
+	import { base } from '$app/paths';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
-    let unreadNotifications: components["schemas"]["Notification"][] = [];
-    let readNotifications: components["schemas"]["Notification"][] = [];
-    let loading = true;
-    let showRead = false;
-    let markingAllAsRead = false;
+	let unreadNotifications: components['schemas']['Notification'][] = [];
+	let readNotifications: components['schemas']['Notification'][] = [];
+	let loading = true;
+	let showRead = false;
+	let markingAllAsRead = false;
 
-    async function fetchNotifications() {
-        loading = true;
-        const unread = await client.GET('/api/v1/notification/unread');
-        const all = await client.GET('/api/v1/notification');
-        unreadNotifications = unread.data!;
-        readNotifications = all.data!.filter((n) => n.read);
-        loading = false;
-    }
+	async function fetchNotifications() {
+		loading = true;
+		const unread = await client.GET('/api/v1/notification/unread');
+		const all = await client.GET('/api/v1/notification');
+		unreadNotifications = unread.data!;
+		readNotifications = all.data!.filter((n) => n.read);
+		loading = false;
+	}
 
-    async function markAsRead(notificationId: string) {
-        const {response} = await client.PATCH('/api/v1/notification/{notification_id}/read', {params: {path: {notification_id: notificationId}}});
+	async function markAsRead(notificationId: string) {
+		const { response } = await client.PATCH('/api/v1/notification/{notification_id}/read', {
+			params: { path: { notification_id: notificationId } }
+		});
 
-        if (response.ok) {
-            const notification = unreadNotifications.find((n) => n.id === notificationId);
-            if (notification) {
-                notification.read = true;
-                readNotifications = [notification, ...readNotifications];
-                unreadNotifications = unreadNotifications.filter((n) => n.id !== notificationId);
-            }
-        }
-    }
+		if (response.ok) {
+			const notification = unreadNotifications.find((n) => n.id === notificationId);
+			if (notification) {
+				notification.read = true;
+				readNotifications = [notification, ...readNotifications];
+				unreadNotifications = unreadNotifications.filter((n) => n.id !== notificationId);
+			}
+		}
+	}
 
-    async function markAsUnread(notificationId: string) {
-        const {response} = await client.PATCH('/api/v1/notification/{notification_id}/unread', {params: {path: {notification_id: notificationId}}});
+	async function markAsUnread(notificationId: string) {
+		const { response } = await client.PATCH('/api/v1/notification/{notification_id}/unread', {
+			params: { path: { notification_id: notificationId } }
+		});
 
-        if (response.ok) {
-            const notification = readNotifications.find((n) => n.id === notificationId);
-            if (notification) {
-                notification.read = false;
-                unreadNotifications = [notification, ...unreadNotifications];
-                readNotifications = readNotifications.filter((n) => n.id !== notificationId);
-            }
-        }
-    }
+		if (response.ok) {
+			const notification = readNotifications.find((n) => n.id === notificationId);
+			if (notification) {
+				notification.read = false;
+				unreadNotifications = [notification, ...unreadNotifications];
+				readNotifications = readNotifications.filter((n) => n.id !== notificationId);
+			}
+		}
+	}
 
-    async function markAllAsRead() {
-        if (unreadNotifications.length === 0) return;
+	async function markAllAsRead() {
+		if (unreadNotifications.length === 0) return;
 
-        try {
-            markingAllAsRead = true;
-            const promises = unreadNotifications.map((notification) =>
-                client.PATCH('/api/v1/notification/{notification_id}/read', {params: {path: {notification_id: notification.id!}}})
-            );
+		try {
+			markingAllAsRead = true;
+			const promises = unreadNotifications.map((notification) =>
+				client.PATCH('/api/v1/notification/{notification_id}/read', {
+					params: { path: { notification_id: notification.id! } }
+				})
+			);
 
-            await Promise.all(promises);
+			await Promise.all(promises);
 
-            // Move all unread to read
-            readNotifications = [
-                ...unreadNotifications.map((n) => ({...n, read: true})),
-                ...readNotifications
-            ];
-            unreadNotifications = [];
-        } catch (error) {
-            console.error('Failed to mark all notifications as read:', error);
-        } finally {
-            markingAllAsRead = false;
-        }
-    }
+			// Move all unread to read
+			readNotifications = [
+				...unreadNotifications.map((n) => ({ ...n, read: true })),
+				...readNotifications
+			];
+			unreadNotifications = [];
+		} catch (error) {
+			console.error('Failed to mark all notifications as read:', error);
+		} finally {
+			markingAllAsRead = false;
+		}
+	}
 
-    onMount(() => {
-        fetchNotifications();
+	onMount(() => {
+		fetchNotifications();
 
-        const interval = setInterval(fetchNotifications, 30000);
-        return () => clearInterval(interval);
-    });
+		const interval = setInterval(fetchNotifications, 30000);
+		return () => clearInterval(interval);
+	});
 </script>
 
 <svelte:head>
-    <title>Notifications - MediaManager</title>
+	<title>Notifications - MediaManager</title>
 </svelte:head>
 
 <header class="flex h-16 shrink-0 items-center gap-2">
-    <div class="flex items-center gap-2 px-4">
-        <Sidebar.Trigger class="-ml-1"/>
-        <Separator class="mr-2 h-4" orientation="vertical"/>
-        <Breadcrumb.Root>
-            <Breadcrumb.List>
-                <Breadcrumb.Item class="hidden md:block">
-                    <Breadcrumb.Link href="{base}/dashboard">MediaManager</Breadcrumb.Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Separator class="hidden md:block"/>
-                <Breadcrumb.Item>
-                    <Breadcrumb.Link href="{base}/dashboard">Home</Breadcrumb.Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Separator class="hidden md:block"/>
-                <Breadcrumb.Item>
-                    <Breadcrumb.Page>Notifications</Breadcrumb.Page>
-                </Breadcrumb.Item>
-            </Breadcrumb.List>
-        </Breadcrumb.Root>
-    </div>
+	<div class="flex items-center gap-2 px-4">
+		<Sidebar.Trigger class="-ml-1" />
+		<Separator class="mr-2 h-4" orientation="vertical" />
+		<Breadcrumb.Root>
+			<Breadcrumb.List>
+				<Breadcrumb.Item class="hidden md:block">
+					<Breadcrumb.Link href="{base}/dashboard">MediaManager</Breadcrumb.Link>
+				</Breadcrumb.Item>
+				<Breadcrumb.Separator class="hidden md:block" />
+				<Breadcrumb.Item>
+					<Breadcrumb.Link href="{base}/dashboard">Home</Breadcrumb.Link>
+				</Breadcrumb.Item>
+				<Breadcrumb.Separator class="hidden md:block" />
+				<Breadcrumb.Item>
+					<Breadcrumb.Page>Notifications</Breadcrumb.Page>
+				</Breadcrumb.Item>
+			</Breadcrumb.List>
+		</Breadcrumb.Root>
+	</div>
 </header>
 
 <main class="container mx-auto px-4 py-8">
-    <div class="mb-6 flex items-center justify-between">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
-        {#if unreadNotifications.length > 0}
-            <Button onclick={() => markAllAsRead()} disabled={markingAllAsRead} class="flex items-center">
-                {#if markingAllAsRead}
-                    <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                {/if}
-                Mark All as Read
-            </Button>
-        {/if}
-    </div>
+	<div class="mb-6 flex items-center justify-between">
+		<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
+		{#if unreadNotifications.length > 0}
+			<Button onclick={() => markAllAsRead()} disabled={markingAllAsRead} class="flex items-center">
+				{#if markingAllAsRead}
+					<div class="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+				{/if}
+				Mark All as Read
+			</Button>
+		{/if}
+	</div>
 
-    {#if loading}
-        <div class="flex items-center justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-        </div>
-    {:else}
-        <!-- Unread Notifications -->
-        <div class="mb-8">
-            <div class="mb-4 flex items-center gap-2">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Unread Notifications
-                    {#if unreadNotifications.length > 0}:
-                        {unreadNotifications.length}
-                    {/if}
-                </h2>
-            </div>
+	{#if loading}
+		<div class="flex items-center justify-center py-12">
+			<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+		</div>
+	{:else}
+		<!-- Unread Notifications -->
+		<div class="mb-8">
+			<div class="mb-4 flex items-center gap-2">
+				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+					Unread Notifications
+					{#if unreadNotifications.length > 0}:
+						{unreadNotifications.length}
+					{/if}
+				</h2>
+			</div>
 
-            {#if unreadNotifications.length === 0}
-                <div
-                        class="rounded-lg border border-green-200 bg-green-50 p-6 text-center dark:border-green-800 dark:bg-green-900/20"
-                >
-                    <p class="font-medium text-green-800 dark:text-green-200">All caught up!</p>
-                    <p class="text-sm text-green-600 dark:text-green-400">No unread notifications</p>
-                </div>
-            {:else}
-                <div class="space-y-3">
-                    {#each unreadNotifications as notification (notification.id)}
-                        <div
-                                class="rounded-lg border border-blue-200 bg-blue-50 p-4 shadow-sm dark:border-blue-800 dark:bg-blue-900/20"
-                        >
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex flex-1 items-start gap-3">
-                                    <div class="flex-1">
-                                        <p class="font-medium text-gray-900 dark:text-white">
-                                            {notification.message}
-                                        </p>
-                                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                            {new Date(notification.timestamp ?? 0).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <Button
-                                            onclick={() => markAsRead(notification.id ?? '')}
-                                            class="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-100 dark:hover:bg-blue-800"
-                                            title="Mark as read"
-                                            variant="outline"
-                                    >
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M5 13l4 4L19 7"
-                                            ></path>
-                                        </svg>
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-            {/if}
-        </div>
+			{#if unreadNotifications.length === 0}
+				<div
+					class="rounded-lg border border-green-200 bg-green-50 p-6 text-center dark:border-green-800 dark:bg-green-900/20"
+				>
+					<p class="font-medium text-green-800 dark:text-green-200">All caught up!</p>
+					<p class="text-sm text-green-600 dark:text-green-400">No unread notifications</p>
+				</div>
+			{:else}
+				<div class="space-y-3">
+					{#each unreadNotifications as notification (notification.id)}
+						<div
+							class="rounded-lg border border-blue-200 bg-blue-50 p-4 shadow-sm dark:border-blue-800 dark:bg-blue-900/20"
+						>
+							<div class="flex items-start justify-between gap-4">
+								<div class="flex flex-1 items-start gap-3">
+									<div class="flex-1">
+										<p class="font-medium text-gray-900 dark:text-white">
+											{notification.message}
+										</p>
+										<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+											{new Date(notification.timestamp ?? 0).toLocaleDateString()}
+										</p>
+									</div>
+								</div>
+								<div class="flex items-center gap-2">
+									<Button
+										onclick={() => markAsRead(notification.id ?? '')}
+										class="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-100 dark:hover:bg-blue-800"
+										title="Mark as read"
+										variant="outline"
+									>
+										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M5 13l4 4L19 7"
+											></path>
+										</svg>
+									</Button>
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
 
-        <!-- Read Notifications Toggle -->
-        <div class="mb-4">
-            <button
-                    on:click={() => (showRead = !showRead)}
-                    class="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            >
-                <svg
-                        class="h-4 w-4 transition-transform {showRead ? 'rotate-90' : ''}"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
-                    ></path>
-                </svg>
-                <span>Read Notifications ({readNotifications.length})</span>
-            </button>
-        </div>
+		<!-- Read Notifications Toggle -->
+		<div class="mb-4">
+			<button
+				on:click={() => (showRead = !showRead)}
+				class="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+			>
+				<svg
+					class="h-4 w-4 transition-transform {showRead ? 'rotate-90' : ''}"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
+					></path>
+				</svg>
+				<span>Read Notifications ({readNotifications.length})</span>
+			</button>
+		</div>
 
-        <!-- Read Notifications -->
-        {#if showRead}
-            <div>
-                {#if readNotifications.length === 0}
-                    <div
-                            class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800"
-                    >
-                        <p class="text-gray-500 dark:text-gray-400">No read notifications</p>
-                    </div>
-                {:else}
-                    <div class="space-y-3">
-                        {#each readNotifications as notification (notification.id)}
-                            <div
-                                    class="rounded-lg border border-gray-200 bg-white p-4 opacity-75 shadow-sm dark:border-gray-700 dark:bg-gray-800"
-                            >
-                                <div class="flex items-start justify-between gap-4">
-                                    <div class="flex flex-1 items-start gap-3">
-                                        <div class="flex-1">
-                                            <p class="text-gray-700 dark:text-gray-300">
-                                                {notification.message}
-                                            </p>
-                                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                                {new Date(notification.timestamp ?? 0).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <Button
-                                                onclick={() => markAsUnread(notification.id ?? '')}
-                                                class="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-100 dark:hover:bg-blue-800"
-                                                title="Mark as unread"
-                                                variant="outline"
-                                        >
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M3 8l7.89 7.89a2 2 0 002.83 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                                ></path>
-                                            </svg>
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        {/each}
-                    </div>
-                {/if}
-            </div>
-        {/if}
-    {/if}
+		<!-- Read Notifications -->
+		{#if showRead}
+			<div>
+				{#if readNotifications.length === 0}
+					<div
+						class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800"
+					>
+						<p class="text-gray-500 dark:text-gray-400">No read notifications</p>
+					</div>
+				{:else}
+					<div class="space-y-3">
+						{#each readNotifications as notification (notification.id)}
+							<div
+								class="rounded-lg border border-gray-200 bg-white p-4 opacity-75 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+							>
+								<div class="flex items-start justify-between gap-4">
+									<div class="flex flex-1 items-start gap-3">
+										<div class="flex-1">
+											<p class="text-gray-700 dark:text-gray-300">
+												{notification.message}
+											</p>
+											<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+												{new Date(notification.timestamp ?? 0).toLocaleDateString()}
+											</p>
+										</div>
+									</div>
+									<div class="flex items-center gap-2">
+										<Button
+											onclick={() => markAsUnread(notification.id ?? '')}
+											class="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-100 dark:hover:bg-blue-800"
+											title="Mark as unread"
+											variant="outline"
+										>
+											<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M3 8l7.89 7.89a2 2 0 002.83 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+												></path>
+											</svg>
+										</Button>
+									</div>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		{/if}
+	{/if}
 </main>
