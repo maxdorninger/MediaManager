@@ -191,16 +191,22 @@ app = FastAPI(lifespan=lifespan, root_path=BASE_PATH)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 origins = config.misc.cors_urls
-log.info("CORS URLs activated for following origins:")
-for origin in origins:
-    log.info(f" - {origin}")
-
+log.info(f"CORS URLs activated for following origins: {origins}")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=[
+        "GET",
+        "PUT",
+        "POST",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "TRACE",
+        "CONNECT",
+    ],
 )
 
 api_app = APIRouter(prefix="/api/v1")
@@ -385,6 +391,7 @@ try:
 except Exception as e:
     log.error(f"Error creating test directory: {e}")
     raise
+
 
 if __name__ == "__main__":
     uvicorn.run(
