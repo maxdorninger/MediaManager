@@ -62,7 +62,7 @@
 	}
 
 	async function handleOauth() {
-		const { response, data } = await client.GET('/api/v1/auth/cookie/OpenID/authorize', {
+		const { response, data } = await client.GET(`/api/v1/auth/cookie/${oauthProvider.oauth_name}/authorize`, {
 			params: {
 				query: {
 					scopes: 'email'

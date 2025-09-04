@@ -26,9 +26,10 @@ def get_all_users(db: DbSessionDependency) -> list[UserRead]:
 
 @auth_metadata_router.get("/auth/metadata", status_code=status.HTTP_200_OK)
 def get_auth_metadata() -> dict:
-    if oauth_config.enabled:
-        return {
-            "oauth_name": oauth_config.name,
-        }
+    if oauth_config:
+        provider_names = [
+            name for name, config in oauth_config.items() if config.enabled
+        ]
+        return {"oauth_providers": provider_names}
     else:
-        return {"oauth_name": None}
+        return {"oauth_providers": []}

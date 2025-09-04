@@ -1,16 +1,20 @@
-from typing import Optional
-
+from media_manager.auth.users import (
+    SECRET,
+    openid_cookie_auth_backend as backend,
+    get_user_manager,
+    openid_clients as oauth_clients,
+)
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from httpx_oauth.integrations.fastapi import OAuth2AuthorizeCallback
-from httpx_oauth.oauth2 import BaseOAuth2, OAuth2Token
+from httpx_oauth.oauth2 import OAuth2Token
 from pydantic import BaseModel
 
 from fastapi_users import models
-from fastapi_users.authentication import AuthenticationBackend, Strategy
+from fastapi_users.authentication import Strategy
 from fastapi_users.exceptions import UserAlreadyExists
 from fastapi_users.jwt import SecretType, decode_jwt, generate_jwt
-from fastapi_users.manager import BaseUserManager, UserManagerDependency
+from fastapi_users.manager import BaseUserManager
 from fastapi_users.router.common import ErrorCode, ErrorModel
 
 STATE_TOKEN_AUDIENCE = "fastapi-users:oauth-state"
@@ -27,128 +31,110 @@ def generate_state_token(
     return generate_jwt(data, secret, lifetime_seconds)
 
 
-def get_oauth_router(
-    oauth_client: BaseOAuth2,
-    backend: AuthenticationBackend[models.UP, models.ID],
-    get_user_manager: UserManagerDependency[models.UP, models.ID],
-    state_secret: SecretType,
-    redirect_url: Optional[str] = None,
-    associate_by_email: bool = False,
-    is_verified_by_default: bool = False,
-) -> APIRouter:
-    """Generate a router with the OAuth routes."""
-    router = APIRouter()
-    callback_route_name = f"oauth:{oauth_client.name}.{backend.name}.callback"
+router = APIRouter(prefix="/auth/oauth")
 
-    if redirect_url is not None:
-        oauth2_authorize_callback = OAuth2AuthorizeCallback(
-            oauth_client,
-            redirect_url=redirect_url,
-        )
-    else:
-        oauth2_authorize_callback = OAuth2AuthorizeCallback(
-            oauth_client,
-            route_name=callback_route_name,
-        )
 
-    @router.get(
-        "/authorize",
-        name=f"oauth:{oauth_client.name}.{backend.name}.authorize",
-        response_model=OAuth2AuthorizeResponse,
+def get_authorize_callback(provider_name: str):
+    if provider_name not in oauth_clients:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return OAuth2AuthorizeCallback(
+        oauth_clients[provider_name],
+        route_name="oauth:callback",
+        redirect_url=str(router.url_path_for("oauth:callback")),
     )
-    async def authorize(
-        request: Request, scopes: list[str] = ["openid", "profile", "email"]
-    ) -> OAuth2AuthorizeResponse:
-        if redirect_url is not None:
-            authorize_redirect_url = redirect_url
-        else:
-            authorize_redirect_url = str(request.url_for(callback_route_name))
 
-        state_data: dict[str, str] = {}
-        state = generate_state_token(state_data, state_secret)
-        authorization_url = await oauth_client.get_authorization_url(
-            authorize_redirect_url,
-            state,
-            scopes,
-        )
 
-        return OAuth2AuthorizeResponse(authorization_url=authorization_url)
+@router.get(
+    "/{openid_provider_name}/authorize",
+    response_model=OAuth2AuthorizeResponse,
+)
+async def authorize(
+    request: Request,
+    openid_provider_name: str,
+) -> OAuth2AuthorizeResponse:
+    if openid_provider_name not in oauth_clients:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    oauth_client = oauth_clients[openid_provider_name]
 
-    @router.get(
-        "/callback",
-        name=callback_route_name,
-        description="The response varies based on the authentication backend used.",
-        responses={
-            status.HTTP_400_BAD_REQUEST: {
-                "model": ErrorModel,
-                "content": {
-                    "application/json": {
-                        "examples": {
-                            "INVALID_STATE_TOKEN": {
-                                "summary": "Invalid state token.",
-                                "value": None,
-                            },
-                            ErrorCode.LOGIN_BAD_CREDENTIALS: {
-                                "summary": "User is inactive.",
-                                "value": {"detail": ErrorCode.LOGIN_BAD_CREDENTIALS},
-                            },
-                        }
-                    }
-                },
-            },
-        },
+    authorize_redirect_url = str(request.url_for("oauth:callback"))
+    state = generate_state_token({"provider_name": openid_provider_name}, SECRET)
+    authorization_url = await oauth_client.get_authorization_url(
+        authorize_redirect_url,
+        state,
+        ["openid", "profile", "email"],
     )
-    async def callback(
-        request: Request,
-        access_token_state: tuple[OAuth2Token, str] = Depends(
-            oauth2_authorize_callback
-        ),
-        user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
-        strategy: Strategy[models.UP, models.ID] = Depends(backend.get_strategy),
-    ):
-        token, state = access_token_state
-        account_id, account_email = await oauth_client.get_id_email(
-            token["access_token"]
+
+    return OAuth2AuthorizeResponse(authorization_url=authorization_url)
+
+
+@router.get(
+    "/callback",
+    name="oauth:callback",
+)
+async def callback(
+    request: Request,
+    user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
+    strategy: Strategy[models.UP, models.ID] = Depends(backend.get_strategy),
+    access_token_state = None,
+) -> None:
+    state_from_query = request.query_params.get("state")
+    if not state_from_query:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Missing state token"
         )
 
-        if account_email is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=ErrorCode.OAUTH_NOT_AVAILABLE_EMAIL,
-            )
+    try:
+        state_data = decode_jwt(state_from_query, SECRET, [STATE_TOKEN_AUDIENCE])
+    except jwt.DecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid state token"
+        )
 
-        try:
-            decode_jwt(state, state_secret, [STATE_TOKEN_AUDIENCE])
-        except jwt.DecodeError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    openid_provider_name = state_data.get("provider_name")
+    if not openid_provider_name or openid_provider_name not in oauth_clients:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid provider name in state token",
+        )
 
-        try:
-            user = await user_manager.oauth_callback(
-                oauth_client.name,
-                token["access_token"],
-                account_id,
-                account_email,
-                token.get("expires_at"),
-                token.get("refresh_token"),
-                request,
-                associate_by_email=associate_by_email,
-                is_verified_by_default=is_verified_by_default,
-            )
-        except UserAlreadyExists:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=ErrorCode.OAUTH_USER_ALREADY_EXISTS,
-            )
+    authorize_callback = get_authorize_callback(openid_provider_name)
+    token, state = await authorize_callback(request)
 
-        if not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=ErrorCode.LOGIN_BAD_CREDENTIALS,
-            )
+    oauth_client = oauth_clients[openid_provider_name]
 
-        # Authenticate
-        response = await backend.login(strategy, user)
-        await user_manager.on_after_login(user, request, response)
-        return response
+    account_id, account_email = await oauth_client.get_id_email(token["access_token"])
 
-    return router
+    if account_email is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorCode.OAUTH_NOT_AVAILABLE_EMAIL,
+        )
+
+    try:
+        user = await user_manager.oauth_callback(
+            oauth_client.name,
+            token["access_token"],
+            account_id,
+            account_email,
+            token.get("expires_at"),
+            token.get("refresh_token"),
+            request,
+            associate_by_email=True,
+            is_verified_by_default=True,
+        )
+    except UserAlreadyExists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorCode.OAUTH_USER_ALREADY_EXISTS,
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorCode.LOGIN_BAD_CREDENTIALS,
+        )
+
+    # Authenticate
+    response = await backend.login(strategy, user)
+    await user_manager.on_after_login(user, request, response)
+    return response

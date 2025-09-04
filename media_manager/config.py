@@ -48,7 +48,10 @@ class BasicConfig(BaseSettings):
 
 class AllEncompassingConfig(BaseSettings):
     model_config = SettingsConfigDict(
-        toml_file=config_path, case_sensitive=False, env_nested_delimiter="__", env_prefix="MEDIAMANAGER_"
+        toml_file=config_path,
+        case_sensitive=False,
+        env_nested_delimiter="__",
+        env_prefix="MEDIAMANAGER_",
     )
     """
     This class is used to load all configurations from the environment variables.

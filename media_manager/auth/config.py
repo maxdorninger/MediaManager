@@ -7,7 +7,6 @@ class OpenIdConfig(BaseSettings):
     client_id: str = ""
     client_secret: str = ""
     configuration_endpoint: str = ""
-    name: str = "OpenID"
     enabled: bool = False
 
 
@@ -18,7 +17,7 @@ class AuthConfig(BaseSettings):
     session_lifetime: int = 60 * 60 * 24
     admin_emails: list[str] = []
     email_password_resets: bool = False
-    openid_connect: OpenIdConfig = OpenIdConfig()
+    openid_connect: dict[str, OpenIdConfig] = {}
 
     @property
     def jwt_signing_key(self):

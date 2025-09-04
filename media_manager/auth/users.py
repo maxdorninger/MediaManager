@@ -28,18 +28,21 @@ config = AllEncompassingConfig().auth
 SECRET = config.token_secret
 LIFETIME = config.session_lifetime
 
-if config.openid_connect.enabled:
-    openid_config = AllEncompassingConfig().auth.openid_connect
-    openid_client = OpenID(
-        base_scopes=["openid", "email", "profile"],
-        client_id=openid_config.client_id,
-        client_secret=openid_config.client_secret,
-        name=openid_config.name,
-        openid_configuration_endpoint=openid_config.configuration_endpoint,
-    )
-    openid_client.base_scopes = ["openid", "email", "profile"]
-else:
-    openid_client = None
+openid_clients: dict[str, OpenID] = {}
+if config.openid_connect:
+    log.info(f"got openid-config: {config.openid_connect}")
+    for name, openid_config in config.openid_connect.items():
+        if openid_config.enabled:
+            log.info(f"Discovered OIDC provider: {name}")
+            client = OpenID(
+                base_scopes=["openid", "email", "profile"],
+                client_id=openid_config.client_id,
+                client_secret=openid_config.client_secret,
+                name=name,
+                openid_configuration_endpoint=openid_config.configuration_endpoint,
+            )
+            client.base_scopes = ["openid", "email", "profile"]
+            openid_clients[name] = client
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):

@@ -66,12 +66,11 @@ from media_manager.movies.service import (  # noqa: E402
 from media_manager.notification.router import router as notification_router  # noqa: E402
 import uvicorn  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
-from media_manager.auth.users import openid_client  # noqa: E402
 from media_manager.auth.users import SECRET as AUTH_USERS_SECRET  # noqa: E402
 from media_manager.auth.router import users_router as custom_users_router  # noqa: E402
 from media_manager.auth.router import auth_metadata_router  # noqa: E402
 from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate  # noqa: E402
-from media_manager.auth.oauth import get_oauth_router  # noqa: E402
+from media_manager.auth.oauth import router as openid_router  # noqa: E402
 
 from media_manager.auth.users import (  # noqa: E402
     bearer_auth_backend,
@@ -266,19 +265,7 @@ api_app.include_router(
 
 api_app.include_router(auth_metadata_router, tags=["openid"])
 
-if openid_client is not None:
-    api_app.include_router(
-        get_oauth_router(
-            oauth_client=openid_client,
-            backend=openid_cookie_auth_backend,
-            get_user_manager=fastapi_users.get_user_manager,
-            state_secret=AUTH_USERS_SECRET,
-            associate_by_email=True,
-            is_verified_by_default=True,
-        ),
-        prefix=f"/auth/cookie/{openid_client.name}",
-        tags=["openid"],
-    )
+api_app.include_router(openid_router, tags=["openid"])
 
 api_app.include_router(tv_router.router, prefix="/tv", tags=["tv"])
 api_app.include_router(torrent_router.router, prefix="/torrent", tags=["torrent"])
