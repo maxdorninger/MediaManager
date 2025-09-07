@@ -59,12 +59,22 @@ export function convertTorrentSeasonRangeToIntegerRange(torrent: {
 }
 
 export async function handleLogout() {
-	const { error } = await client.POST('/api/v1/auth/cookie/logout');
-	if (error) {
-		toast.error('Logout failed');
+	await client.POST('/api/v1/auth/cookie/logout');
+	await goto(base + '/login');
+}
+
+export async function handleOauth(oauth_name: string) {
+	const {error, data} = await client.GET(`/api/v1/auth/oauth/{openid_provider_name}/authorize`, {
+		params: {
+			path:{
+				openid_provider_name: oauth_name
+			}
+		}
+	});
+	if (!error && data?.authorization_url) {
+		window.location.href = data.authorization_url;
 	} else {
-		toast.success('Logout successful!');
-		await goto(base + '/login');
+		toast.error("Failed to initiate OAuth login.");
 	}
 }
 
