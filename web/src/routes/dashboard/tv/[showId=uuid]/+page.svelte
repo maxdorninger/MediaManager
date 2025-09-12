@@ -6,7 +6,7 @@
 	import { ImageOff } from 'lucide-svelte';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { getContext } from 'svelte';
-	import type { PublicShow, RichShowTorrent, User } from '$lib/types.js';
+	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import DownloadSeasonDialog from '$lib/components/download-season-dialog.svelte';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
@@ -19,12 +19,13 @@
 	import { Label } from '$lib/components/ui/label';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-
-	let show: () => PublicShow = getContext('show');
-	let user: () => User = getContext('user');
-	let torrents: RichShowTorrent = page.data.torrentsData;
 	import { base } from '$app/paths';
 	import client from '$lib/api';
+
+	let show: () => components["schemas"]["PublicShow"] = getContext('show');
+	let user: () => components["schemas"]["UserRead"] = getContext('user');
+	let torrents: components["schemas"]["RichShowTorrent"] = page.data.torrentsData;
+
 
 	let continuousDownloadEnabled = $state(show().continuous_download);
 

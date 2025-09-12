@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { User } from '$lib/types.js';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -10,10 +9,11 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
+	import type {components} from "$lib/api/api";
 
-	let { users }: { users: User[] } = $props();
+	let { users }: { users: components["schemas"]["UserRead"] [] } = $props();
 	let sortedUsers = $derived(users.sort((a, b) => a.email.localeCompare(b.email)));
-	let selectedUser: User | null = $state(null);
+	let selectedUser: components["schemas"]["UserRead"]  | null = $state(null);
 	let newPassword: string = $state('');
 	let newEmail: string = $state('');
 	let dialogOpen = $state(false);

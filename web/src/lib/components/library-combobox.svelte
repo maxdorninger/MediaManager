@@ -5,7 +5,6 @@
 	import { cn } from '$lib/utils.js';
 	import { tick } from 'svelte';
 	import { CheckIcon, ChevronsUpDownIcon } from 'lucide-svelte';
-	import type { PublicMovie, PublicShow } from '$lib/types.js';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api';
@@ -15,7 +14,7 @@
 		media,
 		mediaType
 	}: {
-		media: PublicShow | PublicMovie;
+		media: components["schemas"]["PublicShow"] | components["schemas"]["PublicMovie"];
 		mediaType: 'tv' | 'movie';
 	} = $props();
 
@@ -31,9 +30,9 @@
 		const movieLibraries = await client.GET('/api/v1/movies/libraries');
 
 		if (mediaType === 'tv') {
-			libraries = tvLibraries.data;
+			libraries = tvLibraries.data as components['schemas']['LibraryItem'][];
 		} else {
-			libraries = movieLibraries.data;
+			libraries = movieLibraries.data as components['schemas']['LibraryItem'][];
 		}
 
 		if (!value && libraries.length > 0) {
@@ -53,14 +52,14 @@
 		if (mediaType === 'tv') {
 			response = await client.POST('/api/v1/tv/shows/{show_id}/library', {
 				params: {
-					path: { show_id: media.id },
+					path: { show_id: media.id! },
 					query: { library: selectedLabel }
 				}
 			});
 		} else {
 			response = await client.POST('/api/v1/movies/{movie_id}/library', {
 				params: {
-					path: { movie_id: media.id },
+					path: { movie_id: media.id! },
 					query: { library: selectedLabel }
 				}
 			});

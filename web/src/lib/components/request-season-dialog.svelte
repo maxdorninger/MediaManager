@@ -4,12 +4,12 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-	import type { PublicShow, Quality } from '$lib/types.js';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils.js';
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api';
+	import type {components} from "$lib/api/api";
 
-	let { show }: { show: PublicShow } = $props();
+	let { show }: { show: components["schemas"]["PublicShow"] } = $props();
 
 	let dialogOpen = $state(false);
 	let selectedSeasonsIds = $state<string[]>([]);
@@ -18,7 +18,7 @@
 	let isSubmittingRequest = $state(false);
 	let submitRequestError = $state<string | null>(null);
 
-	const qualityValues: Quality[] = [1, 2, 3, 4];
+	const qualityValues: components["schemas"]["Quality"][] = [1, 2, 3, 4];
 	let qualityOptions = $derived(
 		qualityValues.map((q) => ({ value: q.toString(), label: getTorrentQualityString(q) }))
 	);
@@ -38,8 +38,8 @@
 			const { response, error } = await client.POST('/api/v1/tv/seasons/requests', {
 				body: {
 					season_id: id,
-					min_quality: parseInt(minQuality!) as Quality,
-					wanted_quality: parseInt(wantedQuality!) as Quality
+					min_quality: parseInt(minQuality!) as components["schemas"]["Quality"],
+					wanted_quality: parseInt(wantedQuality!) as components["schemas"]["Quality"]
 				}
 			});
 

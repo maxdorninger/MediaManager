@@ -11,7 +11,6 @@
     import LoadingBar from '$lib/components/loading-bar.svelte';
     import client from '$lib/api';
     import {handleOauth} from "$lib/utils.ts";
-    import type {components} from "$lib/api/api";
 
     let {
         oauthProviderNames
