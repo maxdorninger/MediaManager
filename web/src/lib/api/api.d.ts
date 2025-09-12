@@ -2632,7 +2632,7 @@ export interface operations {
     set_library_api_v1_tv_shows__show_id__library_post: {
         parameters: {
             query: {
-                library: "Live Action" | "Default";
+                library: string;
             };
             header?: never;
             path: {
@@ -3491,7 +3491,7 @@ export interface operations {
     set_library_api_v1_movies__movie_id__library_post: {
         parameters: {
             query: {
-                library: "Documentary" | "Default";
+                library: string;
             };
             header?: never;
             path: {
