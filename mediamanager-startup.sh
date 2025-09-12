@@ -149,4 +149,9 @@ echo "   matches one of the admin_emails in your config.toml"
 echo ""
 
 PORT=${PORT:-8000}
-uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers
+if [ "$MEDIAMANAGER_MISC__DEVELOPMENT" == "TRUE" ]; then
+    echo "Development mode is enabled, enabling auto-reload..."
+    uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers --reload
+else
+  uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers
+fi
