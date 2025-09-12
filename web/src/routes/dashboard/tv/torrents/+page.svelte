@@ -9,7 +9,7 @@
 	import TorrentTable from '$lib/components/torrent-table.svelte';
 	import { base } from '$app/paths';
 	import type { components } from '$lib/api/api';
-	let showsPromise: Promise<components["schemas"]["RichShowTorrent"][]> = $state(page.data.shows);
+	let showsPromise: Promise<components['schemas']['RichShowTorrent'][]> = $state(page.data.shows);
 </script>
 
 <svelte:head>

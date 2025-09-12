@@ -15,8 +15,8 @@
 	import { base } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	let movie: components["schemas"]["PublicMovie"] = page.data.movie;
-	let user: () => components["schemas"]["UserRead"] = getContext('user');
+	let movie: components['schemas']['PublicMovie'] = page.data.movie;
+	let user: () => components['schemas']['UserRead'] = getContext('user');
 </script>
 
 <svelte:head>

@@ -7,7 +7,7 @@
 	import { base } from '$app/paths';
 	import type { components } from '$lib/api/api';
 
-	let requests: components["schemas"]["RichSeasonRequest"][] = $state(page.data.requestsData);
+	let requests: components['schemas']['RichSeasonRequest'][] = $state(page.data.requestsData);
 </script>
 
 <svelte:head>

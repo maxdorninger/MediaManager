@@ -22,10 +22,9 @@
 	import { base } from '$app/paths';
 	import client from '$lib/api';
 
-	let show: () => components["schemas"]["PublicShow"] = getContext('show');
-	let user: () => components["schemas"]["UserRead"] = getContext('user');
-	let torrents: components["schemas"]["RichShowTorrent"] = page.data.torrentsData;
-
+	let show: () => components['schemas']['PublicShow'] = getContext('show');
+	let user: () => components['schemas']['UserRead'] = getContext('user');
+	let torrents: components['schemas']['RichShowTorrent'] = page.data.torrentsData;
 
 	let continuousDownloadEnabled = $state(show().continuous_download);
 

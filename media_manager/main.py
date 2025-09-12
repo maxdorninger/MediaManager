@@ -2,11 +2,9 @@ import logging
 import os
 import sys
 from logging.config import dictConfig
+from pythonjsonlogger.json import JsonFormatter
 from pathlib import Path
 
-from psycopg.errors import UniqueViolation
-from pythonjsonlogger.json import JsonFormatter
-from sqlalchemy.exc import IntegrityError
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -48,6 +46,8 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+from psycopg.errors import UniqueViolation  # noqa: E402
+from sqlalchemy.exc import IntegrityError  # noqa: E402
 from media_manager.database import init_db  # noqa: E402
 from media_manager.config import AllEncompassingConfig  # noqa: E402
 import media_manager.torrent.router as torrent_router  # noqa: E402
@@ -66,7 +66,6 @@ from media_manager.movies.service import (  # noqa: E402
 from media_manager.notification.router import router as notification_router  # noqa: E402
 import uvicorn  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
-from media_manager.auth.users import SECRET as AUTH_USERS_SECRET  # noqa: E402
 from media_manager.auth.router import users_router as custom_users_router  # noqa: E402
 from media_manager.auth.router import auth_metadata_router  # noqa: E402
 from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate  # noqa: E402
@@ -76,7 +75,6 @@ from media_manager.auth.users import (  # noqa: E402
     bearer_auth_backend,
     fastapi_users,
     cookie_auth_backend,
-    openid_cookie_auth_backend,
     create_default_admin_user,
 )
 from media_manager.exceptions import (  # noqa: E402

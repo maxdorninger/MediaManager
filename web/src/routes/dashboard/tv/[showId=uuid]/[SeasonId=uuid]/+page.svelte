@@ -12,9 +12,9 @@
 	import { base } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	let seasonFiles: components["schemas"]["PublicSeasonFile"][] = $state(page.data.files);
-	let season: components["schemas"]["Season"] = $state(page.data.season);
-	let show: () => components["schemas"]["Show"] = getContext('show');
+	let seasonFiles: components['schemas']['PublicSeasonFile'][] = $state(page.data.files);
+	let season: components['schemas']['Season'] = $state(page.data.season);
+	let show: () => components['schemas']['Show'] = getContext('show');
 
 	console.log('loaded files', seasonFiles);
 </script>

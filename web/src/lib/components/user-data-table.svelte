@@ -9,11 +9,11 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
-	import type {components} from "$lib/api/api";
+	import type { components } from '$lib/api/api';
 
-	let { users }: { users: components["schemas"]["UserRead"] [] } = $props();
+	let { users }: { users: components['schemas']['UserRead'][] } = $props();
 	let sortedUsers = $derived(users.sort((a, b) => a.email.localeCompare(b.email)));
-	let selectedUser: components["schemas"]["UserRead"]  | null = $state(null);
+	let selectedUser: components['schemas']['UserRead'] | null = $state(null);
 	let newPassword: string = $state('');
 	let newEmail: string = $state('');
 	let dialogOpen = $state(false);

@@ -64,9 +64,9 @@ export async function handleLogout() {
 }
 
 export async function handleOauth(oauth_name: string) {
-	const {error, data} = await client.GET(`/api/v1/auth/oauth/{openid_provider_name}/authorize`, {
+	const { error, data } = await client.GET(`/api/v1/auth/oauth/{openid_provider_name}/authorize`, {
 		params: {
-			path:{
+			path: {
 				openid_provider_name: oauth_name
 			}
 		}
@@ -74,7 +74,7 @@ export async function handleOauth(oauth_name: string) {
 	if (!error && data?.authorization_url) {
 		window.location.href = data.authorization_url;
 	} else {
-		toast.error("Failed to initiate OAuth login.");
+		toast.error('Failed to initiate OAuth login.');
 	}
 }
 

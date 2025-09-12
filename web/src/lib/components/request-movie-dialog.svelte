@@ -7,16 +7,16 @@
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils.js';
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api';
-	import type {components} from "$lib/api/api";
+	import type { components } from '$lib/api/api';
 
-	let { movie }: { movie: components["schemas"]["PublicMovie"] } = $props();
+	let { movie }: { movie: components['schemas']['PublicMovie'] } = $props();
 	let dialogOpen = $state(false);
 	let minQuality = $state<string | undefined>(undefined);
 	let wantedQuality = $state<string | undefined>(undefined);
 	let isSubmittingRequest = $state(false);
 	let submitRequestError = $state<string | null>(null);
 
-	const qualityValues: components["schemas"]["Quality"][] = [1, 2, 3, 4];
+	const qualityValues: components['schemas']['Quality'][] = [1, 2, 3, 4];
 	let qualityOptions = $derived(
 		qualityValues.map((q) => ({ value: q.toString(), label: getTorrentQualityString(q) }))
 	);
@@ -30,8 +30,8 @@
 		const { response } = await client.POST('/api/v1/movies/requests', {
 			body: {
 				movie_id: movie.id!,
-				min_quality: parseInt(minQuality!) as components["schemas"]["Quality"],
-				wanted_quality: parseInt(wantedQuality!) as components["schemas"]["Quality"]
+				min_quality: parseInt(minQuality!) as components['schemas']['Quality'],
+				wanted_quality: parseInt(wantedQuality!) as components['schemas']['Quality']
 			}
 		});
 		isSubmittingRequest = false;

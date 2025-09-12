@@ -7,7 +7,6 @@ from media_manager.auth.users import (
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from httpx_oauth.integrations.fastapi import OAuth2AuthorizeCallback
-from httpx_oauth.oauth2 import OAuth2Token
 from pydantic import BaseModel
 
 from fastapi_users import models
@@ -15,7 +14,7 @@ from fastapi_users.authentication import Strategy
 from fastapi_users.exceptions import UserAlreadyExists
 from fastapi_users.jwt import SecretType, decode_jwt, generate_jwt
 from fastapi_users.manager import BaseUserManager
-from fastapi_users.router.common import ErrorCode, ErrorModel
+from fastapi_users.router.common import ErrorCode
 
 STATE_TOKEN_AUDIENCE = "fastapi-users:oauth-state"
 
@@ -75,7 +74,7 @@ async def callback(
     request: Request,
     user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
     strategy: Strategy[models.UP, models.ID] = Depends(backend.get_strategy),
-    access_token_state = None,
+    access_token_state=None,
 ) -> None:
     state_from_query = request.query_params.get("state")
     if not state_from_query:

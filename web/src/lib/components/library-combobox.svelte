@@ -14,7 +14,7 @@
 		media,
 		mediaType
 	}: {
-		media: components["schemas"]["PublicShow"] | components["schemas"]["PublicMovie"];
+		media: components['schemas']['PublicShow'] | components['schemas']['PublicMovie'];
 		mediaType: 'tv' | 'movie';
 	} = $props();
 
