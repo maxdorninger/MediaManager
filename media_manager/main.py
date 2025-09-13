@@ -202,8 +202,6 @@ app.add_middleware(
         "PATCH",
         "HEAD",
         "OPTIONS",
-        "TRACE",
-        "CONNECT",
     ],
 )
 
