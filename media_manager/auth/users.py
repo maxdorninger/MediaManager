@@ -50,7 +50,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         update_dict: dict[str, Any],
         request: Optional[Request] = None,
     ) -> None:
-        log.info(f"User {user.id} has been updated. Changes: {update_dict}")
+        log.info(f"User {user.id} has been updated.")
         if "is_superuser" in update_dict and update_dict["is_superuser"]:
             log.info(f"User {user.id} has been granted superuser privileges.")
         if "email" in update_dict:
@@ -138,7 +138,7 @@ async def create_default_admin_user():
                         admin_email = (
                             config.auth.admin_emails[0]
                             if config.auth.admin_emails
-                            else "admin@mediamanager.local"
+                            else "admin@example.com"
                         )
                         default_password = "admin"  # Simple default password
 
