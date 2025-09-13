@@ -48,15 +48,8 @@
 			toast.success(errorMessage);
 			goto(base + '/dashboard');
 		} else {
-			let errorText = await response.text();
-			try {
-				const errorData = JSON.parse(errorText);
-				errorMessage = errorData.message || 'Login failed. Please check your credentials.';
-			} catch {
-				errorMessage = errorText || 'Login failed. Please check your credentials.';
-			}
-			toast.error(errorMessage);
-			console.error('Login failed:', response.status, errorText);
+			toast.error('Login failed!');
+			errorMessage = `Login failed! Please check your credentials and try again.`;
 		}
 	}
 </script>
