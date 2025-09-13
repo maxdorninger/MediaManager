@@ -17,6 +17,7 @@ This section is for those who want to contribute to Media Manager or understand 
 - `PUBLIC_VERSION`: this sets the version variable, it is displayed in the frontend (requires rebuilding of the
   frontend) and in the /api/v1/health endpoint (can be set for both backend and frontend)
 - `FRONTEND_FILES_DIR`: directory for frontend files, e.g. in Docker container it is `/app/web/build` (only backend)
+- `MEDIAMANAGER_MISC__DEVELOPMENT`: If set to `TRUE`, enables hot reloading of FastAPI (only when using the docker container)
 
 ## Contributing
 
@@ -163,16 +164,20 @@ sequenceDiagram
 
 ### Backend
 
-- Python with FastAPI
+- Python
+- FastAPI
 - SQLAlchemy
 - Pydantic and Pydantic-Settings
 - Alembic
 
 ### Frontend
 
-- TypeScript with SvelteKit
+- TypeScript
+- SvelteKit
 - Tailwind CSS
 - shadcn-svelte
+- openapi-ts
+- openapi-fetch
 
 ### CI/CD
 
