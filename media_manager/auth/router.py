@@ -11,7 +11,7 @@ from media_manager.auth.users import (
     openid_client,
     openid_cookie_auth_backend,
     SECRET,
-    get_user_manager,
+    fastapi_users,
 )
 from media_manager.database import DbSessionDependency
 
@@ -24,7 +24,7 @@ def get_openid_router():
         return get_oauth_router(
             oauth_client=openid_client,
             backend=openid_cookie_auth_backend,
-            get_user_manager=get_user_manager,
+            get_user_manager=fastapi_users.get_user_manager,
             state_secret=SECRET,
             associate_by_email=True,
             is_verified_by_default=True,
