@@ -138,7 +138,7 @@ async def create_default_admin_user():
                         admin_email = (
                             config.auth.admin_emails[0]
                             if config.auth.admin_emails
-                            else "admin@mediamanager.local"
+                            else "admin@example.com"
                         )
                         default_password = "admin"  # Simple default password
 
