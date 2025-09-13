@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:latest
+    image: postgres:17
     restart: unless-stopped
     container_name: postgres
     volumes:
