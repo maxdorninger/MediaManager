@@ -120,7 +120,7 @@
 					Or continue with
 				</span>
 			</div>
-			<Button class="mt-2 w-full" onclick={() => handleOauth(name)} variant="outline"
+			<Button class="mt-2 w-full" onclick={() => handleOauth()} variant="outline"
 				>Login with {name}</Button
 			>
 		{/each}

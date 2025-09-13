@@ -63,11 +63,11 @@ export async function handleLogout() {
 	await goto(base + '/login');
 }
 
-export async function handleOauth(oauth_name: string) {
-	const { error, data } = await client.GET(`/api/v1/auth/oauth/{openid_provider_name}/authorize`, {
+export async function handleOauth() {
+	const { error, data } = await client.GET(`/api/v1/auth/oauth/authorize`, {
 		params: {
-			path: {
-				openid_provider_name: oauth_name
+			query: {
+				scopes: ['openid', 'email', 'profile']
 			}
 		}
 	});

@@ -69,7 +69,7 @@ from fastapi.staticfiles import StaticFiles  # noqa: E402
 from media_manager.auth.router import users_router as custom_users_router  # noqa: E402
 from media_manager.auth.router import auth_metadata_router  # noqa: E402
 from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate  # noqa: E402
-from media_manager.auth.oauth import router as openid_router  # noqa: E402
+from media_manager.auth.router import get_openid_router  # noqa: E402
 
 from media_manager.auth.users import (  # noqa: E402
     bearer_auth_backend,
@@ -268,8 +268,7 @@ api_app.include_router(
 # ----------------------------
 
 api_app.include_router(auth_metadata_router, tags=["openid"])
-
-api_app.include_router(openid_router, tags=["openid"])
+api_app.include_router(get_openid_router(), tags=["openid"], prefix="/auth/oauth")
 
 api_app.include_router(tv_router.router, prefix="/tv", tags=["tv"])
 api_app.include_router(torrent_router.router, prefix="/torrent", tags=["torrent"])
