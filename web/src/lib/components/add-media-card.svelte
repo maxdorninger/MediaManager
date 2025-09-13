@@ -1,38 +1,45 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { env } from '$env/dynamic/public';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { ImageOff } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
-	import type { MetaDataProviderSearchResult } from '$lib/types.js';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import type { components } from '$lib/api/api';
+	import client from '$lib/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let loading = $state(false);
 	let errorMessage = $state<string | null>(null);
-	let { result, isShow = true }: { result: MetaDataProviderSearchResult; isShow: boolean } =
-		$props();
+	let {
+		result,
+		isShow = true
+	}: { result: components['schemas']['MetaDataProviderSearchResult']; isShow: boolean } = $props();
 	console.log('Add Show Card Result: ', result);
 
 	async function addMedia() {
 		loading = true;
-		const endpoint = isShow ? '/tv/shows' : '/movies';
-		const urlParams = new SvelteURLSearchParams();
-		urlParams.append(isShow ? 'show_id' : 'movie_id', String(result.external_id));
-		urlParams.append('metadata_provider', result.metadata_provider);
-		const urlString = `${apiUrl}${endpoint}?${urlParams.toString()}`;
-		const response = await fetch(urlString, {
-			method: 'POST',
-			credentials: 'include'
-		});
-		let responseData = await response.json();
-		console.log('Added Show: Response Data: ', responseData);
-		if (response.ok) {
-			await goto(`${base}/dashboard/${isShow ? 'tv' : 'movies'}/` + responseData.id);
+		let data;
+		if (isShow) {
+			const response = await client.POST('/api/v1/tv/shows', {
+				params: {
+					query: {
+						show_id: result.external_id,
+						metadata_provider: result.metadata_provider as 'tmdb' | 'tvdb'
+					}
+				}
+			});
+			data = response.data;
 		} else {
-			errorMessage = 'Error occurred: ' + JSON.stringify(responseData);
+			const response = await client.POST('/api/v1/movies', {
+				params: {
+					query: {
+						movie_id: result.external_id,
+						metadata_provider: result.metadata_provider as 'tmdb' | 'tvdb'
+					}
+				}
+			});
+			data = response.data;
 		}
+		await goto(`${base}/dashboard/${isShow ? 'tv' : 'movies'}/` + data?.id);
 		loading = false;
 	}
 </script>

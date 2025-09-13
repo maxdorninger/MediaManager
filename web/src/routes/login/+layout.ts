@@ -1,16 +1,7 @@
 import type { LayoutLoad } from './$types';
-import { env } from '$env/dynamic/public';
-
-const apiUrl = env.PUBLIC_API_URL;
+import client from '$lib/api';
 
 export const load: LayoutLoad = async ({ fetch }) => {
-	const response = await fetch(apiUrl + '/auth/metadata', {
-		method: 'GET',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		credentials: 'include'
-	});
-
-	return { oauthProvider: await response.json() };
+	const { data } = await client.GET('/api/v1/auth/metadata', { fetch: fetch });
+	return { oauthProviders: data };
 };

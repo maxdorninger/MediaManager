@@ -1,91 +1,116 @@
 <script lang="ts">
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils.js';
-	import type { MovieRequest, SeasonRequest, User } from '$lib/types.js';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
+	import type { components } from '$lib/api/api';
+
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { getContext } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { env } from '$env/dynamic/public';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
+	import client from '$lib/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let {
 		requests,
 		filter = () => true,
 		isShow = true
 	}: {
-		requests: (SeasonRequest | MovieRequest)[];
-		filter?: (request: SeasonRequest | MovieRequest) => boolean;
+		requests: (
+			| components['schemas']['RichSeasonRequest']
+			| components['schemas']['RichMovieRequest']
+		)[];
+		filter?: (
+			request:
+				| components['schemas']['RichSeasonRequest']
+				| components['schemas']['RichMovieRequest']
+		) => boolean;
 		isShow: boolean;
 	} = $props();
-	const user: () => User = getContext('user');
+	const user: () => components['schemas']['UserRead'] = getContext('user');
 
 	async function approveRequest(requestId: string, currentAuthorizedStatus: boolean) {
-		try {
-			const response = await fetch(
-				`${apiUrl}${isShow ? '/tv/seasons' : '/movies'}/requests/${requestId}?authorized_status=${!currentAuthorizedStatus}`,
-				{
-					method: 'PATCH',
-					headers: {
-						'Content-Type': 'application/json'
+		let response;
+		if (isShow) {
+			const data = await client.PATCH('/api/v1/tv/seasons/requests/{season_request_id}', {
+				params: {
+					path: {
+						season_request_id: requestId
 					},
-					credentials: 'include'
+					query: {
+						authorized_status: !currentAuthorizedStatus
+					}
 				}
-			);
-
-			if (response.ok) {
-				const requestIndex = requests.findIndex((r) => r.id === requestId);
-				if (requestIndex !== -1) {
-					let newAuthorizedStatus = !currentAuthorizedStatus;
-					requests[requestIndex].authorized = newAuthorizedStatus;
-					requests[requestIndex].authorized_by = newAuthorizedStatus ? user() : undefined;
+			});
+			response = data.response;
+		} else {
+			const data = await client.PATCH('/api/v1/movies/requests/{movie_request_id}', {
+				params: {
+					path: {
+						movie_request_id: requestId
+					},
+					query: {
+						authorized_status: !currentAuthorizedStatus
+					}
 				}
-				toast.success(
-					`Request ${!currentAuthorizedStatus ? 'approved' : 'unapproved'} successfully.`
-				);
-			} else {
-				const errorText = await response.text();
-				console.error(`Failed to update request status ${response.statusText}`, errorText);
-				toast.error(`Failed to update request status: ${response.statusText}`);
+			});
+			response = data.response;
+		}
+		if (response.ok) {
+			const requestIndex = requests.findIndex((r) => r.id === requestId);
+			if (requestIndex !== -1) {
+				let newAuthorizedStatus = !currentAuthorizedStatus;
+				requests[requestIndex]!.authorized = newAuthorizedStatus;
+				requests[requestIndex]!.authorized_by = newAuthorizedStatus ? user() : undefined;
 			}
-		} catch (error) {
-			console.error('Error updating request status:', error);
-			toast.error(
-				'Error updating request status: ' + (error instanceof Error ? error.message : String(error))
+			toast.success(
+				`Request ${!currentAuthorizedStatus ? 'approved' : 'unapproved'} successfully.`
 			);
+		} else {
+			const errorText = await response.text();
+			console.error(`Failed to update request status ${response.statusText}`, errorText);
+			toast.error(`Failed to update request status: ${response.statusText}`);
 		}
 	}
 
 	async function deleteRequest(requestId: string) {
-		try {
-			const response = await fetch(
-				`${apiUrl}${isShow ? '/tv/seasons' : '/movies'}/requests/${requestId}`,
-				{
-					method: 'DELETE',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include'
+		if (
+			!window.confirm(
+				'Are you sure you want to delete this season request? This action cannot be undone.'
+			)
+		) {
+			return;
+		}
+		let response;
+		if (isShow) {
+			const data = await client.DELETE('/api/v1/tv/seasons/requests/{request_id}', {
+				params: {
+					path: {
+						request_id: requestId
+					}
 				}
-			);
-
-			if (response.ok) {
-				const index = requests.findIndex((r) => r.id === requestId);
-				if (index > -1) {
-					requests.splice(index, 1); // Remove the request from the list
+			});
+			response = data.response;
+		} else {
+			const data = await client.DELETE('/api/v1/movies/requests/{movie_request_id}', {
+				params: {
+					path: {
+						movie_request_id: requestId
+					}
 				}
-				toast.success('Request deleted successfully');
-			} else {
-				console.error(`Failed to delete request ${response.statusText}`, await response.text());
-				toast.error('Failed to delete request');
+			});
+			response = data.response;
+		}
+		if (response.ok) {
+			// remove the request from the list
+			const index = requests.findIndex((r) => r.id === requestId);
+			if (index > -1) {
+				requests.splice(index, 1);
 			}
-		} catch (error) {
-			console.error('Error deleting request:', error);
-			toast.error(
-				'Error deleting request: ' + (error instanceof Error ? error.message : String(error))
-			);
+			toast.success('Request deleted successfully');
+		} else {
+			console.error(`Failed to delete request ${response.statusText}`, await response.text());
+			toast.error('Failed to delete request');
 		}
 	}
 </script>
@@ -112,14 +137,18 @@
 				<Table.Row>
 					<Table.Cell>
 						{#if isShow}
-							{getFullyQualifiedMediaName((request as SeasonRequest).show)}
+							{getFullyQualifiedMediaName(
+								(request as components['schemas']['RichSeasonRequest']).show
+							)}
 						{:else}
-							{getFullyQualifiedMediaName((request as MovieRequest).movie)}
+							{getFullyQualifiedMediaName(
+								(request as components['schemas']['RichMovieRequest']).movie
+							)}
 						{/if}
 					</Table.Cell>
 					{#if isShow}
 						<Table.Cell>
-							{(request as SeasonRequest).season.number}
+							{(request as components['schemas']['RichSeasonRequest']).season.number}
 						</Table.Cell>
 					{/if}
 					<Table.Cell>
@@ -143,7 +172,7 @@
 							<Button
 								class=""
 								size="sm"
-								onclick={() => approveRequest(request.id, request.authorized)}
+								onclick={() => approveRequest(request.id!, request.authorized)}
 							>
 								{request.authorized ? 'Unapprove' : 'Approve'}
 							</Button>
@@ -152,7 +181,12 @@
 									class=""
 									size="sm"
 									variant="outline"
-									onclick={() => goto(base + '/dashboard/tv/' + (request as SeasonRequest).show.id)}
+									onclick={() =>
+										goto(
+											base +
+												'/dashboard/tv/' +
+												(request as components['schemas']['RichSeasonRequest']).show.id
+										)}
 								>
 									Download manually
 								</Button>
@@ -162,14 +196,18 @@
 									size="sm"
 									variant="outline"
 									onclick={() =>
-										goto(base + '/dashboard/movies/' + (request as MovieRequest).movie.id)}
+										goto(
+											base +
+												'/dashboard/movies/' +
+												(request as components['schemas']['RichMovieRequest']).movie.id
+										)}
 								>
 									Download manually
 								</Button>
 							{/if}
 						{/if}
 						{#if user().is_superuser || user().id === request.requested_by?.id}
-							<Button variant="destructive" size="sm" onclick={() => deleteRequest(request.id)}
+							<Button variant="destructive" size="sm" onclick={() => deleteRequest(request.id!)}
 								>Delete
 							</Button>
 						{/if}

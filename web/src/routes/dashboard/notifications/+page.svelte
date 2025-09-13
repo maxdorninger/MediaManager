@@ -1,105 +1,56 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { env } from '$env/dynamic/public';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	import { base } from '$app/paths';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
-	interface NotificationResponse {
-		id: string;
-		read: boolean;
-		message: string;
-		timestamp: string;
-	}
-
-	let unreadNotifications: NotificationResponse[] = [];
-	let readNotifications: NotificationResponse[] = [];
+	let unreadNotifications: components['schemas']['Notification'][] = [];
+	let readNotifications: components['schemas']['Notification'][] = [];
 	let loading = true;
 	let showRead = false;
 	let markingAllAsRead = false;
 
 	async function fetchNotifications() {
-		try {
-			loading = true;
-			const [unreadResponse, allResponse] = await Promise.all([
-				fetch(`${apiUrl}/notification/unread`, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include'
-				}),
-				fetch(`${apiUrl}/notification`, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include'
-				})
-			]);
-
-			if (unreadResponse.ok) {
-				unreadNotifications = await unreadResponse.json();
-			}
-
-			if (allResponse.ok) {
-				const allNotifications: NotificationResponse[] = await allResponse.json();
-				readNotifications = allNotifications.filter((n) => n.read);
-			}
-		} catch (error) {
-			console.error('Failed to fetch notifications:', error);
-		} finally {
-			loading = false;
-		}
+		loading = true;
+		const unread = await client.GET('/api/v1/notification/unread');
+		const all = await client.GET('/api/v1/notification');
+		unreadNotifications = unread.data!;
+		readNotifications = all.data!.filter((n) => n.read);
+		loading = false;
 	}
 
 	async function markAsRead(notificationId: string) {
-		try {
-			const response = await fetch(`${apiUrl}/notification/${notificationId}/read`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include'
-			});
+		const { response } = await client.PATCH('/api/v1/notification/{notification_id}/read', {
+			params: { path: { notification_id: notificationId } }
+		});
 
-			if (response.ok) {
-				const notification = unreadNotifications.find((n) => n.id === notificationId);
-				if (notification) {
-					notification.read = true;
-					readNotifications = [notification, ...readNotifications];
-					unreadNotifications = unreadNotifications.filter((n) => n.id !== notificationId);
-				}
+		if (response.ok) {
+			const notification = unreadNotifications.find((n) => n.id === notificationId);
+			if (notification) {
+				notification.read = true;
+				readNotifications = [notification, ...readNotifications];
+				unreadNotifications = unreadNotifications.filter((n) => n.id !== notificationId);
 			}
-		} catch (error) {
-			console.error('Failed to mark notification as read:', error);
 		}
 	}
 
 	async function markAsUnread(notificationId: string) {
-		try {
-			const response = await fetch(`${apiUrl}/notification/${notificationId}/unread`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include'
-			});
+		const { response } = await client.PATCH('/api/v1/notification/{notification_id}/unread', {
+			params: { path: { notification_id: notificationId } }
+		});
 
-			if (response.ok) {
-				const notification = readNotifications.find((n) => n.id === notificationId);
-				if (notification) {
-					notification.read = false;
-					unreadNotifications = [notification, ...unreadNotifications];
-					readNotifications = readNotifications.filter((n) => n.id !== notificationId);
-				}
+		if (response.ok) {
+			const notification = readNotifications.find((n) => n.id === notificationId);
+			if (notification) {
+				notification.read = false;
+				unreadNotifications = [notification, ...unreadNotifications];
+				readNotifications = readNotifications.filter((n) => n.id !== notificationId);
 			}
-		} catch (error) {
-			console.error('Failed to mark notification as unread:', error);
 		}
 	}
 
@@ -109,12 +60,8 @@
 		try {
 			markingAllAsRead = true;
 			const promises = unreadNotifications.map((notification) =>
-				fetch(`${apiUrl}/notification/${notification.id}/read`, {
-					method: 'PATCH',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					credentials: 'include'
+				client.PATCH('/api/v1/notification/{notification_id}/read', {
+					params: { path: { notification_id: notification.id! } }
 				})
 			);
 
@@ -131,22 +78,6 @@
 		} finally {
 			markingAllAsRead = false;
 		}
-	}
-
-	function formatTimestamp(timestamp: string): string {
-		const date = new Date(timestamp);
-		const now = new Date();
-		const diffInMs = now.getTime() - date.getTime();
-		const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-		const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-		if (diffInMinutes < 1) return 'Just now';
-		if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-		if (diffInHours < 24) return `${diffInHours}h ago`;
-		if (diffInDays < 7) return `${diffInDays}d ago`;
-
-		return date.toLocaleDateString();
 	}
 
 	onMount(() => {
@@ -205,7 +136,8 @@
 		<div class="mb-8">
 			<div class="mb-4 flex items-center gap-2">
 				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-					Unread Notifications{#if unreadNotifications.length > 0}:
+					Unread Notifications
+					{#if unreadNotifications.length > 0}:
 						{unreadNotifications.length}
 					{/if}
 				</h2>
@@ -231,13 +163,13 @@
 											{notification.message}
 										</p>
 										<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-											{formatTimestamp(notification.timestamp)}
+											{new Date(notification.timestamp ?? 0).toLocaleDateString()}
 										</p>
 									</div>
 								</div>
 								<div class="flex items-center gap-2">
 									<Button
-										onclick={() => markAsRead(notification.id)}
+										onclick={() => markAsRead(notification.id ?? '')}
 										class="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-100 dark:hover:bg-blue-800"
 										title="Mark as read"
 										variant="outline"
@@ -300,13 +232,13 @@
 												{notification.message}
 											</p>
 											<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-												{formatTimestamp(notification.timestamp)}
+												{new Date(notification.timestamp ?? 0).toLocaleDateString()}
 											</p>
 										</div>
 									</div>
 									<div class="flex items-center gap-2">
 										<Button
-											onclick={() => markAsUnread(notification.id)}
+											onclick={() => markAsUnread(notification.id ?? '')}
 											class="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-100 dark:hover:bg-blue-800"
 											title="Mark as unread"
 											variant="outline"

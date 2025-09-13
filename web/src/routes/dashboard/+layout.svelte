@@ -9,7 +9,7 @@
 
 	let { data, children }: LayoutProps = $props();
 	console.log('Received User Data: ', data.user);
-	if (!data.user.is_verified) {
+	if (!data.user?.is_verified) {
 		toast.info('Your account requires verification. Redirecting...');
 		goto(base + '/login/verify');
 	}

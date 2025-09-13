@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
@@ -279,9 +279,7 @@ def get_movie_files_by_movie_id(movie_service: movie_service_dep, movie_id: Movi
 def set_library(
     movie_id: MovieId,
     movie_service: movie_service_dep,
-    library: Literal[
-        *[x.name for x in AllEncompassingConfig().misc.movie_libraries], "Default"
-    ],
+    library: str,
 ) -> None:
     """
     Sets the library of a movie.

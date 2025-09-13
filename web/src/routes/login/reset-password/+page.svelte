@@ -12,11 +12,10 @@
 	} from '$lib/components/ui/card';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
-	import { env } from '$env/dynamic/public';
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
+	import client from '$lib/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let newPassword = $state('');
 	let confirmPassword = $state('');
 	let isLoading = $state(false);
@@ -42,30 +41,20 @@
 
 		isLoading = true;
 
-		try {
-			const response = await fetch(apiUrl + `/auth/reset-password`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ password: newPassword, token: resetToken }),
-				credentials: 'include'
-			});
-
-			if (response.ok) {
-				toast.success('Password reset successfully! You can now log in with your new password.');
-				goto(base + '/login');
-			} else {
-				const errorText = await response.text();
-				toast.error(`Failed to reset password: ${errorText}`);
-				throw new Error(`Failed to reset password: ${errorText}`);
+		const { response } = await client.POST('/api/v1/auth/reset-password', {
+			body: {
+				password: newPassword,
+				token: resetToken
 			}
-		} catch (error) {
-			console.error('Error resetting password:', error);
-			toast.error(error instanceof Error ? error.message : 'An unknown error occurred.');
-		} finally {
-			isLoading = false;
+		});
+
+		if (response.ok) {
+			toast.success('Password reset successfully! You can now log in with your new password.');
+			goto(base + '/login');
+		} else {
+			toast.error(`Failed to reset password`);
 		}
+		isLoading = false;
 	}
 
 	const handleSubmit = (event: Event) => {
@@ -89,28 +78,28 @@
 			<div class="grid gap-2">
 				<Label for="new-password">New Password</Label>
 				<Input
-					id="new-password"
-					type="password"
-					placeholder="Enter your new password"
 					bind:value={newPassword}
 					disabled={isLoading}
-					required
+					id="new-password"
 					minlength={1}
+					placeholder="Enter your new password"
+					required
+					type="password"
 				/>
 			</div>
 			<div class="grid gap-2">
 				<Label for="confirm-password">Confirm Password</Label>
 				<Input
-					id="confirm-password"
-					type="password"
-					placeholder="Confirm your new password"
 					bind:value={confirmPassword}
 					disabled={isLoading}
-					required
+					id="confirm-password"
 					minlength={1}
+					placeholder="Confirm your new password"
+					required
+					type="password"
 				/>
 			</div>
-			<Button type="submit" class="w-full" disabled={isLoading || !newPassword || !confirmPassword}>
+			<Button class="w-full" disabled={isLoading || !newPassword || !confirmPassword} type="submit">
 				{#if isLoading}
 					Resetting Password...
 				{:else}
@@ -119,9 +108,9 @@
 			</Button>
 		</form>
 		<div class="mt-4 text-center text-sm">
-			<a href="{base}/login" class="text-primary font-semibold hover:underline"> Back to Login </a>
+			<a class="text-primary font-semibold hover:underline" href="{base}/login"> Back to Login </a>
 			<span class="text-muted-foreground mx-2">•</span>
-			<a href="{base}/login/forgot-password" class="text-primary hover:underline">
+			<a class="text-primary hover:underline" href="{base}/login/forgot-password">
 				Request New Reset Link
 			</a>
 		</div>

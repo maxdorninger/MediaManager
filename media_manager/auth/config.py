@@ -7,8 +7,8 @@ class OpenIdConfig(BaseSettings):
     client_id: str = ""
     client_secret: str = ""
     configuration_endpoint: str = ""
-    name: str = "OpenID"
     enabled: bool = False
+    name: str = "OAuth2"
 
 
 class AuthConfig(BaseSettings):

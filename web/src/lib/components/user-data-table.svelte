@@ -1,20 +1,19 @@
 <script lang="ts">
-	import type { User } from '$lib/types.js';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { env } from '$env/dynamic/public';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { invalidateAll } from '$app/navigation';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
-	let { users }: { users: User[] } = $props();
+	let { users }: { users: components['schemas']['UserRead'][] } = $props();
 	let sortedUsers = $derived(users.sort((a, b) => a.email.localeCompare(b.email)));
-	let selectedUser: User | null = $state(null);
+	let selectedUser: components['schemas']['UserRead'] | null = $state(null);
 	let newPassword: string = $state('');
 	let newEmail: string = $state('');
 	let dialogOpen = $state(false);
@@ -22,41 +21,30 @@
 	async function saveUser() {
 		if (!selectedUser) return;
 
-		try {
-			const response = await fetch(`${apiUrl}/users/${selectedUser.id}`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include',
-				body: JSON.stringify({
-					is_verified: selectedUser.is_verified,
-					is_active: selectedUser.is_active,
-					is_superuser: selectedUser.is_superuser,
-					...(newPassword !== '' && { password: newPassword }),
-					...(newEmail !== '' && { email: newEmail })
-				})
-			});
-
-			if (response.ok) {
-				toast.success(`User ${selectedUser.email} updated successfully.`);
-				dialogOpen = false;
-				selectedUser = null;
-				newPassword = '';
-				newEmail = '';
-				await invalidateAll();
-			} else {
-				const errorText = await response.text();
-				console.error(`Failed to update user ${response.statusText}`, errorText);
-				toast.error(`Failed to update user: ${response.statusText}`);
+		const { error } = await client.PATCH('/api/v1/users/{id}', {
+			params: {
+				path: {
+					id: selectedUser.id
+				}
+			},
+			body: {
+				is_verified: selectedUser.is_verified,
+				is_active: selectedUser.is_active,
+				is_superuser: selectedUser.is_superuser,
+				...(newPassword !== '' && { password: newPassword }),
+				...(newEmail !== '' && { email: newEmail })
 			}
-		} catch (error) {
-			console.error('Error updating user:', error);
-			toast.error(
-				'Error updating user: ' + (error instanceof Error ? error.message : String(error))
-			);
-		} finally {
+		});
+
+		if (error) {
+			toast.error(`Failed to update user ${selectedUser.email}: ${error}`);
+		} else {
+			toast.success(`User ${selectedUser.email} updated successfully.`);
+			dialogOpen = false;
+			selectedUser = null;
 			newPassword = '';
+			newEmail = '';
+			await invalidateAll();
 		}
 	}
 </script>

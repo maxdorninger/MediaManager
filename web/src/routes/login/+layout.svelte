@@ -8,7 +8,7 @@
 	import { page } from '$app/state';
 	import { setContext } from 'svelte';
 
-	setContext('oauthProvider', () => page.data.oauthProvider);
+	setContext('oauthProviders', () => page.data.oauthProviders.oauth_providers);
 	let { children } = $props();
 </script>
 

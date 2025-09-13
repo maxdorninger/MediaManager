@@ -4,7 +4,7 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { ImageOff } from 'lucide-svelte';
 	import { getContext } from 'svelte';
-	import type { PublicMovie, User } from '$lib/types.js';
+	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import { page } from '$app/state';
 	import TorrentTable from '$lib/components/torrent-table.svelte';
@@ -15,8 +15,8 @@
 	import { base } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	let movie: PublicMovie = page.data.movie;
-	let user: () => User = getContext('user');
+	let movie: components['schemas']['PublicMovie'] = page.data.movie;
+	let user: () => components['schemas']['UserRead'] = getContext('user');
 </script>
 
 <svelte:head>

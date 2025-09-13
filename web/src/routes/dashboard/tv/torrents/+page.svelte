@@ -3,14 +3,13 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import type { RichShowTorrent } from '$lib/types';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import TorrentTable from '$lib/components/torrent-table.svelte';
 	import { base } from '$app/paths';
-
-	let showsPromise: Promise<RichShowTorrent[]> = $state(page.data.shows);
+	import type { components } from '$lib/api/api';
+	let showsPromise: Promise<components['schemas']['RichShowTorrent'][]> = $state(page.data.shows);
 </script>
 
 <svelte:head>

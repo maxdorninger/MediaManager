@@ -1,47 +1,25 @@
-import { env } from '$env/dynamic/public';
 import type { PageLoad } from './$types';
-
-const apiUrl = env.PUBLIC_API_URL;
+import client from '$lib/api';
 
 export const load: PageLoad = async ({ fetch, params }) => {
-	const url = `${apiUrl}/tv/seasons/${params.SeasonId}/files`;
-	const url2 = `${apiUrl}/tv/seasons/${params.SeasonId}`;
-
-	try {
-		console.log(`Fetching data from: ${url} and ${url2}`);
-		const response = await fetch(url, {
-			method: 'GET',
-			credentials: 'include'
-		});
-		const response2 = await fetch(url2, {
-			method: 'GET',
-			credentials: 'include'
-		});
-
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error(`API request failed with status ${response.status}: ${errorText}`);
+	const season = await client.GET('/api/v1/tv/seasons/{season_id}', {
+		fetch: fetch,
+		params: {
+			path: {
+				season_id: params.SeasonId
+			}
 		}
-
-		if (!response2.ok) {
-			const errorText = await response.text();
-			console.error(`API request failed with status ${response.status}: ${errorText}`);
+	});
+	const seasonFiles = await client.GET('/api/v1/tv/seasons/{season_id}/files', {
+		fetch: fetch,
+		params: {
+			path: {
+				season_id: params.SeasonId
+			}
 		}
-
-		const filesData = await response.json();
-		const seasonData = await response2.json();
-		console.log('received season_files data: ', filesData);
-		console.log('received season data: ', seasonData);
-		return {
-			files: filesData,
-			season: seasonData
-		};
-	} catch (error) {
-		console.error('An error occurred while fetching TV show files:', error);
-		return {
-			error: `An unexpected error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`,
-			files: [],
-			season: null
-		};
-	}
+	});
+	return {
+		files: seasonFiles.data,
+		season: season.data
+	};
 };

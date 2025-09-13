@@ -5,16 +5,16 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { getContext } from 'svelte';
-	import type { PublicSeasonFile, Season, Show } from '$lib/types';
+	import type { components } from '$lib/api/api';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils';
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import { base } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	let seasonFiles: PublicSeasonFile[] = $state(page.data.files);
-	let season: Season = $state(page.data.season);
-	let show: () => Show = getContext('show');
+	let seasonFiles: components['schemas']['PublicSeasonFile'][] = $state(page.data.files);
+	let season: components['schemas']['Season'] = $state(page.data.season);
+	let show: () => components['schemas']['Show'] = getContext('show');
 
 	console.log('loaded files', seasonFiles);
 </script>

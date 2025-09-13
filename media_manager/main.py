@@ -2,11 +2,9 @@ import logging
 import os
 import sys
 from logging.config import dictConfig
+from pythonjsonlogger.json import JsonFormatter
 from pathlib import Path
 
-from psycopg.errors import UniqueViolation
-from pythonjsonlogger.json import JsonFormatter
-from sqlalchemy.exc import IntegrityError
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -48,6 +46,8 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+from psycopg.errors import UniqueViolation  # noqa: E402
+from sqlalchemy.exc import IntegrityError  # noqa: E402
 from media_manager.database import init_db  # noqa: E402
 from media_manager.config import AllEncompassingConfig  # noqa: E402
 import media_manager.torrent.router as torrent_router  # noqa: E402
@@ -66,18 +66,15 @@ from media_manager.movies.service import (  # noqa: E402
 from media_manager.notification.router import router as notification_router  # noqa: E402
 import uvicorn  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
-from media_manager.auth.users import openid_client  # noqa: E402
-from media_manager.auth.users import SECRET as AUTH_USERS_SECRET  # noqa: E402
 from media_manager.auth.router import users_router as custom_users_router  # noqa: E402
 from media_manager.auth.router import auth_metadata_router  # noqa: E402
 from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate  # noqa: E402
-from media_manager.auth.oauth import get_oauth_router  # noqa: E402
+from media_manager.auth.router import get_openid_router  # noqa: E402
 
 from media_manager.auth.users import (  # noqa: E402
     bearer_auth_backend,
     fastapi_users,
     cookie_auth_backend,
-    openid_cookie_auth_backend,
     create_default_admin_user,
 )
 from media_manager.exceptions import (  # noqa: E402
@@ -192,16 +189,20 @@ app = FastAPI(lifespan=lifespan, root_path=BASE_PATH)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 origins = config.misc.cors_urls
-log.info("CORS URLs activated for following origins:")
-for origin in origins:
-    log.info(f" - {origin}")
-
+log.info(f"CORS URLs activated for following origins: {origins}")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=[
+        "GET",
+        "PUT",
+        "POST",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+    ],
 )
 
 api_app = APIRouter(prefix="/api/v1")
@@ -265,20 +266,7 @@ api_app.include_router(
 # ----------------------------
 
 api_app.include_router(auth_metadata_router, tags=["openid"])
-
-if openid_client is not None:
-    api_app.include_router(
-        get_oauth_router(
-            oauth_client=openid_client,
-            backend=openid_cookie_auth_backend,
-            get_user_manager=fastapi_users.get_user_manager,
-            state_secret=AUTH_USERS_SECRET,
-            associate_by_email=True,
-            is_verified_by_default=True,
-        ),
-        prefix=f"/auth/cookie/{openid_client.name}",
-        tags=["openid"],
-    )
+api_app.include_router(get_openid_router(), tags=["openid"], prefix="/auth/oauth")
 
 api_app.include_router(tv_router.router, prefix="/tv", tags=["tv"])
 api_app.include_router(torrent_router.router, prefix="/torrent", tags=["torrent"])
@@ -398,6 +386,7 @@ try:
 except Exception as e:
     log.error(f"Error creating test directory: {e}")
     raise
+
 
 if __name__ == "__main__":
     uvicorn.run(

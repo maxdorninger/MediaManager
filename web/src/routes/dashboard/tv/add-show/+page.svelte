@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
@@ -8,60 +7,40 @@
 	import { Button } from '$lib/components/ui/button';
 	import { ChevronDown } from 'lucide-svelte';
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
-	import type { MetaDataProviderSearchResult } from '$lib/types.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let searchTerm: string = $state('');
-	let metadataProvider: string = $state('tmdb');
-	let results: MetaDataProviderSearchResult[] | null = $state(null);
+	let metadataProvider: 'tmdb' | 'tvdb' = $state('tmdb');
+	let data: components['schemas']['MetaDataProviderSearchResult'][] | null = $state(null);
 	import { base } from '$app/paths';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
 	onMount(() => {
 		search('');
 	});
 
 	async function search(query: string) {
-		let urlString = apiUrl + '/tv/recommended';
-		const urlParams = new SvelteURLSearchParams();
-
-		if (query.length > 0) {
-			urlString = apiUrl + '/tv/search';
-			urlParams.append('query', query);
-			toast.info(`Searching for "${query}" using ${metadataProvider.toUpperCase()}...`);
-		}
-		urlParams.append('metadata_provider', metadataProvider);
-		urlString += `?${urlParams.toString()}`;
-
-		try {
-			const response = await fetch(urlString, {
-				method: 'GET',
-				credentials: 'include'
-			});
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`Search failed: ${response.status} ${errorText || response.statusText}`);
-			}
-			results = await response.json();
-			console.log('Fetched results:', results);
-			if (query.length === 0) {
-				return;
-			}
-			if (results && results.length > 0) {
-				toast.success(`Found ${results.length} result(s) for "${query}".`);
-			} else {
-				toast.info(`No results found for "${query}".`);
-			}
-		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'An unknown error occurred during search.';
-			console.error('Search error:', error);
-			toast.error(errorMessage);
-			results = null; // Clear previous results on error
+		const results =
+			query.length > 0
+				? await client.GET('/api/v1/tv/search', {
+						params: {
+							query: {
+								query: query,
+								metadata_provider: metadataProvider
+							}
+						}
+					})
+				: await client.GET('/api/v1/tv/recommended');
+		if (results.data && results.data.length > 0) {
+			toast.success(`Found ${results.data.length} result(s) for "${query}".`);
+			data = results.data as components['schemas']['MetaDataProviderSearchResult'][];
+		} else {
+			toast.info(`No results found for "${query}".`);
+			data = null;
 		}
 	}
 </script>
@@ -140,15 +119,15 @@
 
 	<Separator class="my-8" />
 
-	{#if results && results.length === 0}
+	{#if data && data.length === 0}
 		<h3 class="mx-auto">No Shows found.</h3>
-	{:else if results}
+	{:else if data}
 		<div
 			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1
 		 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
-			{#each results as result (result.external_id)}
-				<AddMediaCard {result} isShow={true} />
+			{#each data as dataItem (dataItem.external_id)}
+				<AddMediaCard result={dataItem} isShow={true} />
 			{/each}
 		</div>
 	{/if}

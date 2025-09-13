@@ -3,11 +3,11 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import type { SeasonRequest } from '$lib/types';
 	import RequestsTable from '$lib/components/season-requests-table.svelte';
 	import { base } from '$app/paths';
+	import type { components } from '$lib/api/api';
 
-	let requests: SeasonRequest[] = $state(page.data.requestsData);
+	let requests: components['schemas']['RichSeasonRequest'][] = $state(page.data.requestsData);
 </script>
 
 <svelte:head>

@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Type, Tuple
@@ -17,14 +18,16 @@ from media_manager.metadataProvider.config import MetadataProviderConfig
 from media_manager.notification.config import NotificationConfig
 from media_manager.torrent.config import TorrentConfig
 
-config_path = os.getenv("CONFIG_FILE")
+log = logging.getLogger(__name__)
 
+config_path = os.getenv("CONFIG_FILE")
 if config_path is None:
     # Default to config folder approach
     config_dir = os.getenv("CONFIG_DIR", "/app/config")
     config_path = Path(config_dir) / "config.toml"
 else:
     config_path = Path(config_path)
+log.info(f"Using config file {config_path}")
 
 
 class LibraryItem(BaseSettings):
@@ -48,7 +51,10 @@ class BasicConfig(BaseSettings):
 
 class AllEncompassingConfig(BaseSettings):
     model_config = SettingsConfigDict(
-        toml_file=config_path, case_sensitive=False, env_nested_delimiter="__", env_prefix="MEDIAMANAGER_"
+        toml_file=config_path,
+        case_sensitive=False,
+        env_nested_delimiter="__",
+        env_prefix="MEDIAMANAGER_",
     )
     """
     This class is used to load all configurations from the environment variables.

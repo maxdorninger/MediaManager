@@ -28,18 +28,16 @@ config = AllEncompassingConfig().auth
 SECRET = config.token_secret
 LIFETIME = config.session_lifetime
 
+openid_client: OpenID | None = None
 if config.openid_connect.enabled:
-    openid_config = AllEncompassingConfig().auth.openid_connect
+    log.info(f"Configured OIDC provider: {config.openid_connect.name}")
     openid_client = OpenID(
         base_scopes=["openid", "email", "profile"],
-        client_id=openid_config.client_id,
-        client_secret=openid_config.client_secret,
-        name=openid_config.name,
-        openid_configuration_endpoint=openid_config.configuration_endpoint,
+        client_id=config.openid_connect.client_id,
+        client_secret=config.openid_connect.client_secret,
+        name=config.openid_connect.name,
+        openid_configuration_endpoint=config.openid_connect.configuration_endpoint,
     )
-    openid_client.base_scopes = ["openid", "email", "profile"]
-else:
-    openid_client = None
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):

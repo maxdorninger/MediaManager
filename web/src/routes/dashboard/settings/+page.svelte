@@ -8,11 +8,13 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { base } from '$app/paths';
-	import type { User } from '$lib/types';
+	import type { components } from '$lib/api/api';
 
-	let currentUser: () => User = getContext('user');
-	let users: User[] = $derived(
-		page.data.users.filter((user: User) => user.id !== currentUser().id)
+	let currentUser: () => components['schemas']['UserRead'] = getContext('user');
+	let users: components['schemas']['UserRead'][] = $derived(
+		page.data.users.filter(
+			(user: components['schemas']['UserRead']) => user.id !== currentUser().id
+		)
 	);
 	console.log('Current user:', currentUser());
 </script>

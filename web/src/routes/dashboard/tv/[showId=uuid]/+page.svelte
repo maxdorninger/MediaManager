@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
@@ -7,7 +6,7 @@
 	import { ImageOff } from 'lucide-svelte';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { getContext } from 'svelte';
-	import type { PublicShow, RichShowTorrent, User } from '$lib/types.js';
+	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import DownloadSeasonDialog from '$lib/components/download-season-dialog.svelte';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
@@ -20,27 +19,28 @@
 	import { Label } from '$lib/components/ui/label';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-
-	const apiUrl = env.PUBLIC_API_URL;
-	let show: () => PublicShow = getContext('show');
-	let user: () => User = getContext('user');
-	let torrents: RichShowTorrent = page.data.torrentsData;
 	import { base } from '$app/paths';
+	import client from '$lib/api';
+
+	let show: () => components['schemas']['PublicShow'] = getContext('show');
+	let user: () => components['schemas']['UserRead'] = getContext('user');
+	let torrents: components['schemas']['RichShowTorrent'] = page.data.torrentsData;
 
 	let continuousDownloadEnabled = $state(show().continuous_download);
 
 	async function toggle_continuous_download() {
-		const urlString = `${apiUrl}/tv/shows/${show().id}/continuousDownload?continuous_download=${!continuousDownloadEnabled}`;
+		const { response } = await client.POST('/api/v1/tv/shows/{show_id}/continuousDownload', {
+			params: {
+				path: { show_id: show().id },
+				query: { continuous_download: !continuousDownloadEnabled }
+			}
+		});
 		console.log(
 			'Toggling continuous download for show',
 			show().name,
 			'to',
 			!continuousDownloadEnabled
 		);
-		const response = await fetch(urlString, {
-			method: 'POST',
-			credentials: 'include'
-		});
 		if (!response.ok) {
 			const errorText = await response.text();
 			toast.error('Failed to toggle continuous download: ' + errorText);
@@ -49,11 +49,6 @@
 			toast.success('Continuous download toggled successfully.');
 		}
 	}
-
-	/*	$effect(()=>{
-        continuousDownloadEnabled;
-        toggle_continuous_download();
-    });*/
 </script>
 
 <svelte:head>

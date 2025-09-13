@@ -5,78 +5,70 @@
 	import { cn } from '$lib/utils.js';
 	import { tick } from 'svelte';
 	import { CheckIcon, ChevronsUpDownIcon } from 'lucide-svelte';
-	import type { LibraryItem, PublicMovie, PublicShow } from '$lib/types.js';
 	import { onMount } from 'svelte';
-	import { env } from '$env/dynamic/public';
 	import { toast } from 'svelte-sonner';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
-
-	const apiUrl = env.PUBLIC_API_URL;
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
 	let {
 		media,
 		mediaType
 	}: {
-		media: PublicShow | PublicMovie;
+		media: components['schemas']['PublicShow'] | components['schemas']['PublicMovie'];
 		mediaType: 'tv' | 'movie';
 	} = $props();
 
 	let open = $state(false);
 	let value = $derived(media.library === '' ? 'Default' : media.library);
-	let libraries = $state<LibraryItem[]>([]);
-	let triggerRef = $state<HTMLButtonElement>(null!);
-	const selectedLabel = $derived<string>(
+	let libraries: components['schemas']['LibraryItem'][] = $state([]);
+	let triggerRef: HTMLButtonElement = $state(null!);
+	const selectedLabel: string = $derived(
 		libraries.find((item) => item.name === value)?.name ?? 'Default'
 	);
 	onMount(async () => {
-		const endpoint = mediaType === 'tv' ? '/tv/shows/libraries' : '/movies/libraries';
-		try {
-			const response = await fetch(apiUrl + endpoint, {
-				credentials: 'include'
-			});
-			if (response.ok) {
-				libraries = await response.json();
-				if (!value && libraries.length > 0) {
-					value = 'Default';
-				}
-				libraries.push({
-					name: 'Default',
-					path: 'Default'
-				});
-			} else {
-				toast.error('Failed to load libraries.');
-			}
-		} catch (error) {
-			toast.error('Error fetching libraries.');
-			console.error(error);
+		const tvLibraries = await client.GET('/api/v1/tv/shows/libraries');
+		const movieLibraries = await client.GET('/api/v1/movies/libraries');
+
+		if (mediaType === 'tv') {
+			libraries = tvLibraries.data as components['schemas']['LibraryItem'][];
+		} else {
+			libraries = movieLibraries.data as components['schemas']['LibraryItem'][];
 		}
+
+		if (!value && libraries.length > 0) {
+			value = 'Default';
+		}
+		libraries.push({
+			name: 'Default',
+			path: 'Default'
+		} as components['schemas']['LibraryItem']);
 	});
 
 	async function handleSelect() {
 		open = false;
 		await tick();
 		triggerRef.focus();
-
-		const endpoint =
-			mediaType === 'tv' ? `/tv/shows/${media.id}/library` : `/movies/${media.id}/library`;
-		const urlParams = new SvelteURLSearchParams();
-		urlParams.append('library', selectedLabel);
-		const urlString = `${apiUrl}${endpoint}?${urlParams.toString()}`;
-		try {
-			const response = await fetch(urlString, {
-				method: 'POST',
-				credentials: 'include'
+		let response;
+		if (mediaType === 'tv') {
+			response = await client.POST('/api/v1/tv/shows/{show_id}/library', {
+				params: {
+					path: { show_id: media.id! },
+					query: { library: selectedLabel }
+				}
 			});
-			if (response.ok) {
-				toast.success(`Library updated to ${selectedLabel}`);
-				media.library = selectedLabel;
-			} else {
-				const errorText = await response.text();
-				toast.error(`Failed to update library: ${errorText}`);
-			}
-		} catch (error) {
-			toast.error('Error updating library.');
-			console.error(error);
+		} else {
+			response = await client.POST('/api/v1/movies/{movie_id}/library', {
+				params: {
+					path: { movie_id: media.id! },
+					query: { library: selectedLabel }
+				}
+			});
+		}
+		if (response.error) {
+			toast.error('Failed to update library');
+		} else {
+			toast.success(`Library updated to ${selectedLabel}`);
+			media.library = selectedLabel;
 		}
 	}
 

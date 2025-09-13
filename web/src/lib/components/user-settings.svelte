@@ -1,47 +1,30 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { env } from '$env/dynamic/public';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import client from '$lib/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
 	let newPassword: string = $state('');
 	let newEmail: string = $state('');
 	let dialogOpen = $state(false);
 
 	async function saveUser() {
-		try {
-			const response = await fetch(`${apiUrl}/users/me`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include',
-				body: JSON.stringify({
-					...(newPassword !== '' && { password: newPassword }),
-					...(newEmail !== '' && { email: newEmail })
-				})
-			});
-
-			if (response.ok) {
-				toast.success(`Updated details successfully.`);
-				dialogOpen = false;
-			} else {
-				const errorText = await response.text();
-				console.error(`Failed to update user: ${response.statusText}`, errorText);
-				toast.error(`Failed to update user: ${response.statusText}`);
+		const { error } = await client.PATCH('/api/v1/users/me', {
+			body: {
+				...(newPassword !== '' && { password: newPassword }),
+				...(newEmail !== '' && { email: newEmail })
 			}
-		} catch (error) {
-			console.error('Error updating user:', error);
-			toast.error(
-				'Error updating user: ' + (error instanceof Error ? error.message : String(error))
-			);
-		} finally {
-			newPassword = '';
-			newEmail = '';
+		});
+		if (error) {
+			toast.error(`Failed to update user`);
+		} else {
+			toast.success(`Updated details successfully.`);
+			dialogOpen = false;
 		}
+		newPassword = '';
+		newEmail = '';
 	}
 </script>
 

@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.responses import JSONResponse
@@ -176,9 +176,7 @@ def get_a_shows_torrents(show: show_dep, tv_service: tv_service_dep):
 def set_library(
     show: show_dep,
     tv_service: tv_service_dep,
-    library: Literal[
-        *[x.name for x in AllEncompassingConfig().misc.tv_libraries], "Default"
-    ],
+    library: str,
 ) -> None:
     """
     Sets the library of a Show.

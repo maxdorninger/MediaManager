@@ -1,23 +1,22 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-	import type { PublicMovie, Quality } from '$lib/types.js';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils.js';
 	import { toast } from 'svelte-sonner';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
 
-	const apiUrl = env.PUBLIC_API_URL;
-	let { movie }: { movie: PublicMovie } = $props();
+	let { movie }: { movie: components['schemas']['PublicMovie'] } = $props();
 	let dialogOpen = $state(false);
 	let minQuality = $state<string | undefined>(undefined);
 	let wantedQuality = $state<string | undefined>(undefined);
 	let isSubmittingRequest = $state(false);
 	let submitRequestError = $state<string | null>(null);
 
-	const qualityValues: Quality[] = [1, 2, 3, 4];
+	const qualityValues: components['schemas']['Quality'][] = [1, 2, 3, 4];
 	let qualityOptions = $derived(
 		qualityValues.map((q) => ({ value: q.toString(), label: getTorrentQualityString(q) }))
 	);
@@ -28,38 +27,22 @@
 	async function handleRequestMovie() {
 		isSubmittingRequest = true;
 		submitRequestError = null;
-
-		try {
-			const response = await fetch(`${apiUrl}/movies/requests`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include',
-				body: JSON.stringify({
-					movie_id: movie.id,
-					min_quality: parseInt(minQuality!),
-					wanted_quality: parseInt(wantedQuality!)
-				})
-			});
-
-			if (response.ok) {
-				dialogOpen = false;
-				minQuality = undefined;
-				wantedQuality = undefined;
-				toast.success('Movie request submitted successfully!');
-			} else {
-				const errorData = await response.json().catch(() => ({ message: response.statusText }));
-				submitRequestError = `Failed to submit request: ${errorData.message || response.statusText}`;
-				toast.error(submitRequestError);
-				console.error('Failed to submit request', response.statusText, errorData);
+		const { response } = await client.POST('/api/v1/movies/requests', {
+			body: {
+				movie_id: movie.id!,
+				min_quality: parseInt(minQuality!) as components['schemas']['Quality'],
+				wanted_quality: parseInt(wantedQuality!) as components['schemas']['Quality']
 			}
-		} catch (error) {
-			submitRequestError = `Error submitting request: ${error instanceof Error ? error.message : String(error)}`;
-			toast.error(submitRequestError);
-			console.error('Error submitting request:', error);
-		} finally {
-			isSubmittingRequest = false;
+		});
+		isSubmittingRequest = false;
+
+		if (response.ok) {
+			dialogOpen = false;
+			minQuality = undefined;
+			wantedQuality = undefined;
+			toast.success('Movie request submitted successfully!');
+		} else {
+			toast.error('Failed to submit request');
 		}
 	}
 </script>
