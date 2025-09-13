@@ -13,7 +13,7 @@ services:
       # Image folder
       - ./images/:/data/images/
   db:
-    image: postgres:latest
+    image: postgres:17
     restart: unless-stopped
     volumes:
       - ./postgres:/var/lib/postgresql/data
