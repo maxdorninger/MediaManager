@@ -70,14 +70,7 @@
 		"zod": "^3.25.76"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.806.0",
-		"@sveltejs/adapter-node": "^5.2.12",
-		"embla-carousel-autoplay": "^8.6.0",
-		"eslint-plugin-unused-imports": "^4.1.4",
-		"lucide-svelte": "^0.507.0",
 		"openapi-fetch": "^0.14.0",
-		"sharp": "^0.34.1",
-		"sveltekit-image-optimize": "^0.0.7",
 		"uuid": "^11.1.0"
 	}
 }
