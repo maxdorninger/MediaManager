@@ -48,6 +48,7 @@ export default ts.config(
 		rules: {
 			// Override or add rule settings here, such as:
 			// 'svelte/rule-name': 'error'
+			'svelte/no-navigation-without-resolve': 'off'
 		}
 	}
 );
