@@ -266,7 +266,8 @@ api_app.include_router(
 # ----------------------------
 
 api_app.include_router(auth_metadata_router, tags=["openid"])
-api_app.include_router(get_openid_router(), tags=["openid"], prefix="/auth/oauth")
+if get_openid_router():
+    api_app.include_router(get_openid_router(), tags=["openid"], prefix="/auth/oauth")
 
 api_app.include_router(tv_router.router, prefix="/tv", tags=["tv"])
 api_app.include_router(torrent_router.router, prefix="/torrent", tags=["torrent"])
