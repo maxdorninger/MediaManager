@@ -76,7 +76,7 @@
 			><img alt="Brandon P." src="https://github.com/brandon-dacrib.png" width="80px" /></a
 		>&nbsp;&nbsp;
 		<a href="https://github.com/HadrienKerlero"
-		><img alt="HadrienKerlero" src="https://github.com/HadrienKerlero.png" width="80px" /></a
+			><img alt="HadrienKerlero" src="https://github.com/HadrienKerlero.png" width="80px" /></a
 		>&nbsp;&nbsp;
 	</div>
 
