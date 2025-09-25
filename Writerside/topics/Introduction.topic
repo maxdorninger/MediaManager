@@ -45,6 +45,8 @@
                       summary="@aljamerzen" image="https://cdn.fosstodon.org/accounts/avatars/107/626/197/378/907/137/original/e93602705171fd0a.jpg"/>
                 <card href="https://github.com/SeimusS"
                       summary="@SeimusS" image="https://github.com/SeimusS.png" />
+                <card href="https://github.com/HadrienKerlero"
+                      summary="@HadrienKerlero" image="https://github.com/HadrienKerlero.png" />
                 <card href="https://github.com/brandon-dacrib"
                       summary="@brandon-dacrib" image="https://github.com/brandon-dacrib.png" />
             </cards>
