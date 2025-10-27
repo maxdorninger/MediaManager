@@ -25,7 +25,7 @@ ENV PUBLIC_VERSION=${VERSION} \
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y ca-certificates bash libtorrent21 gcc bc locales postgresql mime-support curl gzip unzip tar 7zip bzip2 unar && \
+    apt-get install -y ca-certificates bash libtorrent21 gcc bc locales postgresql media-types mailcap curl gzip unzip tar 7zip bzip2 unar && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
