@@ -2,7 +2,7 @@
 	import '../app.css';
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { asset } from '$app/paths';
+	import { resolve } from '$app/paths';
 
 	let { children } = $props();
 </script>
