@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { goto } from '$app/navigation';
-import { base } from '$app/paths';
+import { resolve } from '$app/paths';
 import { toast } from 'svelte-sonner';
 import client from '$lib/api';
 
@@ -60,7 +60,7 @@ export function convertTorrentSeasonRangeToIntegerRange(torrent: {
 
 export async function handleLogout() {
 	await client.POST('/api/v1/auth/cookie/logout');
-	await goto(base + '/login');
+	await goto(resolve('/login', {}));
 }
 
 export async function handleOauth() {

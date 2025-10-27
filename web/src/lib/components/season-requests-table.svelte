@@ -8,7 +8,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 
 	let {
@@ -28,7 +28,6 @@
 		isShow: boolean;
 	} = $props();
 	const user: () => components['schemas']['UserRead'] = getContext('user');
-
 	async function approveRequest(requestId: string, currentAuthorizedStatus: boolean) {
 		let response;
 		if (isShow) {
@@ -183,9 +182,9 @@
 									variant="outline"
 									onclick={() =>
 										goto(
-											base +
-												'/dashboard/tv/' +
-												(request as components['schemas']['RichSeasonRequest']).show.id
+											resolve('/dashboard/tv/[showId]', {
+												showId: (request as components['schemas']['RichSeasonRequest']).show.id!
+											})
 										)}
 								>
 									Download manually
@@ -197,9 +196,9 @@
 									variant="outline"
 									onclick={() =>
 										goto(
-											base +
-												'/dashboard/movies/' +
-												(request as components['schemas']['RichMovieRequest']).movie.id
+											resolve('/dashboard/movies/[movieId]', {
+												movieId: (request as components['schemas']['RichMovieRequest']).movie.id!
+											})
 										)}
 								>
 									Download manually

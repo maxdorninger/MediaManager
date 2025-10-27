@@ -3,7 +3,7 @@
 	import type { ComponentProps } from 'svelte';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
-
+	import { resolve } from '$app/paths';
 	import { toggleMode } from 'mode-watcher';
 
 	let {
@@ -41,7 +41,7 @@
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton size="sm">
 						{#snippet child({ props })}
-							<a href={item.url} {...props}>
+							<a href={resolve(item.url, {})} {...props}>
 								<item.icon />
 								<span>{item.title}</span>
 							</a>

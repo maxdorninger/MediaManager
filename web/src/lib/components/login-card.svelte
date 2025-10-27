@@ -11,6 +11,7 @@
 	import LoadingBar from '$lib/components/loading-bar.svelte';
 	import client from '$lib/api';
 	import { handleOauth } from '$lib/utils.ts';
+	import { resolve } from '$app/paths';
 
 	let {
 		oauthProviderNames
@@ -46,7 +47,7 @@
 			console.log('Received User Data: ', response);
 			errorMessage = 'Login successful! Redirecting...';
 			toast.success(errorMessage);
-			goto(base + '/dashboard');
+			goto(resolve('/dashboard', {}));
 		} else {
 			toast.error('Login failed!');
 			errorMessage = `Login failed! Please check your credentials and try again.`;
@@ -75,7 +76,10 @@
 			<div class="grid gap-2">
 				<div class="flex items-center">
 					<Label for="password">Password</Label>
-					<a class="ml-auto inline-block text-sm underline" href="{base}/login/forgot-password">
+					<a
+						class="ml-auto inline-block text-sm underline"
+						href={resolve('/login/forgot-password', {})}
+					>
 						Forgot your password?
 					</a>
 				</div>

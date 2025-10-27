@@ -9,7 +9,7 @@
 		Settings,
 		TvIcon
 	} from 'lucide-svelte';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 
 	import { PUBLIC_VERSION } from '$env/static/public';
 
@@ -17,47 +17,47 @@
 		navMain: [
 			{
 				title: 'Dashboard',
-				url: base + '/dashboard',
+				url: resolve('/dashboard', {}),
 				icon: Home,
 				isActive: true
 			},
 			{
 				title: 'TV',
-				url: base + '/dashboard/tv',
+				url: resolve('/dashboard/tv', {}),
 				icon: TvIcon,
 				isActive: true,
 				items: [
 					{
 						title: 'Add a show',
-						url: base + '/dashboard/tv/add-show'
+						url: resolve('/dashboard/tv/add-show', {})
 					},
 					{
 						title: 'Torrents',
-						url: base + '/dashboard/tv/torrents'
+						url: resolve('/dashboard/tv/torrents', {})
 					},
 					{
 						title: 'Requests',
-						url: base + '/dashboard/tv/requests'
+						url: resolve('/dashboard/tv/requests', {})
 					}
 				]
 			},
 			{
 				title: 'Movies',
-				url: base + '/dashboard/movies',
+				url: resolve('/dashboard/movies', {}),
 				icon: Clapperboard,
 				isActive: true,
 				items: [
 					{
 						title: 'Add a movie',
-						url: base + '/dashboard/movies/add-movie'
+						url: resolve('/dashboard/movies/add-movie', {})
 					},
 					{
 						title: 'Torrents',
-						url: base + '/dashboard/movies/torrents'
+						url: resolve('/dashboard/movies/torrents', {})
 					},
 					{
 						title: 'Requests',
-						url: base + '/dashboard/movies/requests'
+						url: resolve('/dashboard/movies/requests', {})
 					}
 				]
 			}
@@ -65,12 +65,12 @@
 		navSecondary: [
 			{
 				title: 'Notifications',
-				url: base + '/dashboard/notifications',
+				url: resolve('/dashboard/notifications', {}),
 				icon: Bell
 			},
 			{
 				title: 'Settings',
-				url: base + '/dashboard/settings',
+				url: resolve('/dashboard/settings', {}),
 				icon: Settings
 			},
 			{
@@ -85,7 +85,7 @@
 			},
 			{
 				title: 'About',
-				url: base + '/dashboard/about',
+				url: resolve('/dashboard/about', {}),
 				icon: Info
 			}
 		]
@@ -109,7 +109,7 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton size="lg">
 					{#snippet child({ props })}
-						<a href="{base}/dashboard" {...props}>
+						<a href={resolve('/dashboard', {})} {...props}>
 							<img class="size-12" src={logo} alt="Media Manager Logo" />
 							<div class="grid flex-1 text-left text-sm leading-tight">
 								<span class="truncate font-semibold">Media Manager</span>

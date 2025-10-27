@@ -10,7 +10,7 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import { toast } from 'svelte-sonner';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 
 	let email = $state('');
@@ -106,7 +106,9 @@
 			</form>
 		{/if}
 		<div class="mt-4 text-center text-sm">
-			<a class="text-primary font-semibold hover:underline" href="{base}/login"> Back to Login </a>
+			<a class="text-primary font-semibold hover:underline" href={resolve('/login', {})}>
+				Back to Login
+			</a>
 		</div>
 	</CardContent>
 </Card>

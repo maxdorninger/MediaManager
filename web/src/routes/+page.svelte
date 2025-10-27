@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { browser } from '$app/environment';
 	import { redirect } from '@sveltejs/kit';
 
-	if (browser) goto(base + '/dashboard');
-	else throw redirect(307, base + '/login');
+	if (browser) goto(resolve('/dashboard', {}));
+	else throw redirect(307, resolve('/login', {}));
 </script>
 
 <svelte:head>
