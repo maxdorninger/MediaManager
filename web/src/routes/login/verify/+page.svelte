@@ -2,7 +2,6 @@
 	import { UserCheck } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { handleLogout } from '$lib/utils.ts';
-	import { resolve } from '$app/paths';
 </script>
 
 <svelte:head>

@@ -9,7 +9,6 @@
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
-	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 
 	let searchTerm: string = $state('');
@@ -18,7 +17,7 @@
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
-	import {handleQueryNotificationToast} from "$lib/utils.ts";
+	import { handleQueryNotificationToast } from '$lib/utils.ts';
 
 	onMount(() => {
 		search('');
@@ -37,13 +36,12 @@
 					})
 				: await client.GET('/api/v1/tv/recommended');
 		if (results.data && results.data.length > 0) {
-			handleQueryNotificationToast(results.data.length, query)
+			handleQueryNotificationToast(results.data.length, query);
 			data = results.data as components['schemas']['MetaDataProviderSearchResult'][];
 		} else {
-			handleQueryNotificationToast(0, query)
+			handleQueryNotificationToast(0, query);
 			data = null;
 		}
-
 	}
 </script>
 
