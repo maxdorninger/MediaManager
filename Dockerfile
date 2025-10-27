@@ -9,7 +9,7 @@ RUN npm ci && npm cache clean --force
 COPY web/ ./
 RUN env PUBLIC_VERSION=${VERSION} PUBLIC_API_URL=${BASE_PATH} BASE_PATH=${BASE_PATH}/web npm run build
 
-FROM ghcr.io/astral-sh/uv:debian-slim
+FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim
 ARG VERSION
 ARG BASE_PATH=""
 LABEL author="github.com/maxdorninger"
