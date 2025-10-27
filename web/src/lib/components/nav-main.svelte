@@ -33,11 +33,12 @@
 								{mainItem.title}
 							{/snippet}
 							{#snippet child({ props })}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
 								<a href={mainItem.url} {...props}>
-									<!-- eslint-disable-line svelte/no-navigation-without-resolve -->
 									<mainItem.icon />
 									<span>{mainItem.title}</span>
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{/snippet}
 						</Sidebar.MenuButton>
 						{#if mainItem.items?.length}
