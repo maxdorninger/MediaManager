@@ -4,7 +4,7 @@
 
 	import background from '$lib/images/pawel-czerwinski-NTYYL9Eb9y8-unsplash.jpg?enhanced';
 	import { PUBLIC_VERSION } from '$env/static/public';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { setContext } from 'svelte';
 
@@ -15,7 +15,7 @@
 <div class="grid min-h-svh lg:grid-cols-2">
 	<div class="flex flex-col gap-4 p-6 md:p-10">
 		<header class="flex justify-center gap-2 md:justify-start">
-			<a class="flex items-center gap-2" href="{base}/">
+			<a class="flex items-center gap-2" href={resolve('/', {})}>
 				<div class="text-primary-foreground flex size-16 items-center justify-center rounded-md">
 					<img alt="MediaManager Logo" class="size-12" src={logo} />
 				</div>

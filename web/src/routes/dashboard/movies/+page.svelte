@@ -7,7 +7,7 @@
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import { onMount } from 'svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api.d.ts';
 
@@ -35,11 +35,11 @@
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item class="hidden md:block">
-					<Breadcrumb.Link href="{base}/dashboard">MediaManager</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>MediaManager</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="{base}/dashboard">Home</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>Home</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
@@ -71,7 +71,7 @@
 			{@render loadingbar()}
 		{:else}
 			{#each movies as movie (movie.id)}
-				<a href={base + '/dashboard/movies/' + movie.id}>
+				<a href={resolve('/dashboard/movies/[movieId]', { movieId: movie.id! })}>
 					<Card.Root class="col-span-full max-w-[90vw] ">
 						<Card.Header>
 							<Card.Title class="h-6 truncate">{getFullyQualifiedMediaName(movie)}</Card.Title>

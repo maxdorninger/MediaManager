@@ -1,7 +1,6 @@
 <script lang="ts">
 	import ChevronsUpDown from '@lucide/svelte/icons/chevrons-up-down';
 	import LogOut from '@lucide/svelte/icons/log-out';
-
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -10,7 +9,7 @@
 	import UserRound from '@lucide/svelte/icons/user-round';
 	import { handleLogout } from '$lib/utils.ts';
 	import { goto } from '$app/navigation';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	const sidebar = useSidebar();
 </script>
 
@@ -57,7 +56,7 @@
 					</div>
 				</DropdownMenu.Label>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item onclick={() => goto(base + '/dashboard/settings#me')}>
+				<DropdownMenu.Item onclick={() => goto(resolve('/dashboard/settings#me', {}))}>
 					My Account
 				</DropdownMenu.Item>
 				<DropdownMenu.Separator />

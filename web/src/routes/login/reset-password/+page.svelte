@@ -13,8 +13,8 @@
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { base } from '$app/paths';
 	import client from '$lib/api';
+	import { resolve } from '$app/paths';
 
 	let newPassword = $state('');
 	let confirmPassword = $state('');
@@ -24,7 +24,7 @@
 	onMount(() => {
 		if (!resetToken) {
 			toast.error('Invalid or missing reset token.');
-			goto(base + '/login');
+			goto(resolve('/login', {}));
 		}
 	});
 
@@ -50,7 +50,7 @@
 
 		if (response.ok) {
 			toast.success('Password reset successfully! You can now log in with your new password.');
-			goto(base + '/login');
+			goto(resolve('/login', {}));
 		} else {
 			toast.error(`Failed to reset password`);
 		}
@@ -108,9 +108,11 @@
 			</Button>
 		</form>
 		<div class="mt-4 text-center text-sm">
-			<a class="text-primary font-semibold hover:underline" href="{base}/login"> Back to Login </a>
+			<a class="text-primary font-semibold hover:underline" href={resolve('/login', {})}>
+				Back to Login
+			</a>
 			<span class="text-muted-foreground mx-2">•</span>
-			<a class="text-primary hover:underline" href="{base}/login/forgot-password">
+			<a class="text-primary hover:underline" href={resolve('/login/forgot-password', {})}>
 				Request New Reset Link
 			</a>
 		</div>

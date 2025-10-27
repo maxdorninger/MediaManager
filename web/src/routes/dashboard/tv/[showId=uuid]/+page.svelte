@@ -19,7 +19,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 
 	let show: () => components['schemas']['PublicShow'] = getContext('show');
@@ -68,15 +68,15 @@
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item class="hidden md:block">
-					<Breadcrumb.Link href="{base}/dashboard">MediaManager</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>MediaManager</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="{base}/dashboard">Home</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>Home</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="{base}/dashboard/tv">Shows</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard/tv', {})}>Shows</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
@@ -174,7 +174,13 @@
 						{#if show().seasons.length > 0}
 							{#each show().seasons as season (season.id)}
 								<Table.Row
-									onclick={() => goto(base + '/dashboard/tv/' + show().id + '/' + season.id)}
+									onclick={() =>
+										goto(
+											resolve('/dashboard/tv/[showId]/[seasonId]', {
+												showId: show().id,
+												seasonId: season.id
+											})
+										)}
 								>
 									<Table.Cell class="min-w-[10px] font-medium">{season.number}</Table.Cell>
 									<Table.Cell class="min-w-[10px] font-medium">

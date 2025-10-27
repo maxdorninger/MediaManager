@@ -6,7 +6,7 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import MediaPicture from '$lib/components/media-picture.svelte';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 
 	let tvShows = page.data.tvShows;
 </script>
@@ -23,11 +23,11 @@
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item class="hidden md:block">
-					<Breadcrumb.Link href="{base}/dashboard">MediaManager</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>MediaManager</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="{base}/dashboard">Home</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>Home</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
@@ -45,7 +45,7 @@
 		class="grid w-full auto-rows-min gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 	>
 		{#each tvShows as show (show.id)}
-			<a href={base + '/dashboard/tv/' + show.id}>
+			<a href={resolve('/dashboard/tv/[showId]', { showId: show.id })}>
 				<Card.Root class="col-span-full max-w-[90vw] ">
 					<Card.Header>
 						<Card.Title class="h-6 truncate">{getFullyQualifiedMediaName(show)}</Card.Title>
