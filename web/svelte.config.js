@@ -15,8 +15,7 @@ const config = {
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter({ fallback: '404.html' }),
 		paths: {
-			base: base,
-			assets: base
+			base: base
 		}
 	}
 };
