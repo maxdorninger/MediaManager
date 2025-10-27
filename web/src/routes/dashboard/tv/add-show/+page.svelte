@@ -18,6 +18,7 @@
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
+	import {handleQueryNotificationToast} from "$lib/utils.ts";
 
 	onMount(() => {
 		search('');
@@ -36,12 +37,13 @@
 					})
 				: await client.GET('/api/v1/tv/recommended');
 		if (results.data && results.data.length > 0) {
-			toast.success(`Found ${results.data.length} result(s) for "${query}".`);
+			handleQueryNotificationToast(results.data.length, query)
 			data = results.data as components['schemas']['MetaDataProviderSearchResult'][];
 		} else {
-			toast.info(`No results found for "${query}".`);
+			handleQueryNotificationToast(0, query)
 			data = null;
 		}
+
 	}
 </script>
 

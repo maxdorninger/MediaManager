@@ -99,3 +99,10 @@ export function formatSecondsToOptimalUnit(seconds: number): string {
 
 	return '0s';
 }
+
+export function handleQueryNotificationToast(count: number = 0, query: string = "") {
+	if (count > 0 && query.length > 0) toast.success(`Found ${count} ${count > 1 ? 'result' : 'results'} for search term "${query}".`);
+	else if (count == 0) toast.info(`No results found for "${query}".`);
+
+
+}
