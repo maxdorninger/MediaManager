@@ -25,6 +25,8 @@ class IndexerQueryResult(BaseModel):
 
     score: int = 0
 
+    indexer: str | None
+
     @computed_field(return_type=Quality)
     @property
     def quality(self) -> Quality:
@@ -86,18 +88,3 @@ class IndexerQueryResult(BaseModel):
             return self.seeders < other.seeders
 
         return self.size > other.size
-
-
-class PublicIndexerQueryResult(BaseModel):
-    title: str
-    quality: Quality
-    id: IndexerQueryResultId
-    seeders: int
-    flags: list[str]
-    season: list[int]
-    size: int
-
-    usenet: bool
-    age: int
-
-    score: int

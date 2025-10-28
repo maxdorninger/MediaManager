@@ -7,7 +7,10 @@ from media_manager.auth.db import User
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import AllEncompassingConfig, LibraryItem
-from media_manager.indexer.schemas import PublicIndexerQueryResult, IndexerQueryResultId
+from media_manager.indexer.schemas import (
+    IndexerQueryResultId,
+    IndexerQueryResult,
+)
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.torrent.schemas import Torrent
 from media_manager.tv import log
@@ -314,7 +317,8 @@ def get_season_files(
     "/torrents",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(current_superuser)],
-    response_model=list[PublicIndexerQueryResult],
+    response_model=list[IndexerQueryResult],
+    response_model_exclude={"download_url"},
 )
 def get_torrents_for_a_season(
     tv_service: tv_service_dep,
@@ -322,6 +326,11 @@ def get_torrents_for_a_season(
     season_number: int = 1,
     search_query_override: str = None,
 ):
+    """
+    get all available torrents for a season
+
+    ! this route does not return the download urls !
+    """
     return tv_service.get_all_available_torrents_for_a_season(
         season_number=season_number,
         show_id=show_id,

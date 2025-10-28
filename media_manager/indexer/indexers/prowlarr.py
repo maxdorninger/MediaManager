@@ -79,6 +79,7 @@ class Prowlarr(GenericIndexer):
                             size=result["size"],
                             usenet=False,
                             age=0,  # Torrent results do not need age information
+                            indexer=result["indexer"] if "indexer" in result else None,
                         )
                     )
                 else:
@@ -91,6 +92,7 @@ class Prowlarr(GenericIndexer):
                             size=result["size"],
                             usenet=True,
                             age=int(result["ageMinutes"]) * 60,
+                            indexer=result["indexer"] if "indexer" in result else None,
                         )
                     )
                 log.debug("torrent result: " + result.__str__())

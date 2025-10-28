@@ -6,7 +6,7 @@ def test_quality_computed_field():
     assert (
         IndexerQueryResult(
             title="Show S01 4K",
-            download_url="https://example.com/1",
+            _download_url="https://example.com/1",
             seeders=1,
             flags=[],
             size=1,
@@ -18,7 +18,7 @@ def test_quality_computed_field():
     assert (
         IndexerQueryResult(
             title="Show S01 1080p",
-            download_url="https://example.com/2",
+            _download_url="https://example.com/2",
             seeders=1,
             flags=[],
             size=1,
@@ -30,7 +30,7 @@ def test_quality_computed_field():
     assert (
         IndexerQueryResult(
             title="Show S01 720p",
-            download_url="https://example.com/3",
+            _download_url="https://example.com/3",
             seeders=1,
             flags=[],
             size=1,
@@ -42,7 +42,7 @@ def test_quality_computed_field():
     assert (
         IndexerQueryResult(
             title="Show S01 480p",
-            download_url="https://example.com/4",
+            _download_url="https://example.com/4",
             seeders=1,
             flags=[],
             size=1,
@@ -54,7 +54,7 @@ def test_quality_computed_field():
     assert (
         IndexerQueryResult(
             title="Show S01",
-            download_url="https://example.com/5",
+            _download_url="https://example.com/5",
             seeders=1,
             flags=[],
             size=1,
@@ -70,7 +70,7 @@ def test_quality_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show S01 4k",
-            download_url="https://example.com/6",
+            _download_url="https://example.com/6",
             seeders=1,
             flags=[],
             size=1,
@@ -82,7 +82,7 @@ def test_quality_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show S01 1080P",
-            download_url="https://example.com/7",
+            _download_url="https://example.com/7",
             seeders=1,
             flags=[],
             size=1,
@@ -94,7 +94,7 @@ def test_quality_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show S01 720P",
-            download_url="https://example.com/8",
+            _download_url="https://example.com/8",
             seeders=1,
             flags=[],
             size=1,
@@ -106,7 +106,7 @@ def test_quality_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show S01 480P",
-            download_url="https://example.com/9",
+            _download_url="https://example.com/9",
             seeders=1,
             flags=[],
             size=1,
@@ -119,7 +119,7 @@ def test_quality_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show S01 4K 1080p 720p",
-            download_url="https://example.com/10",
+            _download_url="https://example.com/10",
             seeders=1,
             flags=[],
             size=1,
@@ -131,7 +131,7 @@ def test_quality_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show S01 1080p 720p",
-            download_url="https://example.com/11",
+            _download_url="https://example.com/11",
             seeders=1,
             flags=[],
             size=1,
@@ -144,7 +144,7 @@ def test_quality_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show S01",
-            download_url="https://example.com/12",
+            _download_url="https://example.com/12",
             seeders=1,
             flags=[],
             size=1,
@@ -157,7 +157,7 @@ def test_quality_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="4K Show S01",
-            download_url="https://example.com/13",
+            _download_url="https://example.com/13",
             seeders=1,
             flags=[],
             size=1,
@@ -172,7 +172,7 @@ def test_season_computed_field():
     # Single season
     assert IndexerQueryResult(
         title="Show S01",
-        download_url="https://example.com/14",
+        _download_url="https://example.com/14",
         seeders=1,
         flags=[],
         size=1,
@@ -182,7 +182,7 @@ def test_season_computed_field():
     # Range of seasons
     assert IndexerQueryResult(
         title="Show S01 S03",
-        download_url="https://example.com/15",
+        _download_url="https://example.com/15",
         seeders=1,
         flags=[],
         size=1,
@@ -193,7 +193,7 @@ def test_season_computed_field():
     assert (
         IndexerQueryResult(
             title="Show",
-            download_url="https://example.com/16",
+            _download_url="https://example.com/16",
             seeders=1,
             flags=[],
             size=1,
@@ -209,7 +209,7 @@ def test_season_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show S03 S01",
-            download_url="https://example.com/17",
+            _download_url="https://example.com/17",
             seeders=1,
             flags=[],
             size=1,
@@ -221,7 +221,7 @@ def test_season_computed_field_edge_cases():
     # Season with leading zeros
     assert IndexerQueryResult(
         title="Show S01 S03",
-        download_url="https://example.com/18",
+        _download_url="https://example.com/18",
         seeders=1,
         flags=[],
         size=1,
@@ -230,7 +230,7 @@ def test_season_computed_field_edge_cases():
     ).season == [1, 2, 3]
     assert IndexerQueryResult(
         title="Show S01 S01",
-        download_url="https://example.com/19",
+        _download_url="https://example.com/19",
         seeders=1,
         flags=[],
         size=1,
@@ -241,7 +241,7 @@ def test_season_computed_field_edge_cases():
     assert (
         IndexerQueryResult(
             title="Show",
-            download_url="https://example.com/20",
+            _download_url="https://example.com/20",
             seeders=1,
             flags=[],
             size=1,
@@ -253,7 +253,7 @@ def test_season_computed_field_edge_cases():
     # Season in lower/upper case
     assert IndexerQueryResult(
         title="Show s02",
-        download_url="https://example.com/21",
+        _download_url="https://example.com/21",
         seeders=1,
         flags=[],
         size=1,
@@ -262,7 +262,7 @@ def test_season_computed_field_edge_cases():
     ).season == [2]
     assert IndexerQueryResult(
         title="Show S02",
-        download_url="https://example.com/22",
+        _download_url="https://example.com/22",
         seeders=1,
         flags=[],
         size=1,
@@ -272,7 +272,7 @@ def test_season_computed_field_edge_cases():
     # Season with extra text
     assert IndexerQueryResult(
         title="Show S01 Complete",
-        download_url="https://example.com/23",
+        _download_url="https://example.com/23",
         seeders=1,
         flags=[],
         size=1,
@@ -284,7 +284,7 @@ def test_season_computed_field_edge_cases():
 def test_gt_and_lt_methods():
     a = IndexerQueryResult(
         title="Show S01 1080p",
-        download_url="https://example.com/24",
+        _download_url="https://example.com/24",
         seeders=5,
         flags=[],
         size=1,
@@ -293,7 +293,7 @@ def test_gt_and_lt_methods():
     )
     b = IndexerQueryResult(
         title="Show S01 720p",
-        download_url="https://example.com/25",
+        _download_url="https://example.com/25",
         seeders=10,
         flags=[],
         size=1,
@@ -302,7 +302,7 @@ def test_gt_and_lt_methods():
     )
     c = IndexerQueryResult(
         title="Show S01 1080p",
-        download_url="https://example.com/26",
+        _download_url="https://example.com/26",
         seeders=2,
         flags=[],
         size=1,
@@ -318,7 +318,7 @@ def test_gt_and_lt_methods():
     # If quality is equal, but seeders are equal, neither is greater
     d = IndexerQueryResult(
         title="Show S01 1080p",
-        download_url="https://example.com/27",
+        _download_url="https://example.com/27",
         seeders=5,
         flags=[],
         size=1,
@@ -333,7 +333,7 @@ def test_gt_and_lt_methods_edge_cases():
     # Different qualities
     a = IndexerQueryResult(
         title="Show S01 4K",
-        download_url="https://example.com/28",
+        _download_url="https://example.com/28",
         seeders=1,
         flags=[],
         size=1,
@@ -342,7 +342,7 @@ def test_gt_and_lt_methods_edge_cases():
     )
     b = IndexerQueryResult(
         title="Show S01 1080p",
-        download_url="https://example.com/29",
+        _download_url="https://example.com/29",
         seeders=100,
         flags=[],
         size=1,
@@ -354,7 +354,7 @@ def test_gt_and_lt_methods_edge_cases():
     # Same quality, different seeders
     c = IndexerQueryResult(
         title="Show S01 4K",
-        download_url="https://example.com/30",
+        _download_url="https://example.com/30",
         seeders=2,
         flags=[],
         size=1,
@@ -366,7 +366,7 @@ def test_gt_and_lt_methods_edge_cases():
     # Same quality and seeders
     d = IndexerQueryResult(
         title="Show S01 4K",
-        download_url="https://example.com/31",
+        _download_url="https://example.com/31",
         seeders=1,
         flags=[],
         size=1,
@@ -378,7 +378,7 @@ def test_gt_and_lt_methods_edge_cases():
     # Unknown quality, should compare by seeders
     e = IndexerQueryResult(
         title="Show S01",
-        download_url="https://example.com/32",
+        _download_url="https://example.com/32",
         seeders=5,
         flags=[],
         size=1,
@@ -387,7 +387,7 @@ def test_gt_and_lt_methods_edge_cases():
     )
     f = IndexerQueryResult(
         title="Show S01",
-        download_url="https://example.com/33",
+        _download_url="https://example.com/33",
         seeders=10,
         flags=[],
         size=1,
@@ -399,7 +399,7 @@ def test_gt_and_lt_methods_edge_cases():
     # Mixed known and unknown quality
     g = IndexerQueryResult(
         title="Show S01 720p",
-        download_url="https://example.com/34",
+        _download_url="https://example.com/34",
         seeders=1,
         flags=[],
         size=1,
@@ -408,7 +408,7 @@ def test_gt_and_lt_methods_edge_cases():
     )
     h = IndexerQueryResult(
         title="Show S01",
-        download_url="https://example.com/35",
+        _download_url="https://example.com/35",
         seeders=100,
         flags=[],
         size=1,

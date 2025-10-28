@@ -89,7 +89,7 @@ def upgrade() -> None:
         "indexer_query_result",
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("title", sa.String(), nullable=False),
-        sa.Column("download_url", sa.String(), nullable=False),
+        sa.Column("_download_url", sa.String(), nullable=False),
         sa.Column("seeders", sa.Integer(), nullable=False),
         sa.Column("flags", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column(

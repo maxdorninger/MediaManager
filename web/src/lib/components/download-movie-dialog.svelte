@@ -16,7 +16,7 @@
 
 	let { movie } = $props();
 	let dialogueState = $state(false);
-	let torrents: components['schemas']['PublicIndexerQueryResult'][] = $state([]);
+	let torrents: components['schemas']['IndexerQueryResult'][] = $state([]);
 	let isLoadingTorrents: boolean = $state(false);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
@@ -56,7 +56,7 @@
 
 	async function getTorrents(
 		override: boolean = false
-	): Promise<components['schemas']['PublicIndexerQueryResult'][]> {
+	): Promise<components['schemas']['IndexerQueryResult'][]> {
 		isLoadingTorrents = true;
 		torrentsError = null;
 		torrents = [];
@@ -70,7 +70,7 @@
 				}
 			}
 		});
-		data = data as components['schemas']['PublicIndexerQueryResult'][];
+		data = data as components['schemas']['IndexerQueryResult'][];
 		isLoadingTorrents = false;
 
 		if (!response.ok) {
@@ -215,6 +215,7 @@
 								<Table.Head>Size</Table.Head>
 								<Table.Head>Seeders</Table.Head>
 								<Table.Head>Score</Table.Head>
+								<Table.Head>Indexer</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
 								<Table.Head class="text-right">Actions</Table.Head>
 							</Table.Row>
@@ -226,6 +227,7 @@
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 									<Table.Cell>{torrent.seeders}</Table.Cell>
 									<Table.Cell>{torrent.score}</Table.Cell>
+									<Table.Cell>{torrent.indexer ?? "Unknown"}</Table.Cell>
 									<Table.Cell>
 										{#each torrent.flags as flag (flag)}
 											<Badge variant="outline">{flag}</Badge>

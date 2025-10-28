@@ -36,7 +36,7 @@ def test_save_and_get_result(repo, dummy_db):
     result = IndexerQueryResult(
         id=result_id,
         title="Test Title",
-        download_url="https://example.com/test1",
+        _download_url="https://example.com/test1",
         seeders=5,
         flags=["flag1"],
         size=1234,
@@ -55,7 +55,7 @@ def test_save_result_calls_db_methods(repo, dummy_db):
     result = IndexerQueryResult(
         id=IndexerQueryResultId(uuid.uuid4()),
         title="Another Title",
-        download_url="https://example.com/test2",
+        _download_url="https://example.com/test2",
         seeders=2,
         flags=[],
         size=5678,

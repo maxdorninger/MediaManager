@@ -20,7 +20,7 @@
 	let { show }: { show: components['schemas']['Show'] } = $props();
 	let dialogueState = $state(false);
 	let selectedSeasonNumber: number = $state(1);
-	let torrents: components['schemas']['PublicIndexerQueryResult'][] = $state([]);
+	let torrents: components['schemas']['IndexerQueryResult'][] = $state([]);
 	let isLoadingTorrents: boolean = $state(false);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
@@ -57,7 +57,7 @@
 	async function getTorrents(
 		season_number: number,
 		override: boolean = false
-	): Promise<components['schemas']['PublicIndexerQueryResult'][]> {
+	): Promise<components['schemas']['IndexerQueryResult'][]> {
 		isLoadingTorrents = true;
 		torrentsError = null;
 		torrents = [];
@@ -71,7 +71,7 @@
 				}
 			}
 		});
-		data = data as components['schemas']['PublicIndexerQueryResult'][];
+		data = data as components['schemas']['IndexerQueryResult'][];
 		isLoadingTorrents = false;
 
 		if (!response.ok) {
@@ -252,6 +252,7 @@
 								<Table.Head>Seeders</Table.Head>
 								<Table.Head>Age</Table.Head>
 								<Table.Head>Score</Table.Head>
+								<Table.Head>Indexer</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
 								<Table.Head>Seasons</Table.Head>
 								<Table.Head class="text-right">Actions</Table.Head>
@@ -272,6 +273,7 @@
 												: ''}</Table.Cell
 									>
 									<Table.Cell>{torrent.score}</Table.Cell>
+																		<Table.Cell>{torrent.indexer ?? "unknown"}</Table.Cell>
 									<Table.Cell>
 										{#if torrent.flags}
 											{#each torrent.flags as flag (flag)}

@@ -414,7 +414,7 @@ def test_get_all_available_torrents_for_a_season_with_override(
     torrent1 = IndexerQueryResult(
         id=IndexerQueryResultId(uuid.uuid4()),
         title="Custom Query S01E01",
-        download_url="https://example.com/torrent1",
+        _download_url="https://example.com/torrent1",
         seeders=10,
         flags=[],
         size=100,

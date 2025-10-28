@@ -17,7 +17,7 @@ class DummyIndexer(GenericIndexer):
             IndexerQueryResult(
                 id=IndexerQueryResultId(uuid.uuid4()),
                 title=f"{query} S01 1080p",
-                download_url="https://example.com/torrent1",
+                _download_url="https://example.com/torrent1",
                 seeders=10,
                 flags=["test"],
                 size=123456,
@@ -61,7 +61,7 @@ def test_get_result_returns_result(mock_indexer_repository):
     expected_result = IndexerQueryResult(
         id=result_id,
         title="Test S01 1080p",
-        download_url="https://example.com/torrent2",
+        _download_url="https://example.com/torrent2",
         seeders=10,
         flags=["test"],
         size=123456,

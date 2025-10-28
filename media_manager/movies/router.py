@@ -6,7 +6,10 @@ from fastapi.responses import JSONResponse
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, AllEncompassingConfig
-from media_manager.indexer.schemas import PublicIndexerQueryResult, IndexerQueryResultId
+from media_manager.indexer.schemas import (
+    IndexerQueryResultId,
+    IndexerQueryResult,
+)
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.torrent.schemas import Torrent
 from media_manager.movies import log
@@ -230,13 +233,19 @@ def get_movie_by_id(movie_service: movie_service_dep, movie_id: MovieId):
 @router.get(
     "/{movie_id}/torrents",
     dependencies=[Depends(current_active_user)],
-    response_model=list[PublicIndexerQueryResult],
+    response_model=list[IndexerQueryResult],
+    response_model_exclude={"download_url"},
 )
 def get_all_available_torrents_for_a_movie(
     movie_service: movie_service_dep,
     movie_id: MovieId,
     search_query_override: str | None = None,
 ):
+    """
+    get all available torrents for a movie
+
+    ! this route does not return the download urls !
+    """
     return movie_service.get_all_available_torrents_for_a_movie(
         movie_id=movie_id, search_query_override=search_query_override
     )
