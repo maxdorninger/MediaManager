@@ -273,7 +273,7 @@
 												: ''}</Table.Cell
 									>
 									<Table.Cell>{torrent.score}</Table.Cell>
-																		<Table.Cell>{torrent.indexer ?? "unknown"}</Table.Cell>
+									<Table.Cell>{torrent.indexer ?? 'unknown'}</Table.Cell>
 									<Table.Cell>
 										{#if torrent.flags}
 											{#each torrent.flags as flag (flag)}

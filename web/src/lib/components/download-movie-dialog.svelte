@@ -227,7 +227,7 @@
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 									<Table.Cell>{torrent.seeders}</Table.Cell>
 									<Table.Cell>{torrent.score}</Table.Cell>
-									<Table.Cell>{torrent.indexer ?? "Unknown"}</Table.Cell>
+									<Table.Cell>{torrent.indexer ?? 'Unknown'}</Table.Cell>
 									<Table.Cell>
 										{#each torrent.flags as flag (flag)}
 											<Badge variant="outline">{flag}</Badge>

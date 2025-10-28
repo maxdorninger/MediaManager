@@ -234,18 +234,12 @@ def get_movie_by_id(movie_service: movie_service_dep, movie_id: MovieId):
     "/{movie_id}/torrents",
     dependencies=[Depends(current_active_user)],
     response_model=list[IndexerQueryResult],
-    response_model_exclude={"download_url"},
 )
 def get_all_available_torrents_for_a_movie(
     movie_service: movie_service_dep,
     movie_id: MovieId,
     search_query_override: str | None = None,
 ):
-    """
-    get all available torrents for a movie
-
-    ! this route does not return the download urls !
-    """
     return movie_service.get_all_available_torrents_for_a_movie(
         movie_id=movie_id, search_query_override=search_query_override
     )
