@@ -376,14 +376,28 @@ class MovieService:
             result_id=public_indexer_result_id
         )
         movie_torrent = self.torrent_service.download(indexer_result=indexer_result)
-
+        self.torrent_service.pause_download(torrent=movie_torrent)
         movie_file = MovieFile(
             movie_id=movie_id,
             quality=indexer_result.quality,
             torrent_id=movie_torrent.id,
             file_path_suffix=override_movie_file_path_suffix,
         )
-        self.movie_repository.add_movie_file(movie_file=movie_file)
+        try:
+            self.movie_repository.add_movie_file(movie_file=movie_file)
+        except IntegrityError:
+            log.error(
+                f"Movie file for movie {movie_id} and quality {indexer_result.quality} already exists."
+            )
+            self.torrent_service.cancel_download(
+                torrent=movie_torrent, delete_files=True
+            )
+            raise
+        else:
+            log.info(
+                f"Added movie file for movie {movie_id} and quality {indexer_result.quality}."
+            )
+            self.torrent_service.resume_download(torrent=movie_torrent)
         return movie_torrent
 
     def download_approved_movie_request(
