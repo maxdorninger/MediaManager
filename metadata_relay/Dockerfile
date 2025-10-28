@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:debian-slim
+FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim
 ARG VERSION
 LABEL version=${VERSION}
 
