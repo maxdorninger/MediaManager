@@ -2,7 +2,6 @@
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
-	import { resolve } from '$app/paths';
 
 	let {
 		items
@@ -34,10 +33,12 @@
 								{mainItem.title}
 							{/snippet}
 							{#snippet child({ props })}
-								<a href={resolve(mainItem.url, {})} {...props}>
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
+								<a href={mainItem.url} {...props}>
 									<mainItem.icon />
 									<span>{mainItem.title}</span>
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{/snippet}
 						</Sidebar.MenuButton>
 						{#if mainItem.items?.length}

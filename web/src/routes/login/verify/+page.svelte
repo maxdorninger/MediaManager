@@ -2,7 +2,6 @@
 	import { UserCheck } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { handleLogout } from '$lib/utils.ts';
-	import { resolve } from '$app/paths';
 </script>
 
 <svelte:head>
@@ -24,11 +23,8 @@
 		Your account has been successfully created, but activation by an administrator is required.
 	</p>
 	<div class="mt-8">
-		<Button href={resolve('/dashboard', {})}>Go to Dashboard</Button>
+		<Button onclick={() => handleLogout()}>Logout</Button>
 	</div>
-	<p class="text-muted-foreground mt-10 text-sm">
-		The above button will only work once your account is verified.
-	</p>
 	<p class="end text-muted-foreground mt-10 text-sm">
 		If you have any questions, please contact an administrator.
 	</p>

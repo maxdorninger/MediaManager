@@ -9,11 +9,11 @@
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
-	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
+	import { handleQueryNotificationToast } from '$lib/utils.ts';
 
 	let searchTerm: string = $state('');
 	let metadataProvider: 'tmdb' | 'tvdb' = $state('tmdb');
@@ -36,12 +36,11 @@
 					})
 				: await client.GET('/api/v1/movies/recommended');
 		if (data && data.length > 0) {
-			toast.success(`Found ${data.length} result(s) for "${query}".`);
 			results = data as components['schemas']['MetaDataProviderSearchResult'][];
 		} else {
-			toast.info(`No results found for "${query}".`);
 			results = null;
 		}
+		handleQueryNotificationToast(data?.length ?? 0, query);
 	}
 </script>
 

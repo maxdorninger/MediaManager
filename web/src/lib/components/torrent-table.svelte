@@ -25,7 +25,7 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each torrents as torrent (torrent.id)}
+		{#each torrents as torrent (torrent.torrent_id)}
 			<Table.Row>
 				<Table.Cell class="font-medium">
 					{torrent.torrent_title}
