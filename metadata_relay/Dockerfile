@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:debian-slim
+FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim
 ARG VERSION
 LABEL version=${VERSION}
 
@@ -11,4 +11,4 @@ WORKDIR /app
 COPY . .
 RUN uv sync --locked
 EXPOSE 8000
-CMD ["uv", "run", "fastapi", "run" ,"/app/main.py"]
+CMD ["uv", "run", "fastapi", "run", "/app/main.py"]
