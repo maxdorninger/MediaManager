@@ -4,6 +4,7 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { toast } from 'svelte-sonner';
 import client from '$lib/api';
+import type { components } from '$lib/api/api';
 
 export const qualityMap: { [key: number]: string } = {
 	1: '4K/UHD',
@@ -96,4 +97,24 @@ export function handleQueryNotificationToast(count: number = 0, query: string = 
 	if (count > 0 && query.length > 0)
 		toast.success(`Found ${count} ${count > 1 ? 'result' : 'results'} for search term "${query}".`);
 	else if (count == 0) toast.info(`No results found for "${query}".`);
+}
+
+export function saveDirectoryPreview(
+	media: components['schemas']['Show'] | components['schemas']['Movie'],
+	filePathSuffix: string = ''
+) {
+	let path =
+		'/' +
+		getFullyQualifiedMediaName(media) +
+		' [' +
+		media.metadata_provider +
+		'id-' +
+		media.external_id +
+		']/';
+	if ('seasons' in media) {
+		path += ' Season XX/SXXEXX' + (filePathSuffix === '' ? '' : ' - ' + filePathSuffix) + '.mkv';
+	} else {
+		path += media.name + (filePathSuffix === '' ? '' : ' - ' + filePathSuffix) + '.mkv';
+	}
+	return path;
 }
