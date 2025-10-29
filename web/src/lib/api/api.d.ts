@@ -255,8 +255,8 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Oauth:Openid Connect.Cookie.Authorize */
-		get: operations['oauth_OpenID_Connect_cookie_authorize_api_v1_auth_oauth_authorize_get'];
+		/** Oauth:Oauth2.Cookie.Authorize */
+		get: operations['oauth_oauth2_cookie_authorize_api_v1_auth_oauth_authorize_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
@@ -273,10 +273,10 @@ export interface paths {
 			cookie?: never;
 		};
 		/**
-		 * Oauth:Openid Connect.Cookie.Callback
+		 * Oauth:Oauth2.Cookie.Callback
 		 * @description The response varies based on the authentication backend used.
 		 */
-		get: operations['oauth_OpenID_Connect_cookie_callback_api_v1_auth_oauth_callback_get'];
+		get: operations['oauth_oauth2_cookie_callback_api_v1_auth_oauth_callback_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
@@ -581,23 +581,6 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	'/api/v1/torrent/{torrent_id}': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Get Torrent */
-		get: operations['get_torrent_api_v1_torrent__torrent_id__get'];
-		put?: never;
-		post?: never;
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
 	'/api/v1/torrent': {
 		parameters: {
 			query?: never;
@@ -609,6 +592,41 @@ export interface paths {
 		get: operations['get_all_torrents_api_v1_torrent_get'];
 		put?: never;
 		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/torrent/{torrent_id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Get Torrent */
+		get: operations['get_torrent_api_v1_torrent__torrent_id__get'];
+		put?: never;
+		post?: never;
+		/** Delete Torrent */
+		delete: operations['delete_torrent_api_v1_torrent__torrent_id__delete'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/torrent/{torrent_id}/retry': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Retry Torrent Download */
+		post: operations['retry_torrent_download_api_v1_torrent__torrent_id__retry_post'];
 		delete?: never;
 		options?: never;
 		head?: never;
@@ -1108,6 +1126,36 @@ export interface components {
 			/** Detail */
 			detail?: components['schemas']['ValidationError'][];
 		};
+		/** IndexerQueryResult */
+		IndexerQueryResult: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/** Title */
+			title: string;
+			/** Seeders */
+			seeders: number;
+			/** Flags */
+			flags: string[];
+			/** Size */
+			size: number;
+			/** Usenet */
+			usenet: boolean;
+			/** Age */
+			age: number;
+			/**
+			 * Score
+			 * @default 0
+			 */
+			score: number;
+			/** Indexer */
+			indexer: string | null;
+			readonly quality: components['schemas']['Quality'];
+			/** Season */
+			readonly season: number[];
+		};
 		/** LibraryItem */
 		LibraryItem: {
 			/** Name */
@@ -1232,31 +1280,6 @@ export interface components {
 		OAuth2AuthorizeResponse: {
 			/** Authorization Url */
 			authorization_url: string;
-		};
-		/** PublicIndexerQueryResult */
-		PublicIndexerQueryResult: {
-			/** Title */
-			title: string;
-			quality: components['schemas']['Quality'];
-			/**
-			 * Id
-			 * Format: uuid
-			 */
-			id: string;
-			/** Seeders */
-			seeders: number;
-			/** Flags */
-			flags: string[];
-			/** Season */
-			season: number[];
-			/** Size */
-			size: number;
-			/** Usenet */
-			usenet: boolean;
-			/** Age */
-			age: number;
-			/** Score */
-			score: number;
 		};
 		/** PublicMovie */
 		PublicMovie: {
@@ -2312,7 +2335,7 @@ export interface operations {
 			};
 		};
 	};
-	oauth_OpenID_Connect_cookie_authorize_api_v1_auth_oauth_authorize_get: {
+	oauth_oauth2_cookie_authorize_api_v1_auth_oauth_authorize_get: {
 		parameters: {
 			query?: {
 				scopes?: string[];
@@ -2343,7 +2366,7 @@ export interface operations {
 			};
 		};
 	};
-	oauth_OpenID_Connect_cookie_callback_api_v1_auth_oauth_callback_get: {
+	oauth_oauth2_cookie_callback_api_v1_auth_oauth_callback_get: {
 		parameters: {
 			query?: {
 				code?: string | null;
@@ -2906,7 +2929,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['PublicIndexerQueryResult'][];
+					'application/json': components['schemas']['IndexerQueryResult'][];
 				};
 			};
 			/** @description Validation Error */
@@ -3016,6 +3039,26 @@ export interface operations {
 			};
 		};
 	};
+	get_all_torrents_api_v1_torrent_get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Torrent'][];
+				};
+			};
+		};
+	};
 	get_torrent_api_v1_torrent__torrent_id__get: {
 		parameters: {
 			query?: never;
@@ -3047,22 +3090,62 @@ export interface operations {
 			};
 		};
 	};
-	get_all_torrents_api_v1_torrent_get: {
+	delete_torrent_api_v1_torrent__torrent_id__delete: {
 		parameters: {
-			query?: never;
+			query?: {
+				delete_files?: boolean;
+			};
 			header?: never;
-			path?: never;
+			path: {
+				torrent_id: string;
+			};
 			cookie?: never;
 		};
 		requestBody?: never;
 		responses: {
 			/** @description Successful Response */
-			200: {
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
 				headers: {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['Torrent'][];
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	retry_torrent_download_api_v1_torrent__torrent_id__retry_post: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				torrent_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
 				};
 			};
 		};
@@ -3429,7 +3512,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['PublicIndexerQueryResult'][];
+					'application/json': components['schemas']['IndexerQueryResult'][];
 				};
 			};
 			/** @description Validation Error */

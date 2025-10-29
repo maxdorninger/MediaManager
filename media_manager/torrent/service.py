@@ -105,13 +105,9 @@ class TorrentService:
             self.torrent_repository.get_torrent_by_id(torrent_id=torrent_id)
         )
 
-    # TODO: extract deletion logic to tv module
-    # def delete_torrent(self, torrent_id: TorrentId):
-    #    t = self.torrent_repository.get_torrent_by_id(torrent_id=torrent_id)
-    #    if not t.imported:
-    #        from media_manager.tv.repository import remove_season_files_by_torrent_id
-    #        remove_season_files_by_torrent_id(db=self.db, torrent_id=torrent_id)
-    #    media_manager.torrent.repository.delete_torrent(db=self.db, torrent_id=t.id)
+    def delete_torrent(self, torrent_id: TorrentId):
+        t = self.torrent_repository.get_torrent_by_id(torrent_id=torrent_id)
+        self.torrent_repository.delete_torrent(torrent_id=t.id)
 
     def get_movie_files_of_torrent(self, torrent: Torrent):
         return self.torrent_repository.get_movie_files_of_torrent(torrent_id=torrent.id)

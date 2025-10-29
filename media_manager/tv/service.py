@@ -415,18 +415,34 @@ class TvService:
             result_id=public_indexer_result_id
         )
         show_torrent = self.torrent_service.download(indexer_result=indexer_result)
+        self.torrent_service.pause_download(torrent=show_torrent)
 
-        for season_number in indexer_result.season:
-            season = self.tv_repository.get_season_by_number(
-                season_number=season_number, show_id=show_id
+        try:
+            for season_number in indexer_result.season:
+                season = self.tv_repository.get_season_by_number(
+                    season_number=season_number, show_id=show_id
+                )
+                season_file = SeasonFile(
+                    season_id=season.id,
+                    quality=indexer_result.quality,
+                    torrent_id=show_torrent.id,
+                    file_path_suffix=override_show_file_path_suffix,
+                )
+                self.tv_repository.add_season_file(season_file=season_file)
+        except IntegrityError:
+            log.error(
+                f"Season file for season {season.id} and quality {indexer_result.quality} already exists, skipping."
             )
-            season_file = SeasonFile(
-                season_id=season.id,
-                quality=indexer_result.quality,
-                torrent_id=show_torrent.id,
-                file_path_suffix=override_show_file_path_suffix,
+            self.torrent_service.cancel_download(
+                torrent=show_torrent, delete_files=True
             )
-            self.tv_repository.add_season_file(season_file=season_file)
+            raise
+        else:
+            log.info(
+                f"Successfully added season files for torrent {show_torrent.title} and show ID {show_id}"
+            )
+            self.torrent_service.resume_download(torrent=show_torrent)
+
         return show_torrent
 
     def download_approved_season_request(

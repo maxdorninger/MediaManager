@@ -15,7 +15,10 @@ class IndexerQueryResult(BaseModel):
 
     id: IndexerQueryResultId = pydantic.Field(default_factory=uuid4)
     title: str
-    download_url: str  # this can be a magnet link or URL to the .torrent file
+    download_url: str = pydantic.Field(
+        exclude=True,
+        description="This can be a magnet link or URL to the .torrent file"
+    )
     seeders: int
     flags: list[str]
     size: int
@@ -24,6 +27,8 @@ class IndexerQueryResult(BaseModel):
     age: int
 
     score: int = 0
+
+    indexer: str | None
 
     @computed_field(return_type=Quality)
     @property
@@ -86,18 +91,3 @@ class IndexerQueryResult(BaseModel):
             return self.seeders < other.seeders
 
         return self.size > other.size
-
-
-class PublicIndexerQueryResult(BaseModel):
-    title: str
-    quality: Quality
-    id: IndexerQueryResultId
-    seeders: int
-    flags: list[str]
-    season: list[int]
-    size: int
-
-    usenet: bool
-    age: int
-
-    score: int

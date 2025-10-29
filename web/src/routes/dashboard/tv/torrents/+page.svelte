@@ -8,8 +8,6 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import TorrentTable from '$lib/components/torrent-table.svelte';
 	import { resolve } from '$app/paths';
-	import type { components } from '$lib/api/api';
-	let showsPromise: Promise<components['schemas']['RichShowTorrent'][]> = $state(page.data.shows);
 </script>
 
 <svelte:head>
@@ -47,26 +45,22 @@
 	<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
 		TV Torrents
 	</h1>
-	{#await showsPromise}
-		Loading...
-	{:then shows}
-		<Accordion.Root type="single" class="w-full">
-			{#each shows as show (show.show_id)}
-				<div class="p-6">
-					<Card.Root>
-						<Card.Header>
-							<Card.Title>
-								{getFullyQualifiedMediaName(show)}
-							</Card.Title>
-						</Card.Header>
-						<Card.Content>
-							<TorrentTable torrents={show.torrents} />
-						</Card.Content>
-					</Card.Root>
-				</div>
-			{:else}
-				<div class="col-span-full text-center text-muted-foreground">No Torrents added yet.</div>
-			{/each}
-		</Accordion.Root>
-	{/await}
+	<Accordion.Root type="single" class="w-full">
+		{#each page.data.torrents as show (show.show_id)}
+			<div class="p-6">
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>
+							{getFullyQualifiedMediaName(show)}
+						</Card.Title>
+					</Card.Header>
+					<Card.Content>
+						<TorrentTable isShow={true} torrents={show.torrents} />
+					</Card.Content>
+				</Card.Root>
+			</div>
+		{:else}
+			<div class="col-span-full text-center text-muted-foreground">No Torrents added yet.</div>
+		{/each}
+	</Accordion.Root>
 </div>

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi import status
 from fastapi_users.router import get_oauth_router
+from httpx_oauth.oauth2 import OAuth2
 from sqlalchemy import select
 
 from media_manager.config import AllEncompassingConfig
@@ -31,7 +32,22 @@ def get_openid_router():
             redirect_url=None,
         )
     else:
-        return None
+        # this is there, so that the appropriate routes are created even if OIDC is not configured,
+        # e.g. for generating the frontend's openapi client
+        return get_oauth_router(
+            oauth_client=OAuth2(
+                client_id="mock",
+                client_secret="mock",
+                authorize_endpoint="https://example.com/authorize",
+                access_token_endpoint="https://example.com/token",
+            ),
+            backend=openid_cookie_auth_backend,
+            get_user_manager=fastapi_users.get_user_manager,
+            state_secret=SECRET,
+            associate_by_email=False,
+            is_verified_by_default=False,
+            redirect_url=None,
+        )
 
 
 openid_config = AllEncompassingConfig().auth.openid_connect

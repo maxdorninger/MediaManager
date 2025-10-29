@@ -208,7 +208,7 @@
 			</Card.Header>
 
 			<Card.Content class="w-full overflow-x-auto">
-				<TorrentTable torrents={torrents.torrents} />
+				<TorrentTable isShow={true} torrents={torrents.torrents} />
 			</Card.Content>
 		</Card.Root>
 	</div>

@@ -3,24 +3,20 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { toast } from 'svelte-sonner';
-	import {
-		convertTorrentSeasonRangeToIntegerRange,
-		formatSecondsToOptimalUnit,
-		getFullyQualifiedMediaName
-	} from '$lib/utils';
+	import { convertTorrentSeasonRangeToIntegerRange, formatSecondsToOptimalUnit } from '$lib/utils';
 	import { LoaderCircle } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
+	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
 
 	let { show }: { show: components['schemas']['Show'] } = $props();
 	let dialogueState = $state(false);
 	let selectedSeasonNumber: number = $state(1);
-	let torrents: components['schemas']['PublicIndexerQueryResult'][] = $state([]);
+	let torrents: components['schemas']['IndexerQueryResult'][] = $state([]);
 	let isLoadingTorrents: boolean = $state(false);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
@@ -57,7 +53,7 @@
 	async function getTorrents(
 		season_number: number,
 		override: boolean = false
-	): Promise<components['schemas']['PublicIndexerQueryResult'][]> {
+	): Promise<components['schemas']['IndexerQueryResult'][]> {
 		isLoadingTorrents = true;
 		torrentsError = null;
 		torrents = [];
@@ -71,7 +67,7 @@
 				}
 			}
 		});
-		data = data as components['schemas']['PublicIndexerQueryResult'][];
+		data = data as components['schemas']['IndexerQueryResult'][];
 		isLoadingTorrents = false;
 
 		if (!response.ok) {
@@ -90,12 +86,18 @@
 		}
 		return data;
 	}
+	$effect(() => {
+		if (show?.id) {
+			getTorrents(selectedSeasonNumber).then((fetchedTorrents) => {
+				if (!isLoadingTorrents) {
+					torrents = fetchedTorrents;
+				} else if (fetchedTorrents.length > 0 || torrentsError) {
+					torrents = fetchedTorrents;
+				}
+			});
+		}
+	});
 </script>
-
-{#snippet saveDirectoryPreview(show: components['schemas']['Show'], filePathSuffix: string)}
-	/{getFullyQualifiedMediaName(show)} [{show.metadata_provider}id-{show.external_id}]/ Season XX/{show.name}
-	SXXEXX {filePathSuffix === '' ? '' : ' - ' + filePathSuffix}.mkv
-{/snippet}
 
 <Dialog.Root bind:open={dialogueState}>
 	<Dialog.Trigger class={buttonVariants({ variant: 'default' })}>Download Seasons</Dialog.Trigger>
@@ -113,122 +115,68 @@
 			</Tabs.List>
 			<Tabs.Content value="basic">
 				<div class="grid w-full items-center gap-1.5">
-					{#if show?.seasons?.length > 0}
-						<Label for="season-number"
-							>Enter a season number from 1 to {show.seasons.at(-1)?.number}</Label
+					<Label for="season-number">
+						Enter a season number from 1 to {show.seasons.at(-1)?.number}
+					</Label>
+					<div class="flex w-full max-w-sm items-center space-x-2">
+						<Input
+							type="number"
+							id="season-number"
+							bind:value={selectedSeasonNumber}
+							max={show.seasons.at(-1)?.number}
+						/>
+						<Button
+							variant="secondary"
+							onclick={async () => {
+								isLoadingTorrents = true;
+								torrentsError = null;
+								torrents = [];
+								try {
+									torrents = await getTorrents(selectedSeasonNumber, false);
+								} catch (error) {
+									console.log(error);
+								} finally {
+									isLoadingTorrents = false;
+								}
+							}}
 						>
-						<div class="flex w-full max-w-sm items-center space-x-2">
-							<Input
-								type="number"
-								class="max-w-sm"
-								id="season-number"
-								bind:value={selectedSeasonNumber}
-								max={show.seasons.at(-1)?.number}
-							/>
-							<Button
-								variant="secondary"
-								onclick={async () => {
-									isLoadingTorrents = true;
-									torrentsError = null;
-									torrents = [];
-									try {
-										torrents = await getTorrents(selectedSeasonNumber, false);
-									} catch (error) {
-										console.log(error);
-									} finally {
-										isLoadingTorrents = false;
-									}
-								}}
-							>
-								Search
-							</Button>
-						</div>
-						<p class="text-muted-foreground text-sm">
-							Enter the season's number you want to search for. The first, usually 1, or the last
-							season number usually yield the most season packs. Note that only Seasons which are
-							listed in the "Seasons" cell will be imported!
-						</p>
-						<Label for="file-suffix">Filepath suffix</Label>
-						<Select.Root type="single" bind:value={filePathSuffix}>
-							<Select.Trigger class="w-[180px]">{filePathSuffix}</Select.Trigger>
-							<Select.Content>
-								<Select.Item value="">None</Select.Item>
-								<Select.Item value="2160P">2160p</Select.Item>
-								<Select.Item value="1080P">1080p</Select.Item>
-								<Select.Item value="720P">720p</Select.Item>
-								<Select.Item value="480P">480p</Select.Item>
-								<Select.Item value="360P">360p</Select.Item>
-							</Select.Content>
-						</Select.Root>
-						<p class="text-muted-foreground text-sm">
-							This is necessary to differentiate between versions of the same season/show, for
-							example a 1080p and a 4K version of a season.
-						</p>
-						<Label for="file-suffix-display"
-							>The files will be saved in the following directory:</Label
-						>
-						<p class="text-muted-foreground text-sm" id="file-suffix-display">
-							{@render saveDirectoryPreview(show, filePathSuffix)}
-						</p>
-					{:else}
-						<p class="text-muted-foreground text-sm">
-							No season information available for this show.
-						</p>
-					{/if}
+							Search
+						</Button>
+					</div>
+					<p class="text-muted-foreground text-sm">
+						Enter the season's number you want to search for. The first, usually 1, or the last
+						season number usually yield the most season packs. Note that only Seasons which are
+						listed in the "Seasons" cell will be imported!
+					</p>
 				</div>
 			</Tabs.Content>
 			<Tabs.Content value="advanced">
 				<div class="grid w-full items-center gap-1.5">
-					{#if show?.seasons?.length > 0}
-						<Label for="query-override">Enter a custom query</Label>
-						<div class="flex w-full max-w-sm items-center space-x-2">
-							<Input type="text" id="query-override" bind:value={queryOverride} />
-							<Button
-								variant="secondary"
-								onclick={async () => {
-									isLoadingTorrents = true;
-									torrentsError = null;
-									torrents = [];
-									try {
-										torrents = await getTorrents(selectedSeasonNumber, true);
-									} catch (error) {
-										console.log(error);
-									} finally {
-										isLoadingTorrents = false;
-									}
-								}}
-							>
-								Search
-							</Button>
-						</div>
-						<p class="text-muted-foreground text-sm">
-							The custom query will override the default search string like "The Simpsons Season 3".
-							Note that only Seasons which are listed in the "Seasons" cell will be imported!
-						</p>
-						<Label for="file-suffix">Filepath suffix</Label>
-						<Input
-							type="text"
-							class="max-w-sm"
-							id="file-suffix"
-							bind:value={filePathSuffix}
-							placeholder="1080P"
-						/>
-						<p class="text-muted-foreground text-sm">
-							This is necessary to differentiate between versions of the same season/show, for
-							example a 1080p and a 4K version of a season.
-						</p>
-
-						<Label for="file-suffix-display"
-							>The files will be saved in the following directory:</Label
+					<Label for="query-override">Enter a custom query</Label>
+					<div class="flex w-full max-w-sm items-center space-x-2">
+						<Input type="text" id="query-override" bind:value={queryOverride} />
+						<Button
+							variant="secondary"
+							onclick={async () => {
+								isLoadingTorrents = true;
+								torrentsError = null;
+								torrents = [];
+								try {
+									torrents = await getTorrents(selectedSeasonNumber, true);
+								} catch (error) {
+									console.log(error);
+								} finally {
+									isLoadingTorrents = false;
+								}
+							}}
 						>
-						<p class="text-muted-foreground text-sm" id="file-suffix-display">
-							{@render saveDirectoryPreview(show, filePathSuffix)}
-						</p>
-					{:else}
-						<p class="text-muted-foreground text-sm">
-							No season information available for this show.
-						</p>
-					{/if}
+							Search
+						</Button>
+					</div>
+					<p class="text-muted-foreground text-sm">
+						The custom query will override the default search string like "The Simpsons Season 3".
+						Note that only Seasons which are listed in the "Seasons" cell will be imported!
+					</p>
 				</div>
 			</Tabs.Content>
 		</Tabs.Root>
@@ -252,6 +200,7 @@
 								<Table.Head>Seeders</Table.Head>
 								<Table.Head>Age</Table.Head>
 								<Table.Head>Score</Table.Head>
+								<Table.Head>Indexer</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
 								<Table.Head>Seasons</Table.Head>
 								<Table.Head class="text-right">Actions</Table.Head>
@@ -272,6 +221,7 @@
 												: ''}</Table.Cell
 									>
 									<Table.Cell>{torrent.score}</Table.Cell>
+									<Table.Cell>{torrent.indexer ?? 'unknown'}</Table.Cell>
 									<Table.Cell>
 										{#if torrent.flags}
 											{#each torrent.flags as flag (flag)}
@@ -281,19 +231,15 @@
 									</Table.Cell>
 									<Table.Cell>
 										{#if torrent.season}
-											{convertTorrentSeasonRangeToIntegerRange(torrent)}
+											{convertTorrentSeasonRangeToIntegerRange(torrent.season)}
 										{/if}
 									</Table.Cell>
 									<Table.Cell class="text-right">
-										<Button
-											size="sm"
-											variant="outline"
-											onclick={() => {
-												downloadTorrent(torrent.id);
-											}}
-										>
-											Download
-										</Button>
+										<SelectFilePathSuffixDialog
+											bind:filePathSuffix
+											media={show}
+											callback={() => downloadTorrent(torrent.id!)}
+										/>
 									</Table.Cell>
 								</Table.Row>
 							{/each}

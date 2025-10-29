@@ -4,6 +4,7 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { toast } from 'svelte-sonner';
 import client from '$lib/api';
+import type { components } from '$lib/api/api';
 
 export const qualityMap: { [key: number]: string } = {
 	1: '4K/UHD',
@@ -39,22 +40,14 @@ export function getFullyQualifiedMediaName(media: { name: string; year: number |
 	return name;
 }
 
-export function convertTorrentSeasonRangeToIntegerRange(torrent: {
-	season?: number[];
-	seasons?: number[];
-}): string {
-	if (torrent?.season?.length === 1) return torrent.season[0]?.toString() || '';
-	if (torrent?.season?.length && torrent.season.length >= 2) {
-		const lastSeason = torrent.season.at(-1);
-		return torrent.season[0]?.toString() + '-' + (lastSeason?.toString() || '');
-	}
-	if (torrent?.seasons?.length === 1) return torrent.seasons[0]?.toString() || '';
-	if (torrent?.seasons?.length && torrent.seasons.length >= 2) {
-		const lastSeason = torrent.seasons.at(-1);
-		return torrent.seasons[0]?.toString() + '-' + (lastSeason?.toString() || '');
+export function convertTorrentSeasonRangeToIntegerRange(seasons: number[]): string {
+	if (seasons.length === 1) return seasons[0]?.toString() || 'unknown';
+	else if (seasons.length > 1) {
+		const lastSeason = seasons.at(-1);
+		return seasons[0]?.toString() + '-' + (lastSeason?.toString() || 'unknown');
 	} else {
-		console.log('Error parsing season range: ' + torrent?.seasons + torrent?.season);
-		return 'Error parsing season range: ' + torrent?.seasons + torrent?.season;
+		console.log('Error parsing season range: ' + seasons);
+		return 'Error parsing season range: ' + seasons;
 	}
 }
 
@@ -104,4 +97,24 @@ export function handleQueryNotificationToast(count: number = 0, query: string = 
 	if (count > 0 && query.length > 0)
 		toast.success(`Found ${count} ${count > 1 ? 'result' : 'results'} for search term "${query}".`);
 	else if (count == 0) toast.info(`No results found for "${query}".`);
+}
+
+export function saveDirectoryPreview(
+	media: components['schemas']['Show'] | components['schemas']['Movie'],
+	filePathSuffix: string = ''
+) {
+	let path =
+		'/' +
+		getFullyQualifiedMediaName(media) +
+		' [' +
+		media.metadata_provider +
+		'id-' +
+		media.external_id +
+		']/';
+	if ('seasons' in media) {
+		path += ' Season XX/SXXEXX' + (filePathSuffix === '' ? '' : ' - ' + filePathSuffix) + '.mkv';
+	} else {
+		path += media.name + (filePathSuffix === '' ? '' : ' - ' + filePathSuffix) + '.mkv';
+	}
+	return path;
 }

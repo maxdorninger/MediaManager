@@ -5,18 +5,16 @@
 	import { toast } from 'svelte-sonner';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 
-	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import { LoaderCircle } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
-
+	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
 	let { movie } = $props();
 	let dialogueState = $state(false);
-	let torrents: components['schemas']['PublicIndexerQueryResult'][] = $state([]);
+	let torrents: components['schemas']['IndexerQueryResult'][] = $state([]);
 	let isLoadingTorrents: boolean = $state(false);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
@@ -56,7 +54,7 @@
 
 	async function getTorrents(
 		override: boolean = false
-	): Promise<components['schemas']['PublicIndexerQueryResult'][]> {
+	): Promise<components['schemas']['IndexerQueryResult'][]> {
 		isLoadingTorrents = true;
 		torrentsError = null;
 		torrents = [];
@@ -70,7 +68,7 @@
 				}
 			}
 		});
-		data = data as components['schemas']['PublicIndexerQueryResult'][];
+		data = data as components['schemas']['IndexerQueryResult'][];
 		isLoadingTorrents = false;
 
 		if (!response.ok) {
@@ -103,11 +101,6 @@
 	});
 </script>
 
-{#snippet saveDirectoryPreview(movie: components['schemas']['Movie'], filePathSuffix: string)}
-	/{getFullyQualifiedMediaName(movie)} [{movie.metadata_provider}id-{movie.external_id}
-	]/{movie.name}{filePathSuffix === '' ? '' : ' - ' + filePathSuffix}.mkv
-{/snippet}
-
 <Dialog.Root bind:open={dialogueState}>
 	<Dialog.Trigger class={buttonVariants({ variant: 'default' })}>Download Movie</Dialog.Trigger>
 	<Dialog.Content class="max-h-[90vh] w-fit min-w-[80vw] overflow-y-auto">
@@ -124,28 +117,24 @@
 			</Tabs.List>
 			<Tabs.Content value="basic">
 				<div class="grid w-full items-center gap-1.5">
-					<Label for="file-suffix">Filepath suffix</Label>
-					<Select.Root bind:value={filePathSuffix} type="single">
-						<Select.Trigger class="w-[180px]">{filePathSuffix}</Select.Trigger>
-						<Select.Content>
-							<Select.Item value="">None</Select.Item>
-							<Select.Item value="2160P">2160p</Select.Item>
-							<Select.Item value="1080P">1080p</Select.Item>
-							<Select.Item value="720P">720p</Select.Item>
-							<Select.Item value="480P">480p</Select.Item>
-							<Select.Item value="360P">360p</Select.Item>
-						</Select.Content>
-					</Select.Root>
-					<p class="text-muted-foreground text-sm">
-						This is necessary to differentiate between versions of the same movie, for example a
-						1080p and a 4K version.
-					</p>
-					<Label for="file-suffix-display"
-						>The files will be saved in the following directory:</Label
+					<Button
+						class="w-fit"
+						variant="secondary"
+						onclick={async () => {
+							isLoadingTorrents = true;
+							torrentsError = null;
+							torrents = [];
+							try {
+								torrents = await getTorrents();
+							} catch (error) {
+								console.log(error);
+							} finally {
+								isLoadingTorrents = false;
+							}
+						}}
 					>
-					<p class="text-muted-foreground text-sm" id="file-suffix-display">
-						{@render saveDirectoryPreview(movie, filePathSuffix)}
-					</p>
+						Search for Torrents
+					</Button>
 				</div>
 			</Tabs.Content>
 			<Tabs.Content value="advanced">
@@ -175,25 +164,6 @@
 						The custom query will override the default search string like "A Minecraft Movie
 						(2025)".
 					</p>
-					<Label for="file-suffix">Filepath suffix</Label>
-					<Input
-						bind:value={filePathSuffix}
-						class="max-w-sm"
-						id="file-suffix"
-						placeholder="1080P"
-						type="text"
-					/>
-					<p class="text-muted-foreground text-sm">
-						This is necessary to differentiate between versions of the same movie, for example a
-						1080p and a 4K version.
-					</p>
-
-					<Label for="file-suffix-display"
-						>The files will be saved in the following directory:</Label
-					>
-					<p class="text-muted-foreground text-sm" id="file-suffix-display">
-						{@render saveDirectoryPreview(movie, filePathSuffix)}
-					</p>
 				</div>
 			</Tabs.Content>
 		</Tabs.Root>
@@ -215,6 +185,7 @@
 								<Table.Head>Size</Table.Head>
 								<Table.Head>Seeders</Table.Head>
 								<Table.Head>Score</Table.Head>
+								<Table.Head>Indexer</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
 								<Table.Head class="text-right">Actions</Table.Head>
 							</Table.Row>
@@ -226,21 +197,18 @@
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 									<Table.Cell>{torrent.seeders}</Table.Cell>
 									<Table.Cell>{torrent.score}</Table.Cell>
+									<Table.Cell>{torrent.indexer ?? 'Unknown'}</Table.Cell>
 									<Table.Cell>
 										{#each torrent.flags as flag (flag)}
 											<Badge variant="outline">{flag}</Badge>
 										{/each}
 									</Table.Cell>
 									<Table.Cell class="text-right">
-										<Button
-											size="sm"
-											variant="outline"
-											onclick={() => {
-												downloadTorrent(torrent.id);
-											}}
-										>
-											Download
-										</Button>
+										<SelectFilePathSuffixDialog
+											media={movie}
+											bind:filePathSuffix
+											callback={() => downloadTorrent(torrent.id!)}
+										/>
 									</Table.Cell>
 								</Table.Row>
 							{/each}
