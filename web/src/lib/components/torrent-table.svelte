@@ -88,7 +88,7 @@
 					<CheckmarkX state={torrent.imported} />
 				</Table.Cell>
 				{#if user().is_superuser}
-					<Table.Cell class="justify flex flex-col gap-2 xl:flex-row">
+					<Table.Cell class="flex flex-col justify-center gap-2 xl:flex-row">
 						{#if 'finished' !== getTorrentStatusString(torrent.status)}
 							<Button variant="secondary" onclick={() => retryTorrentDownload(torrent)}>
 								Retry Download
