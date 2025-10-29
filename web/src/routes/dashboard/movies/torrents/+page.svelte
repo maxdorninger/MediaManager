@@ -6,16 +6,8 @@
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import TorrentTable from '$lib/components/torrent-table.svelte';
-	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
-	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
-
-	let torrents: components['schemas']['RichMovieTorrent'][] = [];
-	onMount(async () => {
-		const { data } = await client.GET('/api/v1/movies/torrents');
-		torrents = data as components['schemas']['RichMovieTorrent'][];
-	});
+	import { page } from '$app/state';
 </script>
 
 <svelte:head>
@@ -54,7 +46,7 @@
 		Movie Torrents
 	</h1>
 	<Accordion.Root class="w-full" type="single">
-		{#each torrents as movie (movie.movie_id)}
+		{#each page.data.torrents as movie (movie.movie_id)}
 			<div class="p-6">
 				<Card.Root>
 					<Card.Header>
