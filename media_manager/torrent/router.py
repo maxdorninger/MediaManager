@@ -1,10 +1,16 @@
+from fastapi.exceptions import HTTPException
+
 from fastapi import APIRouter
 from fastapi import status
 from fastapi.params import Depends
 
 from media_manager.auth.users import current_active_user, current_superuser
-from media_manager.torrent.dependencies import torrent_service_dep, torrent_dep
-from media_manager.torrent.schemas import Torrent
+from media_manager.torrent.dependencies import (
+    torrent_service_dep,
+    torrent_dep,
+    torrent_repository_dep,
+)
+from media_manager.torrent.schemas import Torrent, TorrentStatus
 
 router = APIRouter()
 
@@ -53,3 +59,29 @@ def retry_torrent_download(
 ):
     service.pause_download(torrent=torrent)
     service.resume_download(torrent=torrent)
+
+
+@router.patch(
+    "/{torrent_id}/status",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(current_superuser)],
+    response_model=Torrent,
+)
+def update_torrent_status(
+    rep: torrent_repository_dep,
+    torrent: torrent_dep,
+    state: TorrentStatus | None = None,
+    imported: bool | None = None,
+):
+    if imported is not None:
+        torrent.imported = imported
+    if state is not None:
+        torrent.status = state
+    if status is None and imported is None:
+        return HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No status or imported value provided",
+        )
+
+    rep.save_torrent(torrent=torrent)
+    return torrent

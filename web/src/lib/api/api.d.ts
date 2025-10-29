@@ -633,6 +633,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/api/v1/torrent/{torrent_id}/status': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		/** Update Torrent Status */
+		patch: operations['update_torrent_status_api_v1_torrent__torrent_id__status_patch'];
+		trace?: never;
+	};
 	'/api/v1/movies': {
 		parameters: {
 			query?: never;
@@ -3138,6 +3155,40 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	update_torrent_status_api_v1_torrent__torrent_id__status_patch: {
+		parameters: {
+			query?: {
+				state?: components['schemas']['TorrentStatus'] | null;
+				imported?: boolean | null;
+			};
+			header?: never;
+			path: {
+				torrent_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Torrent'];
+				};
 			};
 			/** @description Validation Error */
 			422: {
