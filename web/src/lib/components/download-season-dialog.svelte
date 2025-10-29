@@ -283,7 +283,7 @@
 									</Table.Cell>
 									<Table.Cell>
 										{#if torrent.season}
-											{convertTorrentSeasonRangeToIntegerRange(torrent)}
+											{convertTorrentSeasonRangeToIntegerRange(torrent.season)}
 										{/if}
 									</Table.Cell>
 									<Table.Cell class="text-right">
@@ -291,7 +291,7 @@
 											size="sm"
 											variant="outline"
 											onclick={() => {
-												downloadTorrent(torrent.id);
+												downloadTorrent(torrent.id!);
 											}}
 										>
 											Download

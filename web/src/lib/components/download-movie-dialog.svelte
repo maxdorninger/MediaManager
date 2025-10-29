@@ -238,7 +238,7 @@
 											size="sm"
 											variant="outline"
 											onclick={() => {
-												downloadTorrent(torrent.id);
+												downloadTorrent(torrent.id!);
 											}}
 										>
 											Download
