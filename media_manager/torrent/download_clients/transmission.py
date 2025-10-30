@@ -36,7 +36,6 @@ class TransmissionDownloadClient(AbstractDownloadClient):
                 password=self.config.password,
                 protocol="https" if self.config.https_enabled else "http",
                 path=self.config.path,
-                logger=log,
             )
             # Test connection
             self._client.session_stats()

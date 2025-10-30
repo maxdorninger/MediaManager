@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 
 import requests
 
@@ -111,57 +112,41 @@ def evaluate_indexer_query_results(
     return query_results
 
 
-def follow_redirects_to_final_torrent_url(initial_url: str) -> str | None:
+def follow_redirects_to_final_torrent_url(
+    initial_url: str, session: requests.Session, timeout: float = 10
+) -> str:
     """
     Follows redirects to get the final torrent URL.
     :param initial_url: The initial URL to follow.
-    :return: The final torrent URL or None if it fails.
+    :param session: A requests session to use for the requests.
+    :param timeout: Timeout in seconds for each redirect request.
+    :return: The final torrent URL.
+    :raises: RuntimeError if it fails.
     """
     current_url = initial_url
-    final_url = None
     try:
-        while True:
-            response = requests.get(current_url, allow_redirects=False)
+        for _ in range(10):  # Limit redirects to prevent infinite loops
+            response = session.get(current_url, allow_redirects=False, timeout=timeout)
 
             if 300 <= response.status_code < 400:
                 redirect_url = response.headers.get("Location")
-                if redirect_url.startswith("http://") or redirect_url.startswith(
-                    "https://"
-                ):
-                    # It's an HTTP/HTTPS redirect, continue following
-                    current_url = redirect_url
-                    log.info(f"Following HTTP/HTTPS redirect to: {current_url}")
-                elif redirect_url.startswith("magnet:"):
-                    # It's a Magnet URL, this is our final destination
-                    final_url = redirect_url
-                    log.info(f"Reached Magnet URL: {final_url}")
-                    break
-                else:
-                    log.error(
-                        f"Reached unexpected non-HTTP/HTTPS/magnet URL: {redirect_url}"
-                    )
-                    raise RuntimeError(
-                        f"Reached unexpected non-HTTP/HTTPS/magnet URL: {redirect_url}"
-                    )
-            else:
-                # Not a redirect, so the current URL is the final one
-                final_url = current_url
-                log.info(f"Reached final (non-redirect) URL: {final_url}")
-                break
-    except requests.exceptions.RequestException as e:
-        log.error(f"An error occurred during the request: {e}")
-        raise RuntimeError(f"An error occurred during the request: {e}")
-    if not final_url:
-        log.error("Final URL could not be determined.")
-        raise RuntimeError("Final URL could not be determined.")
-    if final_url.startswith("http://") or final_url.startswith("https://"):
-        log.info("Final URL protocol: HTTP/HTTPS")
-    elif final_url.startswith("magnet:"):
-        log.info("Final URL protocol: Magnet")
-    else:
-        log.error(f"Final URL is not a valid HTTP/HTTPS or Magnet URL: {final_url}")
-        raise RuntimeError(
-            f"Final URL is not a valid HTTP/HTTPS or Magnet URL: {final_url}"
-        )
+                if not redirect_url:
+                    raise RuntimeError("Redirect response without Location header")
 
-    return final_url
+                # Resolve relative redirects against the last URL
+                current_url = urljoin(current_url, redirect_url)
+                log.debug(f"Following redirect to: {current_url}")
+
+                if current_url.startswith("magnet:"):
+                    return current_url
+            else:
+                response.raise_for_status()  # Raise an exception for bad status codes
+                return current_url
+        else:
+            raise RuntimeError("Exceeded maximum number of redirects")
+
+    except requests.exceptions.RequestException as e:
+        log.debug(f"An error occurred during the request for {initial_url}: {e}")
+        raise RuntimeError(f"An error occurred during the request: {e}") from e
+
+    return current_url

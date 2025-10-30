@@ -44,6 +44,13 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s(): %(message)s",
     stream=sys.stdout,
 )
+
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("transmission_rpc").setLevel(logging.WARNING)
+logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
+logging.getLogger("sabnzbd_api").setLevel(logging.WARNING)
+
 log = logging.getLogger(__name__)
 
 from psycopg.errors import UniqueViolation  # noqa: E402
