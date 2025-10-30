@@ -25,6 +25,7 @@ class Prowlarr(GenericIndexer):
         config = AllEncompassingConfig().indexers.prowlarr
         self.api_key = config.api_key
         self.url = config.url
+        self.reject_torrents_on_url_error = config.reject_torrents_on_url_error
         log.debug("Registering Prowlarr as Indexer")
 
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
@@ -96,7 +97,10 @@ class Prowlarr(GenericIndexer):
                     log.debug(
                         f"Failed to follow redirects for {initial_url}, falling back to the initial url as download url, error: {e}"
                     )
-                    final_download_url = initial_url
+                    if self.reject_torrents_on_url_error:
+                        return None
+                    else:
+                        final_download_url = initial_url
             else:
                 final_download_url = initial_url
             return IndexerQueryResult(
