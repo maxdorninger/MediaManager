@@ -17,7 +17,7 @@ class IndexerQueryResult(BaseModel):
     title: str
     download_url: str = pydantic.Field(
         exclude=True,
-        description="This can be a magnet link or URL to the .torrent file"
+        description="This can be a magnet link or URL to the .torrent file",
     )
     seeders: int
     flags: list[str]
