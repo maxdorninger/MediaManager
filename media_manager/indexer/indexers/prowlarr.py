@@ -1,6 +1,5 @@
 import concurrent
 import logging
-import time
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
@@ -53,24 +52,16 @@ class Prowlarr(GenericIndexer):
             futures = []
             result_list: list[IndexerQueryResult] = []
 
-            start_time = time.time()
             with ThreadPoolExecutor() as executor:
                 for item in response.json():
                     future = executor.submit(self.process_result, item, session)
                     futures.append(future)
-                log.debug(
-                    f"Prowlarr processing time for query '{query}': {time.time() - start_time} seconds"
-                )
+
                 for future in concurrent.futures.as_completed(futures):
                     result = future.result()
-                    log.debug(
-                        f"Prowlarr processing time of result for query '{query}': {time.time() - start_time} seconds"
-                    )
                     if result is not None:
                         result_list.append(result)
-            log.debug(
-                f"Total Prowlarr processing time for query '{query}': {time.time() - start_time} seconds"
-            )
+
             return result_list
 
     def process_result(
@@ -102,7 +93,7 @@ class Prowlarr(GenericIndexer):
                         session=session,
                     )
                 except RuntimeError as e:
-                    log.error(
+                    log.debug(
                         f"Failed to follow redirects for {initial_url}, falling back to the initial url as download url, error: {e}"
                     )
                     final_download_url = initial_url
