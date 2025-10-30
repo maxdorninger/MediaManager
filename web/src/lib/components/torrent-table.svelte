@@ -12,7 +12,7 @@
 	import client from '$lib/api';
 	import { toast } from 'svelte-sonner';
 	import DeleteTorrentDialog from '$lib/components/delete-torrent-dialog.svelte';
-
+	import EditTorrentDialog from '$lib/components/edit-torrent-dialog.svelte';
 	let {
 		torrents,
 		isShow = true
@@ -96,6 +96,7 @@
 						{/if}
 						<DeleteTorrentDialog torrentName={torrent.torrent_title} torrentId={torrent.torrent_id!}
 						></DeleteTorrentDialog>
+						<EditTorrentDialog {torrent} />
 					</Table.Cell>
 				{/if}
 			</Table.Row>
