@@ -77,8 +77,8 @@ def update_torrent_status(
         torrent.imported = imported
     if state is not None:
         torrent.status = state
-    if status is None and imported is None:
-        return HTTPException(
+    if state is None and imported is None:
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No status or imported value provided",
         )
