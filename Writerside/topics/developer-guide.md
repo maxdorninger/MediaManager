@@ -11,13 +11,28 @@ This section is for those who want to contribute to Media Manager or understand 
 
 ## Special Dev Configuration
 
-#### Env Variables
+### Environment Variables
 
-- `BASE_PATH`: this sets the base path for the app (can be set for both backend and frontend)
-- `PUBLIC_VERSION`: this sets the version variable, it is displayed in the frontend (requires rebuilding of the
-  frontend) and in the /api/v1/health endpoint (can be set for both backend and frontend)
-- `FRONTEND_FILES_DIR`: directory for frontend files, e.g. in Docker container it is `/app/web/build` (only backend)
-- `MEDIAMANAGER_MISC__DEVELOPMENT`: If set to `TRUE`, enables hot reloading of FastAPI (only when using the docker container)
+MediaManager uses various environment variables for configuration. In the Docker development setup (`docker-compose.dev.yaml`), most of these are automatically configured for you.
+
+#### Backend Variables
+- `BASE_PATH`: Sets the base path for the app (e.g., for subdirectory deployments)
+- `PUBLIC_VERSION`: Version string displayed in `/api/v1/health` endpoint
+- `FRONTEND_FILES_DIR`: Directory for built frontend files (e.g., `/app/web/build` in Docker)
+- `MEDIAMANAGER_MISC__DEVELOPMENT`: When set to `TRUE`, enables FastAPI hot-reloading in Docker
+
+#### Frontend Variables
+- `PUBLIC_API_URL`: API URL for backend communication (automatically configured via Vite proxy in Docker)
+- `PUBLIC_VERSION`: Version string displayed in the frontend UI
+- `BASE_PATH`: Base path for frontend routing (matches backend BASE_PATH)
+
+#### Docker Development Variables
+- `DISABLE_FRONTEND_MOUNT`: When `TRUE`, disables mounting built frontend files (allows separate frontend container)
+  - **Note:** This is automatically set in `docker-compose.dev.yaml` to enable the separate frontend development container
+
+#### Configuration Files
+- Backend: `res/config/config.toml` (created from `config.dev.toml`)
+- Frontend: `web/.env` (created from `.env.example`)
 
 ## Contributing
 
@@ -44,29 +59,68 @@ features.
 - VirtualKit
 - Writerside (for writing documentation)
 
-### Other recommendations
+### Recommended Development Workflow
 
-I recommend developing using Docker, i.e. you can use the provided `docker-compose.dev.yaml` file. This dev
-docker-compose file has the `./media_manager` directory mounted at `/app/media_manager` in the container, meaning you
-can run the code using the container in exactly the environment it will be running in.
+The **recommended way** to develop MediaManager is using the fully Dockerized setup with `docker-compose.dev.yaml`.
+This ensures you're working in the same environment as production and makes it easy for new contributors to get started without installing Python, Node.js, or other dependencies locally.
 
-Additionally, to develop the frontend I use a locally installed Node.js server. So basically a hybrid approach, where
-the backend runs in a container and the frontend runs on Windows. To make this work, you need to make sure the
-`cors_urls` and `frontend_url` are set correctly in the backend's config file.
+The development environment includes:
+- **Backend (FastAPI)** with automatic hot-reloading for Python code changes
+- **Frontend (SvelteKit/Vite)** with Hot Module Replacement (HMR) for instant updates
+- **Database (PostgreSQL)** pre-configured and ready to use
 
-Unfortunately, a side effect of this setup is that you have to rebuild the Docker image every time when you change the
-python dependencies in any way or at least restart the container if you change the code. For a fast-paced development it
-may be more convenient to run the backend locally too, because then it supports hot reloading.
+**What requires what:**
+- **Python code changes (.py files)**: Automatically detected and hot-reloaded, no action needed ✨
+- **Frontend code changes (.svelte, .ts, .css)**: Instant HMR updates in browser, no action needed ✨
+- **Configuration changes (config.toml)**: Live updates via volume mount, no action needed ✨
+- **Backend dependencies (pyproject.toml)**: Require rebuilding: `docker compose -f docker-compose.dev.yaml build mediamanager`
+- **Frontend dependencies (package.json)**: Restart frontend container: `docker compose -f docker-compose.dev.yaml restart frontend`
+- **Database migrations**: Automatically run on backend container startup
 
-### Setting up the basic development environment with Docker
+This approach eliminates the need for container restarts during normal development and provides the best developer experience with instant feedback for code changes.
 
-- Copy the `config.dev.toml` file to `config.toml` in the `./res` directory and edit it to your needs.
-- Use the following command to start the development environment with Docker:
-    ```bash
-    docker compose -f docker-compose.dev.yaml up -d
-    ```
+#### How the Frontend Connects to the Backend
 
-### Setting up the backend development environment
+In the Docker development setup, the frontend and backend communicate through Vite's proxy configuration:
+
+- **Frontend runs on**: `http://localhost:5173` (exposed from Docker)
+- **Backend runs on**: `http://mediamanager:8000` (Docker internal network)
+- **Vite proxy**: Automatically forwards all `/api/*` requests from frontend to backend
+
+This means when your browser makes a request to `http://localhost:5173/api/v1/tv/shows`, Vite automatically proxies it to `http://mediamanager:8000/api/v1/tv/shows`. The `PUBLIC_API_URL` environment variable is set to use this proxy, so you don't need to configure anything manually.
+
+### Setting up the full development environment with Docker (Recommended)
+
+This is the easiest and recommended way to get started. Everything runs in Docker with hot-reloading enabled.
+
+1. **Copy the example config & .env:**
+   ```bash
+   cp config.dev.toml res/config/config.toml
+   cp web/.env.example web/.env
+   ```
+
+2. **Start all services:**
+   ```bash
+   # Recommended: Use make commands for easy development
+   make up
+
+   # Alternative: Use docker compose directly (if make is not available)
+   docker compose -f docker-compose.dev.yaml up
+   ```
+
+   **Tip:** Run `make help` to see all available development commands including `make down`, `make logs`, `make app` (shell into backend), and more.
+
+3. **Access the application:**
+   - Frontend (with HMR): http://localhost:5173
+   - Backend API: http://localhost:8000
+   - Database: localhost:5432
+
+That's it! Now you can edit code and see changes instantly:
+- Edit Python files → Backend auto-reloads
+- Edit Svelte/TypeScript files → Frontend HMR updates in browser
+- Edit config.toml → Changes apply immediately
+
+### Setting up the backend development environment (Local)
 
 1. Clone the repository
 2. cd into repo root
@@ -93,18 +147,21 @@ may be more convenient to run the backend locally too, because then it supports 
 
 9. run the backend with
     ```bash
-    uv run ./media_manager/main.py --reload --port 8000
+    uv run fastapi run media_manager/main.py --reload --port 8000
     ```
 
-- format code with `uvx ruff format`
-- lint code with `uvx ruff check`
+- format code with `uv run ruff format .`
+- lint code with `uv run ruff check .`
 
-### Setting up the frontend development environment
+### Setting up the frontend development environment (Local, Optional)
+
+**Note:** Using the Docker setup above is recommended. This section is for those who prefer to run the frontend locally
+outside of Docker.
 
 1. Clone the repository
 2. cd into repo root
 3. cd into `web` directory
-4. install Node.js and npm if you haven't already, I
+4. Install Node.js and npm if you haven't already, I
    used [nvm-windows](https://github.com/coreybutler/nvm-windows?tab=readme-ov-file):
     ```powershell
     nvm install 24.1.0
@@ -114,11 +171,73 @@ may be more convenient to run the backend locally too, because then it supports 
    ```powershell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
-5. Install the dependencies with npm: `npm install`
-6. Start the frontend development server: `npm run dev`
+5. Create a `.env` file in the `web` directory:
+   ```bash
+   cp .env.example .env
+   ```
+   Update `PUBLIC_API_URL` if your backend is not at `http://localhost:8000`
 
-- format the code with `npm run format`
-- lint the code with `npm run lint`
+6. Install the dependencies with npm: `npm install`
+7. Start the frontend development server: `npm run dev`
+
+**Important:** If running frontend locally, make sure to add `http://localhost:5173` to the `cors_urls` in your backend
+config file.
+
+- Format the code with `npm run format`
+- Lint the code with `npm run lint`
+
+## Troubleshooting
+
+### Common Docker Development Issues
+
+**Port already in use errors:**
+- Check if ports 5173, 8000, or 5432 are already in use: `lsof -i :5173` (macOS/Linux) or `netstat -ano | findstr :5173` (Windows)
+- Stop conflicting services or change ports in `docker-compose.dev.yaml`
+
+**Container not showing code changes:**
+- Verify volume mounts are correct in `docker-compose.dev.yaml`
+- For backend: Ensure `./media_manager:/app/media_manager` is mounted
+- For frontend: Ensure `./web:/app` is mounted
+- On Windows: Check that file watching is enabled in Docker Desktop settings
+
+**Frontend changes not updating:**
+- Check that the frontend container is running: `make ps` or `docker compose -f docker-compose.dev.yaml ps`
+- Verify Vite's file watching is working (should see HMR updates in browser console)
+- Try restarting the frontend container: `docker compose -f docker-compose.dev.yaml restart frontend`
+
+**Backend changes not reloading:**
+- Verify `MEDIAMANAGER_MISC__DEVELOPMENT=TRUE` is set in `docker-compose.dev.yaml`
+- Check backend logs: `make logs ARGS="--follow mediamanager"` or `docker compose -f docker-compose.dev.yaml logs -f mediamanager`
+- If dependencies changed, rebuild: `docker compose -f docker-compose.dev.yaml build mediamanager`
+
+**Database migration issues:**
+- Migrations run automatically on container startup
+- To run manually: `make app` then `uv run alembic upgrade head`
+- To create new migration: `make app` then `uv run alembic revision --autogenerate -m "description"`
+
+**Viewing logs:**
+- All services: `make logs`
+- Follow logs in real-time: `make logs ARGS="--follow"`
+- Specific service: `make logs ARGS="mediamanager --follow"`
+
+**Interactive debugging:**
+- Shell into backend: `make app` (or `docker compose -f docker-compose.dev.yaml exec -it mediamanager bash`)
+- Shell into frontend: `make frontend` (or `docker compose -f docker-compose.dev.yaml exec -it frontend sh`)
+- Once inside, you can run commands like `uv run alembic upgrade head`, `npm install`, etc.
+
+**Volume permission issues (Linux):**
+- Docker containers may create files as root, causing permission issues
+- Solution: Run containers with your user ID or use Docker's `user:` directive
+- Alternatively: `sudo chown -R $USER:$USER .` to reclaim ownership
+
+**Complete reset:**
+If all else fails, you can completely reset your development environment:
+```bash
+make down
+docker compose -f docker-compose.dev.yaml down -v  # Remove volumes
+docker compose -f docker-compose.dev.yaml build --no-cache  # Rebuild without cache
+make up
+```
 
 ## Sequence Diagrams
 

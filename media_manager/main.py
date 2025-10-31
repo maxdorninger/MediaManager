@@ -190,6 +190,7 @@ async def lifespan(app: FastAPI):
 
 BASE_PATH = os.getenv("BASE_PATH", "")
 FRONTEND_FILES_DIR = os.getenv("FRONTEND_FILES_DIR")
+DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() in ["true", "1", "yes"]
 
 
 app = FastAPI(lifespan=lifespan, root_path=BASE_PATH)
@@ -290,7 +291,16 @@ app.mount(
 )
 
 app.include_router(api_app)
-app.mount("/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True), name="frontend")
+
+# ----------------------------
+# Frontend mounting (disabled in development)
+# ----------------------------
+
+if not DISABLE_FRONTEND_MOUNT:
+    app.mount("/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True), name="frontend")
+    log.info(f"Mounted frontend at /web from {FRONTEND_FILES_DIR}")
+else:
+    log.info("Frontend mounting disabled (DISABLE_FRONTEND_MOUNT is set)")
 
 # ----------------------------
 # Redirects to frontend
@@ -325,7 +335,7 @@ app.add_exception_handler(UniqueViolation, sqlalchemy_integrity_error_handler)
 
 @app.exception_handler(404)
 async def not_found_handler(request, exc):
-    if any(
+    if not DISABLE_FRONTEND_MOUNT and any(
         base_path in ["/web", "/dashboard", "/login"] for base_path in request.url.path
     ):
         return FileResponse(f"{FRONTEND_FILES_DIR}/404.html")

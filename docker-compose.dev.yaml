@@ -15,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: app
       args:
         - VERSION=locally-built
         - BASE_PATH=
@@ -24,12 +25,26 @@ services:
       - "8000:8000"
     environment:
       - CONFIG_DIR=/app/config
+      - MEDIAMANAGER_MISC__DEVELOPMENT=TRUE
+      - DISABLE_FRONTEND_MOUNT=TRUE
     volumes:
       #- ./web/build:/app/web/build # this is only needed to test built frontend when developing frontend
       - ./res/images/:/data/images/
       - ./res/:/data/
       - ./res/config/:/app/config/
       - ./media_manager:/app/media_manager
+  frontend:
+    image: node:24-alpine
+    container_name: mediamanager-frontend-dev
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+      - "24678:24678"
+    volumes:
+      - ./web:/app
+    depends_on:
+      - mediamanager
 
 # ----------------------------
 # Additional services can be uncommented and configured as needed
