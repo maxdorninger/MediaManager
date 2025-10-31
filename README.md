@@ -62,39 +62,6 @@ docker compose up -d
 
 [![Star History Chart](https://api.star-history.com/svg?repos=maxdorninger/MediaManager&type=Date)](https://www.star-history.com/#maxdorninger/MediaManager&Date)
 
-
-## Roadmap
-
-- [x] support for more torrent indexers
-- [x] fully automatic downloads
-- [x] add tests
-- [x] add more logs/errors
-- [x] make API return proper error codes
-- [x] optimize images for web in the backend
-- [x] responsive ui
-- [x] automatically update metadata of shows
-- [x] automatically download new seasons/episodes of shows
-- [x] add fallback to just copy files if hardlinks don't work
-- [x] add check at startup if hardlinks work
-- [x] create separate metadata relay service, so that api keys for TMDB and TVDB are not strictly needed
-- [x] support for movies
-- [x] expand README with more information and a quickstart guide
-- [x] improve reliability of scheduled tasks
-- [x] add notification system
-- [x] add sequence diagrams to the documentation
-- [x] add usenet support
-- [x] provide example configuration files
-- [x] make media sorting algorithm configurable
-- [x] add support for transmission
-- [x] add support for configuration via toml/yaml config file
-- [ ] add in-depth documentation on the architecture of the codebase
-- [ ] make indexer module multithreaded
-- [ ] add delete button for movies/TV shows
-- [ ] rework prowlarr module (select which indexers to use, etc.)
-- [ ] _maybe_ rework the logo
-
-See the [open issues](hhttps://maxdorninger.github.io/MediaManager/issues) for a full list of proposed features (and known issues).
-
 ## Screenshots
 
 ![Screenshot 2025-07-02 174732](https://github.com/user-attachments/assets/49fc18aa-b471-4be8-983e-c0ab240dfb73)
