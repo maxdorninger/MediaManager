@@ -112,7 +112,6 @@ jobs:
           tags: |
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name != 'release' }}
-            type=ref,event=tag
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
