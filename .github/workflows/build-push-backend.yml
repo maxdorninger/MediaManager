@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - 'v*.*.*'
     paths:
       - 'media_manager/**'
       - 'alembic/**'
@@ -28,6 +26,9 @@ on:
       - '.github/workflows/build-push-backend.yml'
       - 'tests/**'
       - 'web/**'
+
+  release:
+    types: [published]
 
   workflow_dispatch:
 
@@ -62,7 +63,7 @@ jobs:
 
 
   build-and-push:
-    needs: [lint-frontend]
+    needs: [lint-frontend, lint-backend]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -90,13 +91,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION=${{ github.event.release.tag_name }}
+          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION=${{ github.ref_name }}
+          else
+            DATE_STAMP=$(date -u +'%Y.%m.%d')
+            VERSION="dev-${DATE_STAMP}-${{ github.run_number }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/mediamanager
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') && github.event_name != 'pull_request' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name != 'release' }}
             type=ref,event=tag
             type=ref,event=branch
             type=ref,event=pr
@@ -104,16 +119,6 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha
-
-      - name: Extract version
-        id: version
-        run: |
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-          else
-            VERSION="dev-${GITHUB_SHA::7}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -129,4 +134,3 @@ jobs:
             BASE_PATH=
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/mediamanager:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/mediamanager:buildcache,mode=max
-

@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - 'v*.*.*'
     paths:
       - 'metadata_relay/**'
       - '.github/workflows/python-lint_metadata_relay.yaml'
@@ -13,6 +11,8 @@ on:
     paths:
       - 'metadata_relay/**'
       - '.github/workflows/python-lint_metadata_relay.yaml'
+  release:
+    types: [ published ]
   workflow_dispatch:
 
 jobs:
@@ -51,13 +51,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION=${{ github.event.release.tag_name }}
+          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION=${{ github.ref_name }}
+          else
+            DATE_STAMP=$(date -u +'%Y.%m.%d')
+            VERSION="dev-${DATE_STAMP}-${{ github.run_number }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/metadata_relay
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') && github.event_name != 'pull_request' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name != 'release' }}
             type=ref,event=tag
             type=ref,event=branch
             type=ref,event=pr
