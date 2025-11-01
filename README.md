@@ -56,6 +56,10 @@ docker compose up -d
 <a href="https://github.com/brandon-dacrib"><img src="https://github.com/brandon-dacrib.png" width="80px" alt="Brandon P." /></a>&nbsp;&nbsp;
 <a href="https://github.com/SeimusS"><img src="https://github.com/SeimusS.png" width="80px" alt="SeimusS" /></a>&nbsp;&nbsp;
 <a href="https://github.com/HadrienKerlero"><img src="https://github.com/HadrienKerlero.png" width="80px" alt="HadrienKerlero" /></a>&nbsp;&nbsp;
+<a href="https://github.com/keyxmakerx"><img src="https://github.com/keyxmakerx.png" width="80px" alt="keyxmakerx" /></a>&nbsp;&nbsp;
+<a href="https://github.com/LITUATUI"><img src="https://github.com/LITUATUI.png" width="80px" alt="LITUATUI" /></a>&nbsp;&nbsp;
+<a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/B6CDBD/NI.png" width="80px" alt="Nicolas" /></a>&nbsp;&nbsp;
+<a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/DEBBB9/JO.png" width="80px" alt="Josh" /></a>&nbsp;&nbsp;
 
 
 ## Star History

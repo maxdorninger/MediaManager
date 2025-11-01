@@ -78,6 +78,26 @@
 		<a href="https://github.com/HadrienKerlero"
 			><img alt="HadrienKerlero" src="https://github.com/HadrienKerlero.png" width="80px" /></a
 		>&nbsp;&nbsp;
+		<a href="https://github.com/keyxmakerx"
+			><img alt="keyxmakerx" src="https://github.com/keyxmakerx.png" width="80px" /></a
+		>&nbsp;&nbsp;
+		<a href="https://github.com/LITUATUI"
+			><img alt="LITUATUI" src="https://github.com/LITUATUI.png" width="80px" /></a
+		>&nbsp;&nbsp;
+		<a href="https://buymeacoffee.com/maxdorninger"
+			><img
+				alt="Nicolas"
+				src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/B6CDBD/NI.png"
+				width="80px"
+			/></a
+		>&nbsp;&nbsp;
+		<a href="https://buymeacoffee.com/maxdorninger"
+			><img
+				alt="Josh"
+				src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/DEBBB9/JO.png"
+				width="80px"
+			/></a
+		>&nbsp;&nbsp;
 	</div>
 
 	<h2
