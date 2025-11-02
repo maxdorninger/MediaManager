@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eEuo pipefail # fail if any errors are encountered
 
 # This script is used to start the MediaManager service.
 
@@ -136,7 +137,6 @@ else
 fi
 
 echo "Running DB migrations..."
-
 uv run alembic upgrade head
 
 echo "Starting MediaManager backend service..."
@@ -148,8 +148,9 @@ echo "   You can also register a new user and it will become admin if the email"
 echo "   matches one of the admin_emails in your config.toml"
 echo ""
 
+DEVELOPMENT_MODE=${MEDIAMANAGER_MISC__DEVELOPMENT:-FALSE}
 PORT=${PORT:-8000}
-if [ "$MEDIAMANAGER_MISC__DEVELOPMENT" == "TRUE" ]; then
+if [ "$DEVELOPMENT_MODE" == "TRUE" ]; then
     echo "Development mode is enabled, enabling auto-reload..."
     uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers --reload
 else

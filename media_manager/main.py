@@ -55,7 +55,6 @@ log = logging.getLogger(__name__)
 
 from psycopg.errors import UniqueViolation  # noqa: E402
 from sqlalchemy.exc import IntegrityError  # noqa: E402
-from media_manager.database import init_db  # noqa: E402
 from media_manager.config import AllEncompassingConfig  # noqa: E402
 import media_manager.torrent.router as torrent_router  # noqa: E402
 import media_manager.movies.router as movies_router  # noqa: E402
@@ -107,9 +106,8 @@ from datetime import datetime  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from apscheduler.schedulers.background import BackgroundScheduler  # noqa: E402
 from apscheduler.triggers.cron import CronTrigger  # noqa: E402
+from media_manager.database import init_engine  # noqa: E402
 
-init_db()
-log.info("Database initialized")
 config = AllEncompassingConfig()
 
 if config.misc.development:
@@ -130,6 +128,8 @@ def weekly_tasks():
     update_all_non_ended_shows_metadata()
     update_all_movies_metadata()
 
+
+init_engine(config.database)
 
 jobstores = {"default": SQLAlchemyJobStore(engine=media_manager.database.engine)}
 
@@ -190,7 +190,11 @@ async def lifespan(app: FastAPI):
 
 BASE_PATH = os.getenv("BASE_PATH", "")
 FRONTEND_FILES_DIR = os.getenv("FRONTEND_FILES_DIR")
-DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() in ["true", "1", "yes"]
+DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() in [
+    "true",
+    "1",
+    "yes",
+]
 
 
 app = FastAPI(lifespan=lifespan, root_path=BASE_PATH)
@@ -297,7 +301,9 @@ app.include_router(api_app)
 # ----------------------------
 
 if not DISABLE_FRONTEND_MOUNT:
-    app.mount("/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True), name="frontend")
+    app.mount(
+        "/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True), name="frontend"
+    )
     log.info(f"Mounted frontend at /web from {FRONTEND_FILES_DIR}")
 else:
     log.info("Frontend mounting disabled (DISABLE_FRONTEND_MOUNT is set)")
