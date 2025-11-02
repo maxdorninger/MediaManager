@@ -11,8 +11,8 @@ from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
-from media_manager.database import Base
-from media_manager.database import db_url
+from media_manager.database import Base, build_db_url
+from media_manager.config import AllEncompassingConfig
 
 
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
@@ -29,7 +29,9 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     )
 
 
-engine = create_async_engine(db_url, echo=False)
+engine = create_async_engine(
+    build_db_url(**AllEncompassingConfig().database.model_dump()), echo=False
+)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 

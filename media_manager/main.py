@@ -106,6 +106,7 @@ from datetime import datetime  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from apscheduler.schedulers.background import BackgroundScheduler  # noqa: E402
 from apscheduler.triggers.cron import CronTrigger  # noqa: E402
+from media_manager.database import init_engine  # noqa: E402
 
 config = AllEncompassingConfig()
 
@@ -127,6 +128,8 @@ def weekly_tasks():
     update_all_non_ended_shows_metadata()
     update_all_movies_metadata()
 
+
+init_engine(config.database)
 
 jobstores = {"default": SQLAlchemyJobStore(engine=media_manager.database.engine)}
 
