@@ -421,6 +421,18 @@ class MovieService:
 
         log.info(f"Downloading approved movie request {movie_request.id}")
 
+        # Check if movie has aired (if air date check is enabled)
+        config = AllEncompassingConfig()
+        if config.misc.prevent_unaired_movie_downloads:
+            if movie.air_date is not None:
+                from datetime import date
+                today = date.today()
+                if movie.air_date > today:
+                    log.info(
+                        f"Skipping movie {movie.name} because it hasn't been released yet (release date: {movie.air_date})"
+                    )
+                    return False
+
         torrents = self.get_all_available_torrents_for_a_movie(movie_id=movie.id)
         available_torrents: list[IndexerQueryResult] = []
 
