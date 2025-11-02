@@ -11,6 +11,11 @@ res/*
 media_manager/indexer/indexers/prowlarr.http
 *.egg-info
 .env
+config
+images
+data
+res
+
 
 
 web/cache/

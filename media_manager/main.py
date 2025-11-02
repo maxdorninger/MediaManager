@@ -4,8 +4,16 @@ import sys
 from logging.config import dictConfig
 from pythonjsonlogger.json import JsonFormatter
 from pathlib import Path
+from datetime import datetime, timezone
 
 
+class ISOJsonFormatter(JsonFormatter):
+    def formatTime(self, record, datefmt=None):
+        dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
+        return dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+LOG_FILE = Path(os.getenv("LOG_FILE", "/app/config/media_manager.log"))
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -14,7 +22,13 @@ LOGGING_CONFIG = {
             "format": "%(asctime)s - %(levelname)s - %(name)s - %(funcName)s(): %(message)s"
         },
         "json": {
-            "()": JsonFormatter,
+            "()": ISOJsonFormatter,
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+            "rename_fields": {
+                "levelname": "level",
+                "asctime": "timestamp",
+                "name": "module",
+            },
         },
     },
     "handlers": {
@@ -26,10 +40,15 @@ LOGGING_CONFIG = {
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "json",
-            "filename": "./log.txt",
+            "filename": str(LOG_FILE),
             "maxBytes": 10485760,
             "backupCount": 5,
+            "encoding": "utf-8",
         },
+    },
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["console", "file"],
     },
     "loggers": {
         "uvicorn": {"handlers": ["console", "file"], "level": "DEBUG"},
@@ -102,7 +121,6 @@ from fastapi import FastAPI, APIRouter  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware  # noqa: E402
 from starlette.responses import Response  # noqa: E402
-from datetime import datetime  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from apscheduler.schedulers.background import BackgroundScheduler  # noqa: E402
 from apscheduler.triggers.cron import CronTrigger  # noqa: E402

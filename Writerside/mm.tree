@@ -17,6 +17,7 @@
         <toc-element topic="Scoring-Rulesets.md"/>
         <toc-element topic="Notifications.md"/>
         <toc-element topic="Custom-Libraries.md"/>
+        <toc-element topic="Logging.md"/>
     </toc-element>
     <toc-element topic="Advanced-Features.md">
         <toc-element topic="qBittorrent-Category.md"/>
