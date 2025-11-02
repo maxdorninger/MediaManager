@@ -1,4 +1,5 @@
 import re
+from datetime import date
 
 from sqlalchemy.exc import IntegrityError
 
@@ -472,7 +473,6 @@ class TvService:
         config = AllEncompassingConfig()
         if config.misc.prevent_unaired_tv_downloads:
             if season.air_date is not None:
-                from datetime import date
                 today = date.today()
                 if season.air_date > today:
                     log.info(

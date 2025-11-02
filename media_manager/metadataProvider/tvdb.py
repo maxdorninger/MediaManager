@@ -1,5 +1,6 @@
 import requests
 import logging
+from datetime import datetime
 
 
 import media_manager.metadataProvider.utils
@@ -94,7 +95,6 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             air_date = None
             if s.get("air_date"):
                 try:
-                    from datetime import datetime
                     air_date = datetime.strptime(s["air_date"], "%Y-%m-%d").date()
                 except (ValueError, TypeError):
                     log.warning(f"Could not parse air_date for season {s['number']}: {s.get('air_date')}")
@@ -280,7 +280,6 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         air_date = None
         if movie_data.get("release_date"):
             try:
-                from datetime import datetime
                 air_date = datetime.strptime(movie_data["release_date"], "%Y-%m-%d").date()
             except (ValueError, TypeError):
                 log.warning(f"Could not parse release_date for movie {id}: {movie_data.get('release_date')}")

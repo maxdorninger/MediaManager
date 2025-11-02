@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import requests
 
@@ -181,7 +182,6 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             air_date = None
             if season_metadata.get("air_date"):
                 try:
-                    from datetime import datetime
                     air_date = datetime.strptime(season_metadata["air_date"], "%Y-%m-%d").date()
                 except (ValueError, TypeError):
                     log.warning(f"Could not parse air_date for season {season_metadata['season_number']}: {season_metadata.get('air_date')}")
@@ -276,7 +276,6 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         air_date = None
         if movie_metadata.get("release_date"):
             try:
-                from datetime import datetime
                 air_date = datetime.strptime(movie_metadata["release_date"], "%Y-%m-%d").date()
             except (ValueError, TypeError):
                 log.warning(f"Could not parse release_date for movie {id}: {movie_metadata.get('release_date')}")

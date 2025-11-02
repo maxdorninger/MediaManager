@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from datetime import date
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -425,7 +426,6 @@ class MovieService:
         config = AllEncompassingConfig()
         if config.misc.prevent_unaired_movie_downloads:
             if movie.air_date is not None:
-                from datetime import date
                 today = date.today()
                 if movie.air_date > today:
                     log.info(
