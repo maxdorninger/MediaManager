@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eEuo pipefail # fail if any errors are encountered
 
 # This script is used to start the MediaManager service.
 
@@ -136,7 +137,6 @@ else
 fi
 
 echo "Running DB migrations..."
-
 uv run alembic upgrade head
 
 echo "Starting MediaManager backend service..."
