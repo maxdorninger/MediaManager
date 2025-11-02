@@ -4,6 +4,7 @@ from typing import Annotated, Any, Generator
 
 from fastapi import Depends
 from sqlalchemy import create_engine
+from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from media_manager.config import AllEncompassingConfig
@@ -11,18 +12,13 @@ from media_manager.config import AllEncompassingConfig
 log = logging.getLogger(__name__)
 config = AllEncompassingConfig().database
 
-db_url = (
-    "postgresql+psycopg"
-    + "://"
-    + config.user
-    + ":"
-    + config.password
-    + "@"
-    + config.host
-    + ":"
-    + str(config.port)
-    + "/"
-    + config.dbname
+db_url = URL.create(
+    "postgresql+psycopg",
+    config.user,
+    config.password,
+    config.host,
+    config.port,
+    config.dbname,
 )
 
 engine = create_engine(
