@@ -38,13 +38,6 @@ Base = declarative_base()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def init_db() -> None:
-    log.debug("initializing database with following tables")
-    for table in Base.metadata.tables:
-        log.debug(f"Table: {table.title()}")
-    Base.metadata.create_all(engine)
-
-
 def get_session() -> Generator[Session, Any, None]:
     db = SessionLocal()
     try:
