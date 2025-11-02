@@ -12,6 +12,9 @@ services:
       - ./config/:/app/config/
       # Image folder
       - ./images/:/data/images/
+    depends_on:
+      db:
+        condition: service_healthy
   db:
     image: postgres:17
     restart: unless-stopped

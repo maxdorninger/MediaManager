@@ -33,6 +33,9 @@ services:
       - ./res/:/data/
       - ./res/config/:/app/config/
       - ./media_manager:/app/media_manager
+    depends_on:
+      db:
+        condition: service_healthy
   frontend:
     image: node:24-alpine
     container_name: mediamanager-frontend-dev
