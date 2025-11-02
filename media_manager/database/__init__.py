@@ -1,4 +1,3 @@
-# media_manager/database/__init__.py
 import logging
 import os
 from contextvars import ContextVar
@@ -7,6 +6,7 @@ from typing import Annotated, Any, Generator, Optional
 from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
+from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 log = logging.getLogger(__name__)
@@ -24,7 +24,15 @@ def build_db_url(
     port: int | str,
     dbname: str,
 ) -> str:
-    return f"postgresql+psycopg://{user}:{password}@{host}:{port}/{dbname}"
+    db_url = URL.create(
+        "postgresql+psycopg",
+        user,
+        password,
+        host,
+        port,
+        dbname,
+    )
+    return db_url
 
 
 def init_engine(
