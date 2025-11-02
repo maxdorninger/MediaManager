@@ -107,7 +107,6 @@ from contextlib import asynccontextmanager  # noqa: E402
 from apscheduler.schedulers.background import BackgroundScheduler  # noqa: E402
 from apscheduler.triggers.cron import CronTrigger  # noqa: E402
 
-log.info("Database initialized")
 config = AllEncompassingConfig()
 
 if config.misc.development:
