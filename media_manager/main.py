@@ -333,17 +333,17 @@ else:
 
 @app.get("/")
 async def root():
-    return RedirectResponse(url="/web/")
+    return RedirectResponse(url=f"{BASE_PATH}/web/")
 
 
 @app.get("/dashboard")
 async def dashboard():
-    return RedirectResponse(url="/web/")
+    return RedirectResponse(url=f"{BASE_PATH}/web/")
 
 
 @app.get("/login")
 async def login():
-    return RedirectResponse(url="/web/")
+    return RedirectResponse(url=f"{BASE_PATH}/web/")
 
 
 # ----------------------------

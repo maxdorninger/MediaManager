@@ -21,7 +21,7 @@
     </toc-element>
     <toc-element topic="Advanced-Features.md">
         <toc-element topic="qBittorrent-Category.md"/>
-        <toc-element topic="Base-Path.md"/>
+        <toc-element topic="url-prefix.md"/>
         <toc-element topic="metadata-provider-configuration.md"/>
         <toc-element topic="Custom-port.md"/>
     </toc-element>
