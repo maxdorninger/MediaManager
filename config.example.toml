@@ -113,6 +113,15 @@ port = 8080
 api_key = ""
 base_path = "/api"
 
+# NZBGet settings
+[torrents.nzbget]
+enabled = false
+host = "localhost"
+port = 6789
+username = "nzbget"
+password = "tegbzn6789"
+use_https = false
+
 [indexers]
 # Prowlarr settings
 [indexers.prowlarr]

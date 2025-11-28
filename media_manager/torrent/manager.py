@@ -11,6 +11,7 @@ from media_manager.torrent.download_clients.transmission import (
     TransmissionDownloadClient,
 )
 from media_manager.torrent.download_clients.sabnzbd import SabnzbdDownloadClient
+from media_manager.torrent.download_clients.nzbget import NzbgetDownloadClient
 from media_manager.torrent.schemas import Torrent, TorrentStatus
 
 log = logging.getLogger(__name__)
@@ -59,8 +60,16 @@ class DownloadManager:
             except Exception as e:
                 log.error(f"Failed to initialize Transmission client: {e}")
 
-        # Initialize SABnzbd client for usenet
-        if self.config.sabnzbd.enabled:
+        # Initialize usenet clients (prioritize NZBGet, fallback to SABnzbd)
+        if self.config.nzbget.enabled:
+            try:
+                self._usenet_client = NzbgetDownloadClient()
+                log.info("NZBGet client initialized and set as active usenet client")
+            except Exception as e:
+                log.error(f"Failed to initialize NZBGet client: {e}")
+
+        # If NZBGet is not available or failed, try SABnzbd
+        if self._usenet_client is None and self.config.sabnzbd.enabled:
             try:
                 self._usenet_client = SabnzbdDownloadClient()
                 log.info("SABnzbd client initialized and set as active usenet client")
