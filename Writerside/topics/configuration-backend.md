@@ -12,7 +12,7 @@ path is `http://localhost:8000`.
 
 E.g. if you are accessing MediaManager at `http://example.com/media` where `/media` is the base path, set this to: `http://example.com/media`.
 
-If you are accessing  MediaManager at the root of a domain, e.g. `https://mediamanager.example.com`, set this to `https://mediamanager.example.com`.
+If you are accessing MediaManager at the root of a domain, e.g. `https://mediamanager.example.com`, set this to `https://mediamanager.example.com`.
 
 Make sure to change this to the URL you will use to access the application in your browser.
 
@@ -35,7 +35,7 @@ Here's a complete example of the general settings section in your `config.toml`:
 ```toml
 [misc]
 # REQUIRED: Change this to match your actual frontend domain.
-frontend_url = "http://mediamanager.dev/"
+frontend_url = "http://mediamanager.dev"
 
 cors_urls = ["http://localhost:8000"]
 
