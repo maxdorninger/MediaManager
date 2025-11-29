@@ -27,13 +27,15 @@ jobs:
 
   build:
     needs: lint-code
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+        include:
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+          - platform: linux/amd64
+            runner: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -49,9 +51,6 @@ jobs:
       - name: Prepare platform slug
         id: platform_slug
         run: echo "slug=${{ matrix.platform }}" | tr '/' '-' >> $GITHUB_OUTPUT
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
