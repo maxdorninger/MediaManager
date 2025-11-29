@@ -6,11 +6,11 @@ on:
       - master
     paths:
       - 'metadata_relay/**'
-      - '.github/workflows/python-lint_metadata_relay.yaml'
+      - '.github/workflows/metadata_relay.yaml'
   pull_request:
     paths:
       - 'metadata_relay/**'
-      - '.github/workflows/python-lint_metadata_relay.yaml'
+      - '.github/workflows/metadata_relay.yaml'
   release:
     types: [ published ]
   workflow_dispatch:
