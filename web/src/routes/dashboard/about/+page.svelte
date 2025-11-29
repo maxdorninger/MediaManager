@@ -98,6 +98,13 @@
 				width="80px"
 			/></a
 		>&nbsp;&nbsp;
+		<a href="https://buymeacoffee.com/maxdorninger"
+			><img
+				alt="PuppiestDoggo"
+				src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/11/2VeQ8sTGPhj4tiLy.jpg"
+				width="80px"
+			/></a
+		>&nbsp;&nbsp;
 	</div>
 
 	<h2
