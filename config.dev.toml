@@ -7,7 +7,7 @@
 
 [misc]
 # it's very likely that you need to change this for MediaManager to work
-frontend_url = "http://localhost:5173/" # note the trailing slash
+frontend_url = "http://localhost:5173" # note the lack of a trailing slash
 cors_urls = ["http://localhost:8000", "http://localhost:5173", "http://mediamanager:8000"] # note the lack of a trailing slash
 
 image_directory = "/data/images"
