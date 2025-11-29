@@ -8,7 +8,11 @@ centralized in this TOML file instead of environment variables.
 - `frontend_url`
 
 The URL the frontend will be accessed from. This is a required field and must include the trailing slash. The default
-path is `http://localhost:8000/web/`.
+path is `http://localhost:8000`.
+
+E.g. if you are accessing MediaManager at `http://example.com/media` where `/media` is the base path, set this to: `http://example.com/media`.
+
+If you are accessing  MediaManager at the root of a domain, e.g. `https://mediamanager.example.com`, set this to `https://mediamanager.example.com`.
 
 Make sure to change this to the URL you will use to access the application in your browser.
 
