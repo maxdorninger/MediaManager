@@ -27,4 +27,8 @@ services:
       ...
 ```
 
+<note>
+    Make sure to include the base path in the frontend_url field in the config file. For more information see the page on <a href="configuration-backend.md"><code>frontend_url</code></a>.
+</note>
+
 Finally, ensure that whatever reverse proxy you're using leaves the incoming path unchanged; that is, you should not strip the `/media` from `/media/web/`.

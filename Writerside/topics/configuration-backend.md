@@ -12,7 +12,9 @@ path is `http://localhost:8000/web/`.
 
 Make sure to change this to the URL you will use to access the application in your browser.
 
-Note that this doesn't affect where the server binds, nor does it affect the base URL prefix. See the page on <a href="url-prefix.md"`>`BASE_PATH`</a> for information on how to configure a prefix.
+<tip>
+    Note that this doesn't affect where the server binds, nor does it affect the base URL prefix. See the page on <a href="url-prefix.md"><code>BASE_PATH</code></a> for information on how to configure a prefix.
+</tip>
 
 - `cors_urls`
 
