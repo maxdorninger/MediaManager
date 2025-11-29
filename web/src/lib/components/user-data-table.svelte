@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -14,9 +15,11 @@
 	let { users }: { users: components['schemas']['UserRead'][] } = $props();
 	let sortedUsers = $derived(users.sort((a, b) => a.email.localeCompare(b.email)));
 	let selectedUser: components['schemas']['UserRead'] | null = $state(null);
+	let userToDelete: components['schemas']['UserRead'] | null = $state(null);
 	let newPassword: string = $state('');
 	let newEmail: string = $state('');
 	let dialogOpen = $state(false);
+	let deleteDialogOpen = $state(false);
 
 	async function saveUser() {
 		if (!selectedUser) return;
@@ -44,6 +47,27 @@
 			selectedUser = null;
 			newPassword = '';
 			newEmail = '';
+			await invalidateAll();
+		}
+	}
+
+	async function deleteUser() {
+		if (!userToDelete) return;
+
+		const { error } = await client.DELETE('/api/v1/users/{id}', {
+			params: {
+				path: {
+					id: userToDelete.id
+				}
+			}
+		});
+
+		if (error) {
+			toast.error(`Failed to delete user ${userToDelete.email}: ${error}`);
+		} else {
+			toast.success(`User ${userToDelete.email} deleted successfully.`);
+			deleteDialogOpen = false;
+			userToDelete = null;
 			await invalidateAll();
 		}
 	}
@@ -75,15 +99,26 @@
 					<CheckmarkX state={user.is_superuser} />
 				</Table.Cell>
 				<Table.Cell>
-					<Button
-						variant="secondary"
-						onclick={() => {
-							selectedUser = user;
-							dialogOpen = true;
-						}}
-					>
-						Edit
-					</Button>
+					<div class="flex gap-2">
+						<Button
+							variant="secondary"
+							onclick={() => {
+								selectedUser = user;
+								dialogOpen = true;
+							}}
+						>
+							Edit
+						</Button>
+						<Button
+							variant="destructive"
+							onclick={() => {
+								userToDelete = user;
+								deleteDialogOpen = true;
+							}}
+						>
+							Delete
+						</Button>
+					</div>
 				</Table.Cell>
 			</Table.Row>
 		{/each}
@@ -189,3 +224,27 @@
 		</div>
 	</Dialog.Content>
 </Dialog.Root>
+<AlertDialog.Root bind:open={deleteDialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Delete User</AlertDialog.Title>
+			<AlertDialog.Description>
+				Are you sure you want to delete the user <strong>{userToDelete?.email}</strong>? This action
+				cannot be undone.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel
+				onclick={() => {
+					deleteDialogOpen = false;
+					userToDelete = null;
+				}}>Cancel</AlertDialog.Cancel
+			>
+			<AlertDialog.Action
+				onclick={() => deleteUser()}
+				class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+				>Delete</AlertDialog.Action
+			>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
