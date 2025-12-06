@@ -45,6 +45,8 @@ export default ts.config(
 		}
 	},
 	{
-		rules: {} // Override or add rule settings here, such as:// 'svelte/rule-name': 'error'
+		rules: {
+			'svelte/no-navigation-without-resolve': 'warn'
+		} // Override or add rule settings here, such as:// 'svelte/rule-name': 'error'
 	}
 );
