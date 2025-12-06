@@ -70,7 +70,7 @@
 						Password reset email sent successfully!
 					</p>
 				</div>
-				<div class="text-muted-foreground text-center text-sm">
+				<div class="text-center text-sm text-muted-foreground">
 					<p>Didn't receive the email? Check your spam folder or</p>
 					<button
 						class="text-primary hover:underline"
@@ -106,7 +106,7 @@
 			</form>
 		{/if}
 		<div class="mt-4 text-center text-sm">
-			<a class="text-primary font-semibold hover:underline" href={resolve('/login', {})}>
+			<a class="font-semibold text-primary hover:underline" href={resolve('/login', {})}>
 				Back to Login
 			</a>
 		</div>

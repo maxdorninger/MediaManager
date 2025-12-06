@@ -1,3 +1,4 @@
+import prettier from 'eslint-config-prettier';
 // eslint.config.js
 import js from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
@@ -8,17 +9,17 @@ import { fileURLToPath } from 'node:url';
 import { includeIgnoreFile } from '@eslint/compat';
 
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
+
 export default ts.config(
 	includeIgnoreFile(gitignorePath, 'Imported .gitignore patterns'),
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
+	prettier,
+	...svelte.configs.prettier,
 	{
 		languageOptions: {
-			globals: {
-				...globals.browser,
-				...globals.node
-			}
+			globals: { ...globals.browser, ...globals.node }
 		}
 	},
 	{
@@ -35,7 +36,6 @@ export default ts.config(
 				//   js: espree,    // Use espree for .js files (add: import espree from 'espree')
 				//   typescript: ts.parser
 				// },
-
 				// We recommend importing and specifying svelte.config.js.
 				// By doing so, some rules in eslint-plugin-svelte will automatically read the configuration and adjust their behavior accordingly.
 				// While certain Svelte settings may be statically loaded from svelte.config.js even if you don’t specify it,
@@ -45,9 +45,6 @@ export default ts.config(
 		}
 	},
 	{
-		rules: {
-			// Override or add rule settings here, such as:
-			// 'svelte/rule-name': 'error'
-		}
+		rules: {} // Override or add rule settings here, such as:// 'svelte/rule-name': 'error'
 	}
 );

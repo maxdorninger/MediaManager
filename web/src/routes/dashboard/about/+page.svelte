@@ -41,7 +41,7 @@
 		Built for simplicity and modernity, it helps you keep track of your favorite shows and movies and
 		explore trending content—all in one place.
 	</p>
-	<p class="text-muted-foreground mb-2 text-sm">
+	<p class="mb-2 text-sm text-muted-foreground">
 		Version: v{PUBLIC_VERSION}
 	</p>
 	<h2
@@ -113,7 +113,7 @@
 		Metadata sources of MediaManager
 	</h2>
 
-	<div class="text-muted-foreground my-6 mb-6 flex items-center gap-2 text-sm sm:w-1/2 lg:w-1/3">
+	<div class="my-6 mb-6 flex items-center gap-2 text-sm text-muted-foreground sm:w-1/2 lg:w-1/3">
 		<a class="flex items-center gap-2" href="https://www.themoviedb.org/" target="_blank">
 			<img
 				alt="TMDB Logo"
@@ -125,7 +125,7 @@
 			>
 		</a>
 	</div>
-	<div class="text-muted-foreground my-6 mb-6 flex items-center gap-2 text-sm sm:w-1/2 lg:w-1/3">
+	<div class="my-6 mb-6 flex items-center gap-2 text-sm text-muted-foreground sm:w-1/2 lg:w-1/3">
 		<a class="flex items-center gap-2" href="https://thetvdb.com/subscribe" target="_blank">
 			<img
 				alt="TheTVDB Logo"

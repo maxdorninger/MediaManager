@@ -46,7 +46,7 @@
 			<div class="flex flex-col">
 				<Label for="delete-files">
 					Delete associated files as well.
-					<p class="text-muted-foreground text-sm font-normal">
+					<p class="text-sm font-normal text-muted-foreground">
 						(Only files in the download location will be deleted)
 					</p>
 				</Label>

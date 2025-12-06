@@ -160,7 +160,7 @@
 							Search
 						</Button>
 					</div>
-					<p class="text-muted-foreground text-sm">
+					<p class="text-sm text-muted-foreground">
 						The custom query will override the default search string like "A Minecraft Movie
 						(2025)".
 					</p>

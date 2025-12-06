@@ -57,7 +57,7 @@
 		Dashboard
 	</h1>
 	<main class="min-h-screen flex-1 items-center justify-center rounded-xl p-4 md:min-h-min">
-		<div class="mx-auto ">
+		<div class="mx-auto">
 			Welcome to MediaManager!
 			<StatCard></StatCard>
 		</div>
