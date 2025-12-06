@@ -84,7 +84,7 @@
 		<section>
 			<Label for="search-box">Show Name</Label>
 			<Input bind:value={searchTerm} id="search-box" placeholder="Show Name" type="text" />
-			<p class="text-muted-foreground text-sm">Search for a Show to add.</p>
+			<p class="text-sm text-muted-foreground">Search for a Show to add.</p>
 		</section>
 		<section>
 			<Collapsible.Root class="w-full space-y-1">

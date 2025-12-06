@@ -303,6 +303,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/api/v1/tv/episodes/count': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get Total Count Of Downloaded Episodes
+		 * @description Total number of episodes downloaded
+		 */
+		get: operations['get_total_count_of_downloaded_episodes_api_v1_tv_episodes_count_get'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/api/v1/tv/shows/{show_id}': {
 		parameters: {
 			query?: never;
@@ -1740,10 +1760,12 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					/** @example {
+					/**
+					 * @example {
 					 *       "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiOTIyMWZmYzktNjQwZi00MzcyLTg2ZDMtY2U2NDJjYmE1NjAzIiwiYXVkIjoiZmFzdGFwaS11c2VyczphdXRoIiwiZXhwIjoxNTcxNTA0MTkzfQ.M10bjOe45I5Ncu_uXvOmVV8QxnL-nZfcH96U90JaocI",
 					 *       "token_type": "bearer"
-					 *     } */
+					 *     }
+					 */
 					'application/json': components['schemas']['BearerResponse'];
 				};
 			};
@@ -2483,6 +2505,26 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	get_total_count_of_downloaded_episodes_api_v1_tv_episodes_count_get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': number;
 				};
 			};
 		};

@@ -143,7 +143,7 @@
 							Search
 						</Button>
 					</div>
-					<p class="text-muted-foreground text-sm">
+					<p class="text-sm text-muted-foreground">
 						Enter the season's number you want to search for. The first, usually 1, or the last
 						season number usually yield the most season packs. Note that only Seasons which are
 						listed in the "Seasons" cell will be imported!
@@ -173,7 +173,7 @@
 							Search
 						</Button>
 					</div>
-					<p class="text-muted-foreground text-sm">
+					<p class="text-sm text-muted-foreground">
 						The custom query will override the default search string like "The Simpsons Season 3".
 						Note that only Seasons which are listed in the "Seasons" cell will be imported!
 					</p>

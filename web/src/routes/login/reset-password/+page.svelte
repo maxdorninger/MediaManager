@@ -108,10 +108,10 @@
 			</Button>
 		</form>
 		<div class="mt-4 text-center text-sm">
-			<a class="text-primary font-semibold hover:underline" href={resolve('/login', {})}>
+			<a class="font-semibold text-primary hover:underline" href={resolve('/login', {})}>
 				Back to Login
 			</a>
-			<span class="text-muted-foreground mx-2">•</span>
+			<span class="mx-2 text-muted-foreground">•</span>
 			<a class="text-primary hover:underline" href={resolve('/login/forgot-password', {})}>
 				Request New Reset Link
 			</a>

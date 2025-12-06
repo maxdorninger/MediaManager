@@ -1,4 +1,4 @@
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.exc import (
     IntegrityError,
     SQLAlchemyError,
@@ -118,6 +118,21 @@ class TvRepository:
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving all shows: {e}")
             raise
+
+    def get_total_downloaded_episodes_count(self) -> int:
+        log.debug("Calculating total downloaded episodes count.")
+        try:
+            stmt = (
+                select(func.count()).select_from(Episode).join(Season).join(SeasonFile)
+            )
+            total_count = self.db.execute(stmt).scalar_one_or_none()
+            log.info(f"Total downloaded episodes count: {total_count}")
+            return total_count
+        except SQLAlchemyError as e:
+            log.error(
+                f"Database error while calculating downloaded episodes count: {e}"
+            )
+            raise e
 
     def save_show(self, show: ShowSchema) -> ShowSchema:
         """

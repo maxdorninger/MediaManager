@@ -71,6 +71,17 @@ def add_a_show(
     return show
 
 
+@router.get(
+    "/episodes/count",
+    status_code=status.HTTP_200_OK,
+    response_model=int,
+    description="Total number of episodes downloaded",
+    dependencies=[Depends(current_active_user)],
+)
+def get_total_count_of_downloaded_episodes(tv_service: tv_service_dep):
+    return tv_service.get_total_downloaded_episoded_count()
+
+
 @router.delete(
     "/shows/{show_id}",
     status_code=status.HTTP_204_NO_CONTENT,

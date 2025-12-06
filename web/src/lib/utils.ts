@@ -118,3 +118,12 @@ export function saveDirectoryPreview(
 	}
 	return path;
 }
+
+export function semverIsGreater(a: string, b: string) {
+	return a.localeCompare(b, undefined, { numeric: true }) === 1;
+}
+export function isSemver(str: string) {
+	return str.match(
+		/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+	);
+}

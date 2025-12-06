@@ -16,7 +16,7 @@
 	<div class="flex flex-col gap-4 p-6 md:p-10">
 		<header class="flex justify-center gap-2 md:justify-start">
 			<a class="flex items-center gap-2" href={resolve('/', {})}>
-				<div class="text-primary-foreground flex size-16 items-center justify-center rounded-md">
+				<div class="flex size-16 items-center justify-center rounded-md text-primary-foreground">
 					<img alt="MediaManager Logo" class="size-12" src={logo} />
 				</div>
 				<div>
@@ -39,7 +39,7 @@
 				Trouble logging in?
 			</a>
 			<footer
-				class="text-muted-foreground flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm"
+				class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground"
 			>
 				<a target="_blank" class="underline" href="https://github.com/maxdorninger/MediaManager"
 					>GitHub</a

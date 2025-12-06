@@ -16,12 +16,12 @@
 </script>
 
 {#snippet filePathPreview()}
-	<p class="text-muted-foreground text-sm">
+	<p class="text-sm text-muted-foreground">
 		This is necessary to differentiate between versions of the same movie or show, for example a
 		1080p and a 4K version.
 	</p>
 	<Label for="file-suffix-display">The files will be saved in the following directory:</Label>
-	<p class="text-muted-foreground text-sm" id="file-suffix-display">
+	<p class="text-sm text-muted-foreground" id="file-suffix-display">
 		{saveDirectoryPreview(media, filePathSuffix)}
 	</p>
 {/snippet}

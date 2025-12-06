@@ -11,6 +11,6 @@
 
 <AvatarPrimitive.Fallback
 	bind:ref
-	class={cn('bg-muted flex size-full items-center justify-center', className)}
+	class={cn('flex size-full items-center justify-center bg-muted', className)}
 	{...restProps}
 />

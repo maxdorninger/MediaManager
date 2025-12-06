@@ -15,7 +15,7 @@
 </script>
 
 <FormPrimitive.FieldErrors
-	class={cn('text-destructive text-[0.8rem] font-medium', className)}
+	class={cn('text-[0.8rem] font-medium text-destructive', className)}
 	{...restProps}
 >
 	{#snippet children({ errors, errorProps })}
