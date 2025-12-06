@@ -99,6 +99,13 @@ class TvService:
             season_request_id=season_request_id
         )
 
+    def get_total_downloaded_episoded_count(self) -> int:
+        """
+        Get total number of downloaded episodes.
+        """
+
+        return self.tv_repository.get_total_downloaded_episodes_count()
+
     def update_season_request(self, season_request: SeasonRequest) -> SeasonRequest:
         """
         Update an existing season request.
