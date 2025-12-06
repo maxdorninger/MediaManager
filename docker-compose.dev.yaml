@@ -11,6 +11,11 @@ services:
       POSTGRES_PASSWORD: MediaManager
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   mediamanager:
     build:
       context: .
