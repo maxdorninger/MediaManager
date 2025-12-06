@@ -58,7 +58,7 @@
 	</h1>
 	<main class="min-h-screen flex-1 items-center justify-center rounded-xl p-4 md:min-h-min">
 		<div class="mx-auto">
-			Welcome to MediaManager!
+			<div class="my-8 block text-2xl">Welcome to MediaManager!</div>
 			<StatCard></StatCard>
 		</div>
 		<div class="mx-auto">
