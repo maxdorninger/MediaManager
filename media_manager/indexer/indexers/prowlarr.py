@@ -71,59 +71,58 @@ class Prowlarr(GenericIndexer):
     def process_result(
         self, result, session: requests.Session
     ) -> IndexerQueryResult | None:
-        if result["protocol"] == "torrent":
-            initial_url = None
-            if "downloadUrl" in result:
-                log.info(f"Using download URL: {result['downloadUrl']}")
-                initial_url = result["downloadUrl"]
-            elif "magnetUrl" in result:
-                log.info(
-                    f"Using magnet URL as fallback for download URL: {result['magnetUrl']}"
-                )
-                initial_url = result["magnetUrl"]
-            elif "guid" in result:
-                log.warning(
-                    f"Using guid as fallback for download URL: {result['guid']}"
-                )
-                initial_url = result["guid"]
-            else:
-                log.error(f"No valid download URL found for result: {result}")
-                return None
-
-            if not initial_url.startswith("magnet:"):
-                try:
-                    final_download_url = follow_redirects_to_final_torrent_url(
-                        initial_url=initial_url,
-                        session=session,
-                    )
-                except RuntimeError as e:
-                    log.debug(
-                        f"Failed to follow redirects for {initial_url}, falling back to the initial url as download url, error: {e}"
-                    )
-                    if self.reject_torrents_on_url_error:
-                        return None
-                    else:
-                        final_download_url = initial_url
-            else:
-                final_download_url = initial_url
-            return IndexerQueryResult(
-                download_url=final_download_url,
-                title=result["sortTitle"],
-                seeders=result["seeders"],
-                flags=result["indexerFlags"],
-                size=result["size"],
-                usenet=False,
-                age=0,  # Torrent results do not need age information
-                indexer=result["indexer"] if "indexer" in result else None,
-            )
-        else:
+        if result["protocol"] != "torrent":
             return IndexerQueryResult(
                 download_url=result["downloadUrl"],
                 title=result["sortTitle"],
                 seeders=0,  # Usenet results do not have seeders
-                flags=result["indexerFlags"],
+                flags=result["indexerFlags"] if "indexerFlags" in result else [],
                 size=result["size"],
                 usenet=True,
                 age=int(result["ageMinutes"]) * 60,
                 indexer=result["indexer"] if "indexer" in result else None,
             )
+
+        # process torrent search result
+        initial_url = None
+        if "downloadUrl" in result:
+            log.info(f"Using download URL: {result['downloadUrl']}")
+            initial_url = result["downloadUrl"]
+        elif "magnetUrl" in result:
+            log.info(
+                f"Using magnet URL as fallback for download URL: {result['magnetUrl']}"
+            )
+            initial_url = result["magnetUrl"]
+        elif "guid" in result:
+            log.warning(f"Using guid as fallback for download URL: {result['guid']}")
+            initial_url = result["guid"]
+        else:
+            log.error(f"No valid download URL found for result: {result}")
+            return None
+
+        if not initial_url.startswith("magnet:"):
+            try:
+                final_download_url = follow_redirects_to_final_torrent_url(
+                    initial_url=initial_url,
+                    session=session,
+                )
+            except RuntimeError as e:
+                log.debug(
+                    f"Failed to follow redirects for {initial_url}, falling back to the initial url as download url, error: {e}"
+                )
+                if self.reject_torrents_on_url_error:
+                    return None
+                else:
+                    final_download_url = initial_url
+        else:
+            final_download_url = initial_url
+        return IndexerQueryResult(
+            download_url=final_download_url,
+            title=result["sortTitle"],
+            seeders=result["seeders"] if "seeders" in result else 0,
+            flags=result["indexerFlags"] if "indexerFlags" in result else [],
+            size=result["size"],
+            usenet=False,
+            age=0,  # Torrent results do not need age information
+            indexer=result["indexer"] if "indexer" in result else None,
+        )
