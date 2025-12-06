@@ -31,6 +31,7 @@ services:
     environment:
       - CONFIG_DIR=/app/config
       - MEDIAMANAGER_MISC__DEVELOPMENT=TRUE
+      - MEDIAMANAGER_MISC__CORS_URLS=["http://localhost:5173"]
       - DISABLE_FRONTEND_MOUNT=TRUE
       - LOG_FILE=/dev/null
     volumes:
