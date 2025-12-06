@@ -2,6 +2,7 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
+	import StatCard from '$lib/components/stats/stat-cards.svelte';
 	import RecommendedMediaCarousel from '$lib/components/recommended-media-carousel.svelte';
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
@@ -56,7 +57,11 @@
 		Dashboard
 	</h1>
 	<main class="min-h-screen flex-1 items-center justify-center rounded-xl p-4 md:min-h-min">
-		<div class="mx-auto max-w-[70vw] md:max-w-[80vw]">
+		<div class="mx-auto ">
+			Welcome to MediaManager!
+			<StatCard></StatCard>
+		</div>
+		<div class="mx-auto">
 			<h3 class="my-4 text-center text-2xl font-semibold">Trending Shows</h3>
 			<RecommendedMediaCarousel isLoading={showsLoading} isShow={true} media={recommendedShows} />
 
@@ -68,13 +73,4 @@
 			/>
 		</div>
 	</main>
-
-	<!---
-        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div class="aspect-video rounded-xl bg-muted/50"></div>
-            <div class="aspect-video rounded-xl bg-muted/50"></div>
-            <div class="aspect-video rounded-xl bg-muted/50">
-            </div>
-        </div>
-    -->
 </div>
