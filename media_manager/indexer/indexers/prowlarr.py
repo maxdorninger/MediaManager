@@ -59,9 +59,12 @@ class Prowlarr(GenericIndexer):
                     futures.append(future)
 
                 for future in concurrent.futures.as_completed(futures):
-                    result = future.result()
-                    if result is not None:
-                        result_list.append(result)
+                    try:
+                        result = future.result()
+                        if result is not None:
+                            result_list.append(result)
+                    except Exception as e:
+                        log.error(f"1 search result failed with: {e}")
 
             return result_list
 
