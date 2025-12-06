@@ -32,6 +32,7 @@ services:
       - CONFIG_DIR=/app/config
       - MEDIAMANAGER_MISC__DEVELOPMENT=TRUE
       - DISABLE_FRONTEND_MOUNT=TRUE
+      - LOG_FILE=/dev/null
     volumes:
       #- ./web/build:/app/web/build # this is only needed to test built frontend when developing frontend
       - ./res/images/:/data/images/
