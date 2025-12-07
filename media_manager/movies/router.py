@@ -105,7 +105,7 @@ def import_detected_movie(
     movie_service: movie_service_dep, movie_id: MovieId, directory: str
 ):
     """
-    get a list of unknown movies that were detected in the tv directory and are importable
+    get a list of unknown movies that were detected in the movie directory and are importable
     """
     source_directory = Path(directory)
     if source_directory not in detect_unknown_media(
