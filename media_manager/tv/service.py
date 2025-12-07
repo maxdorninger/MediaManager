@@ -555,7 +555,7 @@ class TvService:
         video_files: list[Path],
         subtitle_files: list[Path],
         file_path_suffix: str = "",
-    ) -> None:
+    ) -> bool:
         episode_file_name = f"{remove_special_characters(show.name)} S{season.number:02d}E{episode_number:02d}"
         if file_path_suffix != "":
             episode_file_name += f" - {file_path_suffix}"
@@ -598,7 +598,7 @@ class TvService:
                 log.debug(f"Found matching pattern: {pattern} in file {file.name}")
                 target_video_file = target_file_name.with_suffix(file.suffix)
                 import_file(target_file=target_video_file, source_file=file)
-                break
+                return True
         else:
             raise Exception(
                 f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
@@ -611,11 +611,12 @@ class TvService:
         video_files: list[Path],
         subtitle_files: list[Path],
         file_path_suffix: str = "",
-    ) -> bool:
+    ) -> tuple[bool, int]:
         season_path = self.get_root_season_directory(
             show=show, season_number=season.number
         )
         success = True
+        imported_episodes_count = 0
         try:
             season_path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
@@ -624,7 +625,7 @@ class TvService:
 
         for episode in season.episodes:
             try:
-                self.import_episode(
+                imported = self.import_episode(
                     show=show,
                     subtitle_files=subtitle_files,
                     video_files=video_files,
@@ -632,6 +633,9 @@ class TvService:
                     episode_number=episode.number,
                     file_path_suffix=file_path_suffix,
                 )
+                if imported:
+                    imported_episodes_count += 1
+
             except Exception:
                 # Send notification about missing episode file
                 if self.notification_service:
@@ -643,7 +647,7 @@ class TvService:
                 log.warning(
                     f"S{season.number}E{episode.number} not found when trying to import episode for show {show.name}."
                 )
-        return success
+        return success, imported_episodes_count
 
     def import_torrent_files(self, torrent: Torrent, show: Show) -> None:
         """
@@ -667,13 +671,14 @@ class TvService:
 
         for season_file in season_files:
             season = self.get_season(season_id=season_file.season_id)
-            if self.import_season(
+            season_import_success, imported_episodes_count = self.import_season(
                 show=show,
                 season=season,
                 video_files=video_files,
                 subtitle_files=subtitle_files,
                 file_path_suffix=season_file.file_path,
-            ):
+            )
+            if season_import_success:
                 log.info(
                     f"Season {season.number} successfully imported from torrent {torrent.title}"
                 )
@@ -850,13 +855,22 @@ class TvService:
             directory=source_directory
         )
         for season in tv_show.seasons:
-            self.import_season(
+            success, imported_episode_count = self.import_season(
                 show=tv_show,
                 season=season,
                 video_files=video_files,
                 subtitle_files=subtitle_files,
                 file_path_suffix="IMPORTED",
             )
+            season_file = SeasonFile(
+                season_id=season.id,
+                quality=Quality.unknown,
+                file_path_suffix="IMPORTED",
+                torrent_id=None,
+            )
+            if success or imported_episode_count > (len(season.episodes) / 2):
+                self.tv_repository.add_season_file(season_file=season_file)
+
         new_source_path = source_directory.parent / ("." + source_directory.name)
         source_directory.rename(new_source_path)
 
