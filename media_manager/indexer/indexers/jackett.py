@@ -41,7 +41,12 @@ class Jackett(GenericIndexer):
             responses = []
 
             for future in concurrent.futures.as_completed(futures):
-                responses.extend(future.result())
+                try:
+                    result = future.result()
+                    if result is not None:
+                        responses.extend(result)
+                except Exception as e:
+                    log.error(f"search result failed with: {e}")
 
         return responses
 
@@ -71,39 +76,46 @@ class Jackett(GenericIndexer):
             "atom": "http://www.w3.org/2005/Atom",
         }
         for item in xml_tree.findall("channel/item"):
-            attributes: list[Element] = [x for x in item.findall("torznab:attr", xmlns)]
-            for attribute in attributes:
-                if attribute.attrib["name"] == "seeders":
-                    seeders = int(attribute.attrib["value"])
-                if attribute.attrib["name"] == "downloadvolumefactor":
-                    download_volume_factor = float(attribute.attrib["value"])
-                if attribute.attrib["name"] == "uploadvolumefactor":
-                    upload_volume_factor = int(attribute.attrib["value"])
-            flags = []
-            if download_volume_factor == 0:
-                flags.append("freeleech")
-            if download_volume_factor == 0.5:
-                flags.append("halfleech")
-            if download_volume_factor == 0.75:
-                flags.append("freeleech75")
-            if download_volume_factor == 0.25:
-                flags.append("freeleech25")
-            if upload_volume_factor == 2:
-                flags.append("doubleupload")
+            try:
+                attributes: list[Element] = [
+                    x for x in item.findall("torznab:attr", xmlns)
+                ]
+                for attribute in attributes:
+                    if attribute.attrib["name"] == "seeders":
+                        seeders = int(attribute.attrib["value"])
+                    if attribute.attrib["name"] == "downloadvolumefactor":
+                        download_volume_factor = float(attribute.attrib["value"])
+                    if attribute.attrib["name"] == "uploadvolumefactor":
+                        upload_volume_factor = int(attribute.attrib["value"])
+                flags = []
+                if download_volume_factor == 0:
+                    flags.append("freeleech")
+                if download_volume_factor == 0.5:
+                    flags.append("halfleech")
+                if download_volume_factor == 0.75:
+                    flags.append("freeleech75")
+                if download_volume_factor == 0.25:
+                    flags.append("freeleech25")
+                if upload_volume_factor == 2:
+                    flags.append("doubleupload")
 
-            result = IndexerQueryResult(
-                title=item.find("title").text,
-                download_url=str(item.find("enclosure").attrib["url"]),
-                seeders=seeders,
-                flags=flags,
-                size=int(item.find("size").text),
-                usenet=False,  # always False, because Jackett doesn't support usenet
-                age=0,  # always 0 for torrents, as Jackett does not provide age information in a convenient format
-                indexer=item.find("jackettindexer").text
-                if item.find("jackettindexer") is not None
-                else None,
-            )
-            result_list.append(result)
+                result = IndexerQueryResult(
+                    title=item.find("title").text,
+                    download_url=str(item.find("enclosure").attrib["url"]),
+                    seeders=seeders,
+                    flags=flags,
+                    size=int(item.find("size").text),
+                    usenet=False,  # always False, because Jackett doesn't support usenet
+                    age=0,  # always 0 for torrents, as Jackett does not provide age information in a convenient format
+                    indexer=item.find("jackettindexer").text
+                    if item.find("jackettindexer") is not None
+                    else None,
+                )
+                result_list.append(result)
+            except Exception as e:
+                log.error(
+                    f"1 Jackett search result errored with indexer {indexer}, error: {e}"
+                )
 
         log.info(
             f"found {len(result_list)} results for query '{query}' from indexer '{indexer}'"
