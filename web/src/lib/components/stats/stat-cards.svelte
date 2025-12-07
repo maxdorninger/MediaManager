@@ -5,6 +5,7 @@
 	import { isSemver, semverIsGreater } from '$lib/utils.ts';
 	import { env } from '$env/dynamic/public';
 	import { animate } from 'animejs';
+	import { resolve } from '$app/paths';
 
 	let moviesCount: string | null = $state(null);
 	let episodeCount: string | null = $state(null);
@@ -13,6 +14,9 @@
 	let installedVersion: string | undefined = env.PUBLIC_VERSION;
 	let releaseUrl: string | null = $state(null);
 	let newestVersion: string | null = $state(null);
+
+	let importablesShowsCount: number = $state(0);
+	let importablesMoviesCount: number = $state(0);
 
 	// Elements to animate
 	let showEl: HTMLSpanElement;
@@ -70,6 +74,15 @@
 			newestVersion = latestRelease.tag_name.toString().replace(/v*/, '');
 			releaseUrl = latestRelease.html_url;
 		}
+
+		let importableShows = await client.GET('/api/v1/tv/importable');
+		if (!importableShows.error) {
+			importablesShowsCount = importableShows.data.length;
+		}
+		let importableMovies = await client.GET('/api/v1/movies/importable');
+		if (!importableMovies.error) {
+			importablesMoviesCount = importableMovies.data.length;
+		}
 	});
 </script>
 
@@ -94,6 +107,29 @@
 			<span bind:this={torrentEl}>{torrentCount ?? 'Error'}</span>
 		</Card>
 	</div>
+	{#if importablesShowsCount > 0}
+		<div class="flex-auto">
+			<Card title="Detected TV shows!" footer="Count of detected TV shows ready to import">
+				<a rel="external" target="_blank" href={resolve('/dashboard/tv/', {})} class="underline">
+					{importablesShowsCount}
+				</a>
+			</Card>
+		</div>
+	{/if}
+	{#if importablesMoviesCount > 0}
+		<div class="flex-auto">
+			<Card title="Detected movies!" footer="Count of detected movies ready to import">
+				<a
+					rel="external"
+					target="_blank"
+					href={resolve('/dashboard/movies/', {})}
+					class="underline"
+				>
+					{importablesMoviesCount}
+				</a>
+			</Card>
+		</div>
+	{/if}
 	<div class="flex-auto">
 		{#if semverIsGreater(newestVersion ?? '', installedVersion ?? '') || !isSemver(installedVersion ?? '')}
 			<Card title="New version available!" footer="A new version of MediaManager is available!">
