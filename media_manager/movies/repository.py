@@ -230,7 +230,7 @@ class MovieRepository:
             stmt = delete(MovieRequest).where(MovieRequest.id == movie_request_id)
             self.db.execute(stmt)
             self.db.commit()
-            log.info(f"Successfully deleted movie request with id: {movie_request_id}")
+            # Successfully deleted movie request with id: {movie_request_id}
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(
