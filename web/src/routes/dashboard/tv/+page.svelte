@@ -10,8 +10,8 @@
 	import ImportCandidatesDialog from '$lib/components/import-media/import-candidates-dialog.svelte';
 	import DetectedMediaCard from '$lib/components/import-media/detected-media-card.svelte';
 
-	let tvShows = page.data.tvShows;
-	let importables = page.data.importable;
+	let tvShows = $state(page.data.tvShows);
+	let importables = $state(page.data.importable);
 </script>
 
 <svelte:head>
