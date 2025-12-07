@@ -872,7 +872,12 @@ class TvService:
                 self.tv_repository.add_season_file(season_file=season_file)
 
         new_source_path = source_directory.parent / ("." + source_directory.name)
-        source_directory.rename(new_source_path)
+        try:
+            source_directory.rename(new_source_path)
+        except Exception as e:
+            log.error(
+                f"Failed to rename {source_directory} to {new_source_path}: {e}"
+            )
 
 
 def auto_download_all_approved_season_requests() -> None:
