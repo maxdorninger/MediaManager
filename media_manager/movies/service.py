@@ -500,6 +500,12 @@ class MovieService:
         if file_path_suffix != "":
             movie_file_name += f" - {file_path_suffix}"
 
+        try:
+            movie_root_path.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            log.warning(f"Could not create path {movie_root_path}: {e}")
+            raise e
+
         # import movie video
         if video_files:
             target_video_file = (
@@ -550,8 +556,6 @@ class MovieService:
             f"Importing these {len(video_files)} video files and {len(subtitle_files)} subtitle files"
         )
 
-        movie_file_path = self.get_movie_root_path(movie=movie)
-
         movie_files: list[MovieFile] = self.torrent_service.get_movie_files_of_torrent(
             torrent=torrent
         )
@@ -560,12 +564,6 @@ class MovieService:
         )
 
         for movie_file in movie_files:
-            try:
-                movie_file_path.mkdir(parents=True, exist_ok=True)
-            except Exception as e:
-                log.warning(f"Could not create path {movie_file_path}: {e}")
-                raise e
-
             self.import_movie(
                 movie=movie,
                 video_files=video_files,
