@@ -10,8 +10,8 @@
 	import { page } from '$app/state';
 	import ImportCandidatesDialog from '$lib/components/import-media/import-candidates-dialog.svelte';
 	import DetectedMediaCard from '$lib/components/import-media/detected-media-card.svelte';
-	let movies: components['schemas']['PublicMovie'][] = page.data.movies;
-	let importables = page.data.importable;
+	let movies: components['schemas']['PublicMovie'][] = $derived(page.data.movies);
+	let importables = $derived(page.data.importable);
 </script>
 
 <svelte:head>
