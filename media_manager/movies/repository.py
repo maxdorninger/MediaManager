@@ -228,7 +228,10 @@ class MovieRepository:
         """
         try:
             stmt = delete(MovieRequest).where(MovieRequest.id == movie_request_id)
-            self.db.execute(stmt)
+            result = self.db.execute(stmt)
+            if result.rowcount == 0:
+                self.db.rollback()
+                raise NotFoundError(f"movie request with id {movie_request_id} not found.")
             self.db.commit()
             # Successfully deleted movie request with id: {movie_request_id}
         except SQLAlchemyError as e:
