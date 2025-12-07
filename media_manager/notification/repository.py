@@ -36,7 +36,6 @@ class NotificationRepository:
                 .order_by(Notification.timestamp.desc())
             )
             results = self.db.execute(stmt).scalars().all()
-            log.info(f"Successfully retrieved {len(results)} unread notifications.")
             return [
                 NotificationSchema.model_validate(notification)
                 for notification in results
@@ -49,7 +48,6 @@ class NotificationRepository:
         try:
             stmt = select(Notification).order_by(Notification.timestamp.desc())
             results = self.db.execute(stmt).scalars().all()
-            log.info(f"Successfully retrieved {len(results)} notifications.")
             return [
                 NotificationSchema.model_validate(notification)
                 for notification in results
@@ -90,8 +88,6 @@ class NotificationRepository:
         stmt = delete(Notification).where(Notification.id == id)
         result = self.db.execute(stmt)
         if result.rowcount == 0:
-            log.warning(f"Notification with id {id} not found for deletion.")
             raise NotFoundError(f"Notification with id {id} not found.")
         self.db.commit()
-        log.info(f"Successfully deleted notification with id: {id}")
         return

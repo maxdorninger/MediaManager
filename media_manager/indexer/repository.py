@@ -21,8 +21,6 @@ class IndexerRepository:
         )
 
     def save_result(self, result: IndexerQueryResultSchema) -> IndexerQueryResultSchema:
-        log.debug("Saving indexer query result: %s", result)
-
         result_data = result.model_dump()
         result_data["download_url"] = str(
             result.download_url

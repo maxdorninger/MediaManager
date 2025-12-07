@@ -26,7 +26,6 @@ class Prowlarr(GenericIndexer):
         self.api_key = config.api_key
         self.url = config.url
         self.reject_torrents_on_url_error = config.reject_torrents_on_url_error
-        log.debug("Registering Prowlarr as Indexer")
 
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
         log.debug("Searching for " + query)
@@ -44,7 +43,6 @@ class Prowlarr(GenericIndexer):
             session.mount("https://", adapter)
 
             response = session.get(url, params=params)
-            log.debug(f"Prowlarr response time for query '{query}': {response.elapsed}")
 
             if response.status_code != 200:
                 log.error(f"Prowlarr Error: {response.status_code}")
@@ -86,15 +84,10 @@ class Prowlarr(GenericIndexer):
         # process torrent search result
         initial_url = None
         if "downloadUrl" in result:
-            log.info(f"Using download URL: {result['downloadUrl']}")
             initial_url = result["downloadUrl"]
         elif "magnetUrl" in result:
-            log.info(
-                f"Using magnet URL as fallback for download URL: {result['magnetUrl']}"
-            )
             initial_url = result["magnetUrl"]
         elif "guid" in result:
-            log.warning(f"Using guid as fallback for download URL: {result['guid']}")
             initial_url = result["guid"]
         else:
             log.error(f"No valid download URL found for result: {result}")
@@ -107,7 +100,7 @@ class Prowlarr(GenericIndexer):
                     session=session,
                 )
             except RuntimeError as e:
-                log.debug(
+                log.warning(
                     f"Failed to follow redirects for {initial_url}, falling back to the initial url as download url, error: {e}"
                 )
                 if self.reject_torrents_on_url_error:

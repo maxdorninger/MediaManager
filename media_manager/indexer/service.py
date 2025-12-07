@@ -68,5 +68,4 @@ class IndexerService:
         for result in results:
             self.repository.save_result(result=result)
 
-        log.debug(f"Found torrents: {results}")
         return results

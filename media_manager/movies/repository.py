@@ -41,14 +41,11 @@ class MovieRepository:
         :raises NotFoundError: If the movie with the given ID is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve movie with id: {movie_id}")
         try:
             stmt = select(Movie).where(Movie.id == movie_id)
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                log.warning(f"Movie with id {movie_id} not found.")
                 raise NotFoundError(f"Movie with id {movie_id} not found.")
-            log.info(f"Successfully retrieved movie with id: {movie_id}")
             return MovieSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving movie {movie_id}: {e}")
@@ -66,9 +63,6 @@ class MovieRepository:
         :raises NotFoundError: If the movie with the given external ID and provider is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(
-            f"Attempting to retrieve movie with external_id: {external_id} and provider: {metadata_provider}"
-        )
         try:
             stmt = (
                 select(Movie)
@@ -77,15 +71,9 @@ class MovieRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                log.warning(
-                    f"Movie with external_id {external_id} and provider {metadata_provider} not found."
-                )
                 raise NotFoundError(
                     f"Movie with external_id {external_id} and provider {metadata_provider} not found."
                 )
-            log.info(
-                f"Successfully retrieved movie with external_id: {external_id} and provider: {metadata_provider}"
-            )
             return MovieSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(
@@ -100,11 +88,9 @@ class MovieRepository:
         :return: A list of Movie objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug("Attempting to retrieve all movies.")
         try:
             stmt = select(Movie)
             results = self.db.execute(stmt).scalars().unique().all()
-            log.info(f"Successfully retrieved {len(results)} movies.")
             return [MovieSchema.model_validate(movie) for movie in results]
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving all movies: {e}")
@@ -221,15 +207,12 @@ class MovieRepository:
         :raises NotFoundError: If the movie with the given ID is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Setting library for movie_id {movie_id} to {library}")
         try:
             movie = self.db.get(Movie, movie_id)
             if not movie:
-                log.warning(f"movie with id {movie_id} not found.")
                 raise NotFoundError(f"movie with id {movie_id} not found.")
             movie.library = library
             self.db.commit()
-            log.info(f"Successfully set library for movie_id {movie_id} to {library}")
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(f"Database error setting library for movie {movie_id}: {e}")
@@ -243,14 +226,9 @@ class MovieRepository:
         :raises NotFoundError: If the movie request is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to delete movie request with id: {movie_request_id}")
         try:
             stmt = delete(MovieRequest).where(MovieRequest.id == movie_request_id)
-            result = self.db.execute(stmt)
-            if result.rowcount == 0:
-                log.warning(
-                    f"Movie request with id {movie_request_id} not found during delete execution (rowcount 0)."
-                )
+            self.db.execute(stmt)
             self.db.commit()
             log.info(f"Successfully deleted movie request with id: {movie_request_id}")
         except SQLAlchemyError as e:
@@ -267,7 +245,6 @@ class MovieRepository:
         :return: A list of RichMovieRequest objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug("Attempting to retrieve all movie requests.")
         try:
             stmt = select(MovieRequest).options(
                 joinedload(MovieRequest.requested_by),
@@ -275,7 +252,6 @@ class MovieRepository:
                 joinedload(MovieRequest.movie),
             )
             results = self.db.execute(stmt).scalars().unique().all()
-            log.info(f"Successfully retrieved {len(results)} movie requests.")
             return [RichMovieRequestSchema.model_validate(x) for x in results]
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving movie requests: {e}")
@@ -290,15 +266,11 @@ class MovieRepository:
         :raises IntegrityError: If the record violates constraints.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Adding movie file: {movie_file.model_dump_json()}")
         db_model = MovieFile(**movie_file.model_dump())
         try:
             self.db.add(db_model)
             self.db.commit()
             self.db.refresh(db_model)
-            log.info(
-                f"Successfully added movie file. Torrent ID: {db_model.torrent_id}, Path: {db_model.file_path_suffix}"
-            )
             return MovieFileSchema.model_validate(db_model)
         except IntegrityError as e:
             self.db.rollback()
@@ -317,15 +289,11 @@ class MovieRepository:
         :return: The number of movie files removed.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to remove movie files for torrent_id: {torrent_id}")
         try:
             stmt = delete(MovieFile).where(MovieFile.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
             deleted_count = result.rowcount
-            log.info(
-                f"Successfully removed {deleted_count} movie files for torrent_id: {torrent_id}"
-            )
             return deleted_count
         except SQLAlchemyError as e:
             self.db.rollback()
@@ -342,13 +310,9 @@ class MovieRepository:
         :return: A list of MovieFile objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve movie files for movie_id: {movie_id}")
         try:
             stmt = select(MovieFile).where(MovieFile.movie_id == movie_id)
             results = self.db.execute(stmt).scalars().all()
-            log.info(
-                f"Successfully retrieved {len(results)} movie files for movie_id: {movie_id}"
-            )
             return [MovieFileSchema.model_validate(sf) for sf in results]
         except SQLAlchemyError as e:
             log.error(
@@ -364,7 +328,6 @@ class MovieRepository:
         :return: A list of Torrent objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve torrents for movie_id: {movie_id}")
         try:
             stmt = (
                 select(Torrent, MovieFile.file_path_suffix)
@@ -373,9 +336,6 @@ class MovieRepository:
                 .where(MovieFile.movie_id == movie_id)
             )
             results = self.db.execute(stmt).all()
-            log.info(
-                f"Successfully retrieved {len(results)} torrents for movie_id: {movie_id}"
-            )
             formatted_results = []
             for torrent, file_path_suffix in results:
                 movie_torrent = MovieTorrentSchema(
@@ -402,7 +362,6 @@ class MovieRepository:
         :return: A list of Movie objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug("Attempting to retrieve all movies with torrents.")
         try:
             stmt = (
                 select(Movie)
@@ -412,7 +371,6 @@ class MovieRepository:
                 .order_by(Movie.name)
             )
             results = self.db.execute(stmt).scalars().unique().all()
-            log.info(f"Successfully retrieved {len(results)} movies with torrents.")
             return [MovieSchema.model_validate(movie) for movie in results]
         except SQLAlchemyError as e:
             log.error(f"Database error retrieving all movies with torrents: {e}")
@@ -427,17 +385,12 @@ class MovieRepository:
         :raises NotFoundError: If the movie request is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve movie request with id: {movie_request_id}")
         try:
             request = self.db.get(MovieRequest, movie_request_id)
             if not request:
-                log.warning(f"Movie request with id {movie_request_id} not found.")
                 raise NotFoundError(
                     f"Movie request with id {movie_request_id} not found."
                 )
-            log.info(
-                f"Successfully retrieved movie request with id: {movie_request_id}"
-            )
             return MovieRequestSchema.model_validate(request)
         except SQLAlchemyError as e:
             log.error(
@@ -454,7 +407,6 @@ class MovieRepository:
         :raises NotFoundError: If the movie for the given torrent ID is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve movie by torrent_id: {torrent_id}")
         try:
             stmt = (
                 select(Movie)
@@ -463,9 +415,7 @@ class MovieRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                log.warning(f"Movie for torrent_id {torrent_id} not found.")
                 raise NotFoundError(f"Movie for torrent_id {torrent_id} not found.")
-            log.info(f"Successfully retrieved movie for torrent_id: {torrent_id}")
             return MovieSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(
@@ -489,10 +439,8 @@ class MovieRepository:
         :param year: The new year for the movie.
         :return: The updated MovieSchema object.
         """
-        log.debug(f"Attempting to update attributes for movie ID: {movie_id}")
         db_movie = self.db.get(Movie, movie_id)
         if not db_movie:
-            log.warning(f"Movie with id {movie_id} not found for attribute update.")
             raise NotFoundError(f"Movie with id {movie_id} not found.")
 
         updated = False
@@ -509,7 +457,4 @@ class MovieRepository:
         if updated:
             self.db.commit()
             self.db.refresh(db_movie)
-            log.info(f"Successfully updated attributes for movie ID: {movie_id}")
-        else:
-            log.info(f"No attribute changes needed for movie ID: {movie_id}")
         return MovieSchema.model_validate(db_movie)

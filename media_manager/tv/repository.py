@@ -43,7 +43,6 @@ class TvRepository:
         :raises NotFoundError: If the show with the given ID is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve show with id: {show_id}")
         try:
             stmt = (
                 select(Show)
@@ -52,9 +51,7 @@ class TvRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                log.warning(f"Show with id {show_id} not found.")
                 raise NotFoundError(f"Show with id {show_id} not found.")
-            log.info(f"Successfully retrieved show with id: {show_id}")
             return ShowSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving show {show_id}: {e}")
@@ -72,9 +69,6 @@ class TvRepository:
         :raises NotFoundError: If the show with the given external ID and provider is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(
-            f"Attempting to retrieve show with external_id: {external_id} and provider: {metadata_provider}"
-        )
         try:
             stmt = (
                 select(Show)
@@ -84,15 +78,9 @@ class TvRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                log.warning(
-                    f"Show with external_id {external_id} and provider {metadata_provider} not found."
-                )
                 raise NotFoundError(
                     f"Show with external_id {external_id} and provider {metadata_provider} not found."
                 )
-            log.info(
-                f"Successfully retrieved show with external_id: {external_id} and provider: {metadata_provider}"
-            )
             return ShowSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(
@@ -107,26 +95,22 @@ class TvRepository:
         :return: A list of Show objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug("Attempting to retrieve all shows.")
         try:
             stmt = select(Show).options(
                 joinedload(Show.seasons).joinedload(Season.episodes)
             )  # Eager load seasons and episodes
             results = self.db.execute(stmt).scalars().unique().all()
-            log.info(f"Successfully retrieved {len(results)} shows.")
             return [ShowSchema.model_validate(show) for show in results]
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving all shows: {e}")
             raise
 
     def get_total_downloaded_episodes_count(self) -> int:
-        log.debug("Calculating total downloaded episodes count.")
         try:
             stmt = (
                 select(func.count()).select_from(Episode).join(Season).join(SeasonFile)
             )
             total_count = self.db.execute(stmt).scalar_one_or_none()
-            log.info(f"Total downloaded episodes count: {total_count}")
             return total_count
         except SQLAlchemyError as e:
             log.error(
@@ -143,18 +127,15 @@ class TvRepository:
         :raises ValueError: If a show with the same primary key already exists (on insert).
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to save show: {show.name} (ID: {show.id})")
         db_show = self.db.get(Show, show.id) if show.id else None
 
         if db_show:  # Update existing show
-            log.debug(f"Updating existing show with ID: {show.id}")
             db_show.external_id = show.external_id
             db_show.metadata_provider = show.metadata_provider
             db_show.name = show.name
             db_show.overview = show.overview
             db_show.year = show.year
         else:  # Insert new show
-            log.debug(f"Creating new show: {show.name}")
             db_show = Show(
                 id=show.id,
                 external_id=show.external_id,
@@ -190,11 +171,9 @@ class TvRepository:
         try:
             self.db.commit()
             self.db.refresh(db_show)
-            log.info(f"Successfully saved show: {db_show.name} (ID: {db_show.id})")
             return ShowSchema.model_validate(db_show)
         except IntegrityError as e:
             self.db.rollback()
-            log.error(f"Integrity error while saving show {show.name}: {e}")
             raise MediaAlreadyExists(
                 f"Show with this primary key or unique constraint violation: {e.orig}"
             ) from e
@@ -211,15 +190,12 @@ class TvRepository:
         :raises NotFoundError: If the show with the given ID is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to delete show with id: {show_id}")
         try:
             show = self.db.get(Show, show_id)
             if not show:
-                log.warning(f"Show with id {show_id} not found for deletion.")
                 raise NotFoundError(f"Show with id {show_id} not found.")
             self.db.delete(show)
             self.db.commit()
-            log.info(f"Successfully deleted show with id: {show_id}")
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(f"Database error while deleting show {show_id}: {e}")
@@ -234,13 +210,10 @@ class TvRepository:
         :raises NotFoundError: If the season with the given ID is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve season with id: {season_id}")
         try:
             season = self.db.get(Season, season_id)
             if not season:
-                log.warning(f"Season with id {season_id} not found.")
                 raise NotFoundError(f"Season with id {season_id} not found.")
-            log.info(f"Successfully retrieved season with id: {season_id}")
             return SeasonSchema.model_validate(season)
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving season {season_id}: {e}")
@@ -257,7 +230,6 @@ class TvRepository:
         :raises IntegrityError: If a similar request already exists or violates constraints.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Adding season request: {season_request.model_dump_json()}")
         db_model = SeasonRequest(
             id=season_request.id,
             season_id=season_request.season_id,
@@ -275,7 +247,6 @@ class TvRepository:
             self.db.add(db_model)
             self.db.commit()
             self.db.refresh(db_model)
-            log.info(f"Successfully added season request with id: {db_model.id}")
             return SeasonRequestSchema.model_validate(db_model)
         except IntegrityError as e:
             self.db.rollback()
@@ -294,18 +265,10 @@ class TvRepository:
         :raises NotFoundError: If the season request is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to delete season request with id: {season_request_id}")
         try:
             stmt = delete(SeasonRequest).where(SeasonRequest.id == season_request_id)
-            result = self.db.execute(stmt)
-            if result.rowcount == 0:
-                log.warning(
-                    f"Season request with id {season_request_id} not found during delete execution (rowcount 0)."
-                )
+            self.db.execute(stmt)
             self.db.commit()
-            log.info(
-                f"Successfully deleted season request with id: {season_request_id}"
-            )
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(
@@ -323,9 +286,6 @@ class TvRepository:
         :raises NotFoundError: If the season is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(
-            f"Attempting to retrieve season number {season_number} for show_id: {show_id}"
-        )
         try:
             stmt = (
                 select(Season)
@@ -335,15 +295,9 @@ class TvRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                log.warning(
-                    f"Season number {season_number} for show_id {show_id} not found."
-                )
                 raise NotFoundError(
                     f"Season number {season_number} for show_id {show_id} not found."
                 )
-            log.info(
-                f"Successfully retrieved season number {season_number} for show_id: {show_id}"
-            )
             return SeasonSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(
@@ -358,7 +312,6 @@ class TvRepository:
         :return: A list of RichSeasonRequest objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug("Attempting to retrieve all season requests.")
         try:
             stmt = select(SeasonRequest).options(
                 joinedload(SeasonRequest.requested_by),
@@ -366,7 +319,6 @@ class TvRepository:
                 joinedload(SeasonRequest.season).joinedload(Season.show),
             )
             results = self.db.execute(stmt).scalars().unique().all()
-            log.info(f"Successfully retrieved {len(results)} season requests.")
             return [
                 RichSeasonRequestSchema(
                     id=x.id,
@@ -394,17 +346,11 @@ class TvRepository:
         :raises IntegrityError: If the record violates constraints.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Adding season file: {season_file.model_dump_json()}")
         db_model = SeasonFile(**season_file.model_dump())
         try:
             self.db.add(db_model)
             self.db.commit()
             self.db.refresh(db_model)
-            # Assuming SeasonFile model has an 'id' attribute after refresh for logging.
-            # If not, this line or the model needs adjustment.
-            log.info(
-                f"Successfully added season file. Torrent ID: {db_model.torrent_id}, Path: {db_model.file_path_suffix}"
-            )
             return SeasonFileSchema.model_validate(db_model)
         except IntegrityError as e:
             self.db.rollback()
@@ -423,15 +369,11 @@ class TvRepository:
         :return: The number of season files removed.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to remove season files for torrent_id: {torrent_id}")
         try:
             stmt = delete(SeasonFile).where(SeasonFile.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
             deleted_count = result.rowcount  # rowcount is an int, not a callable
-            log.info(
-                f"Successfully removed {deleted_count} season files for torrent_id: {torrent_id}"
-            )
             return deleted_count()
         except SQLAlchemyError as e:
             self.db.rollback()
@@ -449,15 +391,12 @@ class TvRepository:
         :raises NotFoundError: If the show with the given ID is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Setting library for show_id {show_id} to {library}")
         try:
             show = self.db.get(Show, show_id)
             if not show:
-                log.warning(f"Show with id {show_id} not found.")
                 raise NotFoundError(f"Show with id {show_id} not found.")
             show.library = library
             self.db.commit()
-            log.info(f"Successfully set library for show_id {show_id} to {library}")
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(f"Database error setting library for show {show_id}: {e}")
@@ -473,13 +412,9 @@ class TvRepository:
         :return: A list of SeasonFile objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve season files for season_id: {season_id}")
         try:
             stmt = select(SeasonFile).where(SeasonFile.season_id == season_id)
             results = self.db.execute(stmt).scalars().all()
-            log.info(
-                f"Successfully retrieved {len(results)} season files for season_id: {season_id}"
-            )
             return [SeasonFileSchema.model_validate(sf) for sf in results]
         except SQLAlchemyError as e:
             log.error(
@@ -495,7 +430,6 @@ class TvRepository:
         :return: A list of Torrent objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve torrents for show_id: {show_id}")
         try:
             stmt = (
                 select(Torrent)
@@ -505,9 +439,6 @@ class TvRepository:
                 .where(Season.show_id == show_id)
             )
             results = self.db.execute(stmt).scalars().unique().all()
-            log.info(
-                f"Successfully retrieved {len(results)} torrents for show_id: {show_id}"
-            )
             return [TorrentSchema.model_validate(torrent) for torrent in results]
         except SQLAlchemyError as e:
             log.error(f"Database error retrieving torrents for show_id {show_id}: {e}")
@@ -520,7 +451,6 @@ class TvRepository:
         :return: A list of Show objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug("Attempting to retrieve all shows with torrents.")
         try:
             stmt = (
                 select(Show)
@@ -532,7 +462,6 @@ class TvRepository:
                 .order_by(Show.name)
             )
             results = self.db.execute(stmt).scalars().unique().all()
-            log.info(f"Successfully retrieved {len(results)} shows with torrents.")
             return [ShowSchema.model_validate(show) for show in results]
         except SQLAlchemyError as e:
             log.error(f"Database error retrieving all shows with torrents: {e}")
@@ -546,7 +475,6 @@ class TvRepository:
         :return: A list of SeasonNumber objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve season numbers for torrent_id: {torrent_id}")
         try:
             stmt = (
                 select(Season.number)
@@ -555,9 +483,6 @@ class TvRepository:
                 .where(SeasonFile.torrent_id == torrent_id)
             )
             results = self.db.execute(stmt).scalars().unique().all()
-            log.info(
-                f"Successfully retrieved {len(results)} season numbers for torrent_id: {torrent_id}"
-            )
             return [SeasonNumber(x) for x in results]
         except SQLAlchemyError as e:
             log.error(
@@ -576,7 +501,6 @@ class TvRepository:
         :raises NotFoundError: If the season request is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve season request with id: {season_request_id}")
         try:
             request = self.db.get(SeasonRequest, season_request_id)
             if not request:
@@ -584,9 +508,6 @@ class TvRepository:
                 raise NotFoundError(
                     f"Season request with id {season_request_id} not found."
                 )
-            log.info(
-                f"Successfully retrieved season request with id: {season_request_id}"
-            )
             return SeasonRequestSchema.model_validate(request)
         except SQLAlchemyError as e:
             log.error(
@@ -603,7 +524,6 @@ class TvRepository:
         :raises NotFoundError: If the show for the given season ID is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to retrieve show by season_id: {season_id}")
         try:
             stmt = (
                 select(Show)
@@ -613,9 +533,7 @@ class TvRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                log.warning(f"Show for season_id {season_id} not found.")
                 raise NotFoundError(f"Show for season_id {season_id} not found.")
-            log.info(f"Successfully retrieved show for season_id: {season_id}")
             return ShowSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(f"Database error retrieving show by season_id {season_id}: {e}")
@@ -634,10 +552,8 @@ class TvRepository:
         :raises NotFoundError: If the show is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to add season {season_data.number} to show {show_id}")
         db_show = self.db.get(Show, show_id)
         if not db_show:
-            log.warning(f"Show with id {show_id} not found when trying to add season.")
             raise NotFoundError(f"Show with id {show_id} not found.")
 
         stmt = (
@@ -647,9 +563,6 @@ class TvRepository:
         )
         existing_db_season = self.db.execute(stmt).scalar_one_or_none()
         if existing_db_season:
-            log.info(
-                f"Season {season_data.number} already exists for show {show_id} (ID: {existing_db_season.id}). Skipping add."
-            )
             return SeasonSchema.model_validate(existing_db_season)
 
         db_season = Season(
@@ -674,9 +587,6 @@ class TvRepository:
         self.db.add(db_season)
         self.db.commit()
         self.db.refresh(db_season)
-        log.info(
-            f"Successfully added season {db_season.number} (ID: {db_season.id}) to show {show_id}."
-        )
         return SeasonSchema.model_validate(db_season)
 
     def add_episode_to_season(
@@ -692,14 +602,8 @@ class TvRepository:
         :raises NotFoundError: If the season is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(
-            f"Attempting to add episode {episode_data.number} to season {season_id}"
-        )
         db_season = self.db.get(Season, season_id)
         if not db_season:
-            log.warning(
-                f"Season with id {season_id} not found when trying to add episode."
-            )
             raise NotFoundError(f"Season with id {season_id} not found.")
 
         stmt = (
@@ -709,9 +613,6 @@ class TvRepository:
         )
         existing_db_episode = self.db.execute(stmt).scalar_one_or_none()
         if existing_db_episode:
-            log.info(
-                f"Episode {episode_data.number} already exists for season {season_id} (ID: {existing_db_episode.id}). Skipping add."
-            )
             return EpisodeSchema.model_validate(existing_db_episode)
 
         db_episode = Episode(
@@ -725,9 +626,6 @@ class TvRepository:
         self.db.add(db_episode)
         self.db.commit()
         self.db.refresh(db_episode)
-        log.info(
-            f"Successfully added episode {db_episode.number} (ID: {db_episode.id}) to season {season_id}."
-        )
         return EpisodeSchema.model_validate(db_episode)
 
     def update_show_attributes(
@@ -749,10 +647,8 @@ class TvRepository:
         :param ended: The new ended status for the show.
         :return: The updated ShowSchema object.
         """
-        log.debug(f"Attempting to update attributes for show ID: {show_id}")
         db_show = self.db.get(Show, show_id)
         if not db_show:
-            log.warning(f"Show with id {show_id} not found for attribute update.")
             raise NotFoundError(f"Show with id {show_id} not found.")
 
         updated = False
@@ -774,13 +670,9 @@ class TvRepository:
         ):
             db_show.continuous_download = continuous_download
             updated = True
-
         if updated:
             self.db.commit()
             self.db.refresh(db_show)
-            log.info(f"Successfully updated attributes for show ID: {show_id}")
-        else:
-            log.info(f"No attribute changes needed for show ID: {show_id}")
         return ShowSchema.model_validate(db_show)
 
     def update_season_attributes(
@@ -797,10 +689,8 @@ class TvRepository:
         :raises NotFoundError: If the season is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to update attributes for season ID: {season_id}")
         db_season = self.db.get(Season, season_id)
         if not db_season:
-            log.warning(f"Season with id {season_id} not found for attribute update.")
             raise NotFoundError(f"Season with id {season_id} not found.")
 
         updated = False
@@ -814,9 +704,6 @@ class TvRepository:
         if updated:
             self.db.commit()
             self.db.refresh(db_season)
-            log.info(f"Successfully updated attributes for season ID: {season_id}")
-        else:
-            log.info(f"No attribute changes needed for season ID: {season_id}")
         return SeasonSchema.model_validate(db_season)
 
     def update_episode_attributes(
@@ -832,10 +719,8 @@ class TvRepository:
         :raises NotFoundError: If the episode is not found.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        log.debug(f"Attempting to update attributes for episode ID: {episode_id}")
         db_episode = self.db.get(Episode, episode_id)
         if not db_episode:
-            log.warning(f"Episode with id {episode_id} not found for attribute update.")
             raise NotFoundError(f"Episode with id {episode_id} not found.")
 
         updated = False
@@ -846,7 +731,4 @@ class TvRepository:
         if updated:
             self.db.commit()
             self.db.refresh(db_episode)
-            log.info(f"Successfully updated attributes for episode ID: {episode_id}")
-        else:
-            log.info(f"No attribute changes needed for episode ID: {episode_id}")
         return EpisodeSchema.model_validate(db_episode)

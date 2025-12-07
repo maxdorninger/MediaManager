@@ -24,9 +24,7 @@ class Jackett(GenericIndexer):
         self.api_key = config.api_key
         self.url = config.url
         self.indexers = config.indexers
-        log.debug("Registering Jacket as Indexer")
 
-    # NOTE: this could be done in parallel, but if there aren't more than a dozen indexers, it shouldn't matter
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
         log.debug("Searching for " + query)
 

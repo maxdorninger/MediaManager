@@ -246,7 +246,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                     )
                 )
             except Exception as e:
-                log.warning(f"Error processing search result {result}: {e}")
+                log.warning(f"Error processing search result: {e}")
         return formatted_results
 
     def get_movie_metadata(self, id: int = None) -> Movie:
@@ -315,7 +315,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                     )
                 )
             except Exception as e:
-                log.warning(f"Error processing search result {result}: {e}")
+                log.warning(f"Error processing search result: {e}")
         return formatted_results
 
     def download_movie_poster_image(self, movie: Movie) -> bool:
