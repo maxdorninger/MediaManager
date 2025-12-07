@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status, HTTPException
@@ -27,6 +28,7 @@ from media_manager.tv.schemas import (
     UpdateSeasonRequest,
     RichSeasonRequest,
     Season,
+    TvShowImportSuggestion,
 )
 from media_manager.tv.dependencies import (
     season_dep,
@@ -101,6 +103,46 @@ def delete_a_show(tv_repository: tv_repository_dep, show: show_dep):
 )
 def get_all_shows(tv_service: tv_service_dep):
     return tv_service.get_all_shows()
+
+
+@router.get(
+    "/importable",
+    dependencies=[Depends(current_superuser)],
+    response_model=list[TvShowImportSuggestion],
+)
+def get_all_importable_shows(
+    tv_service: tv_service_dep, metadata_provider: metadata_provider_dep
+):
+    """
+    get a list of unknown shows that were detected in the tv directory and are importable
+    """
+    directories = tv_service.detect_unknown_tv_shows()
+    shows = []
+    for directory in directories:
+        shows.append(
+            tv_service.get_import_candidates(
+                tv_show=directory, metadata_provider=metadata_provider
+            )
+        )
+    return shows
+
+
+@router.post(
+    "/importable",
+    dependencies=[Depends(current_superuser)],
+    response_model=list[TvShowImportSuggestion],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, directory: str):
+    """
+    get a list of unknown shows that were detected in the tv directory and are importable
+    """
+    source_directory = Path(directory)
+    if source_directory not in tv_service.detect_unknown_tv_shows():
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
+    tv_service.import_existing_tv_show(
+        tv_show=tv_show, source_directory=source_directory
+    )
 
 
 @router.get(

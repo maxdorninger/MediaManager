@@ -77,18 +77,23 @@ def import_file(target_file: Path, source_file: Path):
         shutil.copy(src=source_file, dst=target_file)
 
 
-def import_torrent(torrent: Torrent) -> tuple[list[Path], list[Path], list[Path]]:
+def get_files_for_import(
+    torrent: Torrent | None = None, directory: Path | None = None
+) -> tuple[list[Path], list[Path], list[Path]]:
     """
     Extracts all files from the torrent download directory, including extracting archives.
     Returns a tuple containing: seperated video files, subtitle files, and all files found in the torrent directory.
     """
-    log.info(f"Importing torrent {torrent}")
-    all_files: list[Path] = list_files_recursively(
-        path=get_torrent_filepath(torrent=torrent)
-    )
+    search_directory = directory if directory else get_torrent_filepath(torrent=torrent)
+    if torrent:
+        log.info(f"Importing torrent {torrent}")
+    else:
+        log.info(f"Importing files from directory {directory}")
+
+    all_files: list[Path] = list_files_recursively(path=search_directory)
     log.debug(f"Found {len(all_files)} files downloaded by the torrent")
     extract_archives(all_files)
-    all_files = list_files_recursively(path=get_torrent_filepath(torrent=torrent))
+    all_files = list_files_recursively(path=search_directory)
 
     video_files: list[Path] = []
     subtitle_files: list[Path] = []

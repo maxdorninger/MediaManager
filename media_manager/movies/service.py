@@ -34,7 +34,7 @@ import pprint
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.utils import (
     import_file,
-    import_torrent,
+    get_files_for_import,
     remove_special_characters,
 )
 from media_manager.indexer.service import IndexerService
@@ -470,7 +470,7 @@ class MovieService:
         :param movie: The Movie object
         """
 
-        video_files, subtitle_files, all_files = import_torrent(torrent=torrent)
+        video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
         success: bool = False  # determines if the import was successful, if true, the Imported flag will be set to True after the import
 
         if len(video_files) != 0:
