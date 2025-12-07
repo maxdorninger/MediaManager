@@ -267,7 +267,10 @@ class TvRepository:
         """
         try:
             stmt = delete(SeasonRequest).where(SeasonRequest.id == season_request_id)
-            self.db.execute(stmt)
+            result = self.db.execute(stmt)
+            if result.rowcount == 0:
+                self.db.rollback()
+                raise NotFoundError(f"SeasonRequest with id {season_request_id} not found.")
             self.db.commit()
         except SQLAlchemyError as e:
             self.db.rollback()
