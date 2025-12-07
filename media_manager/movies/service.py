@@ -30,7 +30,6 @@ from media_manager.movies.schemas import (
 from media_manager.torrent.schemas import QualityStrings
 from media_manager.movies.repository import MovieRepository
 from media_manager.exceptions import NotFoundError
-import pprint
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.utils import (
     import_file,
@@ -463,6 +462,68 @@ class MovieService:
         self.delete_movie_request(movie_request.id)
         return True
 
+    def get_movie_root_path(self, movie: Movie) -> Path:
+        misc_config = AllEncompassingConfig().misc_config
+        movie_file_path = (
+            misc_config.movie_directory
+            / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
+        )
+        log.debug(
+            f"Movie {movie.name} without special characters: {remove_special_characters(movie.name)}"
+        )
+        if movie.library != "Default":
+            for library in misc_config.movie_libraries:
+                if library.name == movie.library:
+                    log.debug(f"Using library {library.name} for movie {movie.name}")
+                    return (
+                        Path(library.path)
+                        / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
+                    )
+            else:
+                log.warning(
+                    f"Movie library {movie.library} not found in config, using default movie directory."
+                )
+        return movie_file_path
+
+    def import_movie(
+        self,
+        movie: Movie,
+        video_files: list[Path],
+        subtitle_files: list[Path],
+        file_path_suffix: str = "",
+    ) -> bool:
+        movie_file_name = f"{remove_special_characters(movie.name)} ({movie.year})"
+        movie_root_path = self.get_movie_root_path(movie=movie)
+        success: bool = False
+        if file_path_suffix != "":
+            movie_file_name += f" - {file_path_suffix}"
+
+        # import movie video
+        if video_files:
+            target_video_file = (
+                movie_root_path / f"{movie_file_name}{video_files[0].suffix}"
+            )
+            import_file(target_file=target_video_file, source_file=video_files[0])
+            success = True
+
+        # import subtitles
+        for subtitle_file in subtitle_files:
+            language_code_match = re.search(
+                r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
+            )
+            if not language_code_match:
+                log.warning(
+                    f"Subtitle file {subtitle_file.name} does not match expected format, can't extract language code, skipping."
+                )
+                continue
+            language_code = language_code_match.group(1)
+            target_subtitle_file = (
+                movie_root_path / f"{movie_file_name}.{language_code}.srt"
+            )
+            import_file(target_file=target_subtitle_file, source_file=subtitle_file)
+
+        return success
+
     def import_torrent_files(self, torrent: Torrent, movie: Movie) -> None:
         """
         Organizes files from a torrent into the movie directory structure.
@@ -483,34 +544,11 @@ class MovieService:
             log.error(
                 "Found multiple video files in movie torrent, only the first will be imported. Manual intervention is recommended."
             )
-        log.info(
-            f"Importing these {len(video_files) + len(subtitle_files)} files:\n"
-            + pprint.pformat(video_files)
-            + "\n"
-            + pprint.pformat(subtitle_files)
-        )
-        misc_config = AllEncompassingConfig().misc
-
-        movie_file_path = (
-            misc_config.movie_directory
-            / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
-        )
         log.debug(
-            f"Movie {movie.name} without special characters: {remove_special_characters(movie.name)}"
+            f"Importing these {len(video_files)} video files and {len(subtitle_files)} subtitle files"
         )
-        if movie.library != "Default":
-            for library in misc_config.movie_libraries:
-                if library.name == movie.library:
-                    log.debug(f"Using library {library.name} for movie {movie.name}")
-                    movie_file_path = (
-                        Path(library.path)
-                        / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
-                    )
-                    break
-            else:
-                log.warning(
-                    f"Movie library {movie.library} not found in config, using default movie directory."
-                )
+
+        movie_file_path = self.get_movie_root_path(movie=movie)
 
         movie_files: list[MovieFile] = self.torrent_service.get_movie_files_of_torrent(
             torrent=torrent
@@ -524,34 +562,14 @@ class MovieService:
                 movie_file_path.mkdir(parents=True, exist_ok=True)
             except Exception as e:
                 log.warning(f"Could not create path {movie_file_path}: {e}")
+                raise e
 
-            movie_file_name = f"{remove_special_characters(movie.name)} ({movie.year})"
-            if movie_file.file_path_suffix != "":
-                movie_file_name += f" - {movie_file.file_path_suffix}"
-
-            # import movie video
-            if video_files:
-                target_video_file = (
-                    movie_file_path / f"{movie_file_name}{video_files[0].suffix}"
-                )
-                import_file(target_file=target_video_file, source_file=video_files[0])
-                success = True
-
-            # import subtitles
-            for subtitle_file in subtitle_files:
-                language_code_match = re.search(
-                    r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
-                )
-                if not language_code_match:
-                    log.warning(
-                        f"Subtitle file {subtitle_file.name} does not match expected format, can't extract language code, skipping."
-                    )
-                    continue
-                language_code = language_code_match.group(1)
-                target_subtitle_file = (
-                    movie_file_path / f"{movie_file_name}.{language_code}.srt"
-                )
-                import_file(target_file=target_subtitle_file, source_file=subtitle_file)
+            self.import_movie(
+                movie=movie,
+                video_files=video_files,
+                subtitle_files=subtitle_files,
+                file_path_suffix=movie_file.file_path_suffix,
+            )
 
         if success:
             torrent.imported = True
@@ -564,7 +582,7 @@ class MovieService:
                     message=f"Successfully downloaded: {movie.name} ({movie.year}) from torrent {torrent.title}.",
                 )
 
-        log.info(f"Finished organizing files for torrent {torrent.title}")
+        log.info(f"Finished importing files for torrent {torrent.title}")
 
     def update_movie_metadata(
         self, db_movie: Movie, metadata_provider: AbstractMetadataProvider
