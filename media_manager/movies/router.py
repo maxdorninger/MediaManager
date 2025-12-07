@@ -194,7 +194,6 @@ def create_movie_request(
     )
     movie_request = MovieRequest.model_validate(movie_request)
     movie_request.requested_by = user
-    log.info("SERVASasdasd")
     if user.is_superuser:
         movie_request.authorized = True
         movie_request.authorized_by = user
