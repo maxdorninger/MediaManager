@@ -30,7 +30,6 @@ from media_manager.tv.schemas import (
     RichSeasonRequest,
     EpisodeId,
     Episode as EpisodeSchema,
-    TvShowImportSuggestion,
 )
 from media_manager.torrent.schemas import QualityStrings
 from media_manager.tv.repository import TvRepository
@@ -50,6 +49,7 @@ from media_manager.metadataProvider.abstractMetaDataProvider import (
 )
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
+from media_manager.schemas import MediaImportSuggestion
 
 
 class TvService:
@@ -831,33 +831,13 @@ class TvService:
             show_id=show_id, continuous_download=continuous_download
         )
 
-    def detect_unknown_tv_shows(self) -> list[Path]:
-        tv_libraries = AllEncompassingConfig().misc.tv_libraries
-        tv_directory = AllEncompassingConfig().misc.tv_directory
-        show_dirs = tv_directory.glob("*")
-        log.debug(f"Using Directory {tv_directory}")
-        unknown_tv_shows = []
-        for show_dir in show_dirs:
-            # check if directory is one created by MediaManager (contins [tmdbd/tvdbid-0000) or if it is a library
-            if (
-                re.search(r"\[(?:tmdbid|tvdbid)-\d+]", show_dir.name, re.IGNORECASE)
-                or show_dir.absolute()
-                in [Path(library.path).absolute() for library in tv_libraries]
-                or show_dir.name.startswith(".")
-            ):
-                log.debug(f"MediaManager directory detected: {show_dir.name}")
-            else:
-                log.info(f"Detected unknown tv show directory: {show_dir.name}")
-                unknown_tv_shows.append(show_dir)
-        return unknown_tv_shows
-
     def get_import_candidates(
         self, tv_show: Path, metadata_provider: AbstractMetadataProvider
-    ) -> TvShowImportSuggestion:
+    ) -> MediaImportSuggestion:
         search_result = self.search_for_show(
             strip_trailing_year(tv_show.name), metadata_provider
         )
-        import_candidates = TvShowImportSuggestion(
+        import_candidates = MediaImportSuggestion(
             directory=tv_show, candidates=search_result
         )
         log.debug(

@@ -12,6 +12,7 @@ from media_manager.indexer.schemas import (
     IndexerQueryResult,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
+from media_manager.notification.utils import detect_unknown_media
 from media_manager.torrent.schemas import Torrent
 from media_manager.tv import log
 from media_manager.exceptions import MediaAlreadyExists
@@ -27,8 +28,9 @@ from media_manager.tv.schemas import (
     UpdateSeasonRequest,
     RichSeasonRequest,
     Season,
-    TvShowImportSuggestion,
 )
+from media_manager.schemas import MediaImportSuggestion
+
 from media_manager.tv.dependencies import (
     season_dep,
     show_dep,
@@ -107,7 +109,7 @@ def get_all_shows(tv_service: tv_service_dep):
     "/importable",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(current_superuser)],
-    response_model=list[TvShowImportSuggestion],
+    response_model=list[MediaImportSuggestion],
 )
 def get_all_importable_shows(
     tv_service: tv_service_dep, metadata_provider: metadata_provider_dep
@@ -115,7 +117,7 @@ def get_all_importable_shows(
     """
     get a list of unknown shows that were detected in the tv directory and are importable
     """
-    directories = tv_service.detect_unknown_tv_shows()
+    directories = detect_unknown_media(AllEncompassingConfig().misc.tv_directory)
     shows = []
     for directory in directories:
         shows.append(
@@ -136,7 +138,9 @@ def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, director
     get a list of unknown shows that were detected in the tv directory and are importable
     """
     source_directory = Path(directory)
-    if source_directory not in tv_service.detect_unknown_tv_shows():
+    if source_directory not in detect_unknown_media(
+        AllEncompassingConfig().misc.tv_directory
+    ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
     tv_service.import_existing_tv_show(
         tv_show=tv_show, source_directory=source_directory

@@ -1,12 +1,10 @@
 import typing
 import uuid
-from pathlib import Path
 from uuid import UUID
 
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 from media_manager.auth.schemas import UserRead
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.torrent.models import Quality
 from media_manager.torrent.schemas import TorrentId, TorrentStatus
 
@@ -168,8 +166,3 @@ class PublicShow(BaseModel):
     library: str
 
     seasons: list[PublicSeason]
-
-
-class TvShowImportSuggestion(BaseModel):
-    directory: Path
-    candidates: list[MetaDataProviderSearchResult]
