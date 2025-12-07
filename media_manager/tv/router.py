@@ -135,7 +135,7 @@ def get_all_importable_shows(
 )
 def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, directory: str):
     """
-    get a list of unknown shows that were detected in the tv directory and are importable
+    Import a detected show from the specified directory into the library.
     """
     source_directory = Path(directory)
     if source_directory not in detect_unknown_media(

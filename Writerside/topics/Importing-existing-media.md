@@ -13,7 +13,7 @@ Here is an example, using these rules:
 /
 └── data/
     ├── tv/
-    │   ├── Rick and Morty # WILL be imorted
+    │   ├── Rick and Morty # WILL be imported
     │   ├── Stranger Things (2016) # WILL be imported
     │   │
     │   ├── Breaking Bad (2008) [tmdbid-1396] # WILL NOT be imported

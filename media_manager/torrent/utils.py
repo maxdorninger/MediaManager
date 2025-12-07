@@ -194,7 +194,7 @@ def detect_unknown_media(path: Path) -> list[Path]:
     log.debug(f"Using Directory {path}")
     unknown_tv_shows = []
     for media_dir in show_dirs:
-        # check if directory is one created by MediaManager (contins [tmdbd/tvdbid-0000) or if it is a library
+        # check if directory is one created by MediaManager (contains [tmdbd/tvdbid-0000) or if it is a library
         if (
             re.search(r"\[(?:tmdbid|tvdbid)-\d+]", media_dir.name, re.IGNORECASE)
             or media_dir.absolute()

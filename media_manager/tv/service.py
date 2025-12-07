@@ -676,7 +676,7 @@ class TvService:
                 season=season,
                 video_files=video_files,
                 subtitle_files=subtitle_files,
-                file_path_suffix=season_file.file_path,
+                file_path_suffix=season_file.file_path_suffix,
             )
             if season_import_success:
                 log.info(
