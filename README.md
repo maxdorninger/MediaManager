@@ -69,10 +69,15 @@ docker compose up -d
 
 ## Screenshots
 
-![Screenshot 2025-07-02 174732](https://github.com/user-attachments/assets/49fc18aa-b471-4be8-983e-c0ab240dfb73)
-![Screenshot 2025-07-02 174342](https://github.com/user-attachments/assets/3a38953d-d0fa-4a7e-83d0-dd6e6427681c)
+<img width="1902" height="887" alt="Screenshot 2025-12-08 at 00 44 26" src="https://github.com/user-attachments/assets/4c3fbc73-6358-44ac-a948-0eb35ab116fd" />
+<img width="1875" height="882" alt="Screenshot 2025-12-08 at 00 46 39" src="https://github.com/user-attachments/assets/75645cb6-236b-4bef-9a21-76bfd6d530f9" />
+
 ![Screenshot 2025-07-02 174616](https://github.com/user-attachments/assets/c3af4be8-b873-448c-8a4d-0d5db863aec7)
-![Screenshot 2025-07-02 174416](https://github.com/user-attachments/assets/0d50f53b-64da-4243-8408-1d6fc85fe81b)
+
+
+<img width="1883" height="890" alt="Screenshot 2025-12-08 at 00 48 23" src="https://github.com/user-attachments/assets/c5789559-5aa7-4c26-9442-a2b156e99b1c" />
+
+
 ![Screenshot 2025-06-28 222908](https://github.com/user-attachments/assets/193e1afd-dabb-42a2-ab28-59f2784371c7)
 
 ## Developer Quick Start
