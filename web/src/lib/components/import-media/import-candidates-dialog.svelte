@@ -6,7 +6,7 @@
 	import type { components } from '$lib/api/api';
 	import { Spinner } from '$lib/components/ui/spinner';
 	import SuggestedMediaCard from '$lib/components/import-media/suggested-media-card.svelte';
-    import {invalidateAll} from "$app/navigation";
+	import { invalidateAll } from '$app/navigation';
 
 	let {
 		isTv,
@@ -26,50 +26,50 @@
 	async function handleImportMedia(media: components['schemas']['MetaDataProviderSearchResult']) {
 		isImporting = true;
 		submitRequestError = null;
-        let errored = null;
-        if(isTv) {
-            let { data } = await client.POST('/api/v1/tv/shows', {
-                params: {
-                    query: {
-                        metadata_provider: media.metadata_provider as 'tmdb' | 'tvdb',
-                        show_id: media.external_id
-                    }
-                }
-            });
-            let showId = data?.id ?? 'no_id';
-            const { error } = await client.POST('/api/v1/tv/importable/{show_id}', {
-                params: {
-                    path: {
-                        show_id: showId
-                    },
-                    query: {
-                        directory: name
-                    }
-                }
-            });
-            errored = error;
-        }else{
-            let { data } = await client.POST('/api/v1/movies', {
-                params: {
-                    query: {
-                        metadata_provider: media.metadata_provider as 'tmdb' | 'tvdb',
-                        movie_id: media.external_id
-                    }
-                }
-            });
-            let movieId = data?.id ?? 'no_id';
-            const { error } = await client.POST('/api/v1/movies/importable/{movie_id}', {
-                params: {
-                    path: {
-                        movie_id: movieId
-                    },
-                    query: {
-                        directory: name
-                    }
-                }
-            });
-            errored = error;
-        }
+		let errored = null;
+		if (isTv) {
+			let { data } = await client.POST('/api/v1/tv/shows', {
+				params: {
+					query: {
+						metadata_provider: media.metadata_provider as 'tmdb' | 'tvdb',
+						show_id: media.external_id
+					}
+				}
+			});
+			let showId = data?.id ?? 'no_id';
+			const { error } = await client.POST('/api/v1/tv/importable/{show_id}', {
+				params: {
+					path: {
+						show_id: showId
+					},
+					query: {
+						directory: name
+					}
+				}
+			});
+			errored = error;
+		} else {
+			let { data } = await client.POST('/api/v1/movies', {
+				params: {
+					query: {
+						metadata_provider: media.metadata_provider as 'tmdb' | 'tvdb',
+						movie_id: media.external_id
+					}
+				}
+			});
+			let movieId = data?.id ?? 'no_id';
+			const { error } = await client.POST('/api/v1/movies/importable/{movie_id}', {
+				params: {
+					path: {
+						movie_id: movieId
+					},
+					query: {
+						directory: name
+					}
+				}
+			});
+			errored = error;
+		}
 		isImporting = false;
 
 		if (errored) {
@@ -78,8 +78,8 @@
 			dialogOpen = false;
 			toast.success('Imported successfully!');
 		}
-        await invalidateAll()
-    }
+		await invalidateAll();
+	}
 </script>
 
 <Dialog.Root bind:open={dialogOpen}>
