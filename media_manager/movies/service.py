@@ -473,7 +473,7 @@ class MovieService:
         video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
         success: bool = False  # determines if the import was successful, if true, the Imported flag will be set to True after the import
 
-        if len(video_files) != 0:
+        if len(video_files) != 1:
             # Send notification about multiple video files found
             if self.notification_service:
                 self.notification_service.send_notification_to_all_providers(
@@ -481,7 +481,7 @@ class MovieService:
                     message=f"Found {len(video_files)} video files in movie torrent '{torrent.title}' for {movie.name} ({movie.year}). Only the first will be imported. Manual intervention recommended.",
                 )
             log.error(
-                "Found multiple video files in movie torrent, only the first will be imported. Manual intervention is recommended.."
+                "Found multiple video files in movie torrent, only the first will be imported. Manual intervention is recommended."
             )
         log.info(
             f"Importing these {len(video_files) + len(subtitle_files)} files:\n"
