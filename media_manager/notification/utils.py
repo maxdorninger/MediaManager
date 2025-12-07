@@ -27,7 +27,7 @@ def send_email(subject: str, html: str, addressee: str) -> None:
     log.info(f"Successfully sent email to {addressee} with subject: {subject}")
 
 
-def detect_unknown_media(self, path: Path) -> list[Path]:
+def detect_unknown_media(path: Path) -> list[Path]:
     libraries = []
     libraries.extend(AllEncompassingConfig().misc.movie_libraries)
     libraries.extend(AllEncompassingConfig().misc.tv_libraries)
