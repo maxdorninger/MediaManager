@@ -130,7 +130,6 @@ def get_all_importable_shows(
 @router.post(
     "/importable",
     dependencies=[Depends(current_superuser)],
-    response_model=list[TvShowImportSuggestion],
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, directory: str):
