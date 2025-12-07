@@ -56,3 +56,17 @@ So after importing, the directory would look like this (using the above director
         ├── .Oppenheimer (2023) # RENAMED
         └── Oppenheimer (2023) [tmdbid-872585] # IMPORTED
 ```
+
+## More criteria for importing
+
+These are the criteria specifically for the files themselves:
+
+- movie folders (e.g. `Oppenheimer (2023)`) must not contain more or less than one video file (an .mp4 or .mkv, etc.
+  file)
+- the specific structure of season folders or episode folders or naming of them does not matter
+- Episode files (video and subtitle files) must contain the season and episode number in their name, e.g. `S01E01.mp4`
+  or `S03E07 Rick and Morty.mkv`
+
+<tip>
+In any usual Sonarr/Radarr setup these file criteria should already be met by default.
+</tip>
