@@ -257,13 +257,11 @@ def request_a_season(
     """
     adds request flag to a season
     """
-    log.info(f"Got season request: {season_request.model_dump()}")
     request: SeasonRequest = SeasonRequest.model_validate(season_request)
     request.requested_by = UserRead.model_validate(user)
     if user.is_superuser:
         request.authorized = True
         request.authorized_by = UserRead.model_validate(user)
-    log.info(f"Adding season request: {request.model_dump()}")
     tv_service.add_season_request(request)
     return
 

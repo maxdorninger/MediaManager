@@ -52,7 +52,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                 poster_url=show_metadata["image"],
                 id=show.id,
             )
-            log.info("Successfully downloaded poster image for show " + show.name)
+            log.debug("Successfully downloaded poster image for show " + show.name)
             return True
         else:
             log.warning(f"image for show {show.name} could not be downloaded")
@@ -143,7 +143,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                             )
                         )
                 except Exception as e:
-                    log.warning(f"Error processing search result {result}: {e}")
+                    log.warning(f"Error processing search result: {e}")
             return formatted_results
         else:
             results = self.__get_trending_tv()
@@ -169,7 +169,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                             )
                         )
                 except Exception as e:
-                    log.warning(f"Error processing search result {result}: {e}")
+                    log.warning(f"Error processing search result: {e}")
             return formatted_results
 
     def search_movie(
@@ -178,7 +178,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         if query is None:
             results = self.__get_trending_movies()
             results = results[0:20]
-            log.info(f"got {len(results)} results from TVDB search")
+            log.debug(f"got {len(results)} results from TVDB search")
             formatted_results = []
             for result in results:
                 result = self.__get_movie(result["id"])
@@ -201,12 +201,12 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                         )
                     )
                 except Exception as e:
-                    log.warning(f"Error processing search result {result}: {e}")
+                    log.warning(f"Error processing search result: {e}")
             return formatted_results
         else:
             results = self.__search_movie(query=query)
             results = results[0:20]
-            log.info(f"got {len(results)} results from TVDB search")
+            log.debug(f"got {len(results)} results from TVDB search")
             formatted_results = []
             for result in results:
                 if result["type"] != "movie":
@@ -233,7 +233,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                         )
                     )
                 except Exception as e:
-                    log.warning(f"Error processing search result {result}: {e}")
+                    log.warning(f"Error processing search result: {e}")
             return formatted_results
 
     def download_movie_poster_image(self, movie: Movie) -> bool:

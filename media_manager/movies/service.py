@@ -189,9 +189,7 @@ class MovieService:
         )
 
         if search_query_override:
-            log.debug(
-                f"Found with search query override {torrents.__len__()} torrents: {torrents}"
-            )
+            log.debug(f"Found with search query override {torrents.__len__()} torrents")
             return torrents
 
         result: list[IndexerQueryResult] = []
@@ -623,7 +621,9 @@ class MovieService:
         try:
             source_directory.rename(new_source_path)
         except Exception as e:
-            log.error(f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}")
+            log.error(
+                f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}"
+            )
             return False
 
         return success
@@ -680,12 +680,10 @@ def auto_download_all_approved_movie_requests() -> None:
     log.info("Auto downloading all approved movie requests")
     movie_requests = movie_repository.get_movie_requests()
     log.info(f"Found {len(movie_requests)} movie requests to process")
-    log.debug(f"Movie requests:  {[x.model_dump() for x in movie_requests]}")
     count = 0
 
     for movie_request in movie_requests:
         if movie_request.authorized:
-            log.info(f"Processing movie request {movie_request.id} for download")
             movie = movie_repository.get_movie_by_id(movie_id=movie_request.movie_id)
             if movie_service.download_approved_movie_request(
                 movie_request=movie_request, movie=movie

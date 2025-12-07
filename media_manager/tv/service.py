@@ -194,9 +194,6 @@ class TvService:
         :param search_query_override: Optional override for the search query.
         :return: A list of indexer query results.
         """
-        log.debug(
-            f"getting all available torrents for season {season_number} for show {show_id}"
-        )
         show = self.tv_repository.get_show_by_id(show_id=show_id)
         if search_query_override:
             search_query = search_query_override
@@ -209,9 +206,6 @@ class TvService:
         )
 
         if search_query_override:
-            log.debug(
-                f"Found with search query override {torrents.__len__()} torrents: {torrents}"
-            )
             return torrents
 
         result: list[IndexerQueryResult] = []
@@ -466,9 +460,6 @@ class TvService:
         :raises ValueError: If the season request is not authorized.
         """
         if not season_request.authorized:
-            log.error(
-                f"Season request {season_request.id} is not authorized for download"
-            )
             raise ValueError(
                 f"Season request {season_request.id} is not authorized for download"
             )
@@ -570,18 +561,11 @@ class TvService:
 
         # import subtitles
         for subtitle_file in subtitle_files:
-            log.debug(
-                f"Searching for pattern {subtitle_pattern} in subtitle file: {subtitle_file.name}"
-            )
             regex_result = re.search(
                 subtitle_pattern, subtitle_file.name, re.IGNORECASE
             )
             if regex_result:
                 language_code = regex_result.group(1)
-                log.debug(
-                    f"Found matching pattern: {subtitle_pattern} in subtitle file: {subtitle_file.name},"
-                    + f" extracted language code: {language_code}"
-                )
                 target_subtitle_file = target_file_name.with_suffix(
                     f".{language_code}.srt"
                 )
@@ -593,9 +577,7 @@ class TvService:
 
         # import episode videos
         for file in video_files:
-            log.debug(f"Searching for pattern {pattern} in video file: {file.name}")
             if re.search(pattern, file.name, re.IGNORECASE):
-                log.debug(f"Found matching pattern: {pattern} in file {file.name}")
                 target_video_file = target_file_name.with_suffix(file.suffix)
                 import_file(target_file=target_video_file, source_file=file)
                 return True
@@ -875,9 +857,7 @@ class TvService:
         try:
             source_directory.rename(new_source_path)
         except Exception as e:
-            log.error(
-                f"Failed to rename {source_directory} to {new_source_path}: {e}"
-            )
+            log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
 
 
 def auto_download_all_approved_season_requests() -> None:
@@ -898,7 +878,6 @@ def auto_download_all_approved_season_requests() -> None:
         log.info("Auto downloading all approved season requests")
         season_requests = tv_repository.get_season_requests()
         log.info(f"Found {len(season_requests)} season requests to process")
-        log.debug(f"Season requests:  {[x.model_dump() for x in season_requests]}")
         count = 0
 
         for season_request in season_requests:
@@ -998,7 +977,7 @@ def update_all_non_ended_shows_metadata() -> None:
             if show.continuous_download:
                 for new_season in new_seasons:
                     log.info(
-                        f"Automatically adding season requeest for new season {new_season.number} of show {updated_show.name}"
+                        f"Automatically adding season request for new season {new_season.number} of show {updated_show.name}"
                     )
                     tv_service.add_season_request(
                         SeasonRequest(
@@ -1010,7 +989,6 @@ def update_all_non_ended_shows_metadata() -> None:
                     )
 
             if updated_show:
-                log.info(f"Successfully updated metadata for show: {updated_show.name}")
                 log.debug(
                     f"Added new seasons: {len(new_seasons)} to show: {updated_show.name}"
                 )
