@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status, HTTPException
-from fastapi.responses import JSONResponse
 
 from media_manager.auth.db import User
 from media_manager.auth.schemas import UserRead
@@ -54,8 +53,7 @@ router = APIRouter()
         status.HTTP_201_CREATED: {
             "model": Show,
             "description": "Successfully created show",
-        },
-        status.HTTP_409_CONFLICT: {"model": str, "description": "Show already exists"},
+        }
     },
 )
 def add_a_show(
@@ -66,9 +64,9 @@ def add_a_show(
             external_id=show_id,
             metadata_provider=metadata_provider,
         )
-    except MediaAlreadyExists as e:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT, content={"message": str(e)}
+    except MediaAlreadyExists:
+        show = tv_service.get_show_by_external_id(
+            show_id, metadata_provider=metadata_provider.name
         )
     return show
 
