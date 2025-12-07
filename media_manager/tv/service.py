@@ -838,11 +838,12 @@ class TvService:
         unknown_tv_shows = []
         for show_dir in show_dirs:
             # check if directory is one created by MediaManager (contins [tmdbd/tvdbid-0000) or if it is a library
-            if re.search(
-                r"\[(?:tmdbid|tvdbid)-\d+]", show_dir.name, re.IGNORECASE
-            ) or show_dir.absolute() in [
-                Path(library.path).absolute() for library in tv_libraries
-            ]:
+            if (
+                re.search(r"\[(?:tmdbid|tvdbid)-\d+]", show_dir.name, re.IGNORECASE)
+                or show_dir.absolute()
+                in [Path(library.path).absolute() for library in tv_libraries]
+                or show_dir.name.startswith(".")
+            ):
                 log.debug(f"MediaManager directory detected: {show_dir.name}")
             else:
                 log.info(f"Detected unknown tv show directory: {show_dir.name}")
@@ -873,6 +874,8 @@ class TvService:
                 subtitle_files=subtitle_files,
                 file_path_suffix="IMPORTED",
             )
+        new_source_path = source_directory.parent / ("." + source_directory.name)
+        source_directory.rename(new_source_path)
 
 
 def auto_download_all_approved_season_requests() -> None:
