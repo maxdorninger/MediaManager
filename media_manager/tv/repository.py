@@ -374,7 +374,7 @@ class TvRepository:
             result = self.db.execute(stmt)
             self.db.commit()
             deleted_count = result.rowcount  # rowcount is an int, not a callable
-            return deleted_count()
+            return deleted_count
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(
