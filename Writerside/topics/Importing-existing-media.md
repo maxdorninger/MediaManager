@@ -70,3 +70,9 @@ These are the criteria specifically for the files themselves:
 <tip>
 In any usual Sonarr/Radarr setup these file criteria should already be met by default.
 </tip>
+
+## Miscellaneous information
+
+- make MediaManager ignore directories by prefixing them with a dot
+- after importing, especially TV shows, manually check if all files are in the right place
+- MediaManager outputs in the logs if an episode/movie could not be imported
