@@ -42,6 +42,7 @@ from media_manager.torrent.utils import (
     import_file,
     get_files_for_import,
     remove_special_characters,
+    strip_trailing_year,
 )
 from media_manager.indexer.service import IndexerService
 from media_manager.metadataProvider.abstractMetaDataProvider import (
@@ -853,7 +854,9 @@ class TvService:
     def get_import_candidates(
         self, tv_show: Path, metadata_provider: AbstractMetadataProvider
     ) -> TvShowImportSuggestion:
-        search_result = self.search_for_show(tv_show.name, metadata_provider)
+        search_result = self.search_for_show(
+            strip_trailing_year(tv_show.name), metadata_provider
+        )
         import_candidates = TvShowImportSuggestion(
             directory=tv_show, candidates=search_result
         )

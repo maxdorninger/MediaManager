@@ -176,3 +176,10 @@ def remove_special_characters(filename: str) -> str:
     sanitized = sanitized.strip(" .")
 
     return sanitized
+
+
+def strip_trailing_year(title: str) -> str:
+    """
+    Removes a trailing space + (4-digit year) at end of string
+    """
+    return re.sub(r"\s*\(\d{4}\)\s*$", "", title).strip()
