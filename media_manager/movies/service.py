@@ -13,6 +13,7 @@ from media_manager.indexer.schemas import IndexerQueryResultId
 from media_manager.indexer.utils import evaluate_indexer_query_results
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.notification.service import NotificationService
+from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import Torrent, TorrentStatus
 from media_manager.torrent.service import TorrentService
 from media_manager.movies import log
@@ -35,6 +36,7 @@ from media_manager.torrent.utils import (
     import_file,
     get_files_for_import,
     remove_special_characters,
+    strip_trailing_year,
 )
 from media_manager.indexer.service import IndexerService
 from media_manager.metadataProvider.abstractMetaDataProvider import (
@@ -463,7 +465,7 @@ class MovieService:
         return True
 
     def get_movie_root_path(self, movie: Movie) -> Path:
-        misc_config = AllEncompassingConfig().misc_config
+        misc_config = AllEncompassingConfig().misc
         movie_file_path = (
             misc_config.movie_directory
             / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
@@ -583,6 +585,34 @@ class MovieService:
                 )
 
         log.info(f"Finished importing files for torrent {torrent.title}")
+
+    def get_import_candidates(
+        self, movie: Path, metadata_provider: AbstractMetadataProvider
+    ) -> MediaImportSuggestion:
+        search_result = self.search_for_movie(
+            strip_trailing_year(movie.name), metadata_provider
+        )
+        import_candidates = MediaImportSuggestion(
+            directory=movie, candidates=search_result
+        )
+        log.debug(
+            f"Found {len(import_candidates.candidates)} candidates for {import_candidates.directory}"
+        )
+        return import_candidates
+
+    def import_existing_movie(self, movie: Movie, source_directory: Path) -> None:
+        video_files, subtitle_files, all_files = get_files_for_import(
+            directory=source_directory
+        )
+
+        self.import_movie(
+            movie=movie,
+            video_files=video_files,
+            subtitle_files=subtitle_files,
+            file_path_suffix="IMPORTED",
+        )
+        new_source_path = source_directory.parent / ("." + source_directory.name)
+        source_directory.rename(new_source_path)
 
     def update_movie_metadata(
         self, db_movie: Movie, metadata_provider: AbstractMetadataProvider

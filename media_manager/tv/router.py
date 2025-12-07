@@ -12,7 +12,7 @@ from media_manager.indexer.schemas import (
     IndexerQueryResult,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.notification.utils import detect_unknown_media
+from media_manager.torrent.utils import detect_unknown_media
 from media_manager.torrent.schemas import Torrent
 from media_manager.tv import log
 from media_manager.exceptions import MediaAlreadyExists
