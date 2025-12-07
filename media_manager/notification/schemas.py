@@ -6,9 +6,6 @@ from uuid import UUID
 from pydantic import BaseModel, Field, ConfigDict
 
 
-MovieId = typing.NewType("MovieId", UUID)
-MovieRequestId = typing.NewType("MovieRequestId", UUID)
-
 NotificationId = typing.NewType("NotificationId", UUID)
 
 
