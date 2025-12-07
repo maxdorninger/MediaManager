@@ -620,7 +620,11 @@ class MovieService:
             )
 
         new_source_path = source_directory.parent / ("." + source_directory.name)
-        source_directory.rename(new_source_path)
+        try:
+            source_directory.rename(new_source_path)
+        except Exception as e:
+            log.error(f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}")
+            return False
 
         return success
 
