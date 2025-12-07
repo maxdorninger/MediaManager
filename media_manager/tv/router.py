@@ -1,7 +1,7 @@
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status, HTTPException
-from fastapi.responses import JSONResponse
 
 from media_manager.auth.db import User
 from media_manager.auth.schemas import UserRead
@@ -12,6 +12,7 @@ from media_manager.indexer.schemas import (
     IndexerQueryResult,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
+from media_manager.torrent.utils import detect_unknown_media
 from media_manager.torrent.schemas import Torrent
 from media_manager.tv import log
 from media_manager.exceptions import MediaAlreadyExists
@@ -28,6 +29,8 @@ from media_manager.tv.schemas import (
     RichSeasonRequest,
     Season,
 )
+from media_manager.schemas import MediaImportSuggestion
+
 from media_manager.tv.dependencies import (
     season_dep,
     show_dep,
@@ -52,8 +55,7 @@ router = APIRouter()
         status.HTTP_201_CREATED: {
             "model": Show,
             "description": "Successfully created show",
-        },
-        status.HTTP_409_CONFLICT: {"model": str, "description": "Show already exists"},
+        }
     },
 )
 def add_a_show(
@@ -64,9 +66,9 @@ def add_a_show(
             external_id=show_id,
             metadata_provider=metadata_provider,
         )
-    except MediaAlreadyExists as e:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT, content={"message": str(e)}
+    except MediaAlreadyExists:
+        show = tv_service.get_show_by_external_id(
+            show_id, metadata_provider=metadata_provider.name
         )
     return show
 
@@ -101,6 +103,48 @@ def delete_a_show(tv_repository: tv_repository_dep, show: show_dep):
 )
 def get_all_shows(tv_service: tv_service_dep):
     return tv_service.get_all_shows()
+
+
+@router.get(
+    "/importable",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(current_superuser)],
+    response_model=list[MediaImportSuggestion],
+)
+def get_all_importable_shows(
+    tv_service: tv_service_dep, metadata_provider: metadata_provider_dep
+):
+    """
+    get a list of unknown shows that were detected in the tv directory and are importable
+    """
+    directories = detect_unknown_media(AllEncompassingConfig().misc.tv_directory)
+    shows = []
+    for directory in directories:
+        shows.append(
+            tv_service.get_import_candidates(
+                tv_show=directory, metadata_provider=metadata_provider
+            )
+        )
+    return shows
+
+
+@router.post(
+    "/importable/{show_id}",
+    dependencies=[Depends(current_superuser)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, directory: str):
+    """
+    Import a detected show from the specified directory into the library.
+    """
+    source_directory = Path(directory)
+    if source_directory not in detect_unknown_media(
+        AllEncompassingConfig().misc.tv_directory
+    ):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
+    tv_service.import_existing_tv_show(
+        tv_show=tv_show, source_directory=source_directory
+    )
 
 
 @router.get(

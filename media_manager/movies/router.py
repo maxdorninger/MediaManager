@@ -1,7 +1,7 @@
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, status, HTTPException
 
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
@@ -11,9 +11,10 @@ from media_manager.indexer.schemas import (
     IndexerQueryResult,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
+from media_manager.schemas import MediaImportSuggestion
+from media_manager.torrent.utils import detect_unknown_media
 from media_manager.torrent.schemas import Torrent
 from media_manager.movies import log
-from media_manager.exceptions import MediaAlreadyExists
 from media_manager.movies.schemas import (
     Movie,
     MovieRequest,
@@ -47,8 +48,7 @@ router = APIRouter()
         status.HTTP_201_CREATED: {
             "model": Movie,
             "description": "Successfully created movie",
-        },
-        status.HTTP_409_CONFLICT: {"model": str, "description": "Movie already exists"},
+        }
     },
 )
 def add_a_movie(
@@ -61,9 +61,9 @@ def add_a_movie(
             external_id=movie_id,
             metadata_provider=metadata_provider,
         )
-    except MediaAlreadyExists as e:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT, content={"message": str(e)}
+    except ValueError:
+        movie = movie_service.get_movie_by_external_id(
+            external_id=movie_id, metadata_provider=metadata_provider.name
         )
     return movie
 
@@ -71,6 +71,53 @@ def add_a_movie(
 # --------------------------------
 # GET MOVIES
 # --------------------------------
+
+
+@router.get(
+    "/importable",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(current_superuser)],
+    response_model=list[MediaImportSuggestion],
+)
+def get_all_importable_movies(
+    movie_service: movie_service_dep, metadata_provider: metadata_provider_dep
+):
+    """
+    get a list of unknown movies that were detected in the movie directory and are importable
+    """
+    directories = detect_unknown_media(AllEncompassingConfig().misc.movie_directory)
+    movies = []
+    for directory in directories:
+        movies.append(
+            movie_service.get_import_candidates(
+                movie=directory, metadata_provider=metadata_provider
+            )
+        )
+    return movies
+
+
+@router.post(
+    "/importable/{movie_id}",
+    dependencies=[Depends(current_superuser)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def import_detected_movie(
+    movie_service: movie_service_dep, movie_id: MovieId, directory: str
+):
+    """
+    get a list of unknown movies that were detected in the movie directory and are importable
+    """
+    source_directory = Path(directory)
+    if source_directory not in detect_unknown_media(
+        AllEncompassingConfig().misc.movie_directory
+    ):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
+    movie = movie_service.get_movie_by_id(movie_id=movie_id)
+    success = movie_service.import_existing_movie(
+        movie=movie, source_directory=source_directory
+    )
+    if not success:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Error on importing")
 
 
 @router.get(

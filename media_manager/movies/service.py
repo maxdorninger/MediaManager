@@ -13,7 +13,8 @@ from media_manager.indexer.schemas import IndexerQueryResultId
 from media_manager.indexer.utils import evaluate_indexer_query_results
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.notification.service import NotificationService
-from media_manager.torrent.schemas import Torrent, TorrentStatus
+from media_manager.schemas import MediaImportSuggestion
+from media_manager.torrent.schemas import Torrent, TorrentStatus, Quality
 from media_manager.torrent.service import TorrentService
 from media_manager.movies import log
 from media_manager.movies.schemas import (
@@ -30,12 +31,12 @@ from media_manager.movies.schemas import (
 from media_manager.torrent.schemas import QualityStrings
 from media_manager.movies.repository import MovieRepository
 from media_manager.exceptions import NotFoundError
-import pprint
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.utils import (
     import_file,
-    import_torrent,
+    get_files_for_import,
     remove_special_characters,
+    strip_trailing_year,
 )
 from media_manager.indexer.service import IndexerService
 from media_manager.metadataProvider.abstractMetaDataProvider import (
@@ -463,34 +464,8 @@ class MovieService:
         self.delete_movie_request(movie_request.id)
         return True
 
-    def import_torrent_files(self, torrent: Torrent, movie: Movie) -> None:
-        """
-        Organizes files from a torrent into the movie directory structure.
-        :param torrent: The Torrent object
-        :param movie: The Movie object
-        """
-
-        video_files, subtitle_files, all_files = import_torrent(torrent=torrent)
-        success: bool = False  # determines if the import was successful, if true, the Imported flag will be set to True after the import
-
-        if len(video_files) != 0:
-            # Send notification about multiple video files found
-            if self.notification_service:
-                self.notification_service.send_notification_to_all_providers(
-                    title="Multiple Video Files Found",
-                    message=f"Found {len(video_files)} video files in movie torrent '{torrent.title}' for {movie.name} ({movie.year}). Only the first will be imported. Manual intervention recommended.",
-                )
-            log.error(
-                "Found multiple video files in movie torrent, only the first will be imported. Manual intervention is recommended.."
-            )
-        log.info(
-            f"Importing these {len(video_files) + len(subtitle_files)} files:\n"
-            + pprint.pformat(video_files)
-            + "\n"
-            + pprint.pformat(subtitle_files)
-        )
+    def get_movie_root_path(self, movie: Movie) -> Path:
         misc_config = AllEncompassingConfig().misc
-
         movie_file_path = (
             misc_config.movie_directory
             / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
@@ -502,15 +477,84 @@ class MovieService:
             for library in misc_config.movie_libraries:
                 if library.name == movie.library:
                     log.debug(f"Using library {library.name} for movie {movie.name}")
-                    movie_file_path = (
+                    return (
                         Path(library.path)
                         / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
                     )
-                    break
             else:
                 log.warning(
                     f"Movie library {movie.library} not found in config, using default movie directory."
                 )
+        return movie_file_path
+
+    def import_movie(
+        self,
+        movie: Movie,
+        video_files: list[Path],
+        subtitle_files: list[Path],
+        file_path_suffix: str = "",
+    ) -> bool:
+        movie_file_name = f"{remove_special_characters(movie.name)} ({movie.year})"
+        movie_root_path = self.get_movie_root_path(movie=movie)
+        success: bool = False
+        if file_path_suffix != "":
+            movie_file_name += f" - {file_path_suffix}"
+
+        try:
+            movie_root_path.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            log.warning(f"Could not create path {movie_root_path}: {e}")
+            raise e
+
+        # import movie video
+        if video_files:
+            target_video_file = (
+                movie_root_path / f"{movie_file_name}{video_files[0].suffix}"
+            )
+            import_file(target_file=target_video_file, source_file=video_files[0])
+            success = True
+
+        # import subtitles
+        for subtitle_file in subtitle_files:
+            language_code_match = re.search(
+                r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
+            )
+            if not language_code_match:
+                log.warning(
+                    f"Subtitle file {subtitle_file.name} does not match expected format, can't extract language code, skipping."
+                )
+                continue
+            language_code = language_code_match.group(1)
+            target_subtitle_file = (
+                movie_root_path / f"{movie_file_name}.{language_code}.srt"
+            )
+            import_file(target_file=target_subtitle_file, source_file=subtitle_file)
+
+        return success
+
+    def import_torrent_files(self, torrent: Torrent, movie: Movie) -> None:
+        """
+        Organizes files from a torrent into the movie directory structure.
+        :param torrent: The Torrent object
+        :param movie: The Movie object
+        """
+
+        video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
+        success: bool = False  # determines if the import was successful, if true, the Imported flag will be set to True after the import
+
+        if len(video_files) != 1:
+            # Send notification about multiple video files found
+            if self.notification_service:
+                self.notification_service.send_notification_to_all_providers(
+                    title="Multiple Video Files Found",
+                    message=f"Found {len(video_files)} video files in movie torrent '{torrent.title}' for {movie.name} ({movie.year}). Only the first will be imported. Manual intervention recommended.",
+                )
+            log.error(
+                "Found multiple video files in movie torrent, only the first will be imported. Manual intervention is recommended."
+            )
+        log.debug(
+            f"Importing these {len(video_files)} video files and {len(subtitle_files)} subtitle files"
+        )
 
         movie_files: list[MovieFile] = self.torrent_service.get_movie_files_of_torrent(
             torrent=torrent
@@ -520,38 +564,12 @@ class MovieService:
         )
 
         for movie_file in movie_files:
-            try:
-                movie_file_path.mkdir(parents=True, exist_ok=True)
-            except Exception as e:
-                log.warning(f"Could not create path {movie_file_path}: {e}")
-
-            movie_file_name = f"{remove_special_characters(movie.name)} ({movie.year})"
-            if movie_file.file_path_suffix != "":
-                movie_file_name += f" - {movie_file.file_path_suffix}"
-
-            # import movie video
-            if video_files:
-                target_video_file = (
-                    movie_file_path / f"{movie_file_name}{video_files[0].suffix}"
-                )
-                import_file(target_file=target_video_file, source_file=video_files[0])
-                success = True
-
-            # import subtitles
-            for subtitle_file in subtitle_files:
-                language_code_match = re.search(
-                    r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
-                )
-                if not language_code_match:
-                    log.warning(
-                        f"Subtitle file {subtitle_file.name} does not match expected format, can't extract language code, skipping."
-                    )
-                    continue
-                language_code = language_code_match.group(1)
-                target_subtitle_file = (
-                    movie_file_path / f"{movie_file_name}.{language_code}.srt"
-                )
-                import_file(target_file=target_subtitle_file, source_file=subtitle_file)
+            self.import_movie(
+                movie=movie,
+                video_files=video_files,
+                subtitle_files=subtitle_files,
+                file_path_suffix=movie_file.file_path_suffix,
+            )
 
         if success:
             torrent.imported = True
@@ -564,7 +582,51 @@ class MovieService:
                     message=f"Successfully downloaded: {movie.name} ({movie.year}) from torrent {torrent.title}.",
                 )
 
-        log.info(f"Finished organizing files for torrent {torrent.title}")
+        log.info(f"Finished importing files for torrent {torrent.title}")
+
+    def get_import_candidates(
+        self, movie: Path, metadata_provider: AbstractMetadataProvider
+    ) -> MediaImportSuggestion:
+        search_result = self.search_for_movie(
+            strip_trailing_year(movie.name), metadata_provider
+        )
+        import_candidates = MediaImportSuggestion(
+            directory=movie, candidates=search_result
+        )
+        log.debug(
+            f"Found {len(import_candidates.candidates)} candidates for {import_candidates.directory}"
+        )
+        return import_candidates
+
+    def import_existing_movie(self, movie: Movie, source_directory: Path) -> bool:
+        video_files, subtitle_files, all_files = get_files_for_import(
+            directory=source_directory
+        )
+
+        success = self.import_movie(
+            movie=movie,
+            video_files=video_files,
+            subtitle_files=subtitle_files,
+            file_path_suffix="IMPORTED",
+        )
+        if success:
+            self.movie_repository.add_movie_file(
+                MovieFile(
+                    movie_id=movie.id,
+                    file_path_suffix="IMPORTED",
+                    torrent_id=None,
+                    quality=Quality.unknown,
+                )
+            )
+
+        new_source_path = source_directory.parent / ("." + source_directory.name)
+        try:
+            source_directory.rename(new_source_path)
+        except Exception as e:
+            log.error(f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}")
+            return False
+
+        return success
 
     def update_movie_metadata(
         self, db_movie: Movie, metadata_provider: AbstractMetadataProvider

@@ -77,18 +77,23 @@ def import_file(target_file: Path, source_file: Path):
         shutil.copy(src=source_file, dst=target_file)
 
 
-def import_torrent(torrent: Torrent) -> tuple[list[Path], list[Path], list[Path]]:
+def get_files_for_import(
+    torrent: Torrent | None = None, directory: Path | None = None
+) -> tuple[list[Path], list[Path], list[Path]]:
     """
     Extracts all files from the torrent download directory, including extracting archives.
     Returns a tuple containing: seperated video files, subtitle files, and all files found in the torrent directory.
     """
-    log.info(f"Importing torrent {torrent}")
-    all_files: list[Path] = list_files_recursively(
-        path=get_torrent_filepath(torrent=torrent)
-    )
+    search_directory = directory if directory else get_torrent_filepath(torrent=torrent)
+    if torrent:
+        log.info(f"Importing torrent {torrent}")
+    else:
+        log.info(f"Importing files from directory {directory}")
+
+    all_files: list[Path] = list_files_recursively(path=search_directory)
     log.debug(f"Found {len(all_files)} files downloaded by the torrent")
     extract_archives(all_files)
-    all_files = list_files_recursively(path=get_torrent_filepath(torrent=torrent))
+    all_files = list_files_recursively(path=search_directory)
 
     video_files: list[Path] = []
     subtitle_files: list[Path] = []
@@ -171,3 +176,33 @@ def remove_special_characters(filename: str) -> str:
     sanitized = sanitized.strip(" .")
 
     return sanitized
+
+
+def strip_trailing_year(title: str) -> str:
+    """
+    Removes a trailing space + (4-digit year) at end of string
+    """
+    return re.sub(r"\s*\(\d{4}\)\s*$", "", title).strip()
+
+
+def detect_unknown_media(path: Path) -> list[Path]:
+    libraries = []
+    libraries.extend(AllEncompassingConfig().misc.movie_libraries)
+    libraries.extend(AllEncompassingConfig().misc.tv_libraries)
+
+    show_dirs = path.glob("*")
+    log.debug(f"Using Directory {path}")
+    unknown_tv_shows = []
+    for media_dir in show_dirs:
+        # check if directory is one created by MediaManager (contains [tmdbd/tvdbid-0000) or if it is a library
+        if (
+            re.search(r"\[(?:tmdbid|tvdbid)-\d+]", media_dir.name, re.IGNORECASE)
+            or media_dir.absolute()
+            in [Path(library.path).absolute() for library in libraries]
+            or media_dir.name.startswith(".")
+        ):
+            log.debug(f"MediaManager directory detected: {media_dir.name}")
+        else:
+            log.info(f"Detected unknown media directory: {media_dir.name}")
+            unknown_tv_shows.append(media_dir)
+    return unknown_tv_shows

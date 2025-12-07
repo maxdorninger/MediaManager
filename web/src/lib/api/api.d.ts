@@ -341,6 +341,46 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/api/v1/tv/importable': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get All Importable Shows
+		 * @description get a list of unknown shows that were detected in the tv directory and are importable
+		 */
+		get: operations['get_all_importable_shows_api_v1_tv_importable_get'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/tv/importable/{show_id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Import Detected Show
+		 * @description get a list of unknown shows that were detected in the tv directory and are importable
+		 */
+		post: operations['import_detected_show_api_v1_tv_importable__show_id__post'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/api/v1/tv/shows/torrents': {
 		parameters: {
 			query?: never;
@@ -682,6 +722,46 @@ export interface paths {
 		put?: never;
 		/** Add A Movie */
 		post: operations['add_a_movie_api_v1_movies_post'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/movies/importable': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get All Importable Movies
+		 * @description get a list of unknown movies that were detected in the movie directory and are importable
+		 */
+		get: operations['get_all_importable_movies_api_v1_movies_importable_get'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/movies/importable/{movie_id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Import Detected Movie
+		 * @description get a list of unknown movies that were detected in the tv directory and are importable
+		 */
+		post: operations['import_detected_movie_api_v1_movies_importable__movie_id__post'];
 		delete?: never;
 		options?: never;
 		head?: never;
@@ -1199,6 +1279,16 @@ export interface components {
 			name: string;
 			/** Path */
 			path: string;
+		};
+		/** MediaImportSuggestion */
+		MediaImportSuggestion: {
+			/**
+			 * Directory
+			 * Format: path
+			 */
+			directory: string;
+			/** Candidates */
+			candidates: components['schemas']['MetaDataProviderSearchResult'][];
 		};
 		/** MetaDataProviderSearchResult */
 		MetaDataProviderSearchResult: {
@@ -2489,15 +2579,6 @@ export interface operations {
 					'application/json': components['schemas']['Show'];
 				};
 			};
-			/** @description Show already exists */
-			409: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': string;
-				};
-			};
 			/** @description Validation Error */
 			422: {
 				headers: {
@@ -2564,6 +2645,69 @@ export interface operations {
 	delete_a_show_api_v1_tv_shows__show_id__delete: {
 		parameters: {
 			query?: never;
+			header?: never;
+			path: {
+				/** @description The ID of the show */
+				show_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	get_all_importable_shows_api_v1_tv_importable_get: {
+		parameters: {
+			query?: {
+				metadata_provider?: 'tmdb' | 'tvdb';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaImportSuggestion'][];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	import_detected_show_api_v1_tv_importable__show_id__post: {
+		parameters: {
+			query: {
+				directory: string;
+			};
 			header?: never;
 			path: {
 				/** @description The ID of the show */
@@ -3284,14 +3428,67 @@ export interface operations {
 					'application/json': components['schemas']['Movie'];
 				};
 			};
-			/** @description Movie already exists */
-			409: {
+			/** @description Validation Error */
+			422: {
 				headers: {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': string;
+					'application/json': components['schemas']['HTTPValidationError'];
 				};
+			};
+		};
+	};
+	get_all_importable_movies_api_v1_movies_importable_get: {
+		parameters: {
+			query?: {
+				metadata_provider?: 'tmdb' | 'tvdb';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaImportSuggestion'][];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	import_detected_movie_api_v1_movies_importable__movie_id__post: {
+		parameters: {
+			query: {
+				directory: string;
+			};
+			header?: never;
+			path: {
+				movie_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
 			};
 			/** @description Validation Error */
 			422: {

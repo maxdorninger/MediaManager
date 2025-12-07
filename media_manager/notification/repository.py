@@ -60,7 +60,14 @@ class NotificationRepository:
 
     def save_notification(self, notification: NotificationSchema):
         try:
-            self.db.add(notification)
+            self.db.add(
+                Notification(
+                    id=notification.id,
+                    read=notification.read,
+                    timestamp=notification.timestamp,
+                    message=notification.message,
+                )
+            )
             self.db.commit()
         except IntegrityError as e:
             log.error(f"Could not save notification, Error: {e}")
