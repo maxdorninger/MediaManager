@@ -5,10 +5,7 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import MediaPicture from '$lib/components/media-picture.svelte';
-	import { onMount } from 'svelte';
-	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { resolve } from '$app/paths';
-	import client from '$lib/api';
 	import type { components } from '$lib/api/api.d.ts';
     import {page} from "$app/state";
     import ImportCandidatesDialog from '$lib/components/import-media/import-candidates-dialog.svelte';
