@@ -15,7 +15,6 @@ from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.utils import detect_unknown_media
 from media_manager.torrent.schemas import Torrent
 from media_manager.movies import log
-from media_manager.exceptions import MediaAlreadyExists
 from media_manager.movies.schemas import (
     Movie,
     MovieRequest,
@@ -114,7 +113,11 @@ def import_detected_movie(
     ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
     movie = movie_service.get_movie_by_id(movie_id=movie_id)
-    movie_service.import_existing_movie(movie=movie, source_directory=source_directory)
+    success = movie_service.import_existing_movie(
+        movie=movie, source_directory=source_directory
+    )
+    if not success:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Error on importing")
 
 
 @router.get(

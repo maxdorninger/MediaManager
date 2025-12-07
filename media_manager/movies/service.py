@@ -600,7 +600,7 @@ class MovieService:
         )
         return import_candidates
 
-    def import_existing_movie(self, movie: Movie, source_directory: Path) -> None:
+    def import_existing_movie(self, movie: Movie, source_directory: Path) -> bool:
         video_files, subtitle_files, all_files = get_files_for_import(
             directory=source_directory
         )
@@ -612,11 +612,19 @@ class MovieService:
             file_path_suffix="IMPORTED",
         )
         if success:
-            self.movie_repository.add_movie_file(MovieFile(movie_id=movie.id,file_path_suffix="IMPORTED", torrent_id=None, quality=Quality.unknown))
+            self.movie_repository.add_movie_file(
+                MovieFile(
+                    movie_id=movie.id,
+                    file_path_suffix="IMPORTED",
+                    torrent_id=None,
+                    quality=Quality.unknown,
+                )
+            )
 
         new_source_path = source_directory.parent / ("." + source_directory.name)
         source_directory.rename(new_source_path)
 
+        return success
 
     def update_movie_metadata(
         self, db_movie: Movie, metadata_provider: AbstractMetadataProvider
