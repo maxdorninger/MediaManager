@@ -60,34 +60,20 @@ Display name for the OpenID Connect provider that will be shown on the login pag
 
 #### Redirect URI
 
-The OpenID server will likely require a redirect URI. The exact path depends on the `name` of the OIDC provider. Note
-that the `name` is case-sensitive.
+The OpenID server will likely require a redirect URI. This URL will usually look something like this:
 
 ```
-{FRONTEND_URL}/api/v1/auth/cookie/{OPENID_NAME}/callback
+{MEDIAMANAGER_URL}/api/v1/auth/oauth/callback
 ```
 
 <warning>It is very important that you set the correct callback URI, otherwise it won't work!</warning>
-
-
-E.g.: I set `MyAuthProvider` as the `name` in the `[auth.openid_connect]` config section, thus the redirect URI would
-be:
-
-```
-https://mediamanager.example.com/api/v1/auth/cookie/MyAuthProvider/callback
-```
 
 #### Authentik Example {collapsible="true"}
 
 Here is an example configuration for the OpenID Connect provider for Authentik.
 
-![authentik-example-config.png](authentik-example-config.png)
+![authentik-redirect-url-example](authentik-redirect-url-example.png)
 
-#### PocketID Example {collapsible="true"}
-
-Here is an example configuration for the OpenID Connect provider for PocketID.
-
-![pocketid-example-config.png](pocketid-example-config.png)
 
 ## Example Configuration
 
