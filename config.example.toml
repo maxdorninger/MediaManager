@@ -86,6 +86,13 @@ enabled = false
 api_key = ""
 user = ""
 
+[metadata]
+# Primary languages for metadata fetching (ISO 639-1 codes)
+# When a TV show or movie's original language matches one of these languages,
+# MediaManager will display the original title and fetch metadata in that language.
+# Examples: ["en", "no", "da"]
+primary_languages = ["en"]
+
 [torrents]
 # qBittorrent settings
 [torrents.qbittorrent]

@@ -12,3 +12,6 @@ class TvdbConfig(BaseSettings):
 class MetadataProviderConfig(BaseSettings):
     tvdb: TvdbConfig = TvdbConfig()
     tmdb: TmdbConfig = TmdbConfig()
+    # ISO 639-1 language codes (e.g., ["en", "no", "sv"])
+    # When media's original language matches one of these, original title and metadata will be used
+    primary_languages: list[str] = ["en"]

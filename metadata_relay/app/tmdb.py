@@ -24,12 +24,12 @@ else:
         return Search().tv(page=page, query=query, include_adult=True)
 
     @router.get("/tv/shows/{show_id}")
-    async def get_tmdb_show(show_id: int):
-        return TV(show_id).info()
+    async def get_tmdb_show(show_id: int, language: str = "en"):
+        return TV(show_id).info(language=language)
 
     @router.get("/tv/shows/{show_id}/{season_number}")
-    async def get_tmdb_season(season_number: int, show_id: int):
-        return TV_Seasons(season_number=season_number, tv_id=show_id).info()
+    async def get_tmdb_season(season_number: int, show_id: int, language: str = "en"):
+        return TV_Seasons(season_number=season_number, tv_id=show_id).info(language=language)
 
     @router.get("/movies/trending")
     async def get_tmdb_trending_movies():
@@ -40,5 +40,5 @@ else:
         return Search().movie(page=page, query=query, include_adult=True)
 
     @router.get("/movies/{movie_id}")
-    async def get_tmdb_movie(movie_id: int):
-        return Movies(movie_id).info()
+    async def get_tmdb_movie(movie_id: int, language: str = "en"):
+        return Movies(movie_id).info(language=language)
