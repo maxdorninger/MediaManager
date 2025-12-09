@@ -68,6 +68,13 @@ The OpenID server will likely require a redirect URI. This URL will usually look
 
 <warning>It is very important that you set the correct callback URI, otherwise it won't work!</warning>
 
+#### Authentik Example {collapsible="true"}
+
+Here is an example configuration for the OpenID Connect provider for Authentik.
+
+![authentik-redirect-url-example](authentik-redirect-url-example.png)
+
+
 ## Example Configuration
 
 Here's a complete example of the authentication section in your `config.toml`:
