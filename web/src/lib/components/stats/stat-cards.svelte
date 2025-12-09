@@ -11,7 +11,7 @@
 	let episodeCount: string | null = $state(null);
 	let showCount: string | null = $state(null);
 	let torrentCount: string | null = $state(null);
-	let installedVersion: string | undefined = env.PUBLIC_VERSION;
+	let installedVersion: string | undefined = env.PUBLIC_VERSION?.replace(/v*/, '');
 	let releaseUrl: string | null = $state(null);
 	let newestVersion: string | null = $state(null);
 
