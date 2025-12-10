@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -11,8 +10,10 @@
 	import DetectedMediaCard from '$lib/components/import-media/detected-media-card.svelte';
 	import type { components } from '$lib/api/api';
 	import { getContext } from 'svelte';
+	import type { PageProps } from './$types';
+	import LoadingBar from '$lib/components/loading-bar.svelte';
 
-	let tvShows = $state(page.data.tvShows);
+	let { data }: PageProps = $props();
 	let importableShows: () => components['schemas']['MediaImportSuggestion'][] =
 		getContext('importableShows');
 </script>
@@ -64,23 +65,27 @@
 			{/each}
 		</div>
 	{/if}
-	<div
-		class="grid w-full auto-rows-min gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-	>
-		{#each tvShows as show (show.id)}
-			<a href={resolve('/dashboard/tv/[showId]', { showId: show.id })}>
-				<Card.Root class="col-span-full max-w-[90vw] ">
-					<Card.Header>
-						<Card.Title class="h-6 truncate">{getFullyQualifiedMediaName(show)}</Card.Title>
-						<Card.Description class="truncate">{show.overview}</Card.Description>
-					</Card.Header>
-					<Card.Content>
-						<MediaPicture media={show} />
-					</Card.Content>
-				</Card.Root>
-			</a>
-		{:else}
-			<div class="col-span-full text-center text-muted-foreground">No TV shows added yet.</div>
-		{/each}
-	</div>
+	{#await data.tvShows}
+		<LoadingBar />
+	{:then tvShows}
+		<div
+			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+		>
+			{#each tvShows as show (show.id)}
+				<a href={resolve('/dashboard/tv/[showId]', { showId: show.id })}>
+					<Card.Root class="col-span-full max-w-[90vw] ">
+						<Card.Header>
+							<Card.Title class="h-6 truncate">{getFullyQualifiedMediaName(show)}</Card.Title>
+							<Card.Description class="truncate">{show.overview}</Card.Description>
+						</Card.Header>
+						<Card.Content>
+							<MediaPicture media={show} />
+						</Card.Content>
+					</Card.Root>
+				</a>
+			{:else}
+				<div class="col-span-full text-center text-muted-foreground">No TV shows added yet.</div>
+			{/each}
+		</div>
+	{/await}
 </main>

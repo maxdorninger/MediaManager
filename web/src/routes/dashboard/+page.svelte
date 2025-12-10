@@ -8,7 +8,8 @@
 	import { onMount } from 'svelte';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api.d.ts';
-
+	import type { PageProps } from './$types';
+	let { data }: PageProps = $props();
 	let recommendedShows: components['schemas']['MetaDataProviderSearchResult'][] = [];
 	let showsLoading = true;
 
@@ -59,7 +60,8 @@
 	<main class="min-h-screen flex-1 items-center justify-center rounded-xl p-4 md:min-h-min">
 		<div class="mx-auto">
 			<div class="my-8 block text-2xl">Welcome to MediaManager!</div>
-			<StatCard></StatCard>
+			<StatCard showCount={data.tvShows?.length ?? 0} moviesCount={data.movies?.length ?? 0}
+			></StatCard>
 		</div>
 		<div class="mx-auto">
 			<h3 class="my-4 text-center text-2xl font-semibold">Trending Shows</h3>
