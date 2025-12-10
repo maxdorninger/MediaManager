@@ -7,11 +7,14 @@
 	import { animate } from 'animejs';
 	import { resolve } from '$app/paths';
 
-	let moviesCount: string | null = $state(null);
-	let episodeCount: string | null = $state(null);
-	let showCount: string | null = $state(null);
-	let torrentCount: string | null = $state(null);
-	let installedVersion: string | undefined = env.PUBLIC_VERSION?.replace(/v*/, '');
+    let {showCount, moviesCount}: {showCount: number, moviesCount: number} = $props();
+
+	let episodeCount: number= $state(0);
+	let episodeCountString: string = $derived(episodeCount.toString().padStart(3, '0'));
+	let torrentCount: number = $state(0);
+    let torrentCountString: string = $derived(torrentCount.toString().padStart(3, '0'));
+
+    let installedVersion: string | undefined = env.PUBLIC_VERSION?.replace(/v*/, '');
 	let releaseUrl: string | null = $state(null);
 	let newestVersion: string | null = $state(null);
 
@@ -39,34 +42,25 @@
 		});
 	}
 
+    client.GET('/api/v1/torrent').then(res => {
+        if (!res.error) {
+            torrentCount = res.data.length;
+        }
+    });
+    client.GET('/api/v1/tv/episodes/count').then(res => {
+        if (!res.error) {
+            episodeCount = Number(res.data);
+        }
+    });
+
 	onMount(async () => {
-		let tvShows = await client.GET('/api/v1/tv/shows');
-		if (!tvShows.error) {
-			const target = tvShows.data.length;
-			showCount = target.toString().padStart(3, '0');
-			animateCounter(showEl, target, 3);
-		}
+        animateCounter(showEl, showCount, 3);
 
-		let episodes = await client.GET('/api/v1/tv/episodes/count');
-		if (!episodes.error) {
-			const target = Number(episodes.data);
-			episodeCount = target.toString().padStart(3, '0');
-			animateCounter(episodeEl, target, 3);
-		}
+        animateCounter(episodeEl, episodeCount, 3);
 
-		let movies = await client.GET('/api/v1/movies');
-		if (!movies.error) {
-			const target = movies.data.length;
-			moviesCount = target.toString().padStart(3, '0');
-			animateCounter(moviesEl, target, 3);
-		}
+        animateCounter(moviesEl, moviesCount, 3);
 
-		let torrents = await client.GET('/api/v1/torrent');
-		if (!torrents.error) {
-			const target = torrents.data.length;
-			torrentCount = target.toString().padStart(3, '0');
-			animateCounter(torrentEl, target, 3);
-		}
+        animateCounter(torrentEl, torrentCount, 3);
 
 		let releases = await fetch('https://api.github.com/repos/maxdorninger/mediamanager/releases');
 		if (releases.ok) {
@@ -85,7 +79,7 @@
 	</div>
 	<div class="flex-auto">
 		<Card title="Episodes" footer="Total count of downloaded episodes">
-			<span bind:this={episodeEl}>{episodeCount ?? 'Error'}</span>
+			<span bind:this={episodeEl}>{episodeCountString ?? 'Error'}</span>
 		</Card>
 	</div>
 	<div class="flex-auto">
@@ -95,7 +89,7 @@
 	</div>
 	<div class="flex-auto">
 		<Card title="Torrents" footer="Total count of torrents/NZBs">
-			<span bind:this={torrentEl}>{torrentCount ?? 'Error'}</span>
+			<span bind:this={torrentEl}>{torrentCountString ?? 'Error'}</span>
 		</Card>
 	</div>
 	{#if importablesShows().length > 0}
