@@ -7,14 +7,14 @@
 	import { animate } from 'animejs';
 	import { resolve } from '$app/paths';
 
-    let {showCount, moviesCount}: {showCount: number, moviesCount: number} = $props();
+	let { showCount, moviesCount }: { showCount: number; moviesCount: number } = $props();
 
-	let episodeCount: number= $state(0);
+	let episodeCount: number = $state(0);
 	let episodeCountString: string = $derived(episodeCount.toString().padStart(3, '0'));
 	let torrentCount: number = $state(0);
-    let torrentCountString: string = $derived(torrentCount.toString().padStart(3, '0'));
+	let torrentCountString: string = $derived(torrentCount.toString().padStart(3, '0'));
 
-    let installedVersion: string | undefined = env.PUBLIC_VERSION?.replace(/v*/, '');
+	let installedVersion: string | undefined = env.PUBLIC_VERSION?.replace(/v*/, '');
 	let releaseUrl: string | null = $state(null);
 	let newestVersion: string | null = $state(null);
 
@@ -42,25 +42,25 @@
 		});
 	}
 
-    client.GET('/api/v1/torrent').then(res => {
-        if (!res.error) {
-            torrentCount = res.data.length;
-        }
-    });
-    client.GET('/api/v1/tv/episodes/count').then(res => {
-        if (!res.error) {
-            episodeCount = Number(res.data);
-        }
-    });
+	client.GET('/api/v1/torrent').then((res) => {
+		if (!res.error) {
+			torrentCount = res.data.length;
+		}
+	});
+	client.GET('/api/v1/tv/episodes/count').then((res) => {
+		if (!res.error) {
+			episodeCount = Number(res.data);
+		}
+	});
 
 	onMount(async () => {
-        animateCounter(showEl, showCount, 3);
+		animateCounter(showEl, showCount, 3);
 
-        animateCounter(episodeEl, episodeCount, 3);
+		animateCounter(episodeEl, episodeCount, 3);
 
-        animateCounter(moviesEl, moviesCount, 3);
+		animateCounter(moviesEl, moviesCount, 3);
 
-        animateCounter(torrentEl, torrentCount, 3);
+		animateCounter(torrentEl, torrentCount, 3);
 
 		let releases = await fetch('https://api.github.com/repos/maxdorninger/mediamanager/releases');
 		if (releases.ok) {
@@ -124,7 +124,7 @@
 					href={releaseUrl ?? 'https://github.com/maxdorninger/MediaManager/releases'}
 					class="underline"
 				>
-					{isSemver(installedVersion ?? "") ? "v" : ""}{installedVersion} → v{newestVersion}
+					{isSemver(installedVersion ?? '') ? 'v' : ''}{installedVersion} → v{newestVersion}
 				</a>
 			</Card>
 		{/if}
