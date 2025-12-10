@@ -231,7 +231,9 @@ class MovieRepository:
             result = self.db.execute(stmt)
             if result.rowcount == 0:
                 self.db.rollback()
-                raise NotFoundError(f"movie request with id {movie_request_id} not found.")
+                raise NotFoundError(
+                    f"movie request with id {movie_request_id} not found."
+                )
             self.db.commit()
             # Successfully deleted movie request with id: {movie_request_id}
         except SQLAlchemyError as e:

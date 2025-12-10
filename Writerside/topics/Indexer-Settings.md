@@ -21,7 +21,20 @@ API key for Prowlarr. You can find this in Prowlarr's settings under General.
 
 Set to `true` to reject torrents if there is a URL error when fetching from Prowlarr. Until MediaManager v1.9.0 the
 default behavior was `false`, but from v1.9.0 onwards the default is `true`. It's recommended to set this to `true` to
-avoid adding possibly invalid torrents. 
+avoid adding possibly invalid torrents.
+
+- `timeout_seconds`
+
+Timeout in seconds for requests to Prowlarr. Default is `60` seconds.
+Symptoms of timeouts are typically no search results (*"No torrents found!"*) in conjunction with logs like these:
+
+```
+DEBUG - media_manager.indexer.utils -
+ follow_redirects_to_final_torrent_url():
+  An error occurred during the request for <some-url>:
+   HTTPConnectionPool(host='<some-host>', port=<some-port>):
+    Read timed out. (read timeout=10)
+```
 
 ## Jackett (`[indexers.jackett]`)
 
@@ -41,6 +54,10 @@ API key for Jackett. You can find this in Jackett's dashboard.
 
 List of indexer names to use with Jackett. You can specify which indexers Jackett should search through.
 
+- `timeout_seconds`
+
+Refer to the Prowlarr section for details.
+
 ## Example Configuration
 
 Here's a complete example of the indexers section in your `config.toml`:
@@ -51,10 +68,14 @@ Here's a complete example of the indexers section in your `config.toml`:
 enabled = true
 url = "http://prowlarr:9696"
 api_key = "your_prowlarr_api_key"
+reject_torrents_on_url_error = true
+timeout_seconds = 60
 
 [indexers.jackett]
 enabled = false
 url = "http://jackett:9117"
 api_key = "your_jackett_api_key"
 indexers = ["1337x", "rarbg"]
+timeout_seconds = 60
+
 ```

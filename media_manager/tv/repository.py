@@ -270,7 +270,9 @@ class TvRepository:
             result = self.db.execute(stmt)
             if result.rowcount == 0:
                 self.db.rollback()
-                raise NotFoundError(f"SeasonRequest with id {season_request_id} not found.")
+                raise NotFoundError(
+                    f"SeasonRequest with id {season_request_id} not found."
+                )
             self.db.commit()
         except SQLAlchemyError as e:
             self.db.rollback()

@@ -120,6 +120,7 @@ enabled = false
 url = "http://localhost:9696"
 api_key = ""
 reject_torrents_on_url_error = true
+timeout_seconds = 60
 
 # Jackett settings
 [indexers.jackett]
@@ -127,6 +128,7 @@ enabled = false
 url = "http://localhost:9117"
 api_key = ""
 indexers = ["1337x", "torrentleech"]  # List of indexer names to use
+timeout_seconds = 60
 
 # Title-based scoring rules
 [[indexers.title_scoring_rules]]

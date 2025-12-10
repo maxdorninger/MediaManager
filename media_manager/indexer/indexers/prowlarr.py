@@ -26,6 +26,7 @@ class Prowlarr(GenericIndexer):
         self.api_key = config.api_key
         self.url = config.url
         self.reject_torrents_on_url_error = config.reject_torrents_on_url_error
+        self.timeout_seconds = config.timeout_seconds
 
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
         log.debug("Searching for " + query)
@@ -98,6 +99,7 @@ class Prowlarr(GenericIndexer):
                 final_download_url = follow_redirects_to_final_torrent_url(
                     initial_url=initial_url,
                     session=session,
+                    timeout=self.timeout_seconds,
                 )
             except RuntimeError as e:
                 log.warning(

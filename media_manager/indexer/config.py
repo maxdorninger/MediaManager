@@ -6,6 +6,7 @@ class ProwlarrConfig(BaseSettings):
     api_key: str = ""
     url: str = "http://localhost:9696"
     reject_torrents_on_url_error: bool = True
+    timeout_seconds: int = 60
 
 
 class JackettConfig(BaseSettings):
@@ -13,6 +14,7 @@ class JackettConfig(BaseSettings):
     api_key: str = ""
     url: str = "http://localhost:9696"
     indexers: list[str] = ["all"]
+    timeout_seconds: int = 60
 
 
 class ScoringRule(BaseSettings):
