@@ -2,3 +2,5 @@
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+node_modules
+src/lib/components/ui/*
