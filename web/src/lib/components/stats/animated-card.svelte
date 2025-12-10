@@ -20,9 +20,7 @@
 
 	let { title, footer, number }: { title: string; footer: string; number: number } = $props();
 	let element: HTMLSpanElement;
-	let numberString = $derived(() => {
-		return number?.toString().padStart(3, '0');
-	});
+	let numberString = $derived(number?.toString().padStart(3, '0'));
 
 	onMount(async () => {
 		animateCounter(element, number, 3);
