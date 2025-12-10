@@ -124,7 +124,7 @@
 					href={releaseUrl ?? 'https://github.com/maxdorninger/MediaManager/releases'}
 					class="underline"
 				>
-					v{installedVersion} → v{newestVersion}
+					{isSemver(installedVersion ?? "") ? "v" : ""}{installedVersion} → v{newestVersion}
 				</a>
 			</Card>
 		{/if}
