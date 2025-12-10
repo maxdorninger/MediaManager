@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Card from '$lib/components/stats/card.svelte';
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import client from '$lib/api';
 	import { isSemver, semverIsGreater } from '$lib/utils.ts';
 	import { env } from '$env/dynamic/public';
@@ -15,8 +15,8 @@
 	let releaseUrl: string | null = $state(null);
 	let newestVersion: string | null = $state(null);
 
-	let importablesShowsCount: number = $state(0);
-	let importablesMoviesCount: number = $state(0);
+	let importablesShows: () => [] = getContext('importableShows');
+	let importablesMovies: () => [] = getContext('importableMovies');
 
 	// Elements to animate
 	let showEl: HTMLSpanElement;
@@ -74,15 +74,6 @@
 			newestVersion = latestRelease.tag_name.toString().replace(/v*/, '');
 			releaseUrl = latestRelease.html_url;
 		}
-
-		let importableShows = await client.GET('/api/v1/tv/importable');
-		if (!importableShows.error) {
-			importablesShowsCount = importableShows.data.length;
-		}
-		let importableMovies = await client.GET('/api/v1/movies/importable');
-		if (!importableMovies.error) {
-			importablesMoviesCount = importableMovies.data.length;
-		}
 	});
 </script>
 
@@ -107,16 +98,16 @@
 			<span bind:this={torrentEl}>{torrentCount ?? 'Error'}</span>
 		</Card>
 	</div>
-	{#if importablesShowsCount > 0}
+	{#if importablesShows().length > 0}
 		<div class="flex-auto">
 			<Card title="Detected TV shows!" footer="Count of detected TV shows ready to import">
 				<a rel="external" target="_blank" href={resolve('/dashboard/tv/', {})} class="underline">
-					{importablesShowsCount}
+					{importablesShows().length}
 				</a>
 			</Card>
 		</div>
 	{/if}
-	{#if importablesMoviesCount > 0}
+	{#if importablesMovies().length > 0}
 		<div class="flex-auto">
 			<Card title="Detected movies!" footer="Count of detected movies ready to import">
 				<a
@@ -125,7 +116,7 @@
 					href={resolve('/dashboard/movies/', {})}
 					class="underline"
 				>
-					{importablesMoviesCount}
+					{importablesMovies().length}
 				</a>
 			</Card>
 		</div>

@@ -10,8 +10,11 @@
 	import { page } from '$app/state';
 	import ImportCandidatesDialog from '$lib/components/import-media/import-candidates-dialog.svelte';
 	import DetectedMediaCard from '$lib/components/import-media/detected-media-card.svelte';
+	import { getContext } from 'svelte';
+
 	let movies: components['schemas']['PublicMovie'][] = $derived(page.data.movies);
-	let importables = $derived(page.data.importable);
+	let importableMovies: () => components['schemas']['MediaImportSuggestion'][] =
+		getContext('importableMovies');
 </script>
 
 <svelte:head>
@@ -42,11 +45,11 @@
 </header>
 <main class="flex w-full flex-1 flex-col gap-4 p-4 pt-0">
 	<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">Movies</h1>
-	{#if importables?.length > 0}
+	{#if importableMovies().length > 0}
 		<div
 			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4"
 		>
-			{#each importables as importable (importable.directory)}
+			{#each importableMovies() as importable (importable.directory)}
 				<DetectedMediaCard isTv={false} directory={importable.directory}>
 					<ImportCandidatesDialog
 						isTv={false}

@@ -7,10 +7,12 @@ import ts from 'typescript-eslint';
 import svelteConfig from './svelte.config.js';
 import { fileURLToPath } from 'node:url';
 import { includeIgnoreFile } from '@eslint/compat';
+import { globalIgnores } from 'eslint/config';
 
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default ts.config(
+	globalIgnores(['src/lib/components/ui/*']),
 	includeIgnoreFile(gitignorePath, 'Imported .gitignore patterns'),
 	js.configs.recommended,
 	...ts.configs.recommended,

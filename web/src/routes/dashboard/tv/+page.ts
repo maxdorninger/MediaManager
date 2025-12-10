@@ -3,6 +3,6 @@ import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ fetch }) => {
 	const tvShows = await client.GET('/api/v1/tv/shows', { fetch: fetch });
-	const importable = await client.GET('/api/v1/tv/importable', { fetch: fetch });
-	return { tvShows: tvShows.data, importable: importable.data };
+
+	return { tvShows: tvShows.data };
 };

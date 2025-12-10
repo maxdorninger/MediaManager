@@ -9,9 +9,12 @@
 	import { resolve } from '$app/paths';
 	import ImportCandidatesDialog from '$lib/components/import-media/import-candidates-dialog.svelte';
 	import DetectedMediaCard from '$lib/components/import-media/detected-media-card.svelte';
+	import type { components } from '$lib/api/api';
+	import { getContext } from 'svelte';
 
-	let tvShows = $derived(page.data.tvShows);
-	let importables = $derived(page.data.importable);
+	let tvShows = $state(page.data.tvShows);
+	let importableShows: () => components['schemas']['MediaImportSuggestion'][] =
+		getContext('importableShows');
 </script>
 
 <svelte:head>
@@ -44,11 +47,11 @@
 	<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
 		TV Shows
 	</h1>
-	{#if importables?.length > 0}
+	{#if importableShows().length > 0}
 		<div
 			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4"
 		>
-			{#each importables as importable (importable.directory)}
+			{#each importableShows() as importable (importable.directory)}
 				<DetectedMediaCard isTv={true} directory={importable.directory}>
 					<ImportCandidatesDialog
 						isTv={true}
