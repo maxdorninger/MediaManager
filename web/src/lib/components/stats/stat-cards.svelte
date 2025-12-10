@@ -4,15 +4,20 @@
 	import client from '$lib/api';
 	import { isSemver, semverIsGreater } from '$lib/utils.ts';
 	import { env } from '$env/dynamic/public';
-	import { animate } from 'animejs';
 	import { resolve } from '$app/paths';
-
+	import AnimatedCard from '$lib/components/stats/animated-card.svelte';
 	let { showCount, moviesCount }: { showCount: number; moviesCount: number } = $props();
 
-	let episodeCount: number = $state(0);
-	let episodeCountString: string = $derived(episodeCount.toString().padStart(3, '0'));
-	let torrentCount: number = $state(0);
-	let torrentCountString: string = $derived(torrentCount.toString().padStart(3, '0'));
+	let episodeCount: Promise<number> = $state(
+		client.GET('/api/v1/tv/episodes/count').then((res) => {
+			return Number(res.data ?? 0);
+		})
+	);
+	let torrentCount: Promise<number> = $state(
+		client.GET('/api/v1/torrent').then((res) => {
+			return res.data?.length ?? 0;
+		})
+	);
 
 	let installedVersion: string | undefined = env.PUBLIC_VERSION?.replace(/v*/, '');
 	let releaseUrl: string | null = $state(null);
@@ -21,47 +26,7 @@
 	let importablesShows: () => [] = getContext('importableShows');
 	let importablesMovies: () => [] = getContext('importableMovies');
 
-	// Elements to animate
-	let showEl: HTMLSpanElement;
-	let episodeEl: HTMLSpanElement;
-	let moviesEl: HTMLSpanElement;
-	let torrentEl: HTMLSpanElement;
-
-	function animateCounter(el: HTMLElement | undefined, target: number, pad = 3) {
-		if (!el) return;
-
-		const obj = { value: 0 };
-
-		animate(obj, {
-			value: target,
-			duration: 2000,
-			easing: 'easeInOutSine',
-			onUpdate: () => {
-				el.textContent = Math.floor(obj.value).toString().padStart(pad, '0');
-			}
-		});
-	}
-
-	client.GET('/api/v1/torrent').then((res) => {
-		if (!res.error) {
-			torrentCount = res.data.length;
-		}
-	});
-	client.GET('/api/v1/tv/episodes/count').then((res) => {
-		if (!res.error) {
-			episodeCount = Number(res.data);
-		}
-	});
-
 	onMount(async () => {
-		animateCounter(showEl, showCount, 3);
-
-		animateCounter(episodeEl, episodeCount, 3);
-
-		animateCounter(moviesEl, moviesCount, 3);
-
-		animateCounter(torrentEl, torrentCount, 3);
-
 		let releases = await fetch('https://api.github.com/repos/maxdorninger/mediamanager/releases');
 		if (releases.ok) {
 			let latestRelease = await releases.json().then((x) => x[0]);
@@ -73,24 +38,23 @@
 
 <div class="flex flex-wrap gap-2">
 	<div class="flex-auto">
-		<Card title="TV Shows" footer="Total count of downloaded episodes">
-			<span bind:this={showEl}>{showCount ?? 'Error'}</span>
-		</Card>
+		<AnimatedCard title="TV Shows" footer="Total count of downloaded episodes" number={showCount}
+		></AnimatedCard>
 	</div>
 	<div class="flex-auto">
-		<Card title="Episodes" footer="Total count of downloaded episodes">
-			<span bind:this={episodeEl}>{episodeCountString ?? 'Error'}</span>
-		</Card>
+		{#await episodeCount then episodes}
+			<AnimatedCard title="Episodes" footer="Total count of downloaded episodes" number={episodes}
+			></AnimatedCard>
+		{/await}
 	</div>
 	<div class="flex-auto">
-		<Card title="Movies" footer="Total count of movies">
-			<span bind:this={moviesEl}>{moviesCount ?? 'Error'}</span>
-		</Card>
+		<AnimatedCard title="Movies" footer="Total count of movies" number={moviesCount}></AnimatedCard>
 	</div>
 	<div class="flex-auto">
-		<Card title="Torrents" footer="Total count of torrents/NZBs">
-			<span bind:this={torrentEl}>{torrentCountString ?? 'Error'}</span>
-		</Card>
+		{#await torrentCount then torrent}
+			<AnimatedCard title="Torrents" footer="Total count of torrents/NZBs" number={torrent}
+			></AnimatedCard>
+		{/await}
 	</div>
 	{#if importablesShows().length > 0}
 		<div class="flex-auto">
