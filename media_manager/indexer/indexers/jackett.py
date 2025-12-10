@@ -24,7 +24,7 @@ class Jackett(GenericIndexer):
         self.api_key = config.api_key
         self.url = config.url
         self.indexers = config.indexers
-        self.timeout = config.timeout
+        self.timeout_seconds = config.timeout_seconds
 
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
         log.debug("Searching for " + query)
@@ -60,7 +60,7 @@ class Jackett(GenericIndexer):
             self.url
             + f"/api/v2.0/indexers/{indexer}/results/torznab/api?apikey={self.api_key}&t={'tvsearch' if is_tv else 'movie'}&q={query}"
         )
-        response = session.get(url, timeout=self.timeout)
+        response = session.get(url, timeout=self.timeout_seconds)
 
         if response.status_code != 200:
             log.error(

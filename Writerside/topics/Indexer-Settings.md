@@ -69,13 +69,13 @@ enabled = true
 url = "http://prowlarr:9696"
 api_key = "your_prowlarr_api_key"
 reject_torrents_on_url_error = true
-timeout_secnds = 60
+timeout_seconds = 60
 
 [indexers.jackett]
 enabled = false
 url = "http://jackett:9117"
 api_key = "your_jackett_api_key"
 indexers = ["1337x", "rarbg"]
-timeout_secnds = 60
+timeout_seconds = 60
 
 ```
