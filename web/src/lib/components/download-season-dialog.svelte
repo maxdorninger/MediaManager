@@ -16,13 +16,17 @@
 	let { show }: { show: components['schemas']['Show'] } = $props();
 	let dialogueState = $state(false);
 	let selectedSeasonNumber: number = $state(1);
-	let torrents: components['schemas']['IndexerQueryResult'][] = $state([]);
-	let isLoadingTorrents: boolean = $state(false);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
 	let filePathSuffix: string = $state('');
 
+	let torrentsPromise: any = $state();
+	let tabState: string = $state('basic');
+	let isLoading: boolean = $state(false);
+	let advancedMode: boolean = $derived(tabState === 'advanced');
+
 	async function downloadTorrent(result_id: string) {
+		torrentsError = null;
 		const { response } = await client.POST('/api/v1/tv/torrents', {
 			params: {
 				query: {
@@ -50,56 +54,26 @@
 		}
 	}
 
-	async function getTorrents(
-		season_number: number,
-		override: boolean = false
-	): Promise<components['schemas']['IndexerQueryResult'][]> {
-		isLoadingTorrents = true;
+	async function search() {
+		isLoading = true;
 		torrentsError = null;
-		torrents = [];
-
-		let { response, data } = await client.GET('/api/v1/tv/torrents', {
-			params: {
-				query: {
-					show_id: show.id!,
-					search_query_override: override ? queryOverride : undefined,
-					season_number: override ? undefined : season_number
+		torrentsPromise = client
+			.GET('/api/v1/tv/torrents', {
+				params: {
+					query: {
+						show_id: show.id!,
+						search_query_override: advancedMode ? queryOverride : undefined,
+						season_number: advancedMode ? undefined : selectedSeasonNumber
+					}
 				}
-			}
-		});
-		data = data as components['schemas']['IndexerQueryResult'][];
-		isLoadingTorrents = false;
-
-		if (!response.ok) {
-			const errorMessage = `Failed to fetch torrents for show ${show.id} and season ${selectedSeasonNumber}: ${response.statusText}`;
-			torrentsError = errorMessage;
-			if (dialogueState) toast.error(errorMessage);
-			return [];
-		}
-
-		if (dialogueState) {
-			if (data.length > 0) {
-				toast.success(`Found ${data.length} torrents.`);
-			} else {
-				toast.info('No torrents found for your query.');
-			}
-		}
-		return data;
+			})
+			.finally(() => (isLoading = false));
+		toast.info('Searching for torrents...');
+		toast.info('Found ' + (await torrentsPromise).data?.length + ' torrents.');
 	}
-	$effect(() => {
-		if (show?.id) {
-			getTorrents(selectedSeasonNumber).then((fetchedTorrents) => {
-				if (!isLoadingTorrents) {
-					torrents = fetchedTorrents;
-				} else if (fetchedTorrents.length > 0 || torrentsError) {
-					torrents = fetchedTorrents;
-				}
-			});
-		}
-	});
 </script>
 
-<Dialog.Root bind:open={dialogueState}>
+<Dialog.Root bind:open={dialogueState} onOpenChange={() => (dialogueState ? search() : null)}>
 	<Dialog.Trigger class={buttonVariants({ variant: 'default' })}>Download Seasons</Dialog.Trigger>
 	<Dialog.Content class="max-h-[90vh] w-fit min-w-[80vw] overflow-y-auto">
 		<Dialog.Header>
@@ -108,7 +82,7 @@
 				Search and download torrents for a specific season or season packs.
 			</Dialog.Description>
 		</Dialog.Header>
-		<Tabs.Root class="w-full" value="basic">
+		<Tabs.Root class="w-full" bind:value={tabState}>
 			<Tabs.List>
 				<Tabs.Trigger value="basic">Standard Mode</Tabs.Trigger>
 				<Tabs.Trigger value="advanced">Advanced Mode</Tabs.Trigger>
@@ -126,21 +100,13 @@
 							max={show.seasons.at(-1)?.number}
 						/>
 						<Button
-							variant="secondary"
-							onclick={async () => {
-								isLoadingTorrents = true;
-								torrentsError = null;
-								torrents = [];
-								try {
-									torrents = await getTorrents(selectedSeasonNumber, false);
-								} catch (error) {
-									console.log(error);
-								} finally {
-									isLoadingTorrents = false;
-								}
+							disabled={isLoading}
+							class="w-fit"
+							onclick={() => {
+								search();
 							}}
 						>
-							Search
+							Search for Torrents
 						</Button>
 					</div>
 					<p class="text-sm text-muted-foreground">
@@ -156,21 +122,13 @@
 					<div class="flex w-full max-w-sm items-center space-x-2">
 						<Input type="text" id="query-override" bind:value={queryOverride} />
 						<Button
-							variant="secondary"
-							onclick={async () => {
-								isLoadingTorrents = true;
-								torrentsError = null;
-								torrents = [];
-								try {
-									torrents = await getTorrents(selectedSeasonNumber, true);
-								} catch (error) {
-									console.log(error);
-								} finally {
-									isLoadingTorrents = false;
-								}
+							disabled={isLoading}
+							class="w-fit"
+							onclick={() => {
+								search();
 							}}
 						>
-							Search
+							Search for Torrents
 						</Button>
 					</div>
 					<p class="text-sm text-muted-foreground">
@@ -180,15 +138,16 @@
 				</div>
 			</Tabs.Content>
 		</Tabs.Root>
+		{#if torrentsError}
+			<div class="my-2 w-full text-center text-red-500">An error occurred: {torrentsError}</div>
+		{/if}
 		<div class="mt-4 items-center">
-			{#if isLoadingTorrents}
+			{#await torrentsPromise}
 				<div class="flex w-full max-w-sm items-center space-x-2">
 					<LoaderCircle class="animate-spin" />
 					<p>Loading torrents...</p>
 				</div>
-			{:else if torrentsError}
-				<p class="text-red-500">Error: {torrentsError}</p>
-			{:else if torrents.length > 0}
+			{:then data}
 				<h3 class="mb-2 text-lg font-semibold">Found Torrents:</h3>
 				<div class="overflow-y-auto rounded-md border p-2">
 					<Table.Root>
@@ -207,7 +166,7 @@
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each torrents as torrent (torrent.id)}
+							{#each data?.data as torrent (torrent.id)}
 								<Table.Row>
 									<Table.Cell class="max-w-[300px] font-medium">{torrent.title}</Table.Cell>
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
@@ -242,13 +201,18 @@
 										/>
 									</Table.Cell>
 								</Table.Row>
+							{:else}
+								<Table.Cell colspan={7}>
+									<div class="font-light text-center w-full">No torrents found.</div>
+								</Table.Cell>
 							{/each}
 						</Table.Body>
 					</Table.Root>
 				</div>
-			{:else if show?.seasons?.length > 0}
-				<p>No torrents found for season {selectedSeasonNumber}. Try a different season.</p>
-			{/if}
+			{:catch error}
+				<div class="w-full text-center text-red-500">Failed to load torrents.</div>
+				<div class="w-full text-center text-red-500">Error: {error.message}</div>
+			{/await}
 		</div>
 	</Dialog.Content>
 </Dialog.Root>
