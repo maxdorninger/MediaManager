@@ -178,12 +178,8 @@
 					</Table.Root>
 				</div>
 			{:catch error}
-				<Table.Cell colspan={7}>
-					<div class="w-full text-center text-red-500">Failed to load torrents.</div>
-				</Table.Cell>
-				<Table.Cell colspan={7}>
-					<div class="w-full text-center text-red-500">Error: {error.message}</div>
-				</Table.Cell>
+				<div class="w-full text-center text-red-500">Failed to load torrents.</div>
+				<div class="w-full text-center text-red-500">Error: {error.message}</div>
 			{/await}
 		</div>
 	</Dialog.Content>
