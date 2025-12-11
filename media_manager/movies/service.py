@@ -60,15 +60,16 @@ class MovieService:
         self.notification_service = notification_service
 
     def add_movie(
-        self, external_id: int, metadata_provider: AbstractMetadataProvider
+        self, external_id: int, metadata_provider: AbstractMetadataProvider, language: str | None = None
     ) -> Movie | None:
         """
         Add a new movie to the database.
 
         :param external_id: The ID of the movie in the metadata provider's system.
         :param metadata_provider: The name of the metadata provider.
+        :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
-        movie_with_metadata = metadata_provider.get_movie_metadata(id=external_id)
+        movie_with_metadata = metadata_provider.get_movie_metadata(id=external_id, language=language)
         saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
         metadata_provider.download_movie_poster_image(movie=saved_movie)
         return saved_movie
