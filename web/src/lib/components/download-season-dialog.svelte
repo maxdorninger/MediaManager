@@ -9,6 +9,7 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import CacheStatusBadge from '$lib/components/cache-status-badge.svelte';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
 	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
@@ -24,6 +25,16 @@
 	let tabState: string = $state('basic');
 	let isLoading: boolean = $state(false);
 	let advancedMode: boolean = $derived(tabState === 'advanced');
+	let hasDebrid: boolean = $state(false);
+
+	// Check if debrid is configured on mount
+	$effect(() => {
+		client.GET('/api/v1/debrid/provider').then(({ data }) => {
+			hasDebrid = data?.is_implemented ?? false;
+		}).catch(() => {
+			hasDebrid = false;
+		});
+	});
 
 	async function downloadTorrent(result_id: string) {
 		torrentsError = null;
@@ -157,6 +168,9 @@
 								<Table.Head>Size</Table.Head>
 								<Table.Head>Usenet</Table.Head>
 								<Table.Head>Seeders</Table.Head>
+								{#if hasDebrid}
+									<Table.Head>Cache</Table.Head>
+								{/if}
 								<Table.Head>Age</Table.Head>
 								<Table.Head>Score</Table.Head>
 								<Table.Head>Indexer</Table.Head>
@@ -172,6 +186,13 @@
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 									<Table.Cell>{torrent.usenet}</Table.Cell>
 									<Table.Cell>{torrent.usenet ? 'N/A' : torrent.seeders}</Table.Cell>
+									{#if hasDebrid}
+										<Table.Cell>
+											{#if !torrent.usenet}
+												<CacheStatusBadge infoHash={torrent.info_hash} />
+											{/if}
+										</Table.Cell>
+									{/if}
 									<Table.Cell
 										>{torrent.age
 											? formatSecondsToOptimalUnit(torrent.age)
@@ -202,7 +223,7 @@
 									</Table.Cell>
 								</Table.Row>
 							{:else}
-								<Table.Cell colspan={7}>
+								<Table.Cell colspan={hasDebrid ? 11 : 10}>
 									<div class="font-light text-center w-full">No torrents found.</div>
 								</Table.Cell>
 							{/each}

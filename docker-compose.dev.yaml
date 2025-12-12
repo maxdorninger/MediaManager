@@ -60,18 +60,19 @@ services:
 # Additional services can be uncommented and configured as needed
 # ----------------------------
 
-#  prowlarr:
-#    image: lscr.io/linuxserver/prowlarr:latest
-#    container_name: prowlarr
-#    environment:
-#      - PUID=1000
-#      - PGID=1000
-#      - TZ=Etc/UTC
-#    volumes:
-#      - ./res/prowlarr:/config
-#    restart: unless-stopped
-#    ports:
-#      - "9696:9696"
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./res/prowlarr:/config
+    restart: unless-stopped
+    ports:
+      - "9696:9696"
+
 #  qbittorrent:
 #    image: lscr.io/linuxserver/qbittorrent:latest
 #    container_name: qbittorrent

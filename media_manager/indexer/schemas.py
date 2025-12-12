@@ -49,6 +49,15 @@ class IndexerQueryResult(BaseModel):
 
         return Quality.unknown
 
+    @computed_field(return_type=str | None)
+    @property
+    def info_hash(self) -> str | None:
+        """Extract info hash from magnet URL for debrid cache checking."""
+        if not self.download_url.startswith("magnet:"):
+            return None
+        match = re.search(r"btih:([a-fA-F0-9]{40})", self.download_url, re.IGNORECASE)
+        return match.group(1).lower() if match else None
+
     @computed_field(return_type=list[int])
     @property
     def season(self) -> list[int]:

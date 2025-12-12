@@ -59,6 +59,16 @@ class DownloadManager:
             except Exception as e:
                 log.error(f"Failed to initialize Transmission client: {e}")
 
+        # Initialize Debrid client (Torbox, RealDebrid, etc.)
+        debrid_enabled = self.config.torbox.enabled or self.config.realdebrid.enabled
+        if self._torrent_client is None and debrid_enabled:
+            try:
+                from media_manager.torrent.download_clients.debrid import DebridDownloadClient
+                self._torrent_client = DebridDownloadClient()
+                log.info("Debrid client initialized and set as active torrent client")
+            except Exception as e:
+                log.error(f"Failed to initialize Debrid client: {e}")
+
         # Initialize SABnzbd client for usenet
         if self.config.sabnzbd.enabled:
             try:
