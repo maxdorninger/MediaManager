@@ -117,7 +117,8 @@ class MovieRepository:
             db_movie.year = movie.year
         else:  # Insert new movie
             log.debug(f"Creating new movie: {movie.name}")
-            db_movie = Movie(**movie.model_dump())
+            # HACK: Remove exclude once original_language column is added to database
+            db_movie = Movie(**movie.model_dump(exclude={'original_language'}))
             self.db.add(db_movie)
 
         try:

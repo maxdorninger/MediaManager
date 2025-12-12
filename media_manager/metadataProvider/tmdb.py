@@ -159,16 +159,11 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             raise
 
     def download_show_poster_image(self, show: Show) -> bool:
-        # First fetch to get original_language
-        show_metadata = self.__get_show_metadata(show.external_id)
-        original_language = show_metadata.get("original_language")
-        
-        # Determine which language to use
-        language = self.__get_language_param(original_language)
+        # Determine which language to use based on show's original_language
+        language = self.__get_language_param(show.original_language)
         
         # Fetch metadata in the appropriate language to get localized poster
-        if language != self.default_language:
-            show_metadata = self.__get_show_metadata(show.external_id, language=language)
+        show_metadata = self.__get_show_metadata(show.external_id, language=language)
         
         # downloading the poster
         # all pictures from TMDB should already be jpeg, so no need to convert
@@ -250,6 +245,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             seasons=season_list,
             metadata_provider=self.name,
             ended=show_metadata["status"] in ENDED_STATUS,
+            original_language=show_metadata.get("original_language"),
         )
 
         return show
@@ -346,6 +342,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             overview=movie_metadata["overview"],
             year=year,
             metadata_provider=self.name,
+            original_language=movie_metadata.get("original_language"),
         )
 
         return movie
@@ -410,16 +407,11 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         return formatted_results
 
     def download_movie_poster_image(self, movie: Movie) -> bool:
-        # First fetch to get original_language
-        movie_metadata = self.__get_movie_metadata(id=movie.external_id)
-        original_language = movie_metadata.get("original_language")
-        
-        # Determine which language to use
-        language = self.__get_language_param(original_language)
+        # Determine which language to use based on movie's original_language
+        language = self.__get_language_param(movie.original_language)
         
         # Fetch metadata in the appropriate language to get localized poster
-        if language != self.default_language:
-            movie_metadata = self.__get_movie_metadata(id=movie.external_id, language=language)
+        movie_metadata = self.__get_movie_metadata(id=movie.external_id, language=language)
         
         # downloading the poster
         # all pictures from TMDB should already be jpeg, so no need to convert

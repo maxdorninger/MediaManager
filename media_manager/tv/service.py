@@ -77,7 +77,9 @@ class TvService:
         """
         show_with_metadata = metadata_provider.get_show_metadata(id=external_id, language=language)
         saved_show = self.tv_repository.save_show(show=show_with_metadata)
-        metadata_provider.download_show_poster_image(show=saved_show)
+        # HACK: Temporary workaround - using show_with_metadata instead of saved_show because
+        # original_language is not yet persisted to database. Once database has original_language column this shuold be changed back?
+        metadata_provider.download_show_poster_image(show=show_with_metadata)
         return saved_show
 
     def add_season_request(self, season_request: SeasonRequest) -> SeasonRequest:
