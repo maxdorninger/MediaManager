@@ -113,6 +113,16 @@ port = 8080
 api_key = ""
 base_path = "/api"
 
+# Torbox settings
+[torrents.torbox]
+enabled = false
+api_key = ""
+
+# Real-Debrid settings
+[torrents.realdebrid]
+enabled = false
+api_key = ""
+
 [indexers]
 # Prowlarr settings
 [indexers.prowlarr]

@@ -4,23 +4,37 @@
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import CacheStatusBadge from '$lib/components/cache-status-badge.svelte';
 
 	import { LoaderCircle } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
 	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
+
 	let { movie } = $props();
 	let dialogueState = $state(false);
-	let torrents: components['schemas']['IndexerQueryResult'][] = $state([]);
-	let isLoadingTorrents: boolean = $state(false);
-	let torrentsError: string | null = $state(null);
+	let torrentsPromise: any = $state();
+	let tabState: string = $state('basic');
+	let isLoading: boolean = $state(false);
+	let advancedMode: boolean = $derived(tabState === 'advanced');
 	let queryOverride: string = $state('');
 	let filePathSuffix: string = $state('');
+	let torrentsError: string | null = $state(null);
+	let hasDebrid: boolean = $state(false);
+
+	// Check if debrid is configured on mount
+	$effect(() => {
+		client.GET('/api/v1/debrid/provider').then(({ data }) => {
+			hasDebrid = data?.is_implemented ?? false;
+		}).catch(() => {
+			hasDebrid = false;
+		});
+	});
 
 	async function downloadTorrent(result_id: string) {
+		torrentsError = null;
 		const { data, response } = await client.POST(`/api/v1/movies/{movie_id}/torrents`, {
 			params: {
 				path: {
@@ -52,56 +66,27 @@
 		}
 	}
 
-	async function getTorrents(
-		override: boolean = false
-	): Promise<components['schemas']['IndexerQueryResult'][]> {
-		isLoadingTorrents = true;
+	async function search() {
+		isLoading = true;
 		torrentsError = null;
-		torrents = [];
-		let { response, data } = await client.GET('/api/v1/movies/{movie_id}/torrents', {
-			params: {
-				query: {
-					search_query_override: override ? queryOverride : undefined
-				},
-				path: {
-					movie_id: movie.id
+		torrentsPromise = client
+			.GET('/api/v1/movies/{movie_id}/torrents', {
+				params: {
+					query: {
+						search_query_override: advancedMode ? queryOverride : undefined
+					},
+					path: {
+						movie_id: movie.id
+					}
 				}
-			}
-		});
-		data = data as components['schemas']['IndexerQueryResult'][];
-		isLoadingTorrents = false;
-
-		if (!response.ok) {
-			const errorMessage = `Failed to fetch torrents for movie ${movie.id}: ${response.statusText}`;
-			torrentsError = errorMessage;
-			if (dialogueState) toast.error(errorMessage);
-			return [];
-		}
-
-		if (dialogueState) {
-			if (data.length > 0) {
-				toast.success(`Found ${data.length} torrents.`);
-			} else {
-				toast.info('No torrents found for your query.');
-			}
-		}
-		return data;
+			})
+			.finally(() => (isLoading = false));
+		toast.info('Searching for torrents...');
+		toast.info('Found ' + (await torrentsPromise).data?.length + ' torrents.');
 	}
-
-	$effect(() => {
-		if (movie?.id) {
-			getTorrents().then((fetchedTorrents) => {
-				if (!isLoadingTorrents) {
-					torrents = fetchedTorrents;
-				} else if (fetchedTorrents.length > 0 || torrentsError) {
-					torrents = fetchedTorrents;
-				}
-			});
-		}
-	});
 </script>
 
-<Dialog.Root bind:open={dialogueState}>
+<Dialog.Root bind:open={dialogueState} onOpenChange={() => (dialogueState ? search() : null)}>
 	<Dialog.Trigger class={buttonVariants({ variant: 'default' })}>Download Movie</Dialog.Trigger>
 	<Dialog.Content class="max-h-[90vh] w-fit min-w-[80vw] overflow-y-auto">
 		<Dialog.Header>
@@ -110,7 +95,7 @@
 				Search and download torrents for a specific season or season packs.
 			</Dialog.Description>
 		</Dialog.Header>
-		<Tabs.Root class="w-full" value="basic">
+		<Tabs.Root class="w-full" bind:value={tabState}>
 			<Tabs.List>
 				<Tabs.Trigger value="basic">Standard Mode</Tabs.Trigger>
 				<Tabs.Trigger value="advanced">Advanced Mode</Tabs.Trigger>
@@ -118,19 +103,10 @@
 			<Tabs.Content value="basic">
 				<div class="grid w-full items-center gap-1.5">
 					<Button
+						disabled={isLoading}
 						class="w-fit"
-						variant="secondary"
-						onclick={async () => {
-							isLoadingTorrents = true;
-							torrentsError = null;
-							torrents = [];
-							try {
-								torrents = await getTorrents();
-							} catch (error) {
-								console.log(error);
-							} finally {
-								isLoadingTorrents = false;
-							}
+						onclick={() => {
+							search();
 						}}
 					>
 						Search for Torrents
@@ -143,21 +119,13 @@
 					<div class="flex w-full max-w-sm items-center space-x-2">
 						<Input bind:value={queryOverride} id="query-override" type="text" />
 						<Button
-							onclick={async () => {
-								isLoadingTorrents = true;
-								torrentsError = null;
-								torrents = [];
-								try {
-									torrents = await getTorrents(true);
-								} catch (error) {
-									console.log(error);
-								} finally {
-									isLoadingTorrents = false;
-								}
+							disabled={isLoading}
+							class="w-fit"
+							onclick={() => {
+								search();
 							}}
-							variant="secondary"
 						>
-							Search
+							Search for Torrents
 						</Button>
 					</div>
 					<p class="text-sm text-muted-foreground">
@@ -167,15 +135,16 @@
 				</div>
 			</Tabs.Content>
 		</Tabs.Root>
+		{#if torrentsError}
+			<div class="my-2 w-full text-center text-red-500">An error occurred: {torrentsError}</div>
+		{/if}
 		<div class="mt-4 items-center">
-			{#if isLoadingTorrents}
+			{#await torrentsPromise}
 				<div class="flex w-full max-w-sm items-center space-x-2">
 					<LoaderCircle class="animate-spin" />
 					<p>Loading torrents...</p>
 				</div>
-			{:else if torrentsError}
-				<p class="text-red-500">Error: {torrentsError}</p>
-			{:else if torrents.length > 0}
+			{:then data}
 				<h3 class="mb-2 text-lg font-semibold">Found Torrents:</h3>
 				<div class="overflow-y-auto rounded-md border p-2">
 					<Table.Root>
@@ -184,6 +153,9 @@
 								<Table.Head>Title</Table.Head>
 								<Table.Head>Size</Table.Head>
 								<Table.Head>Seeders</Table.Head>
+								{#if hasDebrid}
+									<Table.Head>Cache</Table.Head>
+								{/if}
 								<Table.Head>Score</Table.Head>
 								<Table.Head>Indexer</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
@@ -191,11 +163,16 @@
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each torrents as torrent (torrent.id)}
+							{#each data?.data as torrent (torrent.id)}
 								<Table.Row>
 									<Table.Cell class="max-w-[300px] font-medium">{torrent.title}</Table.Cell>
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 									<Table.Cell>{torrent.seeders}</Table.Cell>
+									{#if hasDebrid}
+										<Table.Cell>
+											<CacheStatusBadge infoHash={torrent.info_hash} />
+										</Table.Cell>
+									{/if}
 									<Table.Cell>{torrent.score}</Table.Cell>
 									<Table.Cell>{torrent.indexer ?? 'Unknown'}</Table.Cell>
 									<Table.Cell>
@@ -211,13 +188,18 @@
 										/>
 									</Table.Cell>
 								</Table.Row>
+							{:else}
+								<Table.Cell colspan={hasDebrid ? 8 : 7}>
+									<div class="font-light text-center w-full">No torrents found.</div>
+								</Table.Cell>
 							{/each}
 						</Table.Body>
 					</Table.Root>
 				</div>
-			{:else}
-				<p>No torrents found!</p>
-			{/if}
+			{:catch error}
+				<div class="w-full text-center text-red-500">Failed to load torrents.</div>
+				<div class="w-full text-center text-red-500">Error: {error.message}</div>
+			{/await}
 		</div>
 	</Dialog.Content>
 </Dialog.Root>

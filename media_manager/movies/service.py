@@ -698,7 +698,6 @@ def auto_download_all_approved_movie_requests() -> None:
     db.commit()
     db.close()
 
-
 def import_all_movie_torrents() -> None:
     with next(get_session()) as db:
         movie_repository = MovieRepository(db=db)
@@ -721,6 +720,10 @@ def import_all_movie_torrents() -> None:
                             f"torrent {t.title} is not a movie torrent, skipping import."
                         )
                         continue
+                    
+                    # For debrid services: ensure files are downloaded locally before importing
+                    _ensure_debrid_files_downloaded(t)
+                    
                     movie_service.import_torrent_files(torrent=t, movie=movie)
             except RuntimeError as e:
                 log.error(
@@ -728,6 +731,32 @@ def import_all_movie_torrents() -> None:
                 )
         log.info("Finished importing all torrents")
         db.commit()
+
+
+def _ensure_debrid_files_downloaded(torrent: Torrent) -> None:
+    """
+    For debrid torrents, ensure files are downloaded locally before import.
+    This is a no-op for other download clients.
+    """
+    from media_manager.config import AllEncompassingConfig
+    config = AllEncompassingConfig()
+    
+    debrid_enabled = config.torrents.torbox.enabled or config.torrents.realdebrid.enabled
+    if not debrid_enabled:
+        return
+    
+    # Check if files already exist locally
+    torrent_dir = config.misc.torrent_directory / torrent.title
+    if torrent_dir.exists() and any(torrent_dir.iterdir()):
+        return  # Files already downloaded
+    
+    # Download from debrid service
+    try:
+        from media_manager.torrent.download_clients.debrid import DebridDownloadClient
+        client = DebridDownloadClient()
+        client.download_files_locally(torrent)
+    except Exception as e:
+        log.warning(f"Could not download debrid files for {torrent.title}: {e}")
 
 
 def update_all_movies_metadata() -> None:

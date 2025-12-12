@@ -314,6 +314,9 @@ app.mount(
 
 app.include_router(api_app)
 
+from media_manager.debrid.router import router as debrid_router
+app.include_router(debrid_router, prefix="/api/v1/debrid", tags=["debrid"])
+
 # ----------------------------
 # Frontend mounting (disabled in development)
 # ----------------------------
