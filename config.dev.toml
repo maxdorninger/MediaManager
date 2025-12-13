@@ -113,6 +113,16 @@ port = 8080
 api_key = ""
 base_path = "/api"
 
+# Torbox settings (requires restart of mediamanager)
+[torrents.torbox]
+enabled = false
+api_key = ""
+
+# Real-Debrid settings (requires restart of mediamanager)
+[torrents.realdebrid]
+enabled = false
+api_key = ""
+
 [indexers]
 # Prowlarr settings
 [indexers.prowlarr]

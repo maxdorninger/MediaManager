@@ -538,7 +538,6 @@ class MovieService:
         """
 
         video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
-        success: bool = False  # determines if the import was successful, if true, the Imported flag will be set to True after the import
 
         if len(video_files) != 1:
             # Send notification about multiple video files found
@@ -561,13 +560,15 @@ class MovieService:
             f"Found {len(movie_files)} movie files associated with torrent {torrent.title}"
         )
 
+        success = False
         for movie_file in movie_files:
-            self.import_movie(
+            if self.import_movie(
                 movie=movie,
                 video_files=video_files,
                 subtitle_files=subtitle_files,
                 file_path_suffix=movie_file.file_path_suffix,
-            )
+            ):
+                success = True
 
         if success:
             torrent.imported = True

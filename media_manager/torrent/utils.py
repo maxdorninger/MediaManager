@@ -71,10 +71,10 @@ def import_file(target_file: Path, source_file: Path):
     except FileExistsError:
         log.error(f"File already exists at {target_file}.")
     except (OSError, UnsupportedOperation, NotImplementedError) as e:
-        log.error(
-            f"Failed to create hardlink from {source_file} to {target_file}: {e}. Falling back to copying the file."
-        )
-        shutil.copy(src=source_file, dst=target_file)
+        try:
+            shutil.copy(src=source_file, dst=target_file)
+        except Exception as copy_error:
+            log.error(f"Copy also failed: {copy_error}")
 
 
 def get_files_for_import(

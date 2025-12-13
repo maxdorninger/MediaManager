@@ -15,7 +15,6 @@ class DebridProviderInfo(BaseModel):
     color: str
     is_implemented: bool
     supports_cache_check: bool
-    returns_archives: bool = False
     rate_limit_seconds: float = 0.0
 
 class DebridCacheStatus(BaseModel):

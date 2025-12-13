@@ -1,121 +1,141 @@
-"""Debrid service download client."""
+"""Debrid service download client.
+
+Unlike traditional torrent clients that download to a local directory,
+debrid services store files remotely. Files are only "finished" once
+downloaded locally via resume_torrent() or the import scheduler.
+"""
 import logging
 import threading
+from pathlib import Path
+from typing import Optional
+
 from media_manager.config import AllEncompassingConfig
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.torrent.download_clients.abstractDownloadClient import (
-    AbstractDownloadClient,
-)
+from media_manager.torrent.download_clients.abstractDownloadClient import AbstractDownloadClient
 from media_manager.torrent.schemas import TorrentStatus, Torrent
 from media_manager.torrent.utils import get_torrent_hash
 from media_manager.debrid.service import DebridService
-from media_manager.debrid.schemas import DebridError, DebridProviderInfo
+from media_manager.debrid.schemas import DebridError, DebridProvider, DebridProviderInfo
 
 log = logging.getLogger(__name__)
 
 VIDEO_EXTENSIONS = frozenset([".mkv", ".mp4", ".avi", ".mov", ".m4v", ".wmv"])
-ARCHIVE_EXTENSIONS = frozenset([".rar", ".zip", ".7z", ".tar", ".gz", ".tar.gz", ".tgz"])
 
 
 class DebridDownloadClient(AbstractDownloadClient):
-    """Downloads cached torrents instantly; uncached ones go to debrid first."""
+    """Debrid download client - files stay remote until explicitly downloaded."""
+    
     name = "debrid"
+    _pending_downloads: dict = {}
 
     def __init__(self):
-        self.config = AllEncompassingConfig().torrents
+        self.config = AllEncompassingConfig()
         self.service = DebridService()
         self.provider_info: DebridProviderInfo = self.service.get_provider_info()
-        log.info(f"Debrid download client initialized with {self.provider_info.name}")
+        log.info(f"Debrid client initialized: {self.provider_info.name}")
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Public API (AbstractDownloadClient interface)
+    # ─────────────────────────────────────────────────────────────────────────
 
     def download_torrent(self, indexer_result: IndexerQueryResult) -> Torrent:
-        log.info(f"Attempting to download torrent: {indexer_result.title}")
+        """Add torrent to debrid service. If cached, queue for local download."""
         torrent_hash = get_torrent_hash(torrent=indexer_result)
-
+        
         try:
             cache_status = self.service.check_cache(torrent_hash)
-            is_cached = cache_status.is_cached
-            cached_provider = cache_status.provider
-            log.info(f"Debrid: Cache status for {indexer_result.title}: {'CACHED on ' + str(cached_provider) if is_cached else 'NOT CACHED'}")
+            log.info(f"Cache: {indexer_result.title} -> {'HIT' if cache_status.is_cached else 'MISS'}")
             
-            # Add magnet to the provider that has the cache (or primary if not cached)
-            torrent_id = self.service.add_magnet(str(indexer_result.download_url), provider=cached_provider)
-            log.info(f"Debrid: Added torrent {indexer_result.title}, ID: {torrent_id}")
+            torrent_id = self.service.add_magnet(
+                str(indexer_result.download_url), 
+                provider=cache_status.provider
+            )
             
             torrent = Torrent(
-                status=TorrentStatus.finished if is_cached else TorrentStatus.downloading,
+                status=TorrentStatus.downloading,
                 title=indexer_result.title,
                 quality=indexer_result.quality,
                 imported=False,
                 hash=torrent_hash,
             )
             
-            if is_cached:
-                # Download in background thread to avoid blocking HTTP request
-                log.info(f"Debrid: Starting background download for cached torrent: {indexer_result.title}")
-                download_thread = threading.Thread(
-                    target=self._download_files,
-                    args=(torrent, torrent_id, cached_provider),
-                    daemon=True
-                )
-                download_thread.start()
+            if cache_status.is_cached:
+                DebridDownloadClient._pending_downloads[torrent_hash] = {
+                    "torrent": torrent,
+                    "torrent_id": torrent_id,
+                    "provider": cache_status.provider,
+                }
             
             return torrent
 
         except DebridError as e:
-            log.error(f"Debrid: Failed to add torrent: {e}")
+            log.error(f"Failed to add torrent: {e}")
             raise RuntimeError(f"Debrid error: {e}")
 
-    def remove_torrent(self, torrent: Torrent, delete_data: bool = False) -> None:
-        log.info(f"Removing torrent: {torrent.title}")
-        # Note: delete not implemented via DebridService yet
-        log.warning("Debrid: remove_torrent not fully implemented")
-
     def get_torrent_status(self, torrent: Torrent) -> TorrentStatus:
-        try:
-            torrent_id = self._get_id_by_hash(torrent.hash)
-            if not torrent_id:
-                return TorrentStatus.unknown
-            
-            info = self.service.get_torrent_info(torrent_id)
-            # Debrid torrents are either ready or not
-            return TorrentStatus.finished if info else TorrentStatus.downloading
-            
-        except Exception as e:
-            log.error(f"Debrid: Error getting torrent status: {e}")
+        """Check if files exist locally in staging directory."""
+        torrent_hash = torrent.hash.lower() if torrent.hash else None
+        
+        if torrent_hash and torrent_hash in DebridDownloadClient._pending_downloads:
+            return TorrentStatus.downloading
+        
+        if self._files_exist_locally(torrent):
+            return TorrentStatus.finished
+        
+        if not self._get_remote_id(torrent.hash):
             return TorrentStatus.unknown
-
-    def pause_torrent(self, torrent: Torrent) -> None:
-        log.debug("Debrid: pause_torrent not supported")
+        
+        return TorrentStatus.downloading
 
     def resume_torrent(self, torrent: Torrent) -> None:
-        log.debug("Debrid: resume_torrent not supported")
+        """Start background download after media is linked in DB."""
+        torrent_hash = torrent.hash.lower() if torrent.hash else None
+        
+        if not torrent_hash or torrent_hash not in DebridDownloadClient._pending_downloads:
+            return
+        
+        pending = DebridDownloadClient._pending_downloads.pop(torrent_hash)
+        log.info(f"Starting download: {torrent.title}")
+        
+        threading.Thread(
+            target=self._execute_download,
+            args=(pending["torrent"], pending["torrent_id"], pending["provider"]),
+            daemon=True
+        ).start()
 
     def download_files_locally(self, torrent: Torrent) -> bool:
-        """Called by import scheduler for torrents that weren't cached initially."""
-        torrent_id = self._get_id_by_hash(torrent.hash)
+        """Manual download trigger for uncached torrents."""
+        torrent_id = self._get_remote_id(torrent.hash)
         if not torrent_id:
-            log.error(f"Debrid: Could not find torrent ID for hash {torrent.hash}")
+            log.error(f"No remote torrent found: {torrent.hash}")
             return False
-        
-        return self._download_files(torrent, torrent_id, provider=None)
+        return self._execute_download(torrent, torrent_id, provider=None)
 
-    def _download_files(self, torrent: Torrent, torrent_id: str, provider=None) -> bool:
-        from media_manager.debrid.schemas import DebridProvider
-        
+    def remove_torrent(self, torrent: Torrent, delete_data: bool = False) -> None:
+        log.warning("remove_torrent: not implemented for debrid")
+
+    def pause_torrent(self, torrent: Torrent) -> None:
+        pass
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Private: Download execution
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def _execute_download(self, torrent: Torrent, torrent_id: str, provider: Optional[DebridProvider]) -> bool:
+        """Download file from debrid to local filesystem, then update DB."""
         try:
             torrent_info = self.service.get_torrent_info(torrent_id, provider=provider)
             if not torrent_info or not torrent_info.files:
-                log.warning(f"Debrid: No files found for torrent {torrent.title}")
+                log.warning(f"No files found: {torrent.title}")
                 return False
             
-            target_file = self._select_target_file(torrent_info.files)
-            log.info(f"Debrid: Selected {target_file.name} ({target_file.size:,} bytes)")
+            target_file = self._select_video_file(torrent_info.files)
+            filename = target_file.name.lstrip("/").rsplit("/", 1)[-1]
+            destination = self._resolve_destination(torrent, filename)
             
-            config = AllEncompassingConfig()
-            destination = config.misc.torrent_directory / torrent.title / target_file.name
             destination.parent.mkdir(parents=True, exist_ok=True)
+            log.info(f"Downloading: {filename} -> {destination}")
             
-            log.info(f"Debrid: Downloading to {destination}")
             self.service.download_file(
                 torrent_id=torrent_id,
                 file_id=target_file.id,
@@ -123,27 +143,21 @@ class DebridDownloadClient(AbstractDownloadClient):
                 provider=provider
             )
             
-            log.info(f"Debrid: Download complete: {target_file.name}")
-            
-            # Check if this provider returns archives (get provider info)
-            provider_info = self.service.get_provider_info(provider)
-            if provider_info.returns_archives and self._is_archive(destination):
-                self._extract_archive(destination)
-            
-            # Trigger immediate import (don't wait for scheduler)
-            self._trigger_import(torrent)
-            
+            self._finalize_download(torrent)
             return True
             
-        except DebridError as e:
-            log.error(f"Debrid: Download error: {e}")
-            return False
         except Exception as e:
-            log.error(f"Debrid: Unexpected error: {e}")
+            log.error(f"Download failed: {e}")
             return False
 
-    def _trigger_import(self, torrent: Torrent) -> None:
-        """Trigger immediate import after debrid download completes."""
+    def _resolve_destination(self, torrent: Torrent, filename: str) -> Path:
+        """Always use staging directory - import scheduler handles final location."""
+        return self.config.misc.torrent_directory / torrent.title / filename
+
+    def _finalize_download(self, torrent: Torrent) -> None:
+        """Mark as finished and trigger immediate import - no waiting for scheduler."""
+        log.info(f"Finalizing download: {torrent.title}")
+        
         try:
             from media_manager.database import get_session
             from media_manager.torrent.repository import TorrentRepository
@@ -156,113 +170,68 @@ class DebridDownloadClient(AbstractDownloadClient):
             from media_manager.indexer.service import IndexerService
             
             with next(get_session()) as db:
+                db_torrent = self._find_db_torrent(db, torrent.hash)
+                if not db_torrent:
+                    log.warning(f"Could not find torrent in DB: {torrent.hash}")
+                    return
+                
+                db_torrent.status = TorrentStatus.finished
+                
                 torrent_repo = TorrentRepository(db=db)
                 torrent_service = TorrentService(torrent_repository=torrent_repo)
+                indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
                 
-                # Get the saved torrent from DB by hash
-                db_torrent = None
-                for t in torrent_repo.get_all_torrents():
-                    if t.hash and t.hash.lower() == torrent.hash.lower():
-                        db_torrent = t
-                        break
-                
-                if not db_torrent:
-                    log.warning(f"Debrid: Could not find torrent in DB for import: {torrent.title}")
-                    return
-                
-                # Try movie import first
                 movie = torrent_service.get_movie_of_torrent(torrent=db_torrent)
                 if movie:
-                    movie_repo = MovieRepository(db=db)
-                    indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
+                    log.info(f"Importing movie files: {movie.name}")
                     movie_service = MovieService(
-                        movie_repository=movie_repo,
+                        movie_repository=MovieRepository(db=db),
                         torrent_service=torrent_service,
                         indexer_service=indexer_service,
                     )
-                    log.info(f"Debrid: Importing movie torrent immediately: {db_torrent.title}")
                     movie_service.import_torrent_files(torrent=db_torrent, movie=movie)
-                    db.commit()
-                    return
+                    log.info(f"Imported movie: {movie.name}")
+                else:
+                    show = torrent_service.get_show_of_torrent(torrent=db_torrent)
+                    if show:
+                        log.info(f"Importing TV files: {show.name}")
+                        tv_service = TvService(
+                            tv_repository=TvRepository(db=db),
+                            torrent_service=torrent_service,
+                            indexer_service=indexer_service,
+                        )
+                        tv_service.import_torrent_files(torrent=db_torrent, show=show)
+                        log.info(f"Imported TV show: {show.name}")
+                    else:
+                        log.warning(f"Torrent not linked to any movie or show: {torrent.title}")
                 
-                # Try TV show import
-                show = torrent_service.get_show_of_torrent(torrent=db_torrent)
-                if show:
-                    tv_repo = TvRepository(db=db)
-                    indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-                    tv_service = TvService(
-                        tv_repository=tv_repo,
-                        torrent_service=torrent_service,
-                        indexer_service=indexer_service,
-                    )
-                    log.info(f"Debrid: Importing TV torrent immediately: {db_torrent.title}")
-                    tv_service.import_torrent_files(torrent=db_torrent, show=show)
-                    db.commit()
-                    return
-                
-                log.warning(f"Debrid: Torrent not linked to movie or show: {db_torrent.title}")
+                db.commit()
+                log.info(f"Finalize complete: {torrent.title}")
                 
         except Exception as e:
-            log.error(f"Debrid: Failed to trigger immediate import: {e}")
+            log.error(f"Error in _finalize_download: {e}", exc_info=True)
 
-    def _is_archive(self, file_path) -> bool:
-        """Check if file is an archive that needs extraction."""
-        name = str(file_path).lower()
-        return any(name.endswith(ext) for ext in ARCHIVE_EXTENSIONS)
+    # ─────────────────────────────────────────────────────────────────────────
+    # Private: Helpers
+    # ─────────────────────────────────────────────────────────────────────────
 
-    def _extract_archive(self, archive_path) -> bool:
-        """Extract archive and delete the original archive file."""
-        import subprocess
-        from pathlib import Path
-        
-        archive_path = Path(archive_path)
-        extract_dir = archive_path.parent
-        
-        log.info(f"Debrid: Extracting archive {archive_path.name}")
-        
-        try:
-            # Use unar which handles rar, zip, 7z, etc. (installed in Docker image)
-            result = subprocess.run(
-                ['unar', '-f', '-o', str(extract_dir), str(archive_path)],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.returncode == 0:
-                log.info(f"Debrid: Extraction successful, deleting archive")
-                archive_path.unlink()
-                
-                # Also delete any .r00, .r01, etc. files (multi-part rar)
-                for part_file in extract_dir.glob('*.r[0-9][0-9]'):
-                    log.info(f"Debrid: Deleting archive part: {part_file.name}")
-                    part_file.unlink()
-                
-                return True
-            else:
-                log.error(f"Debrid: Extraction failed: {result.stderr}")
-                return False
-                
-        except FileNotFoundError as e:
-            log.error(f"Debrid: unar not found (install unar package): {e}")
-            return False
-        except Exception as e:
-            log.error(f"Debrid: Extraction error: {e}")
-            return False
+    def _files_exist_locally(self, torrent: Torrent) -> bool:
+        torrent_dir = self.config.misc.torrent_directory / torrent.title
+        return torrent_dir.exists() and any(torrent_dir.iterdir())
 
-    def _select_target_file(self, files: list) -> object:
-        video_files = [
-            f for f in files 
-            if any(f.name.lower().endswith(ext) for ext in VIDEO_EXTENSIONS)
-        ]
-        
-        if video_files:
-            return max(video_files, key=lambda f: f.size)
-        
-        log.warning("Debrid: No video files found, using largest file")
-        return max(files, key=lambda f: f.size)
-
-    def _get_id_by_hash(self, torrent_hash: str) -> str | None:
+    def _get_remote_id(self, torrent_hash: str) -> Optional[str]:
         try:
             return self.service.find_torrent_by_hash(torrent_hash)
         except Exception:
             return None
+
+    def _find_db_torrent(self, db, torrent_hash: str):
+        from media_manager.torrent.repository import TorrentRepository
+        for t in TorrentRepository(db=db).get_all_torrents():
+            if t.hash and t.hash.lower() == torrent_hash.lower():
+                return t
+        return None
+
+    def _select_video_file(self, files: list):
+        video_files = [f for f in files if any(f.name.lower().endswith(ext) for ext in VIDEO_EXTENSIONS)]
+        return max(video_files or files, key=lambda f: f.size)
