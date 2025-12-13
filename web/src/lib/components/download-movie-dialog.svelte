@@ -4,6 +4,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import CacheStatusBadge from '$lib/components/cache-status-badge.svelte';
 
 	import { LoaderCircle } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
@@ -21,6 +22,16 @@
 	let queryOverride: string = $state('');
 	let filePathSuffix: string = $state('');
 	let torrentsError: string | null = $state(null);
+	let hasDebrid: boolean = $state(false);
+
+	// Check if debrid is configured on mount
+	$effect(() => {
+		client.GET('/api/v1/debrid/provider').then(({ data }) => {
+			hasDebrid = data?.is_implemented ?? false;
+		}).catch(() => {
+			hasDebrid = false;
+		});
+	});
 
 	async function downloadTorrent(result_id: string) {
 		torrentsError = null;
@@ -142,6 +153,9 @@
 								<Table.Head>Title</Table.Head>
 								<Table.Head>Size</Table.Head>
 								<Table.Head>Seeders</Table.Head>
+								{#if hasDebrid}
+									<Table.Head>Cache</Table.Head>
+								{/if}
 								<Table.Head>Score</Table.Head>
 								<Table.Head>Indexer</Table.Head>
 								<Table.Head>Indexer Flags</Table.Head>
@@ -154,6 +168,11 @@
 									<Table.Cell class="max-w-[300px] font-medium">{torrent.title}</Table.Cell>
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 									<Table.Cell>{torrent.seeders}</Table.Cell>
+									{#if hasDebrid}
+										<Table.Cell>
+											<CacheStatusBadge infoHash={torrent.info_hash} />
+										</Table.Cell>
+									{/if}
 									<Table.Cell>{torrent.score}</Table.Cell>
 									<Table.Cell>{torrent.indexer ?? 'Unknown'}</Table.Cell>
 									<Table.Cell>
@@ -170,7 +189,7 @@
 									</Table.Cell>
 								</Table.Row>
 							{:else}
-								<Table.Cell colspan={7}>
+								<Table.Cell colspan={hasDebrid ? 8 : 7}>
 									<div class="font-light text-center w-full">No torrents found.</div>
 								</Table.Cell>
 							{/each}

@@ -33,7 +33,22 @@ class SabnzbdConfig(BaseSettings):
     base_path: str = "/api"
 
 
+class TorboxConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="TORBOX_")
+    api_key: str = ""
+    enabled: bool = False
+
+
+class RealDebridConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="REALDEBRID_")
+    api_key: str = ""
+    enabled: bool = False
+
+
 class TorrentConfig(BaseSettings):
     qbittorrent: QbittorrentConfig = QbittorrentConfig()
     transmission: TransmissionConfig = TransmissionConfig()
     sabnzbd: SabnzbdConfig = SabnzbdConfig()
+    torbox: TorboxConfig = TorboxConfig()
+    realdebrid: RealDebridConfig = RealDebridConfig()
+
