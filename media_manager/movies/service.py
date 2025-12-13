@@ -71,9 +71,7 @@ class MovieService:
         """
         movie_with_metadata = metadata_provider.get_movie_metadata(id=external_id, language=language)
         saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
-        # HACK: Temporary workaround - using show_with_metadata instead of saved_show because
-        # original_language is not yet persisted to database. Once database has original_language column this shuold be changed back?
-        metadata_provider.download_movie_poster_image(movie=movie_with_metadata)
+        metadata_provider.download_movie_poster_image(movie=saved_movie)
         return saved_movie
 
     def add_movie_request(self, movie_request: MovieRequest) -> MovieRequest:
@@ -643,7 +641,8 @@ class MovieService:
         """
         log.debug(f"Found movie: {db_movie.name} for metadata update.")
 
-        fresh_movie_data = metadata_provider.get_movie_metadata(id=db_movie.external_id)
+        # Use stored original_language preference for metadata fetching
+        fresh_movie_data = metadata_provider.get_movie_metadata(id=db_movie.external_id, language=db_movie.original_language)
         if not fresh_movie_data:
             log.warning(
                 f"Could not fetch fresh metadata for movie {db_movie.name} (External ID: {db_movie.external_id}) from {db_movie.metadata_provider}."

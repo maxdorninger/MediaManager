@@ -77,9 +77,7 @@ class TvService:
         """
         show_with_metadata = metadata_provider.get_show_metadata(id=external_id, language=language)
         saved_show = self.tv_repository.save_show(show=show_with_metadata)
-        # HACK: Temporary workaround - using show_with_metadata instead of saved_show because
-        # original_language is not yet persisted to database. Once database has original_language column this shuold be changed back?
-        metadata_provider.download_show_poster_image(show=show_with_metadata)
+        metadata_provider.download_show_poster_image(show=saved_show)
         return saved_show
 
     def add_season_request(self, season_request: SeasonRequest) -> SeasonRequest:
@@ -704,7 +702,8 @@ class TvService:
         log.debug(f"Found show: {db_show.name} for metadata update.")
         # old_poster_url = db_show.poster_url # poster_url removed from db_show
 
-        fresh_show_data = metadata_provider.get_show_metadata(id=db_show.external_id)
+        # Use stored original_language preference for metadata fetching
+        fresh_show_data = metadata_provider.get_show_metadata(id=db_show.external_id, language=db_show.original_language)
         if not fresh_show_data:
             log.warning(
                 f"Could not fetch fresh metadata for show {db_show.name} (External ID: {db_show.external_id}) from {db_show.metadata_provider}."
