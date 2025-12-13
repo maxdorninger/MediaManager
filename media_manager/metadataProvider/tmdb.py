@@ -22,10 +22,10 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
     name = "tmdb"
 
     def __init__(self):
-        config = AllEncompassingConfig()
-        self.url = config.metadata.tmdb.tmdb_relay_url
-        self.primary_languages = config.metadata.tmdb.primary_languages
-        self.default_language = config.metadata.tmdb.default_language
+        config = AllEncompassingConfig().metadata.tmdb
+        self.url = config.tmdb_relay_url
+        self.primary_languages = config.primary_languages
+        self.default_language = config.default_language
 
     def __get_language_param(self, original_language: str | None) -> str:
         """
