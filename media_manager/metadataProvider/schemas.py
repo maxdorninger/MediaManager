@@ -10,3 +10,4 @@ class MetaDataProviderSearchResult(BaseModel):
     metadata_provider: str
     added: bool
     vote_average: float | None = None
+    id: str | None = None  # Internal ID if already added

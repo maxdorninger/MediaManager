@@ -1,5 +1,6 @@
 services:
   mediamanager:
+    container_name: mediamanager_server
     image: ghcr.io/maxdorninger/mediamanager/mediamanager:latest
     ports:
       - "8000:8000"
@@ -16,6 +17,7 @@ services:
       db:
         condition: service_healthy
   db:
+    container_name: mediamanager_postgres
     image: postgres:17
     restart: unless-stopped
     volumes:

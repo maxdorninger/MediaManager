@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
-	import { ChevronDown } from 'lucide-svelte';
+	import { ChevronDown, LoaderCircle } from 'lucide-svelte';
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
@@ -18,29 +18,35 @@
 	let searchTerm: string = $state('');
 	let metadataProvider: 'tmdb' | 'tvdb' = $state('tmdb');
 	let results: components['schemas']['MetaDataProviderSearchResult'][] | null = $state(null);
+	let isSearching: boolean = $state(false);
 
 	onMount(() => {
 		search('');
 	});
 
 	async function search(query: string) {
-		const { data } =
-			query.length > 0
-				? await client.GET('/api/v1/movies/search', {
-						params: {
-							query: {
-								query: query,
-								metadata_provider: metadataProvider
+		isSearching = true;
+		try {
+			const { data } =
+				query.length > 0
+					? await client.GET('/api/v1/movies/search', {
+							params: {
+								query: {
+									query: query,
+									metadata_provider: metadataProvider
+								}
 							}
-						}
-					})
-				: await client.GET('/api/v1/movies/recommended');
-		if (data && data.length > 0) {
-			results = data as components['schemas']['MetaDataProviderSearchResult'][];
-		} else {
-			results = null;
+						})
+					: await client.GET('/api/v1/movies/recommended');
+			if (data && data.length > 0) {
+				results = data as components['schemas']['MetaDataProviderSearchResult'][];
+			} else {
+				results = null;
+			}
+			handleQueryNotificationToast(data?.length ?? 0, query);
+		} finally {
+			isSearching = false;
 		}
-		handleQueryNotificationToast(data?.length ?? 0, query);
 	}
 </script>
 
@@ -82,7 +88,17 @@
 		</h1>
 		<section>
 			<Label for="search-box">Movie Name</Label>
-			<Input bind:value={searchTerm} id="search-box" placeholder="Show Name" type="text" />
+			<Input
+				bind:value={searchTerm}
+				id="search-box"
+				placeholder="Movie Name"
+				type="text"
+				onkeydown={(e) => {
+					if (e.key === 'Enter' && !isSearching) {
+						search(searchTerm);
+					}
+				}}
+			/>
 			<p class="text-sm text-muted-foreground">Search for a Movie to add.</p>
 		</section>
 		<section>
@@ -112,14 +128,21 @@
 			</Collapsible.Root>
 		</section>
 		<section>
-			<Button onclick={() => search(searchTerm)} type="submit">Search</Button>
+			<Button onclick={() => search(searchTerm)} type="submit" disabled={isSearching}>
+				{#if isSearching}
+					<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+					<span class="animate-pulse">Searching...</span>
+				{:else}
+					Search
+				{/if}
+			</Button>
 		</section>
 	</div>
 
 	<Separator class="my-8" />
 
 	{#if results && results.length === 0}
-		<h3 class="mx-auto">No Shows found.</h3>
+		<h3 class="mx-auto">No Movie found.</h3>
 	{:else if results}
 		<div
 			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1
