@@ -40,10 +40,14 @@ class Nzb(BaseModel):
 class SabnzbdStatus(Enum):
     """
     Defines all Sabnzbd nzb statuses.
+
+    https://sabnzbd.org/wiki/extra/queue-history-searching
     """
     ###########################
     # in progress nzb download statuses.
     ##########################
+    Grabbing = "Grabbing"
+    # Getting an NZB from an external site
     Downloading = "Downloading"
     # Downloading the file
     Paused = "Paused"
@@ -60,9 +64,9 @@ class SabnzbdStatus(Enum):
     QuickCheck = "QuickCheck"
     # Fast integrity check of download
     Verifying = "Verifying"
-    # Running SFV-based integrity check
+    # Running SFV-based integrity check (by par2)
     Repairing = "Repairing"
-    # Attempting to repair the incomplete download
+    # Job is being repaired (by par2)
     Extracting = "Extracting"
     # Extracting the completed download archives
     Moving = "Moving"
@@ -88,10 +92,12 @@ def sabnzbd_to_nzb_status(status: str or SabnzbdStatus) -> NzbStatus:
         status = SabnzbdStatus(status)
 
     if status in [
+        SabnzbdStatus.Downloading,
         SabnzbdStatus.Fetching,
         SabnzbdStatus.Queued,
         SabnzbdStatus.Paused,
         SabnzbdStatus.Propagating,
+        SabnzbdStatus.Grabbing,
     ]:
         return NzbStatus.downloading
     elif status in [
