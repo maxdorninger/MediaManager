@@ -1,14 +1,10 @@
 import typing
 import uuid
 from enum import Enum
-from typing import TYPE_CHECKING
 
 from pydantic import ConfigDict, BaseModel, Field
 
-from media_manager.torrent.schemas import Quality, Torrent
-
-if TYPE_CHECKING:
-    from datetime import timedelta
+from media_manager.torrent.schemas import Quality
 
 NzbId = typing.NewType("NzbId", uuid.UUID)
 
@@ -29,7 +25,7 @@ class NzbStatus(Enum):
     # File(s) are downloaded and processing before completion.
 
 
-class Nzb(Torrent):
+class Nzb(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: NzbId = Field(default_factory=uuid.uuid4)
@@ -83,56 +79,6 @@ class SabnzbdStatus(Enum):
     Unknown = "Unknown"
     # Download status was not found.
 
-
-class SabnzbdDownloadDetailsBase(BaseModel):
-    nzo_id: str
-    name: str #filename, # Name given to the download by requester
-    time_added: int
-    status: Enum
-    category: str
-    size_total: str #size
-    password: str
-    script: str #enum??
-
-class SabnzbdDownloadDetailsInProgress(SabnzbdDownloadDetailsBase):
-    index: int
-    unpackopts: int
-    priority: str #enum?
-    labels: []
-    mbleft: float
-    mbtotal: float #"mb"
-    sizeleft: str
-    percentage: int
-    mbmissing: float
-    direct_unpack: str
-    timeleft: timedelta
-    avg_age: str
-
-class SabnzbdDownloadDetailsCompleted(SabnzbdDownloadDetailsBase):
-    completed: int
-    nzb_name: str # File name of the NZB
-    pp: str#??
-    report: str
-    url: str
-    storage: str
-    path: str
-    script_line: str
-    download_time: int #duration
-    postproc_time: int #duration
-    stage_log: []
-    downloaded: int #epoch
-    completeness: str
-    fail_message: str
-    url_info: str
-    bytes: int
-    meta: str
-    series: str
-    md5sum: str
-    duplicate_key: str
-    archive: bool # aka needs to be extracted
-    action_line: str
-    loaded: bool
-    retry: bool
 
 def sabnzbd_to_nzb_status(status: str or SabnzbdStatus) -> NzbStatus:
     """

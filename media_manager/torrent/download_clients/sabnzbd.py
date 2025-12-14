@@ -1,14 +1,10 @@
-from typing import TYPE_CHECKING
-
 from media_manager.torrent.download_clients.abstractDownloadClient import (
     AbstractDownloadClient,
 )
 from media_manager.usenet.download_clients.torrentNzbAdapter import TorrentNzbAdapter
 from media_manager.usenet.download_clients.sabnzbd import SabnzbdDownloadClient as SabnzbdUsenetDownloadClient
-
-if TYPE_CHECKING:
-    from media_manager.indexer.schemas import IndexerQueryResult
-    from media_manager.torrent.schemas import Torrent, TorrentStatus
+from media_manager.indexer.schemas import IndexerQueryResult
+from media_manager.torrent.schemas import Torrent, TorrentStatus
 
 class SabnzbdDownloadClient(AbstractDownloadClient):
     """

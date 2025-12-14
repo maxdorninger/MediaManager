@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from media_manager.indexer.schemas import IndexerQueryResult
-    from media_manager.usenet.schemas import NzbStatus, Nzb
+from media_manager.indexer.schemas import IndexerQueryResult
+from media_manager.usenet.schemas import NzbStatus, Nzb
 
 
 class AbstractDownloadClient(ABC):
