@@ -25,9 +25,13 @@ class QualityStrings(Enum):
 
 class TorrentStatus(Enum):
     finished = 1
+    # Torrent is finished downloading and ready to move.
     downloading = 2
+    # Torrent is downloading.
     error = 3
+    # Torrent failed to download.
     unknown = 4
+    # Unable to obtain status of torrent.
 
 
 class Torrent(BaseModel):
