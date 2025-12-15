@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
-	import { ChevronDown } from 'lucide-svelte';
+	import { ChevronDown, LoaderCircle } from 'lucide-svelte';
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
@@ -14,6 +14,7 @@
 	let searchTerm: string = $state('');
 	let metadataProvider: 'tmdb' | 'tvdb' = $state('tmdb');
 	let data: components['schemas']['MetaDataProviderSearchResult'][] | null = $state(null);
+	let isSearching: boolean = $state(false);
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
@@ -24,23 +25,28 @@
 	});
 
 	async function search(query: string) {
-		const results =
-			query.length > 0
-				? await client.GET('/api/v1/tv/search', {
-						params: {
-							query: {
-								query: query,
-								metadata_provider: metadataProvider
+		isSearching = true;
+		try {
+			const results =
+				query.length > 0
+					? await client.GET('/api/v1/tv/search', {
+							params: {
+								query: {
+									query: query,
+									metadata_provider: metadataProvider
+								}
 							}
-						}
-					})
-				: await client.GET('/api/v1/tv/recommended');
-		if (results.data && results.data.length > 0) {
-			handleQueryNotificationToast(results.data.length, query);
-			data = results.data as components['schemas']['MetaDataProviderSearchResult'][];
-		} else {
-			handleQueryNotificationToast(0, query);
-			data = null;
+					  })
+					: await client.GET('/api/v1/tv/recommended');
+			if (results.data && results.data.length > 0) {
+				handleQueryNotificationToast(results.data.length, query);
+				data = results.data as components['schemas']['MetaDataProviderSearchResult'][];
+			} else {
+				handleQueryNotificationToast(0, query);
+				data = null;
+			}
+		} finally {
+			isSearching = false;
 		}
 	}
 </script>
@@ -83,7 +89,17 @@
 		</h1>
 		<section>
 			<Label for="search-box">Show Name</Label>
-			<Input bind:value={searchTerm} id="search-box" placeholder="Show Name" type="text" />
+			<Input
+				bind:value={searchTerm}
+				id="search-box"
+				placeholder="Show Name"
+				type="text"
+				onkeydown={(e) => {
+					if (e.key === 'Enter' && !isSearching) {
+						search(searchTerm);
+					}
+				}}
+			/>
 			<p class="text-sm text-muted-foreground">Search for a Show to add.</p>
 		</section>
 		<section>
@@ -113,7 +129,14 @@
 			</Collapsible.Root>
 		</section>
 		<section>
-			<Button onclick={() => search(searchTerm)} type="submit">Search</Button>
+			<Button onclick={() => search(searchTerm)} type="submit" disabled={isSearching}>
+				{#if isSearching}
+					<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+					<span class="animate-pulse">Searching...</span>
+				{:else}
+					Search
+				{/if}
+			</Button>
 		</section>
 	</div>
 
