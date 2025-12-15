@@ -247,7 +247,7 @@ class TvService:
                     show = self.tv_repository.get_show_by_external_id(
                         external_id=result.external_id, metadata_provider=metadata_provider.name
                     )
-                    result.id = str(show.id)
+                    result.id = show.id
                 except Exception:
                     log.error(f"Unable to find internal show ID for {result.external_id} on {metadata_provider.name}")
         return results

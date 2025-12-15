@@ -234,7 +234,7 @@ class MovieService:
                     movie = self.movie_repository.get_movie_by_external_id(
                         external_id=result.external_id, metadata_provider=metadata_provider.name
                     )
-                    result.id = str(movie.id)
+                    result.id = movie.id
                 except Exception:
                     log.error(f"Unable to find internal movie ID for {result.external_id} on {metadata_provider.name}")
         return results
