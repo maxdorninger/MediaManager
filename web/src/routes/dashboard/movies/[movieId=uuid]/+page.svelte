@@ -29,6 +29,10 @@
 	let deleteFilesOnDisk = $state(false);
 
 	async function delete_movie() {
+		if (!movie.id) {
+			toast.error('Movie ID is missing');
+			return;
+		}
 		// TODO: Implement delete_files_on_disk parameter in backend API
 		const { response } = await client.DELETE('/api/v1/movies/{movie_id}', {
 			params: {
