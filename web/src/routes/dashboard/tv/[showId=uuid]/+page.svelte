@@ -159,12 +159,14 @@
 						{/if}
 						<LibraryCombobox media={show()} mediaType="tv" />
 						<AlertDialog.Root bind:open={deleteDialogOpen}>
-							<AlertDialog.Trigger class={buttonVariants({ variant: 'destructive' })}>
+							<AlertDialog.Trigger
+								class={buttonVariants({ variant: "destructive" })}
+							>
 								Delete Show
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
 								<AlertDialog.Header>
-									<AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+									<AlertDialog.Title>Delete {getFullyQualifiedMediaName(show())}?</AlertDialog.Title>
 									<AlertDialog.Description>
 										This action cannot be undone. This will permanently delete
 										<strong>{getFullyQualifiedMediaName(show())}</strong> from the database.
@@ -174,7 +176,7 @@
 									<Checkbox bind:checked={deleteFilesOnDisk} id="delete-files" />
 									<Label
 										for="delete-files"
-										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 									>
 										Also delete files on disk (not yet implemented)
 									</Label>
@@ -183,7 +185,7 @@
 									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 									<AlertDialog.Action
 										onclick={() => delete_show()}
-										class={buttonVariants({ variant: 'destructive' })}
+										class={buttonVariants({ variant: "destructive" })}
 									>
 										Delete
 									</AlertDialog.Action>

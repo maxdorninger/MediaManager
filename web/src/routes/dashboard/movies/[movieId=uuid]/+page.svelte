@@ -130,7 +130,7 @@
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
 								<AlertDialog.Header>
-									<AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+									<AlertDialog.Title>Delete {getFullyQualifiedMediaName(movie)}?</AlertDialog.Title>
 									<AlertDialog.Description>
 										This action cannot be undone. This will permanently delete
 										<strong>{getFullyQualifiedMediaName(movie)}</strong> from the database.
