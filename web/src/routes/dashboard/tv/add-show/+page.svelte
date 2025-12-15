@@ -36,7 +36,7 @@
 									metadata_provider: metadataProvider
 								}
 							}
-					  })
+						})
 					: await client.GET('/api/v1/tv/recommended');
 			if (results.data && results.data.length > 0) {
 				handleQueryNotificationToast(results.data.length, query);

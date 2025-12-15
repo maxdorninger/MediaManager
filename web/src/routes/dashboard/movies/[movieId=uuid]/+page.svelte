@@ -125,10 +125,8 @@
 					<Card.Content class="flex flex-col items-center gap-4">
 						<LibraryCombobox media={movie} mediaType="movie" />
 						<AlertDialog.Root bind:open={deleteDialogOpen}>
-							<AlertDialog.Trigger
-								class={buttonVariants({ variant: "destructive" })}
-							>
-								Delete Show
+							<AlertDialog.Trigger class={buttonVariants({ variant: 'destructive' })}>
+								Delete Movie
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
 								<AlertDialog.Header>
@@ -142,7 +140,7 @@
 									<Checkbox bind:checked={deleteFilesOnDisk} id="delete-files" />
 									<Label
 										for="delete-files"
-										class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 									>
 										Also delete files on disk (not yet implemented)
 									</Label>
@@ -151,7 +149,7 @@
 									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 									<AlertDialog.Action
 										onclick={() => delete_movie()}
-										class={buttonVariants({ variant: "destructive" })}
+										class={buttonVariants({ variant: 'destructive' })}
 									>
 										Delete
 									</AlertDialog.Action>
