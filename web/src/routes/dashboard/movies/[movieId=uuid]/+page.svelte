@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { ImageOff } from 'lucide-svelte';
 	import { getContext } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import { page } from '$app/state';
@@ -12,11 +14,37 @@
 	import DownloadMovieDialog from '$lib/components/download-movie-dialog.svelte';
 	import RequestMovieDialog from '$lib/components/request-movie-dialog.svelte';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import { Label } from '$lib/components/ui/label';
 	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import client from '$lib/api';
 
 	let movie: components['schemas']['PublicMovie'] = page.data.movie;
 	let user: () => components['schemas']['UserRead'] = getContext('user');
+	let deleteDialogOpen = $state(false);
+	let deleteFilesOnDisk = $state(false);
+
+	async function delete_movie() {
+		// TODO: Implement delete_files_on_disk parameter in backend API
+		const { response } = await client.DELETE('/api/v1/movies/{movie_id}', {
+			params: {
+				path: { movie_id: movie.id }
+				// query: { delete_files_on_disk: deleteFilesOnDisk } // Not yet implemented
+			}
+		});
+		if (!response.ok) {
+			const errorText = await response.text();
+			toast.error('Failed to delete movie: ' + errorText);
+		} else {
+			toast.success('Movie deleted successfully.');
+			deleteDialogOpen = false;
+			await goto(resolve('/dashboard/movies', {}), { invalidateAll: true });
+		}
+	}
 </script>
 
 <svelte:head>
@@ -92,6 +120,40 @@
 					</Card.Header>
 					<Card.Content class="flex flex-col items-center gap-4">
 						<LibraryCombobox media={movie} mediaType="movie" />
+						<AlertDialog.Root bind:open={deleteDialogOpen}>
+							<AlertDialog.Trigger
+								class={buttonVariants({ variant: "destructive" })}
+							>
+								Delete Show
+							</AlertDialog.Trigger>
+							<AlertDialog.Content>
+								<AlertDialog.Header>
+									<AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+									<AlertDialog.Description>
+										This action cannot be undone. This will permanently delete
+										<strong>{getFullyQualifiedMediaName(movie)}</strong> from the database.
+									</AlertDialog.Description>
+								</AlertDialog.Header>
+								<div class="flex items-center space-x-2 py-4">
+									<Checkbox bind:checked={deleteFilesOnDisk} id="delete-files" />
+									<Label
+										for="delete-files"
+										class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									>
+										Also delete files on disk (not yet implemented)
+									</Label>
+								</div>
+								<AlertDialog.Footer>
+									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+									<AlertDialog.Action
+										onclick={() => delete_movie()}
+										class={buttonVariants({ variant: "destructive" })}
+									>
+										Delete
+									</AlertDialog.Action>
+								</AlertDialog.Footer>
+							</AlertDialog.Content>
+						</AlertDialog.Root>
 					</Card.Content>
 				</Card.Root>
 			{/if}
