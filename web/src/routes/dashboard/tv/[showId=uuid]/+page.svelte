@@ -32,6 +32,7 @@
 	let continuousDownloadEnabled = $state(show().continuous_download);
 	let deleteDialogOpen = $state(false);
 	let deleteFilesOnDisk = $state(false);
+	let deleteTorrents = $state(false);
 
 	async function toggle_continuous_download() {
 		const { response } = await client.POST('/api/v1/tv/shows/{show_id}/continuousDownload', {
@@ -56,11 +57,10 @@
 	}
 
 	async function delete_show() {
-		// TODO: Implement delete_files_on_disk parameter in backend API
 		const { response } = await client.DELETE('/api/v1/tv/shows/{show_id}', {
 			params: {
-				path: { show_id: show().id }
-				// query: { delete_files_on_disk: deleteFilesOnDisk } // Not yet implemented
+				path: { show_id: show().id },
+				query: { delete_files_on_disk: deleteFilesOnDisk, delete_torrents: deleteTorrents }
 			}
 		});
 		if (!response.ok) {
@@ -164,21 +164,33 @@
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
 								<AlertDialog.Header>
-									<AlertDialog.Title>Delete {getFullyQualifiedMediaName(show())}?</AlertDialog.Title
+									<AlertDialog.Title
+										>Delete - {getFullyQualifiedMediaName(show())}?</AlertDialog.Title
 									>
 									<AlertDialog.Description>
 										This action cannot be undone. This will permanently delete
 										<strong>{getFullyQualifiedMediaName(show())}</strong> from the database.
 									</AlertDialog.Description>
 								</AlertDialog.Header>
-								<div class="flex items-center space-x-2 py-4">
-									<Checkbox bind:checked={deleteFilesOnDisk} id="delete-files" />
-									<Label
-										for="delete-files"
-										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-									>
-										Also delete files on disk (not yet implemented)
-									</Label>
+								<div class="flex flex-col gap-3 py-4">
+									<div class="flex items-center space-x-2">
+										<Checkbox bind:checked={deleteFilesOnDisk} id="delete-files" />
+										<Label
+											for="delete-files"
+											class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Also delete files on disk
+										</Label>
+									</div>
+									<div class="flex items-center space-x-2">
+										<Checkbox bind:checked={deleteTorrents} id="delete-torrents" />
+										<Label
+											for="delete-torrents"
+											class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Also delete torrents
+										</Label>
+									</div>
 								</div>
 								<AlertDialog.Footer>
 									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>

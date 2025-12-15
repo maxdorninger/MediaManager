@@ -27,17 +27,17 @@
 	let user: () => components['schemas']['UserRead'] = getContext('user');
 	let deleteDialogOpen = $state(false);
 	let deleteFilesOnDisk = $state(false);
+	let deleteTorrents = $state(false);
 
 	async function delete_movie() {
 		if (!movie.id) {
 			toast.error('Movie ID is missing');
 			return;
 		}
-		// TODO: Implement delete_files_on_disk parameter in backend API
 		const { response } = await client.DELETE('/api/v1/movies/{movie_id}', {
 			params: {
-				path: { movie_id: movie.id }
-				// query: { delete_files_on_disk: deleteFilesOnDisk } // Not yet implemented
+				path: { movie_id: movie.id },
+				query: { delete_files_on_disk: deleteFilesOnDisk, delete_torrents: deleteTorrents }
 			}
 		});
 		if (!response.ok) {
@@ -130,7 +130,9 @@
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
 								<AlertDialog.Header>
-									<AlertDialog.Title>Delete {getFullyQualifiedMediaName(movie)}?</AlertDialog.Title>
+									<AlertDialog.Title
+										>Delete - {getFullyQualifiedMediaName(movie)}?</AlertDialog.Title
+									>
 									<AlertDialog.Description>
 										This action cannot be undone. This will permanently delete
 										<strong>{getFullyQualifiedMediaName(movie)}</strong> from the database.
@@ -142,7 +144,14 @@
 										for="delete-files"
 										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 									>
-										Also delete files on disk (not yet implemented)
+										Also delete files on disk
+									</Label>
+									<Checkbox bind:checked={deleteTorrents} id="delete-torrents" />
+									<Label
+										for="delete-torrents"
+										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									>
+										Also delete torrents
 									</Label>
 								</div>
 								<AlertDialog.Footer>

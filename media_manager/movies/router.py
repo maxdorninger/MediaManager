@@ -27,7 +27,6 @@ from media_manager.movies.schemas import (
     RichMovieRequest,
 )
 from media_manager.movies.dependencies import (
-    movie_repository_dep,
     movie_service_dep,
     movie_dep,
 )
@@ -73,10 +72,19 @@ def add_a_movie(
 @router.delete(
     "/{movie_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(current_active_user)],
+    dependencies=[Depends(current_superuser)],
 )
-def delete_a_movie(movie_service: movie_repository_dep, movie: movie_dep):
-    movie_service.delete_movie(movie_id=movie.id)
+def delete_a_movie(
+    movie_service: movie_service_dep,
+    movie: movie_dep,
+    delete_files_on_disk: bool = False,
+    delete_torrents: bool = False,
+):
+    movie_service.delete_movie(
+        movie_id=movie.id,
+        delete_files_on_disk=delete_files_on_disk,
+        delete_torrents=delete_torrents,
+    )
 
 
 

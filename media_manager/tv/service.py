@@ -1,4 +1,5 @@
 import re
+import shutil
 
 from sqlalchemy.exc import IntegrityError
 
@@ -128,6 +129,53 @@ class TvService:
         :param season_request_id: The ID of the season request to delete.
         """
         self.tv_repository.delete_season_request(season_request_id=season_request_id)
+
+    def delete_show(
+        self,
+        show_id: ShowId,
+        delete_files_on_disk: bool = False,
+        delete_torrents: bool = False,
+    ) -> None:
+        """
+        Delete a show from the database, optionally deleting files and torrents.
+
+        :param show_id: The ID of the show to delete.
+        :param delete_files_on_disk: Whether to delete the show's files from disk.
+        :param delete_torrents: Whether to delete associated torrents from the torrent client.
+        """
+        if delete_files_on_disk or delete_torrents:
+            show = self.tv_repository.get_show_by_id(show_id)
+
+            log.debug(f"ID: {show.id} - Name: {show.name} - Library: {show.library}")
+
+            if delete_files_on_disk and show.library:
+                log.info("Attempting to delete show files from disk.")
+                # Get the show's directory path
+                library_config = next(
+                    (lib for lib in AllEncompassingConfig().misc.tv_libraries if lib.name == show.library),
+                    None
+                )
+                log.debug(f"Library config for show deletion: {library_config}")
+                if library_config:
+                    show_path = Path(library_config.path) / show.folder_name
+                    if show_path.exists() and show_path.is_dir():
+                        shutil.rmtree(show_path)
+                        log.info(f"Deleted show directory: {show_path}")
+
+            if delete_torrents:
+                # Get all torrents associated with this show
+                torrents = self.tv_repository.get_torrents_by_show_id(show_id=show_id)
+                for torrent in torrents:
+                    try:
+                        self.torrent_service.cancel_download(
+                            torrent, delete_files=True
+                        )
+                        log.info(f"Deleted torrent: {torrent.hash}")
+                    except Exception as e:
+                        log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
+
+        # Delete from database
+        self.tv_repository.delete_show(show_id=show_id)
 
     def get_public_season_files_by_season_id(
         self, season_id: SeasonId

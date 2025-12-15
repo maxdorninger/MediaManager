@@ -22,6 +22,7 @@
 	let email = $state('');
 	let password = $state('');
 	let errorMessage = $state('');
+	let successMessage = $state('');
 	let isLoading = $state(false);
 
 	async function handleLogin(event: Event) {
@@ -29,6 +30,7 @@
 
 		isLoading = true;
 		errorMessage = '';
+		successMessage = '';
 
 		const { error, response } = await client.POST('/api/v1/auth/cookie/login', {
 			body: {
@@ -45,8 +47,8 @@
 		if (!error) {
 			console.log('Login successful!');
 			console.log('Received User Data: ', response);
-			errorMessage = 'Login successful! Redirecting...';
-			toast.success(errorMessage);
+			successMessage = 'Login successful! Redirecting...';
+			toast.success(successMessage);
 			goto(resolve('/dashboard', {}));
 		} else {
 			toast.error('Login failed!');
@@ -97,6 +99,13 @@
 					<AlertCircleIcon class="size-4" />
 					<Alert.Title>Error</Alert.Title>
 					<Alert.Description>{errorMessage}</Alert.Description>
+				</Alert.Root>
+			{/if}
+
+			{#if successMessage}
+				<Alert.Root variant="default">
+					<Alert.Title>Success</Alert.Title>
+					<Alert.Description>{successMessage}</Alert.Description>
 				</Alert.Root>
 			{/if}
 

@@ -1309,6 +1309,8 @@ export interface components {
 			added: boolean;
 			/** Vote Average */
 			vote_average?: number | null;
+			/** Id */
+			id?: string | null;
 		};
 		/** Movie */
 		Movie: {
@@ -2645,7 +2647,10 @@ export interface operations {
 	};
 	delete_a_show_api_v1_tv_shows__show_id__delete: {
 		parameters: {
-			query?: never;
+			query?: {
+				delete_files_on_disk?: boolean;
+				delete_torrents?: boolean;
+			};
 			header?: never;
 			path: {
 				/** @description The ID of the show */
@@ -3473,7 +3478,10 @@ export interface operations {
 	};
 	delete_a_movie_api_v1_movies__movie_id__delete: {
 		parameters: {
-			query?: never;
+			query?: {
+				delete_files_on_disk?: boolean;
+				delete_torrents?: boolean;
+			};
 			header?: never;
 			path: {
 				/** @description The ID of the movie */
