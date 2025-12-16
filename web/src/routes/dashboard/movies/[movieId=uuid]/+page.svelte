@@ -138,21 +138,25 @@
 										<strong>{getFullyQualifiedMediaName(movie)}</strong> from the database.
 									</AlertDialog.Description>
 								</AlertDialog.Header>
-								<div class="flex items-center space-x-2 py-4">
-									<Checkbox bind:checked={deleteFilesOnDisk} id="delete-files" />
-									<Label
-										for="delete-files"
-										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-									>
-										Also delete files on disk
-									</Label>
-									<Checkbox bind:checked={deleteTorrents} id="delete-torrents" />
-									<Label
-										for="delete-torrents"
-										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-									>
-										Also delete torrents
-									</Label>
+								<div class="flex flex-col gap-3 py-4">
+									<div class="flex items-center space-x-2">
+										<Checkbox bind:checked={deleteFilesOnDisk} id="delete-files" />
+										<Label
+											for="delete-files"
+											class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Also delete files on disk
+										</Label>
+									</div>
+									<div class="flex items-center space-x-2">
+										<Checkbox bind:checked={deleteTorrents} id="delete-torrents" />
+										<Label
+											for="delete-torrents"
+											class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Also delete torrents
+										</Label>
+									</div>
 								</div>
 								<AlertDialog.Footer>
 									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>

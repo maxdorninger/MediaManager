@@ -128,21 +128,18 @@ class MovieService:
         :param delete_torrents: Whether to delete associated torrents from the torrent client.
         """
         if delete_files_on_disk or delete_torrents:
-            movie = self.movie_repository.get_movie(movie_id=movie_id)
+            movie = self.movie_repository.get_movie_by_id(movie_id=movie_id)
+
+            log.debug(f"Deleting ID: {movie.id} - Name: {movie.name}")
 
             if delete_files_on_disk and movie.library:
-                log.info("Attempting to delete movie files from disk.")
                 # Get the movie's directory path
-                library_config = next(
-                    (lib for lib in AllEncompassingConfig().misc.movie_libraries if lib.name == movie.library),
-                    None
-                )
-                log.debug(f"Library config for movie deletion: {library_config}")
-                if library_config:
-                    movie_path = Path(library_config.path) / movie.folder_name
-                    if movie_path.exists() and movie_path.is_dir():
-                        shutil.rmtree(movie_path)
-                        log.info(f"Deleted movie directory: {movie_path}")
+                movie_dir = self.get_movie_root_path(movie=movie)
+
+                log.debug(f"Attempt to delete movie directory: {movie_dir}")
+                if movie_dir.exists() and movie_dir.is_dir():
+                    shutil.rmtree(movie_dir)
+                    log.info(f"Deleted movie directory: {movie_dir}")
 
             if delete_torrents:
                 # Get all torrents associated with this movie

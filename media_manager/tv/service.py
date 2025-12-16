@@ -146,21 +146,16 @@ class TvService:
         if delete_files_on_disk or delete_torrents:
             show = self.tv_repository.get_show_by_id(show_id)
 
-            log.debug(f"ID: {show.id} - Name: {show.name} - Library: {show.library}")
+            log.debug(f"Deleting ID: {show.id} - Name: {show.name}")
 
-            if delete_files_on_disk and show.library:
-                log.info("Attempting to delete show files from disk.")
+            if delete_files_on_disk:
                 # Get the show's directory path
-                library_config = next(
-                    (lib for lib in AllEncompassingConfig().misc.tv_libraries if lib.name == show.library),
-                    None
-                )
-                log.debug(f"Library config for show deletion: {library_config}")
-                if library_config:
-                    show_path = Path(library_config.path) / show.folder_name
-                    if show_path.exists() and show_path.is_dir():
-                        shutil.rmtree(show_path)
-                        log.info(f"Deleted show directory: {show_path}")
+                show_dir = self.get_root_show_directory(show=show)
+
+                log.debug(f"Attempt to delete show directory: {show_dir}")
+                if show_dir.exists() and show_dir.is_dir():
+                    shutil.rmtree(show_dir)
+                    log.info(f"Deleted show directory: {show_dir}")
 
             if delete_torrents:
                 # Get all torrents associated with this show
