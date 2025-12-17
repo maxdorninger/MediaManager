@@ -56,6 +56,8 @@ OpenID Connect configuration endpoint URL. Note the lack of a trailing slash - t
 
 Display name for the OpenID Connect provider that will be shown on the login page.
 
+<warning>You must restart the MediaManager server for the "Login with ..." button to appear.</warning>
+
 ### Configuration for your OpenID Connect Provider
 
 #### Redirect URI
