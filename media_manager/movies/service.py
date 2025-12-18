@@ -132,7 +132,7 @@ class MovieService:
 
             log.debug(f"Deleting ID: {movie.id} - Name: {movie.name}")
 
-            if delete_files_on_disk and movie.library:
+            if delete_files_on_disk:
                 # Get the movie's directory path
                 movie_dir = self.get_movie_root_path(movie=movie)
 
