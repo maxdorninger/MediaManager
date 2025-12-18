@@ -1,4 +1,5 @@
 import re
+import shutil
 
 from sqlalchemy.exc import IntegrityError
 
@@ -128,6 +129,48 @@ class TvService:
         :param season_request_id: The ID of the season request to delete.
         """
         self.tv_repository.delete_season_request(season_request_id=season_request_id)
+
+    def delete_show(
+        self,
+        show_id: ShowId,
+        delete_files_on_disk: bool = False,
+        delete_torrents: bool = False,
+    ) -> None:
+        """
+        Delete a show from the database, optionally deleting files and torrents.
+
+        :param show_id: The ID of the show to delete.
+        :param delete_files_on_disk: Whether to delete the show's files from disk.
+        :param delete_torrents: Whether to delete associated torrents from the torrent client.
+        """
+        if delete_files_on_disk or delete_torrents:
+            show = self.tv_repository.get_show_by_id(show_id)
+
+            log.debug(f"Deleting ID: {show.id} - Name: {show.name}")
+
+            if delete_files_on_disk:
+                # Get the show's directory path
+                show_dir = self.get_root_show_directory(show=show)
+
+                log.debug(f"Attempt to delete show directory: {show_dir}")
+                if show_dir.exists() and show_dir.is_dir():
+                    shutil.rmtree(show_dir)
+                    log.info(f"Deleted show directory: {show_dir}")
+
+            if delete_torrents:
+                # Get all torrents associated with this show
+                torrents = self.tv_repository.get_torrents_by_show_id(show_id=show_id)
+                for torrent in torrents:
+                    try:
+                        self.torrent_service.cancel_download(
+                            torrent, delete_files=True
+                        )
+                        log.info(f"Deleted torrent: {torrent.hash}")
+                    except Exception as e:
+                        log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
+
+        # Delete from database
+        self.tv_repository.delete_show(show_id=show_id)
 
     def get_public_season_files_by_season_id(
         self, season_id: SeasonId

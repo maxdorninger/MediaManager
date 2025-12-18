@@ -34,7 +34,6 @@ from media_manager.schemas import MediaImportSuggestion
 from media_manager.tv.dependencies import (
     season_dep,
     show_dep,
-    tv_repository_dep,
     tv_service_dep,
 )
 from media_manager.metadataProvider.dependencies import metadata_provider_dep
@@ -87,10 +86,19 @@ def get_total_count_of_downloaded_episodes(tv_service: tv_service_dep):
 @router.delete(
     "/shows/{show_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(current_active_user)],
+    dependencies=[Depends(current_superuser)],
 )
-def delete_a_show(tv_repository: tv_repository_dep, show: show_dep):
-    tv_repository.delete_show(show_id=show.id)
+def delete_a_show(
+    tv_service: tv_service_dep,
+    show: show_dep,
+    delete_files_on_disk: bool = False,
+    delete_torrents: bool = False,
+):
+    tv_service.delete_show(
+        show_id=show.id,
+        delete_files_on_disk=delete_files_on_disk,
+        delete_torrents=delete_torrents,
+    )
 
 
 # --------------------------------

@@ -19,6 +19,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import DeleteMediaDialog from '$lib/components/delete-media-dialog.svelte';
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 
@@ -135,6 +136,7 @@
 							</div>
 						{/if}
 						<LibraryCombobox media={show()} mediaType="tv" />
+						<DeleteMediaDialog isShow={true} media={show()} />
 					</Card.Content>
 				</Card.Root>
 			{/if}

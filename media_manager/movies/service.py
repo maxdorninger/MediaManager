@@ -1,4 +1,5 @@
 import re
+import shutil
 from pathlib import Path
 
 from sqlalchemy.exc import IntegrityError
@@ -112,6 +113,48 @@ class MovieService:
         :param movie_request_id: The ID of the movie request to delete.
         """
         self.movie_repository.delete_movie_request(movie_request_id=movie_request_id)
+
+    def delete_movie(
+        self,
+        movie_id: MovieId,
+        delete_files_on_disk: bool = False,
+        delete_torrents: bool = False,
+    ) -> None:
+        """
+        Delete a movie from the database, optionally deleting files and torrents.
+
+        :param movie_id: The ID of the movie to delete.
+        :param delete_files_on_disk: Whether to delete the movie's files from disk.
+        :param delete_torrents: Whether to delete associated torrents from the torrent client.
+        """
+        if delete_files_on_disk or delete_torrents:
+            movie = self.movie_repository.get_movie_by_id(movie_id=movie_id)
+
+            log.debug(f"Deleting ID: {movie.id} - Name: {movie.name}")
+
+            if delete_files_on_disk:
+                # Get the movie's directory path
+                movie_dir = self.get_movie_root_path(movie=movie)
+
+                log.debug(f"Attempt to delete movie directory: {movie_dir}")
+                if movie_dir.exists() and movie_dir.is_dir():
+                    shutil.rmtree(movie_dir)
+                    log.info(f"Deleted movie directory: {movie_dir}")
+
+            if delete_torrents:
+                # Get all torrents associated with this movie
+                torrents = self.movie_repository.get_torrents_by_movie_id(movie_id=movie_id)
+                for torrent in torrents:
+                    try:
+                        self.torrent_service.cancel_download(
+                            torrent, delete_files=True
+                        )
+                        log.info(f"Deleted torrent: {torrent.hash}")
+                    except Exception as e:
+                        log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
+
+        # Delete from database
+        self.movie_repository.delete_movie(movie_id=movie_id)
 
     def get_public_movie_files_by_movie_id(
         self, movie_id: MovieId
