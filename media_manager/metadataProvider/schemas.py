@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+from media_manager.movies.schemas import MovieId
+from media_manager.tv.schemas import ShowId
 
 
 class MetaDataProviderSearchResult(BaseModel):
@@ -11,3 +13,4 @@ class MetaDataProviderSearchResult(BaseModel):
     added: bool
     vote_average: float | None = None
     original_language: str | None = None
+    id: MovieId | ShowId | None = None  # Internal ID if already added

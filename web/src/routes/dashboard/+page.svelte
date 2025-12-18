@@ -10,11 +10,11 @@
 	import type { components } from '$lib/api/api.d.ts';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
-	let recommendedShows: components['schemas']['MetaDataProviderSearchResult'][] = [];
-	let showsLoading = true;
+	let recommendedShows: components['schemas']['MetaDataProviderSearchResult'][] = $state([]);
+	let showsLoading = $state(true);
 
-	let recommendedMovies: components['schemas']['MetaDataProviderSearchResult'][] = [];
-	let moviesLoading = true;
+	let recommendedMovies: components['schemas']['MetaDataProviderSearchResult'][] = $state([]);
+	let moviesLoading = $state(true);
 
 	onMount(async () => {
 		client.GET('/api/v1/tv/recommended').then((res) => {

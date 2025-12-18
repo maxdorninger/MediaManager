@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { ImageOff } from 'lucide-svelte';
+	import { ImageOff, LoaderCircle } from 'lucide-svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { components } from '$lib/api/api';
@@ -78,17 +78,29 @@
 		{/if}
 	</Card.Content>
 	<Card.Footer class="flex flex-col items-start gap-2 rounded-b-lg border-t bg-card p-4">
-		<Button
-			class="w-full font-semibold"
-			disabled={result.added || loading}
-			onclick={() => addMedia()}
-		>
-			{#if loading}
-				<span class="animate-pulse">Loading...</span>
-			{:else}
-				{result.added ? 'Show already exists' : `Add ${isShow ? 'Show' : 'Movie'}`}
-			{/if}
-		</Button>
+		{#if result.added}
+			<Button
+				class="w-full font-semibold"
+				variant="secondary"
+				href={resolve(isShow ? '/dashboard/tv/[showId]' : '/dashboard/movies/[movieId]',
+					isShow ? { showId: result.id ?? '' } : { movieId: result.id ?? '' })}
+			>
+				{isShow ? 'Show already exists' : 'Movie already exists'}
+			</Button>
+		{:else}
+			<Button
+				class="w-full font-semibold"
+				disabled={loading}
+				onclick={() => addMedia()}
+			>
+				{#if loading}
+					<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+					<span class="animate-pulse">Loading...</span>
+				{:else}
+					{`Add ${isShow ? 'Show' : 'Movie'}`}
+				{/if}
+			</Button>
+		{/if}
 		<div class="flex w-full items-center gap-2">
 			{#if result.vote_average != null}
 				<span class="flex items-center text-sm font-medium text-yellow-600">
