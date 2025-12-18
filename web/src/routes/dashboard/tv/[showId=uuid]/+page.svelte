@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
@@ -19,9 +18,8 @@
 	import { toast } from 'svelte-sonner';
 	import { Label } from '$lib/components/ui/label';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import DeleteMediaDialog from '$lib/components/delete-media-dialog.svelte';
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 
@@ -30,9 +28,6 @@
 	let torrents: components['schemas']['RichShowTorrent'] = page.data.torrentsData;
 
 	let continuousDownloadEnabled = $state(show().continuous_download);
-	let deleteDialogOpen = $state(false);
-	let deleteFilesOnDisk = $state(false);
-	let deleteTorrents = $state(false);
 
 	async function toggle_continuous_download() {
 		const { response } = await client.POST('/api/v1/tv/shows/{show_id}/continuousDownload', {
@@ -53,23 +48,6 @@
 		} else {
 			continuousDownloadEnabled = !continuousDownloadEnabled;
 			toast.success('Continuous download toggled successfully.');
-		}
-	}
-
-	async function delete_show() {
-		const { response } = await client.DELETE('/api/v1/tv/shows/{show_id}', {
-			params: {
-				path: { show_id: show().id },
-				query: { delete_files_on_disk: deleteFilesOnDisk, delete_torrents: deleteTorrents }
-			}
-		});
-		if (!response.ok) {
-			const errorText = await response.text();
-			toast.error('Failed to delete show: ' + errorText);
-		} else {
-			toast.success('Show deleted successfully.');
-			deleteDialogOpen = false;
-			await goto(resolve('/dashboard/tv', {}), { invalidateAll: true });
 		}
 	}
 </script>
@@ -158,51 +136,7 @@
 							</div>
 						{/if}
 						<LibraryCombobox media={show()} mediaType="tv" />
-						<AlertDialog.Root bind:open={deleteDialogOpen}>
-							<AlertDialog.Trigger class={buttonVariants({ variant: 'destructive' })}>
-								Delete Show
-							</AlertDialog.Trigger>
-							<AlertDialog.Content>
-								<AlertDialog.Header>
-									<AlertDialog.Title
-										>Delete - {getFullyQualifiedMediaName(show())}?</AlertDialog.Title
-									>
-									<AlertDialog.Description>
-										This action cannot be undone. This will permanently delete
-										<strong>{getFullyQualifiedMediaName(show())}</strong> from the database.
-									</AlertDialog.Description>
-								</AlertDialog.Header>
-								<div class="flex flex-col gap-3 py-4">
-									<div class="flex items-center space-x-2">
-										<Checkbox bind:checked={deleteFilesOnDisk} id="delete-files" />
-										<Label
-											for="delete-files"
-											class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-										>
-											Also delete files on disk
-										</Label>
-									</div>
-									<div class="flex items-center space-x-2">
-										<Checkbox bind:checked={deleteTorrents} id="delete-torrents" />
-										<Label
-											for="delete-torrents"
-											class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-										>
-											Also delete torrents
-										</Label>
-									</div>
-								</div>
-								<AlertDialog.Footer>
-									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-									<AlertDialog.Action
-										onclick={() => delete_show()}
-										class={buttonVariants({ variant: 'destructive' })}
-									>
-										Delete
-									</AlertDialog.Action>
-								</AlertDialog.Footer>
-							</AlertDialog.Content>
-						</AlertDialog.Root>
+						<DeleteMediaDialog isShow={true} media={show()} />
 					</Card.Content>
 				</Card.Root>
 			{/if}
