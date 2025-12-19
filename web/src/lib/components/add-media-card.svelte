@@ -82,17 +82,15 @@
 			<Button
 				class="w-full font-semibold"
 				variant="secondary"
-				href={resolve(isShow ? '/dashboard/tv/[showId]' : '/dashboard/movies/[movieId]',
-					isShow ? { showId: result.id ?? '' } : { movieId: result.id ?? '' })}
+				href={resolve(
+					isShow ? '/dashboard/tv/[showId]' : '/dashboard/movies/[movieId]',
+					isShow ? { showId: result.id ?? '' } : { movieId: result.id ?? '' }
+				)}
 			>
 				{isShow ? 'Show already exists' : 'Movie already exists'}
 			</Button>
 		{:else}
-			<Button
-				class="w-full font-semibold"
-				disabled={loading}
-				onclick={() => addMedia()}
-			>
+			<Button class="w-full font-semibold" disabled={loading} onclick={() => addMedia()}>
 				{#if loading}
 					<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 					<span class="animate-pulse">Loading...</span>
