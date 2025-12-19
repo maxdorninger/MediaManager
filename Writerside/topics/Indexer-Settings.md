@@ -36,6 +36,13 @@ DEBUG - media_manager.indexer.utils -
     Read timed out. (read timeout=10)
 ```
 
+- `follow_redirects`
+
+This is necessary for some indexers that use redirect links for torrent downloads. Especially useful if your download
+client cannot access Prowlarr directly. This increases the time it takes to fetch torrent details, so only enable it if
+you really need it.
+Default is `false`.
+
 ## Jackett (`[indexers.jackett]`)
 
 - `enabled`
