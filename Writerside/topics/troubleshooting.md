@@ -4,6 +4,12 @@
     Always check the container and browser logs for more specific error messages
 </tip>
 
+
+<procedure title="MM fails to import files downloaded by qBittorrent" id="procedure-files-are-not-imported">
+    <step>If you configured a category with a special save path, <a href="qBittorrent-Category.md">carefully read this page about MM with qBittorrent save paths.</a></step>
+</procedure>
+
+
 <procedure title="I can't log in with OAuth/OIDC?" id="procedure-i-cannot-log-in-with-oauth">
     <step>Verify your OAuth provider's configuration. <a href="authentication-setup.md" anchor="openid-connect-settings-auth-openid-connect">See the OAuth documentation</a></step>
     <step>Check if the callback URI you set in your OIDC providers settings is correct. <a href="authentication-setup.md" anchor="redirect-uri">See the callback URI documentation</a> </step>
