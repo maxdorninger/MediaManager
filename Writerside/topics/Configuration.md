@@ -7,6 +7,8 @@ Frontend settings are configured through environment variables in your `docker-c
 
 ## Configuration File Location
 
+<warning>Note that MediaManager may need to be restarted for changes in the config file to take effect.</warning>
+
 Your `config.toml` file should be in the directory that's mounted to `/app/config/config.toml` inside the container:
 
 ```yaml
