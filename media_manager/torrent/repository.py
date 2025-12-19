@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from media_manager.database import DbSessionDependency
 from media_manager.torrent.models import Torrent
@@ -55,7 +55,20 @@ class TorrentRepository:
             raise NotFoundError(f"Torrent with ID {torrent_id} not found.")
         return TorrentSchema.model_validate(result)
 
-    def delete_torrent(self, torrent_id: TorrentId):
+    def delete_torrent(
+        self, torrent_id: TorrentId, delete_associated_media_files: bool = False
+    ):
+        if delete_associated_media_files:
+            movie_files_stmt = delete(MovieFile).where(
+                MovieFile.torrent_id == torrent_id
+            )
+            self.db.execute(movie_files_stmt)
+
+            season_files_stmt = delete(SeasonFile).where(
+                SeasonFile.torrent_id == torrent_id
+            )
+            self.db.execute(season_files_stmt)
+
         self.db.delete(self.db.get(Torrent, torrent_id))
 
     def get_movie_of_torrent(self, torrent_id: TorrentId):
