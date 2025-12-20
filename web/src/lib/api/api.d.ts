@@ -728,6 +728,24 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/api/v1/movies/{movie_id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Get Movie By Id */
+		get: operations['get_movie_by_id_api_v1_movies__movie_id__get'];
+		put?: never;
+		post?: never;
+		/** Delete A Movie */
+		delete: operations['delete_a_movie_api_v1_movies__movie_id__delete'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/api/v1/movies/importable': {
 		parameters: {
 			query?: never;
@@ -874,23 +892,6 @@ export interface paths {
 		 * @description updates the request flag to true
 		 */
 		patch: operations['authorize_request_api_v1_movies_requests__movie_request_id__patch'];
-		trace?: never;
-	};
-	'/api/v1/movies/{movie_id}': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Get Movie By Id */
-		get: operations['get_movie_by_id_api_v1_movies__movie_id__get'];
-		put?: never;
-		post?: never;
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
 		trace?: never;
 	};
 	'/api/v1/movies/{movie_id}/torrents': {
@@ -1308,6 +1309,8 @@ export interface components {
 			added: boolean;
 			/** Vote Average */
 			vote_average?: number | null;
+			/** Original Language */
+			original_language?: string | null;
 			/** Id */
 			id?: string | null;
 		};
@@ -1333,6 +1336,8 @@ export interface components {
 			 * @default Default
 			 */
 			library: string;
+			/** Original Language */
+			original_language?: string | null;
 		};
 		/** MovieRequest */
 		MovieRequest: {
@@ -1432,6 +1437,8 @@ export interface components {
 			 * @default Default
 			 */
 			library: string;
+			/** Original Language */
+			original_language?: string | null;
 			/**
 			 * Downloaded
 			 * @default false
@@ -1688,6 +1695,8 @@ export interface components {
 			 * @default Default
 			 */
 			library: string;
+			/** Original Language */
+			original_language?: string | null;
 			/** Seasons */
 			seasons: components['schemas']['Season'][];
 		};
@@ -2564,6 +2573,7 @@ export interface operations {
 		parameters: {
 			query: {
 				show_id: number;
+				language?: string | null;
 				metadata_provider?: 'tmdb' | 'tvdb';
 			};
 			header?: never;
@@ -2646,7 +2656,10 @@ export interface operations {
 	};
 	delete_a_show_api_v1_tv_shows__show_id__delete: {
 		parameters: {
-			query?: never;
+			query?: {
+				delete_files_on_disk?: boolean;
+				delete_torrents?: boolean;
+			};
 			header?: never;
 			path: {
 				/** @description The ID of the show */
@@ -3413,6 +3426,7 @@ export interface operations {
 		parameters: {
 			query: {
 				movie_id: number;
+				language?: string | null;
 				metadata_provider?: 'tmdb' | 'tvdb';
 			};
 			header?: never;
@@ -3429,6 +3443,70 @@ export interface operations {
 				content: {
 					'application/json': components['schemas']['Movie'];
 				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	get_movie_by_id_api_v1_movies__movie_id__get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				movie_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PublicMovie'];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	delete_a_movie_api_v1_movies__movie_id__delete: {
+		parameters: {
+			query?: {
+				delete_files_on_disk?: boolean;
+				delete_torrents?: boolean;
+			};
+			header?: never;
+			path: {
+				/** @description The ID of the movie */
+				movie_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
 			};
 			/** @description Validation Error */
 			422: {
@@ -3742,37 +3820,6 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content?: never;
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	get_movie_by_id_api_v1_movies__movie_id__get: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path: {
-				movie_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['PublicMovie'];
-				};
 			};
 			/** @description Validation Error */
 			422: {
