@@ -27,6 +27,7 @@ class Prowlarr(GenericIndexer):
         self.url = config.url
         self.reject_torrents_on_url_error = config.reject_torrents_on_url_error
         self.timeout_seconds = config.timeout_seconds
+        self.follow_redirects = config.follow_redirects
 
     def search(
         self,
@@ -117,7 +118,7 @@ class Prowlarr(GenericIndexer):
             log.error(f"No valid download URL found for result: {result}")
             return None
 
-        if not initial_url.startswith("magnet:"):
+        if not initial_url.startswith("magnet:") and self.follow_redirects:
             try:
                 final_download_url = follow_redirects_to_final_torrent_url(
                     initial_url=initial_url,
