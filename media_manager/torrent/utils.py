@@ -190,11 +190,27 @@ def remove_special_characters(filename: str) -> str:
     return sanitized
 
 
-def strip_trailing_year(title: str) -> str:
+def remove_special_chars_and_parentheses(title: str) -> str:
     """
-    Removes a trailing space + (4-digit year) at end of string
+    Removes special characters and bracketed information from the title.
+
+    :param title: The original title.
+    :return: A sanitized version of the title.
     """
-    return re.sub(r"\s*\(\d{4}\)\s*$", "", title).strip()
+
+    # Remove content within brackets
+    sanitized = re.sub(r"\[.*?\]", "", title)
+
+    # Remove content within curly brackets
+    sanitized = re.sub(r"\{.*?\}", "", sanitized)
+
+    # Remove year within parentheses
+    sanitized = re.sub(r"\(\d{4}\)", "", sanitized)
+
+    # Remove special characters
+    sanitized = remove_special_characters(sanitized)
+
+    return sanitized
 
 
 def get_importable_media_directories(path: Path) -> list[Path]:
