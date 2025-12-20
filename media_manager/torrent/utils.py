@@ -9,8 +9,11 @@ import bencoder
 import patoolib
 import requests
 import libtorrent
+from requests.exceptions import InvalidSchema
+
 from media_manager.config import AllEncompassingConfig
 from media_manager.indexer.schemas import IndexerQueryResult
+from media_manager.indexer.utils import follow_redirects_to_final_torrent_url
 from media_manager.torrent.schemas import Torrent
 
 log = logging.getLogger(__name__)
@@ -141,6 +144,15 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
             response = requests.get(str(torrent.download_url), timeout=30)
             response.raise_for_status()
             torrent_content = response.content
+        except InvalidSchema as e:
+            log.debug(f"Invalid schema for URL {torrent.download_url}: {e}")
+            final_url = follow_redirects_to_final_torrent_url(
+                initial_url=torrent.download_url,
+                session=requests.Session(),
+                timeout=AllEncompassingConfig().indexers.prowlarr.timeout_seconds,
+            )
+            torrent_hash = str(libtorrent.parse_magnet_uri(final_url).info_hash)
+            return torrent_hash
         except Exception as e:
             log.error(f"Failed to download torrent file: {e}")
             raise

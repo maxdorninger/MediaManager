@@ -162,9 +162,7 @@ class TvService:
                 torrents = self.tv_repository.get_torrents_by_show_id(show_id=show_id)
                 for torrent in torrents:
                     try:
-                        self.torrent_service.cancel_download(
-                            torrent, delete_files=True
-                        )
+                        self.torrent_service.cancel_download(torrent, delete_files=True)
                         log.info(f"Deleted torrent: {torrent.hash}")
                     except Exception as e:
                         log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
@@ -288,11 +286,14 @@ class TvService:
                 # Fetch the internal show ID.
                 try:
                     show = self.tv_repository.get_show_by_external_id(
-                        external_id=result.external_id, metadata_provider=metadata_provider.name
+                        external_id=result.external_id,
+                        metadata_provider=metadata_provider.name,
                     )
                     result.id = show.id
                 except Exception:
-                    log.error(f"Unable to find internal show ID for {result.external_id} on {metadata_provider.name}")
+                    log.error(
+                        f"Unable to find internal show ID for {result.external_id} on {metadata_provider.name}"
+                    )
         return results
 
     def get_popular_shows(
