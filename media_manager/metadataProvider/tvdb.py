@@ -8,6 +8,7 @@ from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
+from media_manager.torrent.utils import remove_special_chars_and_parentheses
 from media_manager.tv.schemas import Episode, Season, Show, SeasonNumber
 from media_manager.movies.schemas import Movie
 
@@ -29,7 +30,10 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         return requests.get(f"{self.url}/tv/seasons/{id}").json()
 
     def __search_tv(self, query: str) -> dict:
-        return requests.get(f"{self.url}/tv/search", params={"query": query}).json()
+        return requests.get(
+            f"{self.url}/tv/search",
+            params={"query": remove_special_chars_and_parentheses(query)},
+        ).json()
 
     def __get_trending_tv(self) -> dict:
         return requests.get(f"{self.url}/tv/trending").json()
@@ -38,7 +42,10 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         return requests.get(f"{self.url}/movies/{id}").json()
 
     def __search_movie(self, query: str) -> dict:
-        return requests.get(f"{self.url}/movies/search", params={"query": query}).json()
+        return requests.get(
+            f"{self.url}/movies/search",
+            params={"query": remove_special_chars_and_parentheses(query)},
+        ).json()
 
     def __get_trending_movies(self) -> dict:
         return requests.get(f"{self.url}/movies/trending").json()

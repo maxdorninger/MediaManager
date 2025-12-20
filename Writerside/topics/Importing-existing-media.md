@@ -1,11 +1,10 @@
 # Importing existing media
 
 In order for MediaManager to be able to import existing media (e.g. downloaded by Sonarr or Radarr)
-3 conditions have to be met:
+2 conditions have to be met:
 
-1. The folder's name must not contain `[tmdbid-xxxxx]` or `[tvdbid-xxxxx]`.
-2. The folder's name must not start with a dot.
-3. The media must be in the root tv/movie library
+1. The folder's name must not start with a dot.
+2. The media must be in the root tv/movie library
 
 Here is an example, using these rules:
 
@@ -14,9 +13,8 @@ Here is an example, using these rules:
 └── data/
     ├── tv/
     │   ├── Rick and Morty # WILL be imported
-    │   ├── Stranger Things (2016) # WILL be imported
-    │   │
-    │   ├── Breaking Bad (2008) [tmdbid-1396] # WILL NOT be imported
+    │   ├── Stranger Things (2016) {tvdb_12345} [x265] # WILL be imported
+    │   ├── Breaking Bad (2008) [tmdbid-1396] # WILL be imported
     │   ├── .The Office (2013) # WILL NOT
     │   │
     │   └── my-custom-library/
@@ -44,16 +42,18 @@ So after importing, the directory would look like this (using the above director
     │   ├── .Rick and Morty # RENAMED
     │   ├── Rick and Morty (2013) [tmdbid-60625] # IMPORTED
     │   │
-    │   ├── .Stranger Things (2016) # RENAMED
+    │   ├── .Stranger Things (2016) {tvdb_12345} [x265]
     │   ├── Stranger Things (2016) [tmdbid-66732] # IMPORTED
     │   │
     │   ├── .The Office (2013) # IGNORED
-    │   ├── Breaking Bad (2008) [tmdbid-1396] # IGNORED
+    │   │
+    │   ├── .Breaking Bad (2008) [tmdbid-1396]
+    │   ├── Breaking Bad (2008) [tmdbid-1396] # IMPORTED
     │   │
     │   └── my-custom-library/
     │       └── The Simpsons # IGNORED
     └── movie/
-        ├── .Oppenheimer (2023) # RENAMED
+        ├── .Oppenheimer (2023)
         └── Oppenheimer (2023) [tmdbid-872585] # IMPORTED
 ```
 
