@@ -210,6 +210,8 @@ def remove_special_chars_and_parentheses(title: str) -> str:
     # Remove special characters
     sanitized = remove_special_characters(sanitized)
 
+    # Collapse multiple whitespace characters and trim the result
+    sanitized = re.sub(r"\s+", " ", sanitized).strip()
     return sanitized
 
 
@@ -235,7 +237,7 @@ def extract_external_id_from_string(input_string: str) -> tuple[str | None, int 
     :param input_string: The string to extract the ID from.
     :return: The extracted Metadata Provider and ID or None if not found.
     """
-    match = re.search(r"(tmdb|tvdb)(?:id)?[-_]?([0-9]+)", input_string, re.IGNORECASE)
+    match = re.search(r"\b(tmdb|tvdb)(?:id)?[-_]?([0-9]+)\b", input_string, re.IGNORECASE)
     if match:
         return match.group(1).lower(), int(match.group(2))
 
