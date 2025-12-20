@@ -14,6 +14,7 @@
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
 	import { base } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import DeleteMediaDialog from '$lib/components/delete-media-dialog.svelte';
 
 	let movie: components['schemas']['PublicMovie'] = page.data.movie;
 	let user: () => components['schemas']['UserRead'] = getContext('user');
@@ -92,6 +93,7 @@
 					</Card.Header>
 					<Card.Content class="flex flex-col items-center gap-4">
 						<LibraryCombobox media={movie} mediaType="movie" />
+						<DeleteMediaDialog isShow={false} media={movie} />
 					</Card.Content>
 				</Card.Root>
 			{/if}

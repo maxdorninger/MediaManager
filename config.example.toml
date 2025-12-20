@@ -121,6 +121,7 @@ url = "http://localhost:9696"
 api_key = ""
 reject_torrents_on_url_error = true
 timeout_seconds = 60
+follow_redirects = false
 
 # Jackett settings
 [indexers.jackett]

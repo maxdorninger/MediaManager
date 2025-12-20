@@ -21,7 +21,7 @@ else:
 
     @router.get("/tv/search")
     async def search_tmdb_tv(query: str, page: int = 1, language: str = "en"):
-        return Search().tv(page=page, query=query, include_adult=True, language=language)
+        return Search().tv(page=page, query=query, language=language)
 
     @router.get("/tv/shows/{show_id}")
     async def get_tmdb_show(show_id: int, language: str = "en"):
@@ -37,7 +37,7 @@ else:
 
     @router.get("/movies/search")
     async def search_tmdb_movies(query: str, page: int = 1, language: str = "en"):
-        return Search().movie(page=page, query=query, include_adult=True, language=language)
+        return Search().movie(page=page, query=query, language=language)
 
     @router.get("/movies/{movie_id}")
     async def get_tmdb_movie(movie_id: int, language: str = "en"):

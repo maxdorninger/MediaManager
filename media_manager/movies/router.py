@@ -28,6 +28,7 @@ from media_manager.movies.schemas import (
 )
 from media_manager.movies.dependencies import (
     movie_service_dep,
+    movie_dep,
 )
 from media_manager.metadataProvider.dependencies import metadata_provider_dep
 from media_manager.movies.schemas import MovieRequestBase
@@ -68,6 +69,24 @@ def add_a_movie(
             external_id=movie_id, metadata_provider=metadata_provider.name
         )
     return movie
+
+
+@router.delete(
+    "/{movie_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(current_superuser)],
+)
+def delete_a_movie(
+    movie_service: movie_service_dep,
+    movie: movie_dep,
+    delete_files_on_disk: bool = False,
+    delete_torrents: bool = False,
+):
+    movie_service.delete_movie(
+        movie_id=movie.id,
+        delete_files_on_disk=delete_files_on_disk,
+        delete_torrents=delete_torrents,
+    )
 
 
 # --------------------------------
