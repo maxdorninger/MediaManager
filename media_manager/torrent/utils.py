@@ -222,10 +222,13 @@ def get_importable_media_directories(path: Path) -> list[Path]:
 
     library_paths = {Path(library.path).absolute() for library in libraries}
 
-    unfiltered_dirs = path.glob("*")
+    unfiltered_dirs = [d for d in path.glob("*") if d.is_dir()]
+
     media_dirs = []
     for media_dir in unfiltered_dirs:
-        if media_dir.absolute() not in library_paths and not media_dir.name.startswith("."):
+        if media_dir.absolute() not in library_paths and not media_dir.name.startswith(
+            "."
+        ):
             media_dirs.append(media_dir)
     return media_dirs
 
@@ -237,7 +240,9 @@ def extract_external_id_from_string(input_string: str) -> tuple[str | None, int 
     :param input_string: The string to extract the ID from.
     :return: The extracted Metadata Provider and ID or None if not found.
     """
-    match = re.search(r"\b(tmdb|tvdb)(?:id)?[-_]?([0-9]+)\b", input_string, re.IGNORECASE)
+    match = re.search(
+        r"\b(tmdb|tvdb)(?:id)?[-_]?([0-9]+)\b", input_string, re.IGNORECASE
+    )
     if match:
         return match.group(1).lower(), int(match.group(2))
 
