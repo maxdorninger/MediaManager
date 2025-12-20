@@ -38,6 +38,8 @@ from media_manager.torrent.utils import (
     get_files_for_import,
     remove_special_characters,
     strip_trailing_year,
+    get_importable_media_directories,
+    extract_external_id_from_string,
 )
 from media_manager.indexer.service import IndexerService
 from media_manager.metadataProvider.abstractMetaDataProvider import (
@@ -715,6 +717,37 @@ class MovieService:
         log.info(f"Successfully updated metadata for movie ID: {db_movie.id}")
         metadata_provider.download_movie_poster_image(movie=updated_movie)
         return updated_movie
+
+    def get_importable_movies(
+        self, metadata_provider: AbstractMetadataProvider
+    ) -> list[MediaImportSuggestion]:
+        movie_root_path = AllEncompassingConfig().misc.movie_directory
+        importable_movies: list[MediaImportSuggestion] = []
+        candidate_dirs = get_importable_media_directories(movie_root_path)
+
+        for movie_dir in candidate_dirs:
+            metadata, external_id = extract_external_id_from_string(movie_dir.name)
+            if metadata is not None and external_id is not None:
+                try:
+                    self.movie_repository.get_movie_by_external_id(
+                        external_id=external_id, metadata_provider=metadata
+                    )
+                    log.debug(
+                        f"Movie {movie_dir.name} already exists in the database, skipping."
+                    )
+                    continue
+                except NotFoundError:
+                    log.debug(
+                        f"Movie {movie_dir.name} not found in database, checking for import candidates."
+                    )
+
+            import_candidates = self.get_import_candidates(
+                movie=movie_dir, metadata_provider=metadata_provider
+            )
+            importable_movies.append(import_candidates)
+
+        log.debug(f"Found {len(importable_movies)} importable movies.")
+        return importable_movies
 
 
 def auto_download_all_approved_movie_requests() -> None:

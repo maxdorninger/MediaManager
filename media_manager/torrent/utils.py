@@ -197,24 +197,34 @@ def strip_trailing_year(title: str) -> str:
     return re.sub(r"\s*\(\d{4}\)\s*$", "", title).strip()
 
 
-def detect_unknown_media(path: Path) -> list[Path]:
+def get_importable_media_directories(path: Path) -> list[Path]:
     libraries = []
     libraries.extend(AllEncompassingConfig().misc.movie_libraries)
     libraries.extend(AllEncompassingConfig().misc.tv_libraries)
 
-    show_dirs = path.glob("*")
+    unfiltered_dirs = path.glob("*")
     log.debug(f"Using Directory {path}")
-    unknown_tv_shows = []
-    for media_dir in show_dirs:
-        # check if directory is one created by MediaManager (contains [tmdbd/tvdbid-0000) or if it is a library
-        if (
-            re.search(r"\[(?:tmdbid|tvdbid)-\d+]", media_dir.name, re.IGNORECASE)
-            or media_dir.absolute()
-            in [Path(library.path).absolute() for library in libraries]
-            or media_dir.name.startswith(".")
-        ):
+    media_dirs = []
+    for media_dir in unfiltered_dirs:
+        if media_dir.absolute() in [
+            Path(library.path).absolute() for library in libraries
+        ] or media_dir.name.startswith("."):
             log.debug(f"MediaManager directory detected: {media_dir.name}")
         else:
             log.info(f"Detected unknown media directory: {media_dir.name}")
-            unknown_tv_shows.append(media_dir)
-    return unknown_tv_shows
+            media_dirs.append(media_dir)
+    return media_dirs
+
+
+def extract_external_id_from_string(input_string: str) -> tuple[str | None, int | None]:
+    """
+    Extracts an external ID (tmdb/tvdb ID) from the given string.
+
+    :param input_string: The string to extract the ID from.
+    :return: The extracted Metadata Provider and ID or None if not found.
+    """
+    match = re.search(r"(tmdb|tvdb)(?:id)?[-_]?([0-9]+)", input_string, re.IGNORECASE)
+    if match:
+        return match.group(1).lower(), int(match.group(2))
+
+    return None, None
