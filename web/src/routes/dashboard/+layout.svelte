@@ -29,7 +29,7 @@
 		});
 		client.GET('/api/v1/tv/importable').then(({ data, error }) => {
 			if (!error) {
-				importableMovies = data;
+				importableShows = data;
 			}
 		});
 	}
