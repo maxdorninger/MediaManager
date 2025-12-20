@@ -107,7 +107,10 @@ class TorrentService:
 
     def delete_torrent(self, torrent_id: TorrentId):
         t = self.torrent_repository.get_torrent_by_id(torrent_id=torrent_id)
-        self.torrent_repository.delete_torrent(torrent_id=t.id)
+        delete_media_files = not t.imported
+        self.torrent_repository.delete_torrent(
+            torrent_id=torrent_id, delete_associated_media_files=delete_media_files
+        )
 
     def get_movie_files_of_torrent(self, torrent: Torrent):
         return self.torrent_repository.get_movie_files_of_torrent(torrent_id=torrent.id)
