@@ -52,6 +52,7 @@ class Show(BaseModel):
     ended: bool = False
     external_id: int
     metadata_provider: str
+    imdb_id: str | None
 
     continuous_download: bool = False
     library: str = "Default"

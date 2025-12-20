@@ -15,6 +15,7 @@ class Movie(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     external_id: Mapped[int]
     metadata_provider: Mapped[str]
+    imdb_id: Mapped[str]
     name: Mapped[str]
     overview: Mapped[str]
     year: Mapped[int | None]

@@ -199,6 +199,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             seasons=season_list,
             metadata_provider=self.name,
             ended=show_metadata["status"] in ENDED_STATUS,
+            imdb_id=show_metadata.get("imdb_id")
         )
 
         return show
@@ -268,6 +269,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             overview=movie_metadata["overview"],
             year=year,
             metadata_provider=self.name,
+            imdb_id=movie_metadata.get("imdb_id"),
         )
 
         return movie

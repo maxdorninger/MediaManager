@@ -28,16 +28,39 @@ class Prowlarr(GenericIndexer):
         self.reject_torrents_on_url_error = config.reject_torrents_on_url_error
         self.timeout_seconds = config.timeout_seconds
 
-    def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
-        log.debug("Searching for " + query)
+    def search(
+        self,
+        query: str,
+        is_tv: bool,
+        imdb_id: str | None = None,
+        season: int | None = None,
+        episode: int | None = None,
+    ) -> list[IndexerQueryResult]:
         url = self.url + "/api/v1/search"
 
         params = {
-            "query": query,
             "apikey": self.api_key,
-            "categories": "5000" if is_tv else "2000",  # TV: 5000, Movies: 2000
             "limit": 10000,
         }
+
+        if imdb_id:
+            log.debug(f"Searching Prowlarr by IMDB ID: '{imdb_id}'")
+            params["query"] = f"{{ImdbId:{imdb_id}}}"
+        else:
+            log.debug(f"Searching Prowlarr for query: '{query}'")
+            params["query"] = query
+
+        if is_tv:
+            params["categories"] = "5000"
+            params["type"] = "tvsearch"
+            if season is not None:
+                params["season"] = season
+            if episode is not None:
+                params["episode"] = episode
+        else:
+            params["categories"] = "2000"
+            params["type"] = "movie"
+
         with requests.Session() as session:
             adapter = HTTPAdapter(pool_connections=100, pool_maxsize=100)
             session.mount("http://", adapter)
