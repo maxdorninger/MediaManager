@@ -888,8 +888,15 @@ class TvService:
         return import_candidates
 
     def import_existing_tv_show(self, tv_show: Show, source_directory: Path) -> None:
+        new_source_path = source_directory.parent / ("." + source_directory.name)
+        try:
+            source_directory.rename(new_source_path)
+        except Exception as e:
+            log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
+            raise Exception("Failed to rename source directory") from e
+
         video_files, subtitle_files, all_files = get_files_for_import(
-            directory=source_directory
+            directory=new_source_path
         )
         for season in tv_show.seasons:
             success, imported_episode_count = self.import_season(
@@ -907,12 +914,6 @@ class TvService:
             )
             if success or imported_episode_count > (len(season.episodes) / 2):
                 self.tv_repository.add_season_file(season_file=season_file)
-
-        new_source_path = source_directory.parent / ("." + source_directory.name)
-        try:
-            source_directory.rename(new_source_path)
-        except Exception as e:
-            log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
 
     def get_importable_tv_shows(
         self, metadata_provider: AbstractMetadataProvider

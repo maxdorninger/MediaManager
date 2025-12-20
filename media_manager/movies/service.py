@@ -654,8 +654,17 @@ class MovieService:
         return import_candidates
 
     def import_existing_movie(self, movie: Movie, source_directory: Path) -> bool:
+        new_source_path = source_directory.parent / ("." + source_directory.name)
+        try:
+            source_directory.rename(new_source_path)
+        except Exception as e:
+            log.error(
+                f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}"
+            )
+            raise Exception("Failed to rename directory") from e
+
         video_files, subtitle_files, all_files = get_files_for_import(
-            directory=source_directory
+            directory=new_source_path
         )
 
         success = self.import_movie(
@@ -673,15 +682,6 @@ class MovieService:
                     quality=Quality.unknown,
                 )
             )
-
-        new_source_path = source_directory.parent / ("." + source_directory.name)
-        try:
-            source_directory.rename(new_source_path)
-        except Exception as e:
-            log.error(
-                f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}"
-            )
-            return False
 
         return success
 
