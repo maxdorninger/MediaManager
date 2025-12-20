@@ -239,11 +239,10 @@ class TvService:
         if search_query_override:
             search_query = search_query_override
         else:
-            # TODO: add more Search query strings and combine all the results, like "season 3", "s03", "s3"
-            search_query = show.name + " s" + str(season_number).zfill(2)
+            search_query = show.name
 
         torrents: list[IndexerQueryResult] = self.indexer_service.search(
-            query=search_query, is_tv=True, imdb_id=show.imdb_id
+            query=search_query, season=season_number, is_tv=True, imdb_id=show.imdb_id
         )
 
         if search_query_override:

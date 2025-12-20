@@ -26,14 +26,21 @@ class Jackett(GenericIndexer):
         self.indexers = config.indexers
         self.timeout_seconds = config.timeout_seconds
 
-    def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
+    def search(
+        self,
+        query: str,
+        is_tv: bool,
+        imdb_id: str | None = None,
+        season: int | None = None,
+    ) -> list[IndexerQueryResult]:
+
         log.debug("Searching for " + query)
 
         futures = []
         with ThreadPoolExecutor() as executor, requests.Session() as session:
             for indexer in self.indexers:
                 future = executor.submit(
-                    self.get_torrents_by_indexer, indexer, query, is_tv, session
+                    self.get_torrents_by_indexer, indexer, query, is_tv, session, imdb_id, season
                 )
                 futures.append(future)
 
@@ -50,15 +57,35 @@ class Jackett(GenericIndexer):
         return responses
 
     def get_torrents_by_indexer(
-        self, indexer: str, query: str, is_tv: bool, session: requests.Session
+        self,
+        indexer: str,
+        query: str,
+        is_tv: bool,
+        session: requests.Session,
+        imdb_id: str | None = None,
+        season: int | None = None
     ) -> list[IndexerQueryResult]:
         download_volume_factor = 1.0  # Default value
         upload_volume_factor = 1  # Default value
         seeders = 0  # Default value
 
+        if imdb_id:
+            log.debug(f"Searching Prowlarr by IMDB ID: '{imdb_id}'")
+            query_str = f"imdbid={imdb_id}"
+        else:
+            log.debug(f"Searching Prowlarr for query: '{query}'")
+            query_str = f"q={query}"
+
+        if is_tv:
+            cat = "t=tvsearch&cat=5000"
+            if season is not None:
+                query_str = f"{query_str}&season={season}"
+        else:
+            cat = "t=movie&cat=2000"
+
         url = (
             self.url
-            + f"/api/v2.0/indexers/{indexer}/results/torznab/api?apikey={self.api_key}&t={'tvsearch' if is_tv else 'movie'}&q={query}"
+            + f"/api/v2.0/indexers/{indexer}/results/torznab/api?apikey={self.api_key}&{query_str}&{cat}"
         )
         response = session.get(url, timeout=self.timeout_seconds)
 

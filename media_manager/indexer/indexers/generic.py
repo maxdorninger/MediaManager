@@ -16,7 +16,6 @@ class GenericIndexer(object):
         is_tv: bool,
         imdb_id: str | None = None,
         season: int | None = None,
-        episode: int | None = None,
     ) -> list[IndexerQueryResult]:
         """
         Sends a search request to the Indexer and returns the results.

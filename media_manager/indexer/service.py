@@ -31,7 +31,6 @@ class IndexerService:
         is_tv: bool,
         imdb_id: str | None = None,
         season: int | None = None,
-        episode: int | None = None,
     ) -> list[IndexerQueryResult]:
         """
         Search for results using the indexers based on a query.
@@ -41,14 +40,14 @@ class IndexerService:
         :param db: The database session.
         :return: A list of search results.
         """
-
+        
         log.debug(f"Searching for: {query}")
         results = []
         failed_indexers = []
 
         for indexer in self.indexers:
             try:
-                indexer_results = indexer.search(query, is_tv=is_tv, imdb_id=imdb_id)
+                indexer_results = indexer.search(query, is_tv=is_tv, imdb_id=imdb_id, season=season)
                 results.extend(indexer_results)
                 log.debug(
                     f"Indexer {indexer.__class__.__name__} returned {len(indexer_results)} results for query: {query}"

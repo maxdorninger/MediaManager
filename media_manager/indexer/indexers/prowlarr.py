@@ -35,7 +35,6 @@ class Prowlarr(GenericIndexer):
         is_tv: bool,
         imdb_id: str | None = None,
         season: int | None = None,
-        episode: int | None = None,
     ) -> list[IndexerQueryResult]:
         url = self.url + "/api/v1/search"
 
@@ -46,21 +45,21 @@ class Prowlarr(GenericIndexer):
 
         if imdb_id:
             log.debug(f"Searching Prowlarr by IMDB ID: '{imdb_id}'")
-            params["query"] = f"{{ImdbId:{imdb_id}}}"
+            query_str = f"{{ImdbId:{imdb_id}}}"
         else:
             log.debug(f"Searching Prowlarr for query: '{query}'")
-            params["query"] = query
+            query_str = query
 
         if is_tv:
             params["categories"] = "5000"
             params["type"] = "tvsearch"
             if season is not None:
-                params["season"] = season
-            if episode is not None:
-                params["episode"] = episode
+                query_str = f"{query_str}{{season:{season}}}"
         else:
             params["categories"] = "2000"
             params["type"] = "movie"
+
+        params["query"] = query_str
 
         with requests.Session() as session:
             adapter = HTTPAdapter(pool_connections=100, pool_maxsize=100)
@@ -68,6 +67,20 @@ class Prowlarr(GenericIndexer):
             session.mount("https://", adapter)
 
             response = session.get(url, params=params)
+
+            log.debug("Request URL: %s", response.url)
+            log.debug("Status code: %s", response.status_code)
+            log.debug("Response headers: %s", response.headers)
+
+            # try:
+            #     log.debug(
+            #         "Response JSON:\n%s",
+            #         json.dumps(response.json(), indent=2, ensure_ascii=False),
+            #     )
+            # except Exception:
+            #     log.debug("Response text:\n%s", response.text)
+
+
 
             if response.status_code != 200:
                 log.error(f"Prowlarr Error: {response.status_code}")
