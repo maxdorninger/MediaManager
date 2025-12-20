@@ -2,7 +2,6 @@ import hashlib
 import logging
 import mimetypes
 import re
-from asyncio import timeout
 from pathlib import Path, UnsupportedOperation
 import shutil
 

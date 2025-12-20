@@ -143,12 +143,12 @@ class MovieService:
 
             if delete_torrents:
                 # Get all torrents associated with this movie
-                torrents = self.movie_repository.get_torrents_by_movie_id(movie_id=movie_id)
+                torrents = self.movie_repository.get_torrents_by_movie_id(
+                    movie_id=movie_id
+                )
                 for torrent in torrents:
                     try:
-                        self.torrent_service.cancel_download(
-                            torrent, delete_files=True
-                        )
+                        self.torrent_service.cancel_download(torrent, delete_files=True)
                         log.info(f"Deleted torrent: {torrent.hash}")
                     except Exception as e:
                         log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
@@ -275,11 +275,14 @@ class MovieService:
                 # Fetch the internal movie ID.
                 try:
                     movie = self.movie_repository.get_movie_by_external_id(
-                        external_id=result.external_id, metadata_provider=metadata_provider.name
+                        external_id=result.external_id,
+                        metadata_provider=metadata_provider.name,
                     )
                     result.id = movie.id
                 except Exception:
-                    log.error(f"Unable to find internal movie ID for {result.external_id} on {metadata_provider.name}")
+                    log.error(
+                        f"Unable to find internal movie ID for {result.external_id} on {metadata_provider.name}"
+                    )
         return results
 
     def get_popular_movies(
