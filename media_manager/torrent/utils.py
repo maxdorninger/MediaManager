@@ -220,12 +220,12 @@ def get_importable_media_directories(path: Path) -> list[Path]:
     libraries.extend(AllEncompassingConfig().misc.movie_libraries)
     libraries.extend(AllEncompassingConfig().misc.tv_libraries)
 
+    library_paths = {Path(library.path).absolute() for library in libraries}
+
     unfiltered_dirs = path.glob("*")
     media_dirs = []
     for media_dir in unfiltered_dirs:
-        if media_dir.absolute() not in [
-            Path(library.path).absolute() for library in libraries
-        ] and not media_dir.name.startswith("."):
+        if media_dir.absolute() not in library_paths and not media_dir.name.startswith("."):
             media_dirs.append(media_dir)
     return media_dirs
 
