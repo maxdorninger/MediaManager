@@ -16,7 +16,7 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import DeleteMediaDialog from '$lib/components/delete-media-dialog.svelte';
 
-	let movie: components['schemas']['PublicMovie'] = page.data.movie;
+	let movie: components['schemas']['PublicMovie'] = $derived(page.data.movie);
 	let user: () => components['schemas']['UserRead'] = getContext('user');
 </script>
 

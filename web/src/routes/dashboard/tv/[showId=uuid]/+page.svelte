@@ -23,22 +23,22 @@
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 
-	let show: () => components['schemas']['PublicShow'] = getContext('show');
+	let show: components['schemas']['PublicShow'] = $derived(page.data.showData);
+	let torrents: components['schemas']['RichShowTorrent'] = $derived(page.data.torrentsData);
 	let user: () => components['schemas']['UserRead'] = getContext('user');
-	let torrents: components['schemas']['RichShowTorrent'] = page.data.torrentsData;
 
-	let continuousDownloadEnabled = $state(show().continuous_download);
+	let continuousDownloadEnabled = $state(show.continuous_download);
 
 	async function toggle_continuous_download() {
 		const { response } = await client.POST('/api/v1/tv/shows/{show_id}/continuousDownload', {
 			params: {
-				path: { show_id: show().id },
+				path: { show_id: show.id },
 				query: { continuous_download: !continuousDownloadEnabled }
 			}
 		});
 		console.log(
 			'Toggling continuous download for show',
-			show().name,
+			show.name,
 			'to',
 			!continuousDownloadEnabled
 		);
@@ -53,10 +53,10 @@
 </script>
 
 <svelte:head>
-	<title>{getFullyQualifiedMediaName(show())} - MediaManager</title>
+	<title>{getFullyQualifiedMediaName(show)} - MediaManager</title>
 	<meta
 		content="View details and manage downloads for {getFullyQualifiedMediaName(
-			show()
+			show
 		)} in MediaManager"
 		name="description"
 	/>
@@ -81,20 +81,20 @@
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Page>{getFullyQualifiedMediaName(show())}</Breadcrumb.Page>
+					<Breadcrumb.Page>{getFullyQualifiedMediaName(show)}</Breadcrumb.Page>
 				</Breadcrumb.Item>
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
 	</div>
 </header>
 <h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
-	{getFullyQualifiedMediaName(show())}
+	{getFullyQualifiedMediaName(show)}
 </h1>
 <main class="mx-auto flex w-full flex-1 flex-col gap-4 p-4 md:max-w-[80em]">
 	<div class="flex flex-col gap-4 md:flex-row md:items-stretch">
 		<div class="w-full overflow-hidden rounded-xl bg-muted/50 md:w-1/3 md:max-w-sm">
-			{#if show().id}
-				<MediaPicture media={show()} />
+			{#if show.id}
+				<MediaPicture media={show} />
 			{:else}
 				<div
 					class="flex aspect-9/16 h-auto w-full items-center justify-center rounded-lg bg-gray-200 text-gray-500"
@@ -110,7 +110,7 @@
 				</Card.Header>
 				<Card.Content>
 					<p class="leading-7 not-first:mt-6">
-						{show().overview}
+						{show.overview}
 					</p>
 				</Card.Content>
 			</Card.Root>
@@ -124,7 +124,7 @@
 						<Card.Title>Administrator Controls</Card.Title>
 					</Card.Header>
 					<Card.Content class="flex flex-col items-center gap-4">
-						{#if !show().ended}
+						{#if !show.ended}
 							<div class="flex items-center gap-3">
 								<Switch
 									bind:checked={() => continuousDownloadEnabled, toggle_continuous_download}
@@ -135,8 +135,8 @@
 								</Label>
 							</div>
 						{/if}
-						<LibraryCombobox media={show()} mediaType="tv" />
-						<DeleteMediaDialog isShow={true} media={show()} />
+						<LibraryCombobox media={show} mediaType="tv" />
+						<DeleteMediaDialog isShow={true} media={show} />
 					</Card.Content>
 				</Card.Root>
 			{/if}
@@ -146,9 +146,9 @@
 				</Card.Header>
 				<Card.Content class="flex flex-col items-center gap-4">
 					{#if user().is_superuser}
-						<DownloadSeasonDialog show={show()} />
+						<DownloadSeasonDialog {show} />
 					{/if}
-					<RequestSeasonDialog show={show()} />
+					<RequestSeasonDialog {show} />
 				</Card.Content>
 			</Card.Root>
 		</div>
@@ -158,7 +158,7 @@
 			<Card.Header>
 				<Card.Title>Season Details</Card.Title>
 				<Card.Description>
-					A list of all seasons for {getFullyQualifiedMediaName(show())}.
+					A list of all seasons for {getFullyQualifiedMediaName(show)}.
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="w-full overflow-x-auto">
@@ -173,13 +173,13 @@
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
-						{#if show().seasons.length > 0}
-							{#each show().seasons as season (season.id)}
+						{#if show.seasons.length > 0}
+							{#each show.seasons as season (season.id)}
 								<Table.Row
 									onclick={() =>
 										goto(
 											resolve('/dashboard/tv/[showId]/[seasonId]', {
-												showId: show().id,
+												showId: show.id,
 												seasonId: season.id
 											})
 										)}
