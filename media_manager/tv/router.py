@@ -12,7 +12,7 @@ from media_manager.indexer.schemas import (
     IndexerQueryResult,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.torrent.utils import detect_unknown_media
+from media_manager.torrent.utils import get_importable_media_directories
 from media_manager.torrent.schemas import Torrent
 from media_manager.tv import log
 from media_manager.exceptions import MediaAlreadyExists
@@ -126,15 +126,7 @@ def get_all_importable_shows(
     """
     get a list of unknown shows that were detected in the tv directory and are importable
     """
-    directories = detect_unknown_media(AllEncompassingConfig().misc.tv_directory)
-    shows = []
-    for directory in directories:
-        shows.append(
-            tv_service.get_import_candidates(
-                tv_show=directory, metadata_provider=metadata_provider
-            )
-        )
-    return shows
+    return tv_service.get_importable_tv_shows(metadata_provider=metadata_provider)
 
 
 @router.post(
@@ -147,7 +139,7 @@ def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, director
     Import a detected show from the specified directory into the library.
     """
     source_directory = Path(directory)
-    if source_directory not in detect_unknown_media(
+    if source_directory not in get_importable_media_directories(
         AllEncompassingConfig().misc.tv_directory
     ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")

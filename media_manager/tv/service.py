@@ -42,7 +42,9 @@ from media_manager.torrent.utils import (
     import_file,
     get_files_for_import,
     remove_special_characters,
-    strip_trailing_year,
+    get_importable_media_directories,
+    extract_external_id_from_string,
+    remove_special_chars_and_parentheses,
 )
 from media_manager.indexer.service import IndexerService
 from media_manager.metadataProvider.abstractMetaDataProvider import (
@@ -877,7 +879,7 @@ class TvService:
         self, tv_show: Path, metadata_provider: AbstractMetadataProvider
     ) -> MediaImportSuggestion:
         search_result = self.search_for_show(
-            strip_trailing_year(tv_show.name), metadata_provider
+            remove_special_chars_and_parentheses(tv_show.name), metadata_provider
         )
         import_candidates = MediaImportSuggestion(
             directory=tv_show, candidates=search_result
@@ -888,8 +890,15 @@ class TvService:
         return import_candidates
 
     def import_existing_tv_show(self, tv_show: Show, source_directory: Path) -> None:
+        new_source_path = source_directory.parent / ("." + source_directory.name)
+        try:
+            source_directory.rename(new_source_path)
+        except Exception as e:
+            log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
+            raise Exception("Failed to rename source directory") from e
+
         video_files, subtitle_files, all_files = get_files_for_import(
-            directory=source_directory
+            directory=new_source_path
         )
         for season in tv_show.seasons:
             success, imported_episode_count = self.import_season(
@@ -908,11 +917,37 @@ class TvService:
             if success or imported_episode_count > (len(season.episodes) / 2):
                 self.tv_repository.add_season_file(season_file=season_file)
 
-        new_source_path = source_directory.parent / ("." + source_directory.name)
-        try:
-            source_directory.rename(new_source_path)
-        except Exception as e:
-            log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
+    def get_importable_tv_shows(
+        self, metadata_provider: AbstractMetadataProvider
+    ) -> list[MediaImportSuggestion]:
+        tv_directory = AllEncompassingConfig().misc.tv_directory
+        import_suggestions: list[MediaImportSuggestion] = []
+        candidate_dirs = get_importable_media_directories(tv_directory)
+
+        for item in candidate_dirs:
+            metadata, external_id = extract_external_id_from_string(item.name)
+            if metadata is not None and external_id is not None:
+                try:
+                    self.tv_repository.get_show_by_external_id(
+                        external_id=external_id,
+                        metadata_provider=metadata,
+                    )
+                    log.debug(
+                        f"Show {item.name} already exists in the database, skipping import suggestion."
+                    )
+                    continue
+                except NotFoundError:
+                    log.debug(
+                        f"Show {item.name} not found in database, checking for import candidates."
+                    )
+
+            import_suggestion = self.get_import_candidates(
+                tv_show=item, metadata_provider=metadata_provider
+            )
+            import_suggestions.append(import_suggestion)
+
+        log.debug(f"Detected {len(import_suggestions)} importable TV shows.")
+        return import_suggestions
 
 
 def auto_download_all_approved_season_requests() -> None:

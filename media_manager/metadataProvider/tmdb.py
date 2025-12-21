@@ -8,6 +8,7 @@ from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
+from media_manager.torrent.utils import remove_special_chars_and_parentheses
 from media_manager.tv.schemas import Episode, Season, Show, SeasonNumber, EpisodeNumber
 from media_manager.movies.schemas import Movie
 from media_manager.notification.manager import notification_manager
@@ -82,7 +83,11 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
     def __search_tv(self, query: str, page: int) -> dict:
         try:
             response = requests.get(
-                url=f"{self.url}/tv/search", params={"query": query, "page": page, "language": self.default_language}
+                url=f"{self.url}/tv/search",
+                params={
+                    "query": remove_special_chars_and_parentheses(query),
+                    "page": page,
+                },
             )
             response.raise_for_status()
             return response.json()
@@ -131,7 +136,11 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
     def __search_movie(self, query: str, page: int) -> dict:
         try:
             response = requests.get(
-                url=f"{self.url}/movies/search", params={"query": query, "page": page, "language": self.default_language}
+                url=f"{self.url}/movies/search",
+                params={
+                    "query": remove_special_chars_and_parentheses(query),
+                    "page": page,
+                },
             )
             response.raise_for_status()
             return response.json()
