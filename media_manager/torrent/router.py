@@ -40,10 +40,11 @@ def delete_torrent(
     torrent: torrent_dep,
     delete_files: bool = False,
 ):
-    try:
-        service.cancel_download(torrent=torrent, delete_files=delete_files)
-    except RuntimeError:
-        pass
+    if delete_files:
+        try:
+            service.cancel_download(torrent=torrent, delete_files=False)
+        except RuntimeError:
+            pass
 
     service.delete_torrent(torrent_id=torrent.id)
 
