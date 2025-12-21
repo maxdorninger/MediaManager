@@ -17,6 +17,9 @@ There we can discuss its scope and implementation.
 Generally, if you have any questions or need help on the implementation side of MediaManager,
 just ask in the issue, or in a draft PR.
 
+Also, see the contribution guide in the docs for information on how to setup the dev environment:
+https://maxdorninger.github.io/MediaManager/developer-guide.html
+
 ### For something that is a one or two line fix:
 
 Make the change, and open a PR with a short description of what you changed and why.
