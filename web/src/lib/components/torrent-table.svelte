@@ -13,6 +13,7 @@
 	import { toast } from 'svelte-sonner';
 	import DeleteTorrentDialog from '$lib/components/delete-torrent-dialog.svelte';
 	import EditTorrentDialog from '$lib/components/edit-torrent-dialog.svelte';
+	import { invalidateAll } from '$app/navigation';
 	let {
 		torrents,
 		isShow = true
@@ -42,6 +43,7 @@
 			console.log(`Successfully retried download for torrent ${torrent.torrent_title}`);
 			toast.success('Trying to download torrent...');
 		}
+		await invalidateAll();
 	}
 </script>
 

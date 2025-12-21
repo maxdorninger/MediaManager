@@ -5,6 +5,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import client from '$lib/api';
+	import { invalidateAll } from '$app/navigation';
 
 	let newPassword: string = $state('');
 	let newEmail: string = $state('');
@@ -25,6 +26,7 @@
 		}
 		newPassword = '';
 		newEmail = '';
+		await invalidateAll();
 	}
 </script>
 

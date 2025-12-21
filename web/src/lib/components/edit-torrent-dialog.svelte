@@ -14,11 +14,10 @@
 		torrent: components['schemas']['MovieTorrent'] | components['schemas']['RichSeasonTorrent'];
 	} = $props();
 	let dialogOpen = $state(false);
-	let importedState = $state(torrent.imported || false);
+	let importedState = $derived(torrent.imported);
 
 	async function closeDialog() {
 		dialogOpen = false;
-		importedState = torrent.imported || false;
 	}
 	async function saveTorrent() {
 		const { error } = await client.PATCH('/api/v1/torrent/{torrent_id}/status', {
@@ -32,8 +31,7 @@
 			}
 		});
 		if (error) {
-			console.error(`Failed to update torrent ${torrent.torrent_id} imported state: ${error}`);
-			toast.error(`Failed to update torrent: ${error}`);
+			toast.error('Failed to update torrent.');
 			return;
 		}
 		await invalidateAll();
@@ -53,10 +51,8 @@
 			</Dialog.Description>
 		</Dialog.Header>
 		<div class="flex gap-2">
+			<Label for="imported-state">Torrent {importedState ? 'is' : 'is not'} imported.</Label>
 			<Switch bind:checked={importedState} id="imported-state" />
-			<Label for="imported-state"
-				>Change Torrent import state to: {importedState ? 'is' : 'is not'} imported.</Label
-			>
 		</div>
 		<Dialog.Footer class="mt-8 flex justify-between gap-2">
 			<Button onclick={() => closeDialog()} variant="secondary">Cancel</Button>

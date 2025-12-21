@@ -7,7 +7,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import type { components } from '$lib/api/api';
 
 	let currentUser: () => components['schemas']['UserRead'] = getContext('user');
@@ -16,7 +16,6 @@
 			(user: components['schemas']['UserRead']) => user.id !== currentUser().id
 		)
 	);
-	console.log('Current user:', currentUser());
 </script>
 
 <svelte:head>
@@ -31,7 +30,7 @@
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item class="hidden md:block">
-					<Breadcrumb.Link href="{base}/dashboard">MediaManager</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>MediaManager</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>

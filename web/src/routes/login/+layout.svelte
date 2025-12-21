@@ -5,10 +5,7 @@
 	import background from '$lib/images/pawel-czerwinski-NTYYL9Eb9y8-unsplash.jpg?enhanced';
 	import { PUBLIC_VERSION } from '$env/static/public';
 	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
-	import { setContext } from 'svelte';
 
-	setContext('oauthProviders', () => page.data.oauthProviders.oauth_providers);
 	let { children } = $props();
 </script>
 

@@ -26,15 +26,14 @@
 			toast.error('Movie ID is missing');
 			return;
 		}
-		const { response } = await client.DELETE('/api/v1/movies/{movie_id}', {
+		const { error } = await client.DELETE('/api/v1/movies/{movie_id}', {
 			params: {
 				path: { movie_id: media.id },
 				query: { delete_files_on_disk: deleteFilesOnDisk, delete_torrents: deleteTorrents }
 			}
 		});
-		if (!response.ok) {
-			const errorText = await response.text();
-			toast.error('Failed to delete movie: ' + errorText);
+		if (error) {
+			toast.error('Failed to delete movie: ' + error.detail);
 		} else {
 			toast.success('Movie deleted successfully.');
 			deleteDialogOpen = false;
@@ -43,15 +42,14 @@
 	}
 
 	async function delete_show() {
-		const { response } = await client.DELETE('/api/v1/tv/shows/{show_id}', {
+		const { error } = await client.DELETE('/api/v1/tv/shows/{show_id}', {
 			params: {
 				path: { show_id: media.id! },
 				query: { delete_files_on_disk: deleteFilesOnDisk, delete_torrents: deleteTorrents }
 			}
 		});
-		if (!response.ok) {
-			const errorText = await response.text();
-			toast.error('Failed to delete show: ' + errorText);
+		if (error) {
+			toast.error('Failed to delete show: ' + error.detail);
 		} else {
 			toast.success('Show deleted successfully.');
 			deleteDialogOpen = false;

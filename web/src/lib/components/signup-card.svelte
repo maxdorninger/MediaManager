@@ -8,9 +8,9 @@
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import LoadingBar from '$lib/components/loading-bar.svelte';
 	import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
-	import { base } from '$app/paths';
 	import { handleOauth } from '$lib/utils.ts';
 	import client from '$lib/api';
+	import { resolve } from '$app/paths';
 
 	let email = $state('');
 	let password = $state('');
@@ -125,7 +125,7 @@
 			>
 		{/each}
 		<div class="mt-4 text-center text-sm">
-			<Button href="{base}/login/" variant="link">Already have an account? Login</Button>
+			<Button href={resolve('/login/', {})} variant="link">Already have an account? Login</Button>
 		</div>
 	</Card.Content>
 </Card.Root>

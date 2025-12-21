@@ -1,8 +1,8 @@
 <script lang="ts">
 	import LoginCard from '$lib/components/login-card.svelte';
-	import { getContext } from 'svelte';
+	import { page } from '$app/state';
 
-	let oauthProvider: () => string[] = getContext('oauthProviders');
+	let oauthProviders: string[] = $derived(page.data.oauthProviders);
 </script>
 
 <svelte:head>
@@ -14,5 +14,5 @@
 </svelte:head>
 
 <main>
-	<LoginCard oauthProviderNames={oauthProvider()} />
+	<LoginCard oauthProviderNames={oauthProviders} />
 </main>

@@ -5,7 +5,6 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import { base } from '$app/paths';
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import LoadingBar from '$lib/components/loading-bar.svelte';
@@ -49,7 +48,7 @@
 			console.log('Received User Data: ', response);
 			successMessage = 'Login successful! Redirecting...';
 			toast.success(successMessage);
-			goto(resolve('/dashboard', {}));
+			await goto(resolve('/dashboard', {}));
 		} else {
 			toast.error('Login failed!');
 			errorMessage = `Login failed! Please check your credentials and try again.`;
@@ -127,7 +126,9 @@
 			>
 		{/each}
 		<div class="mt-4 text-center text-sm">
-			<Button href="{base}/login/signup/" variant="link">Don't have an account? Sign up</Button>
+			<Button href={resolve('/login/signup/', {})} variant="link"
+				>Don't have an account? Sign up</Button
+			>
 		</div>
 	</Card.Content>
 </Card.Root>
