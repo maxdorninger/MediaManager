@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { ImageOff, LoaderCircle } from 'lucide-svelte';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { components } from '$lib/api/api';
 	import client from '$lib/api';
@@ -40,11 +40,14 @@
 		}
 
 		if (isShow) {
-			await goto(resolve('/dashboard/tv/[showId]', { showId: data?.id ?? '' }));
+			await goto(resolve('/dashboard/tv/[showId]', { showId: data?.id ?? '' }), {
+				invalidateAll: true
+			});
 		} else {
-			await goto(resolve('/dashboard/movies/[movieId]', { movieId: data?.id ?? '' }));
+			await goto(resolve('/dashboard/movies/[movieId]', { movieId: data?.id ?? '' }), {
+				invalidateAll: true
+			});
 		}
-		await invalidateAll();
 		loading = false;
 	}
 </script>

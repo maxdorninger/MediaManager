@@ -47,8 +47,8 @@
 			selectedUser = null;
 			newPassword = '';
 			newEmail = '';
-			await invalidateAll();
 		}
+		await invalidateAll();
 	}
 
 	async function deleteUser() {
@@ -68,8 +68,8 @@
 			toast.success(`User ${userToDelete.email} deleted successfully.`);
 			deleteDialogOpen = false;
 			userToDelete = null;
-			await invalidateAll();
 		}
+		await invalidateAll();
 	}
 </script>
 

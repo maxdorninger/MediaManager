@@ -8,6 +8,7 @@
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
+	import { invalidateAll } from '$app/navigation';
 
 	let { movie }: { movie: components['schemas']['PublicMovie'] } = $props();
 	let dialogOpen = $state(false);
@@ -44,6 +45,7 @@
 		} else {
 			toast.error('Failed to submit request');
 		}
+		await invalidateAll();
 	}
 </script>
 
