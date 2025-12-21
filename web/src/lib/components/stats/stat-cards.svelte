@@ -6,7 +6,7 @@
 	import { resolve } from '$app/paths';
 	import AnimatedCard from '$lib/components/stats/animated-card.svelte';
 	let { showCount, moviesCount }: { showCount: number; moviesCount: number } = $props();
-    import { PUBLIC_VERSION } from '$env/static/public';
+	import { PUBLIC_VERSION } from '$env/static/public';
 
 	let episodeCount: Promise<number> = $state(
 		client.GET('/api/v1/tv/episodes/count').then((res) => {
