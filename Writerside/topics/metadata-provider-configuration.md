@@ -17,6 +17,26 @@ If you want to use your own TMDB relay service, set this to the URL of your own 
 - **Default:** `https://metadata-relay.dorninger.co/tmdb`
 - **Example:** `https://your-own-relay.example.com/tmdb`
 
+### `primary_languages`
+
+If a TV show/movie's original language is in this list, metadata will be displayed and fetched in that language. Torrent searches done in Standard Mode uses the same fetched metadata, so if you use any language-specific tracker, you may enter the language here to get the desired search results.
+Otherwise, `default_language` will be used.
+
+**Format: ISO 639-1 codes (2 letters). Full list: https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes**
+
+- **Default:** `[]`
+- **Example:** `["no", "de", "es"]`
+
+### `default_language`
+
+<warning>
+    `default_language` sets the TMDB `language` paramater when searching and adding TV shows and movies. If TMDB does not find a matching translation, metadata in the <strong>original language</strong> will be fetched with no option for a fallback language. It is therefore highly advised to only use "broad" languages. For most use cases, the default setting is safest.
+</warning>
+
+**Format: ISO 639-1 codes (2 letters).**
+
+- **Default:** `en`
+
 ## TVDB Settings (`[metadata.tvdb]`)
 
 <warning>

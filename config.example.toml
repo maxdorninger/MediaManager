@@ -172,12 +172,6 @@ rule_names = ["prefer_h265", "avoid_cam", "reject_non_freeleech"]
 [metadata]
 [metadata.tmdb]
 tmdb_relay_url = "https://metadata-relay.dorninger.co/tmdb"
-
-# If a show/movie original language is in this list, metadata will be fetched in that language
-# Otherwise, the default_language will be used as fallback
-# Format: ISO 639-1 codes (2 letters)
-# Examples: "en" (English), "no" (Norwegian), "ru" (Russian), "es" (Spanish), "fr" (French), "de" (German)
-# Full list: https://www.w3schools.com/tags/ref_language_codes.asp#:~:text=ISO%20639%2D1%20Language%20Codes
 primary_languages = [""]
 default_language = "en"
 
