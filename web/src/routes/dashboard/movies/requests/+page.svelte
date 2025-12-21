@@ -6,7 +6,7 @@
 	import RequestsTable from '$lib/components/season-requests-table.svelte';
 	import { resolve } from '$app/paths';
 
-	let requests = page.data.requestsData;
+	let requests = $derived(page.data.requestsData);
 </script>
 
 <svelte:head>

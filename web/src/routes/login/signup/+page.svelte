@@ -1,8 +1,8 @@
 <script lang="ts">
 	import SignupCard from '$lib/components/signup-card.svelte';
-	import { getContext } from 'svelte';
+	import { page } from '$app/state';
 
-	let oauthProvider: () => string[] = getContext('oauthProviders');
+	let oauthProviders: string[] = $derived(page.data.oauthProviders);
 </script>
 
 <svelte:head>
@@ -10,4 +10,4 @@
 	<meta content="Signup - MediaManager" name="description" />
 </svelte:head>
 
-<SignupCard oauthProviderNames={oauthProvider()} />
+<SignupCard oauthProviderNames={oauthProviders} />

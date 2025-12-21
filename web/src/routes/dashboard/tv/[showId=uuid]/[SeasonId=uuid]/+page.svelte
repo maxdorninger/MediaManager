@@ -4,7 +4,6 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
-	import { getContext } from 'svelte';
 	import type { components } from '$lib/api/api';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils';
@@ -12,18 +11,16 @@
 	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	let seasonFiles: components['schemas']['PublicSeasonFile'][] = $state(page.data.files);
-	let season: components['schemas']['Season'] = $state(page.data.season);
-	let show: () => components['schemas']['Show'] = getContext('show');
-
-	console.log('loaded files', seasonFiles);
+	let seasonFiles: components['schemas']['PublicSeasonFile'][] = $derived(page.data.files);
+	let season: components['schemas']['Season'] = $derived(page.data.season);
+	let show: components['schemas']['Show'] = $derived(page.data.showData);
 </script>
 
 <svelte:head>
-	<title>{getFullyQualifiedMediaName(show())} - Season {season.number} - MediaManager</title>
+	<title>{getFullyQualifiedMediaName(show)} - Season {season.number} - MediaManager</title>
 	<meta
 		content="View episodes and manage downloads for {getFullyQualifiedMediaName(
-			show()
+			show
 		)} Season {season.number} in MediaManager"
 		name="description"
 	/>
@@ -48,9 +45,9 @@
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href={resolve('/dashboard/tv/[showId]', { showId: show().id! })}>
-						{show().name}
-						{show().year == null ? '' : '(' + show().year + ')'}
+					<Breadcrumb.Link href={resolve('/dashboard/tv/[showId]', { showId: show.id! })}>
+						{show.name}
+						{show.year == null ? '' : '(' + show.year + ')'}
 					</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
@@ -62,12 +59,12 @@
 	</div>
 </header>
 <h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
-	{getFullyQualifiedMediaName(show())} Season {season.number}
+	{getFullyQualifiedMediaName(show)} Season {season.number}
 </h1>
 <main class="mx-auto flex w-full flex-1 flex-col gap-4 p-4 md:max-w-[80em]">
 	<div class="flex flex-col gap-4 md:flex-row md:items-stretch">
 		<div class="w-full overflow-hidden rounded-xl bg-muted/50 md:w-1/3 md:max-w-sm">
-			<MediaPicture media={show()} />
+			<MediaPicture media={show} />
 		</div>
 		<div class="h-full w-full flex-auto rounded-xl md:w-1/4">
 			<Card.Root class="h-full w-full">
@@ -76,7 +73,7 @@
 				</Card.Header>
 				<Card.Content>
 					<p class="leading-7 not-first:mt-6">
-						{show().overview}
+						{show.overview}
 					</p>
 				</Card.Content>
 			</Card.Root>
@@ -130,7 +127,7 @@
 			<Card.Header>
 				<Card.Title>Episodes</Card.Title>
 				<Card.Description
-					>A list of all episodes for {getFullyQualifiedMediaName(show())} Season {season.number}
+					>A list of all episodes for {getFullyQualifiedMediaName(show)} Season {season.number}
 					.
 				</Card.Description>
 			</Card.Header>

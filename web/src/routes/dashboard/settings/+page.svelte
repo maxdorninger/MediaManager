@@ -16,7 +16,6 @@
 			(user: components['schemas']['UserRead']) => user.id !== currentUser().id
 		)
 	);
-	console.log('Current user:', currentUser());
 </script>
 
 <svelte:head>
