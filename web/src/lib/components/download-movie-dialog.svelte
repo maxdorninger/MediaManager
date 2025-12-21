@@ -11,6 +11,7 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import client from '$lib/api';
 	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	let { movie } = $props();
 	let dialogueState = $state(false);
@@ -40,19 +41,16 @@
 			console.warn(errorMessage);
 			torrentsError = errorMessage;
 			if (dialogueState) toast.info(errorMessage);
-			return [];
 		} else if (!response.ok) {
 			const errorMessage = `Failed to download torrent for movie ${movie.id}: ${response.statusText}`;
 			console.error(errorMessage);
 			torrentsError = errorMessage;
 			toast.error(errorMessage);
-			return false;
 		} else {
 			console.log('Downloading torrent:', data);
 			toast.success('Torrent download started successfully!');
-
-			return true;
 		}
+		await invalidateAll();
 	}
 
 	async function search() {
