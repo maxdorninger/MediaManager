@@ -3,8 +3,8 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
 	import { ChevronRight } from 'lucide-svelte';
-	import { base } from '$app/paths';
 	import type { components } from '$lib/api/api';
+	import { resolve } from '$app/paths';
 
 	let {
 		media,
@@ -31,12 +31,16 @@
 		{/each}
 	{/if}
 	{#if isShow}
-		<Button class="md:col-start-2" variant="secondary" href="{base}/dashboard/tv/add-show">
+		<Button class="md:col-start-2" variant="secondary" href={resolve('/dashboard/tv/add-show', {})}>
 			More recommendations
 			<ChevronRight />
 		</Button>
 	{:else}
-		<Button class="md:col-start-2" variant="secondary" href="{base}/dashboard/movies/add-movie">
+		<Button
+			class="md:col-start-2"
+			variant="secondary"
+			href={resolve('/dashboard/movies/add-movie', {})}
+		>
 			More recommendations
 			<ChevronRight />
 		</Button>
