@@ -13,7 +13,6 @@
 		result,
 		isShow = true
 	}: { result: components['schemas']['MetaDataProviderSearchResult']; isShow: boolean } = $props();
-	console.log('Add Show Card Result: ', result);
 
 	async function addMedia() {
 		loading = true;

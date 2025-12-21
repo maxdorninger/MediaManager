@@ -27,7 +27,7 @@
 	let torrents: components['schemas']['RichShowTorrent'] = $derived(page.data.torrentsData);
 	let user: () => components['schemas']['UserRead'] = getContext('user');
 
-	let continuousDownloadEnabled = $state(show.continuous_download);
+	let continuousDownloadEnabled = $derived(show.continuous_download);
 
 	async function toggle_continuous_download() {
 		const { response } = await client.POST('/api/v1/tv/shows/{show_id}/continuousDownload', {

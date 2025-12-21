@@ -4,7 +4,6 @@
 
 	const apiUrl = env.PUBLIC_API_URL;
 	let { media } = $props();
-	console.log('got media: ', media);
 </script>
 
 <picture>
