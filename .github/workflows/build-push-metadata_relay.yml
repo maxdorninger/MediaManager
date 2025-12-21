@@ -6,11 +6,11 @@ on:
       - master
     paths:
       - 'metadata_relay/**'
-      - '.github/workflows/metadata_relay.yaml'
+      - '.github/workflows/build-push-metadata_relay.yml'
   pull_request:
     paths:
       - 'metadata_relay/**'
-      - '.github/workflows/metadata_relay.yaml'
+      - '.github/workflows/build-push-metadata_relay.yml'
   release:
     types: [ published ]
   workflow_dispatch:
