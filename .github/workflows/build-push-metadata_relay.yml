@@ -149,6 +149,8 @@ jobs:
             VERSION="dev-${DATE_STAMP}-${{ github.run_number }}"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION_NO_V=${VERSION#v}
+          echo "version_no_v=$VERSION_NO_V" >> $GITHUB_OUTPUT
 
       - name: Extract metadata (tags)
         id: meta
@@ -173,4 +175,4 @@ jobs:
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay:${{ steps.version.outputs.version }}
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay:${{ steps.version.outputs.version_no_v }}
