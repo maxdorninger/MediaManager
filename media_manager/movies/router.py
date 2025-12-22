@@ -56,11 +56,13 @@ def add_a_movie(
     movie_service: movie_service_dep,
     metadata_provider: metadata_provider_dep,
     movie_id: int,
+    language: str | None = None,
 ):
     try:
         movie = movie_service.add_movie(
             external_id=movie_id,
             metadata_provider=metadata_provider,
+            language=language,
         )
     except ValueError:
         movie = movie_service.get_movie_by_external_id(

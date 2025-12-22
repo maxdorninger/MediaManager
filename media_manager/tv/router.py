@@ -58,12 +58,13 @@ router = APIRouter()
     },
 )
 def add_a_show(
-    tv_service: tv_service_dep, metadata_provider: metadata_provider_dep, show_id: int
+    tv_service: tv_service_dep, metadata_provider: metadata_provider_dep, show_id: int, language: str | None = None
 ):
     try:
         show = tv_service.add_show(
             external_id=show_id,
             metadata_provider=metadata_provider,
+            language=language,
         )
     except MediaAlreadyExists:
         show = tv_service.get_show_by_external_id(

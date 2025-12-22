@@ -172,6 +172,8 @@ rule_names = ["prefer_h265", "avoid_cam", "reject_non_freeleech"]
 [metadata]
 [metadata.tmdb]
 tmdb_relay_url = "https://metadata-relay.dorninger.co/tmdb"
+primary_languages = [""]
+default_language = "en"
 
 [metadata.tvdb]
 tvdb_relay_url = "https://metadata-relay.dorninger.co/tvdb"

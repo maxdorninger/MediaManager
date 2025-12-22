@@ -63,15 +63,16 @@ class MovieService:
         self.notification_service = notification_service
 
     def add_movie(
-        self, external_id: int, metadata_provider: AbstractMetadataProvider
+        self, external_id: int, metadata_provider: AbstractMetadataProvider, language: str | None = None
     ) -> Movie | None:
         """
         Add a new movie to the database.
 
         :param external_id: The ID of the movie in the metadata provider's system.
         :param metadata_provider: The name of the metadata provider.
+        :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
-        movie_with_metadata = metadata_provider.get_movie_metadata(id=external_id)
+        movie_with_metadata = metadata_provider.get_movie_metadata(id=external_id, language=language)
         saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
         metadata_provider.download_movie_poster_image(movie=saved_movie)
         return saved_movie
@@ -697,7 +698,8 @@ class MovieService:
         """
         log.debug(f"Found movie: {db_movie.name} for metadata update.")
 
-        fresh_movie_data = metadata_provider.get_movie_metadata(id=db_movie.external_id)
+        # Use stored original_language preference for metadata fetching
+        fresh_movie_data = metadata_provider.get_movie_metadata(id=db_movie.external_id, language=db_movie.original_language)
         if not fresh_movie_data:
             log.warning(
                 f"Could not fetch fresh metadata for movie {db_movie.name} (External ID: {db_movie.external_id}) from {db_movie.metadata_provider}."

@@ -135,6 +135,7 @@ class TvRepository:
             db_show.name = show.name
             db_show.overview = show.overview
             db_show.year = show.year
+            db_show.original_language = show.original_language
         else:  # Insert new show
             db_show = Show(
                 id=show.id,
@@ -144,6 +145,7 @@ class TvRepository:
                 overview=show.overview,
                 year=show.year,
                 ended=show.ended,
+                original_language=show.original_language,
                 seasons=[
                     Season(
                         id=season.id,

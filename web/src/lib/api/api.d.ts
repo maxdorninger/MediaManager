@@ -1309,6 +1309,8 @@ export interface components {
 			added: boolean;
 			/** Vote Average */
 			vote_average?: number | null;
+			/** Original Language */
+			original_language?: string | null;
 			/** Id */
 			id?: string | null;
 		};
@@ -1334,6 +1336,8 @@ export interface components {
 			 * @default Default
 			 */
 			library: string;
+			/** Original Language */
+			original_language?: string | null;
 		};
 		/** MovieRequest */
 		MovieRequest: {
@@ -1433,6 +1437,8 @@ export interface components {
 			 * @default Default
 			 */
 			library: string;
+			/** Original Language */
+			original_language?: string | null;
 			/**
 			 * Downloaded
 			 * @default false
@@ -1689,6 +1695,8 @@ export interface components {
 			 * @default Default
 			 */
 			library: string;
+			/** Original Language */
+			original_language?: string | null;
 			/** Seasons */
 			seasons: components['schemas']['Season'][];
 		};
@@ -2565,6 +2573,7 @@ export interface operations {
 		parameters: {
 			query: {
 				show_id: number;
+				language?: string | null;
 				metadata_provider?: 'tmdb' | 'tvdb';
 			};
 			header?: never;
@@ -3417,6 +3426,7 @@ export interface operations {
 		parameters: {
 			query: {
 				movie_id: number;
+				language?: string | null;
 				metadata_provider?: 'tmdb' | 'tvdb';
 			};
 			header?: never;

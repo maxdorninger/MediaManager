@@ -16,29 +16,29 @@ else:
     tmdbsimple.API_KEY = tmdb_api_key
 
     @router.get("/tv/trending")
-    async def get_tmdb_trending_tv():
-        return Trending(media_type="tv").info()
+    async def get_tmdb_trending_tv(language: str = "en"):
+        return Trending(media_type="tv").info(language=language)
 
     @router.get("/tv/search")
-    async def search_tmdb_tv(query: str, page: int = 1):
-        return Search().tv(page=page, query=query)
+    async def search_tmdb_tv(query: str, page: int = 1, language: str = "en"):
+        return Search().tv(page=page, query=query, language=language)
 
     @router.get("/tv/shows/{show_id}")
-    async def get_tmdb_show(show_id: int):
-        return TV(show_id).info()
+    async def get_tmdb_show(show_id: int, language: str = "en"):
+        return TV(show_id).info(language=language)
 
     @router.get("/tv/shows/{show_id}/{season_number}")
-    async def get_tmdb_season(season_number: int, show_id: int):
-        return TV_Seasons(season_number=season_number, tv_id=show_id).info()
+    async def get_tmdb_season(season_number: int, show_id: int, language: str = "en"):
+        return TV_Seasons(season_number=season_number, tv_id=show_id).info(language=language)
 
     @router.get("/movies/trending")
-    async def get_tmdb_trending_movies():
-        return Trending(media_type="movie").info()
+    async def get_tmdb_trending_movies(language: str = "en"):
+        return Trending(media_type="movie").info(language=language)
 
     @router.get("/movies/search")
-    async def search_tmdb_movies(query: str, page: int = 1):
-        return Search().movie(page=page, query=query)
+    async def search_tmdb_movies(query: str, page: int = 1, language: str = "en"):
+        return Search().movie(page=page, query=query, language=language)
 
     @router.get("/movies/{movie_id}")
-    async def get_tmdb_movie(movie_id: int):
-        return Movies(movie_id).info()
+    async def get_tmdb_movie(movie_id: int, language: str = "en"):
+        return Movies(movie_id).info(language=language)

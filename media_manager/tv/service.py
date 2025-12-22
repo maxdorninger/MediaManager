@@ -69,15 +69,16 @@ class TvService:
         self.notification_service = notification_service
 
     def add_show(
-        self, external_id: int, metadata_provider: AbstractMetadataProvider
+        self, external_id: int, metadata_provider: AbstractMetadataProvider, language: str | None = None
     ) -> Show | None:
         """
         Add a new show to the database.
 
-        :param external_id: The ID of the show in the metadata provider\\\'s system.
+        :param external_id: The ID of the show in the metadata provider\'s system.
         :param metadata_provider: The name of the metadata provider.
+        :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
-        show_with_metadata = metadata_provider.get_show_metadata(id=external_id)
+        show_with_metadata = metadata_provider.get_show_metadata(id=external_id, language=language)
         saved_show = self.tv_repository.save_show(show=show_with_metadata)
         metadata_provider.download_show_poster_image(show=saved_show)
         return saved_show
@@ -756,7 +757,8 @@ class TvService:
         log.debug(f"Found show: {db_show.name} for metadata update.")
         # old_poster_url = db_show.poster_url # poster_url removed from db_show
 
-        fresh_show_data = metadata_provider.get_show_metadata(id=db_show.external_id)
+        # Use stored original_language preference for metadata fetching
+        fresh_show_data = metadata_provider.get_show_metadata(id=db_show.external_id, language=db_show.original_language)
         if not fresh_show_data:
             log.warning(
                 f"Could not fetch fresh metadata for show {db_show.name} (External ID: {db_show.external_id}) from {db_show.metadata_provider}."
