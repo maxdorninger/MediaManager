@@ -1338,6 +1338,8 @@ export interface components {
 			library: string;
 			/** Original Language */
 			original_language?: string | null;
+			/** Imdb Id */
+			imdb_id?: string | null;
 		};
 		/** MovieRequest */
 		MovieRequest: {
@@ -1439,6 +1441,8 @@ export interface components {
 			library: string;
 			/** Original Language */
 			original_language?: string | null;
+			/** Imdb Id */
+			imdb_id?: string | null;
 			/**
 			 * Downloaded
 			 * @default false
@@ -1697,6 +1701,8 @@ export interface components {
 			library: string;
 			/** Original Language */
 			original_language?: string | null;
+			/** Imdb Id */
+			imdb_id?: string | null;
 			/** Seasons */
 			seasons: components['schemas']['Season'][];
 		};
