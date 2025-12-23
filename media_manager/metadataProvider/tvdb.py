@@ -77,6 +77,14 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         seasons = []
         seasons_ids = [season["id"] for season in series["seasons"]]
 
+        # get imdb id from remote ids
+        imdb_id = None
+        remote_ids = series.get("remoteIds", None)
+        if remote_ids:
+            for remote_id in remote_ids:
+                if remote_id.get("type") == 2:
+                    imdb_id = remote_id.get("id")
+
         for season in seasons_ids:
             s = self.__get_season(id=season)
             # the seasons need to be filtered to a certain type,
@@ -119,6 +127,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             metadata_provider=self.name,
             seasons=seasons,
             ended=False,
+            imdb_id=imdb_id,
         )
 
         return show
@@ -267,17 +276,22 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         :rtype: Movie
         """
         movie = self.__get_movie(id)
-        try:
-            year = movie["year"]
-        except KeyError:
-            year = None
+
+        # get imdb id from remote ids
+        imdb_id = None
+        remote_ids = movie.get("remoteIds", None)
+        if remote_ids:
+            for remote_id in remote_ids:
+                if remote_id.get("type") == 2:
+                    imdb_id = remote_id.get("id")
 
         movie = Movie(
             name=movie["name"],
-            overview="TVDB does not provide overviews",
-            year=year,
+            overview="Overviews are not supported with TVDB",
+            year=movie.get("year"),
             external_id=movie["id"],
             metadata_provider=self.name,
+            imdb_id=imdb_id,
         )
 
         return movie

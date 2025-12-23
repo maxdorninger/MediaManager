@@ -58,6 +58,20 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 )
             raise
 
+    def __get_show_external_ids(self, id: int) -> dict:
+        try:
+            response = requests.get(url=f"{self.url}/tv/shows/{id}/external_ids")
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            log.error(f"TMDB API error getting show external IDs for ID {id}: {e}")
+            if notification_manager.is_configured():
+                notification_manager.send_notification(
+                    title="TMDB API Error",
+                    message=f"Failed to fetch show external IDs for ID {id} from TMDB. Error: {str(e)}",
+                )
+            raise
+
     def __get_season_metadata(
         self, show_id: int, season_number: int, language: str | None = None
     ) -> dict:
@@ -133,6 +147,20 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 notification_manager.send_notification(
                     title="TMDB API Error",
                     message=f"Failed to fetch movie metadata for ID {id} from TMDB. Error: {str(e)}",
+                )
+            raise
+
+    def __get_movie_external_ids(self, id: int) -> dict:
+        try:
+            response = requests.get(url=f"{self.url}/movies/{id}/external_ids")
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            log.error(f"TMDB API error getting movie external IDs for ID {id}: {e}")
+            if notification_manager.is_configured():
+                notification_manager.send_notification(
+                    title="TMDB API Error",
+                    message=f"Failed to fetch movie external IDs for ID {id} from TMDB. Error: {str(e)}",
                 )
             raise
 
@@ -219,6 +247,10 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         # Fetch show metadata in the appropriate language
         show_metadata = self.__get_show_metadata(id, language=language)
 
+        # get imdb id
+        external_ids = self.__get_show_external_ids(id=id)
+        imdb_id = external_ids.get("imdb_id")
+
         season_list = []
         # inserting all the metadata into the objects
         for season in show_metadata["seasons"]:
@@ -261,6 +293,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             metadata_provider=self.name,
             ended=show_metadata["status"] in ENDED_STATUS,
             original_language=show_metadata.get("original_language"),
+            imdb_id=imdb_id,
         )
 
         return show
@@ -346,6 +379,10 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         # Fetch movie metadata in the appropriate language
         movie_metadata = self.__get_movie_metadata(id=id, language=language)
 
+        # get imdb id
+        external_ids = self.__get_movie_external_ids(id=id)
+        imdb_id = external_ids.get("imdb_id")
+
         year = media_manager.metadataProvider.utils.get_year_from_date(
             movie_metadata["release_date"]
         )
@@ -357,6 +394,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             year=year,
             metadata_provider=self.name,
             original_language=movie_metadata.get("original_language"),
+            imdb_id=imdb_id,
         )
 
         return movie
