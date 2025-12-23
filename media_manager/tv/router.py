@@ -58,7 +58,10 @@ router = APIRouter()
     },
 )
 def add_a_show(
-    tv_service: tv_service_dep, metadata_provider: metadata_provider_dep, show_id: int, language: str | None = None
+    tv_service: tv_service_dep,
+    metadata_provider: metadata_provider_dep,
+    show_id: int,
+    language: str | None = None,
 ):
     try:
         show = tv_service.add_show(

@@ -32,7 +32,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         """
         Determine the language parameter to use for TMDB API calls.
         Returns the original language if it's in primary_languages, otherwise returns default_language.
-        
+
         :param original_language: The original language code (ISO 639-1) of the media
         :return: Language parameter (ISO 639-1 format, e.g., 'en', 'no')
         """
@@ -45,8 +45,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             language = self.default_language
         try:
             response = requests.get(
-                url=f"{self.url}/tv/shows/{id}",
-                params={"language": language}
+                url=f"{self.url}/tv/shows/{id}", params={"language": language}
             )
             response.raise_for_status()
             return response.json()
@@ -59,13 +58,15 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 )
             raise
 
-    def __get_season_metadata(self, show_id: int, season_number: int, language: str | None = None) -> dict:
+    def __get_season_metadata(
+        self, show_id: int, season_number: int, language: str | None = None
+    ) -> dict:
         if language is None:
             language = self.default_language
         try:
             response = requests.get(
                 url=f"{self.url}/tv/shows/{show_id}/{season_number}",
-                params={"language": language}
+                params={"language": language},
             )
             response.raise_for_status()
             return response.json()
@@ -102,7 +103,10 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
     def __get_trending_tv(self) -> dict:
         try:
-            response = requests.get(url=f"{self.url}/tv/trending", params={"language": self.default_language})
+            response = requests.get(
+                url=f"{self.url}/tv/trending",
+                params={"language": self.default_language},
+            )
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -119,8 +123,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             language = self.default_language
         try:
             response = requests.get(
-                url=f"{self.url}/movies/{id}",
-                params={"language": language}
+                url=f"{self.url}/movies/{id}", params={"language": language}
             )
             response.raise_for_status()
             return response.json()
@@ -155,7 +158,10 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
     def __get_trending_movies(self) -> dict:
         try:
-            response = requests.get(url=f"{self.url}/movies/trending", params={"language": self.default_language})
+            response = requests.get(
+                url=f"{self.url}/movies/trending",
+                params={"language": self.default_language},
+            )
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -170,10 +176,10 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
     def download_show_poster_image(self, show: Show) -> bool:
         # Determine which language to use based on show's original_language
         language = self.__get_language_param(show.original_language)
-        
+
         # Fetch metadata in the appropriate language to get localized poster
         show_metadata = self.__get_show_metadata(show.external_id, language=language)
-        
+
         # downloading the poster
         # all pictures from TMDB should already be jpeg, so no need to convert
         if show_metadata["poster_path"] is not None:
@@ -206,20 +212,20 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         if language is None:
             show_metadata = self.__get_show_metadata(id)
             language = show_metadata.get("original_language")
-        
+
         # Determine which language to use for metadata
         language = self.__get_language_param(language)
-        
+
         # Fetch show metadata in the appropriate language
         show_metadata = self.__get_show_metadata(id, language=language)
-        
+
         season_list = []
         # inserting all the metadata into the objects
         for season in show_metadata["seasons"]:
             season_metadata = self.__get_season_metadata(
-                show_id=show_metadata["id"], 
+                show_id=show_metadata["id"],
                 season_number=season["season_number"],
-                language=language
+                language=language,
             )
             episode_list = []
 
@@ -287,19 +293,18 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                     )
                 else:
                     poster_url = None
-                
+
                 # Determine which name to use based on primary_languages
                 original_language = result.get("original_language")
                 original_name = result.get("original_name")
                 display_name = result["name"]
-                
+
                 overview = result["overview"]
                 # Use original name if language is in primary_languages and skip overview
                 if original_language and original_language in self.primary_languages:
                     display_name = original_name
                     overview = None
 
-                
                 formatted_results.append(
                     MetaDataProviderSearchResult(
                         poster_path=poster_url,
@@ -334,13 +339,13 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         if language is None:
             movie_metadata = self.__get_movie_metadata(id=id)
             language = movie_metadata.get("original_language")
-        
+
         # Determine which language to use for metadata
         language = self.__get_language_param(language)
-        
+
         # Fetch movie metadata in the appropriate language
         movie_metadata = self.__get_movie_metadata(id=id, language=language)
-        
+
         year = media_manager.metadataProvider.utils.get_year_from_date(
             movie_metadata["release_date"]
         )
@@ -384,18 +389,18 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                     )
                 else:
                     poster_url = None
-                
+
                 # Determine which name to use based on primary_languages
                 original_language = result.get("original_language")
                 original_title = result.get("original_title")
                 display_name = result["title"]
-                
+
                 overview = result["overview"]
                 # Use original name if language is in primary_languages and skip overview
                 if original_language and original_language in self.primary_languages:
                     display_name = original_title
                     overview = None
-                
+
                 formatted_results.append(
                     MetaDataProviderSearchResult(
                         poster_path=poster_url,
@@ -418,10 +423,12 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
     def download_movie_poster_image(self, movie: Movie) -> bool:
         # Determine which language to use based on movie's original_language
         language = self.__get_language_param(movie.original_language)
-        
+
         # Fetch metadata in the appropriate language to get localized poster
-        movie_metadata = self.__get_movie_metadata(id=movie.external_id, language=language)
-        
+        movie_metadata = self.__get_movie_metadata(
+            id=movie.external_id, language=language
+        )
+
         # downloading the poster
         # all pictures from TMDB should already be jpeg, so no need to convert
         if movie_metadata["poster_path"] is not None:
