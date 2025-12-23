@@ -24,6 +24,7 @@ class Movie(BaseModel):
     metadata_provider: str
     library: str = "Default"
     original_language: str | None = None
+    imdb_id: str | None = None
 
 
 class MovieFile(BaseModel):

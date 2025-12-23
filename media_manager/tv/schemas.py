@@ -57,6 +57,8 @@ class Show(BaseModel):
     library: str = "Default"
     original_language: str | None = None
 
+    imdb_id: str | None = None
+
     seasons: list[Season]
 
 
