@@ -719,6 +719,7 @@ class MovieService:
             name=fresh_movie_data.name,
             overview=fresh_movie_data.overview,
             year=fresh_movie_data.year,
+            imdb_id=fresh_movie_data.imdb_id,
         )
 
         updated_movie = self.movie_repository.get_movie_by_id(movie_id=db_movie.id)

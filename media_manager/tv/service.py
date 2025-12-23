@@ -780,6 +780,7 @@ class TvService:
             overview=fresh_show_data.overview,
             year=fresh_show_data.year,
             ended=fresh_show_data.ended,
+            imdb_id=fresh_show_data.imdb_id,
             continuous_download=db_show.continuous_download
             if fresh_show_data.ended is False
             else False,
