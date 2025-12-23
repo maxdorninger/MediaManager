@@ -37,7 +37,9 @@ from media_manager.torrent.utils import (
     import_file,
     get_files_for_import,
     remove_special_characters,
-    strip_trailing_year,
+    get_importable_media_directories,
+    extract_external_id_from_string,
+    remove_special_chars_and_parentheses,
 )
 from media_manager.indexer.service import IndexerService
 from media_manager.metadataProvider.abstractMetaDataProvider import (
@@ -61,15 +63,16 @@ class MovieService:
         self.notification_service = notification_service
 
     def add_movie(
-        self, external_id: int, metadata_provider: AbstractMetadataProvider
+        self, external_id: int, metadata_provider: AbstractMetadataProvider, language: str | None = None
     ) -> Movie | None:
         """
         Add a new movie to the database.
 
         :param external_id: The ID of the movie in the metadata provider's system.
         :param metadata_provider: The name of the metadata provider.
+        :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
-        movie_with_metadata = metadata_provider.get_movie_metadata(id=external_id)
+        movie_with_metadata = metadata_provider.get_movie_metadata(id=external_id, language=language)
         saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
         metadata_provider.download_movie_poster_image(movie=saved_movie)
         return saved_movie
@@ -641,7 +644,7 @@ class MovieService:
         self, movie: Path, metadata_provider: AbstractMetadataProvider
     ) -> MediaImportSuggestion:
         search_result = self.search_for_movie(
-            strip_trailing_year(movie.name), metadata_provider
+            remove_special_chars_and_parentheses(movie.name), metadata_provider
         )
         import_candidates = MediaImportSuggestion(
             directory=movie, candidates=search_result
@@ -652,8 +655,17 @@ class MovieService:
         return import_candidates
 
     def import_existing_movie(self, movie: Movie, source_directory: Path) -> bool:
+        new_source_path = source_directory.parent / ("." + source_directory.name)
+        try:
+            source_directory.rename(new_source_path)
+        except Exception as e:
+            log.error(
+                f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}"
+            )
+            raise Exception("Failed to rename directory") from e
+
         video_files, subtitle_files, all_files = get_files_for_import(
-            directory=source_directory
+            directory=new_source_path
         )
 
         success = self.import_movie(
@@ -672,15 +684,6 @@ class MovieService:
                 )
             )
 
-        new_source_path = source_directory.parent / ("." + source_directory.name)
-        try:
-            source_directory.rename(new_source_path)
-        except Exception as e:
-            log.error(
-                f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}"
-            )
-            return False
-
         return success
 
     def update_movie_metadata(
@@ -695,7 +698,8 @@ class MovieService:
         """
         log.debug(f"Found movie: {db_movie.name} for metadata update.")
 
-        fresh_movie_data = metadata_provider.get_movie_metadata(id=db_movie.external_id)
+        # Use stored original_language preference for metadata fetching
+        fresh_movie_data = metadata_provider.get_movie_metadata(id=db_movie.external_id, language=db_movie.original_language)
         if not fresh_movie_data:
             log.warning(
                 f"Could not fetch fresh metadata for movie {db_movie.name} (External ID: {db_movie.external_id}) from {db_movie.metadata_provider}."
@@ -715,6 +719,37 @@ class MovieService:
         log.info(f"Successfully updated metadata for movie ID: {db_movie.id}")
         metadata_provider.download_movie_poster_image(movie=updated_movie)
         return updated_movie
+
+    def get_importable_movies(
+        self, metadata_provider: AbstractMetadataProvider
+    ) -> list[MediaImportSuggestion]:
+        movie_root_path = AllEncompassingConfig().misc.movie_directory
+        importable_movies: list[MediaImportSuggestion] = []
+        candidate_dirs = get_importable_media_directories(movie_root_path)
+
+        for movie_dir in candidate_dirs:
+            metadata, external_id = extract_external_id_from_string(movie_dir.name)
+            if metadata is not None and external_id is not None:
+                try:
+                    self.movie_repository.get_movie_by_external_id(
+                        external_id=external_id, metadata_provider=metadata
+                    )
+                    log.debug(
+                        f"Movie {movie_dir.name} already exists in the database, skipping."
+                    )
+                    continue
+                except NotFoundError:
+                    log.debug(
+                        f"Movie {movie_dir.name} not found in database, checking for import candidates."
+                    )
+
+            import_candidates = self.get_import_candidates(
+                movie=movie_dir, metadata_provider=metadata_provider
+            )
+            importable_movies.append(import_candidates)
+
+        log.debug(f"Found {len(importable_movies)} importable movies.")
+        return importable_movies
 
 
 def auto_download_all_approved_movie_requests() -> None:

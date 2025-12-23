@@ -1815,6 +1815,716 @@ export interface components {
     requestBodies: never;
     headers: never;
     pathItems: never;
+	schemas: {
+		/** AuthMetadata */
+		AuthMetadata: {
+			/** Oauth Providers */
+			oauth_providers: string[];
+		};
+		/** BearerResponse */
+		BearerResponse: {
+			/** Access Token */
+			access_token: string;
+			/** Token Type */
+			token_type: string;
+		};
+		/** Body_auth_cookie_login_api_v1_auth_cookie_login_post */
+		Body_auth_cookie_login_api_v1_auth_cookie_login_post: {
+			/** Grant Type */
+			grant_type?: string | null;
+			/** Username */
+			username: string;
+			/**
+			 * Password
+			 * Format: password
+			 */
+			password: string;
+			/**
+			 * Scope
+			 * @default
+			 */
+			scope: string;
+			/** Client Id */
+			client_id?: string | null;
+			/**
+			 * Client Secret
+			 * Format: password
+			 */
+			client_secret?: string | null;
+		};
+		/** Body_auth_jwt_login_api_v1_auth_jwt_login_post */
+		Body_auth_jwt_login_api_v1_auth_jwt_login_post: {
+			/** Grant Type */
+			grant_type?: string | null;
+			/** Username */
+			username: string;
+			/**
+			 * Password
+			 * Format: password
+			 */
+			password: string;
+			/**
+			 * Scope
+			 * @default
+			 */
+			scope: string;
+			/** Client Id */
+			client_id?: string | null;
+			/**
+			 * Client Secret
+			 * Format: password
+			 */
+			client_secret?: string | null;
+		};
+		/** Body_reset_forgot_password_api_v1_auth_forgot_password_post */
+		Body_reset_forgot_password_api_v1_auth_forgot_password_post: {
+			/**
+			 * Email
+			 * Format: email
+			 */
+			email: string;
+		};
+		/** Body_reset_reset_password_api_v1_auth_reset_password_post */
+		Body_reset_reset_password_api_v1_auth_reset_password_post: {
+			/** Token */
+			token: string;
+			/** Password */
+			password: string;
+		};
+		/** Body_verify_request_token_api_v1_auth_request_verify_token_post */
+		Body_verify_request_token_api_v1_auth_request_verify_token_post: {
+			/**
+			 * Email
+			 * Format: email
+			 */
+			email: string;
+		};
+		/** Body_verify_verify_api_v1_auth_verify_post */
+		Body_verify_verify_api_v1_auth_verify_post: {
+			/** Token */
+			token: string;
+		};
+		/** CreateMovieRequest */
+		CreateMovieRequest: {
+			min_quality: components['schemas']['Quality'];
+			wanted_quality: components['schemas']['Quality'];
+			/**
+			 * Movie Id
+			 * Format: uuid
+			 */
+			movie_id: string;
+		};
+		/** CreateSeasonRequest */
+		CreateSeasonRequest: {
+			min_quality: components['schemas']['Quality'];
+			wanted_quality: components['schemas']['Quality'];
+			/**
+			 * Season Id
+			 * Format: uuid
+			 */
+			season_id: string;
+		};
+		/** Episode */
+		Episode: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/** Number */
+			number: number;
+			/** External Id */
+			external_id: number;
+			/** Title */
+			title: string;
+		};
+		/** ErrorModel */
+		ErrorModel: {
+			/** Detail */
+			detail:
+				| string
+				| {
+						[key: string]: string;
+				  };
+		};
+		/** HTTPValidationError */
+		HTTPValidationError: {
+			/** Detail */
+			detail?: components['schemas']['ValidationError'][];
+		};
+		/** IndexerQueryResult */
+		IndexerQueryResult: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/** Title */
+			title: string;
+			/** Seeders */
+			seeders: number;
+			/** Flags */
+			flags: string[];
+			/** Size */
+			size: number;
+			/** Usenet */
+			usenet: boolean;
+			/** Age */
+			age: number;
+			/**
+			 * Score
+			 * @default 0
+			 */
+			score: number;
+			/** Indexer */
+			indexer: string | null;
+			readonly quality: components['schemas']['Quality'];
+			/** Season */
+			readonly season: number[];
+		};
+		/** LibraryItem */
+		LibraryItem: {
+			/** Name */
+			name: string;
+			/** Path */
+			path: string;
+		};
+		/** MediaImportSuggestion */
+		MediaImportSuggestion: {
+			/**
+			 * Directory
+			 * Format: path
+			 */
+			directory: string;
+			/** Candidates */
+			candidates: components['schemas']['MetaDataProviderSearchResult'][];
+		};
+		/** MetaDataProviderSearchResult */
+		MetaDataProviderSearchResult: {
+			/** Poster Path */
+			poster_path: string | null;
+			/** Overview */
+			overview: string | null;
+			/** Name */
+			name: string;
+			/** External Id */
+			external_id: number;
+			/** Year */
+			year: number | null;
+			/** Metadata Provider */
+			metadata_provider: string;
+			/** Added */
+			added: boolean;
+			/** Vote Average */
+			vote_average?: number | null;
+			/** Original Language */
+			original_language?: string | null;
+			/** Id */
+			id?: string | null;
+		};
+		/** Movie */
+		Movie: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/** Name */
+			name: string;
+			/** Overview */
+			overview: string;
+			/** Year */
+			year: number | null;
+			/** External Id */
+			external_id: number;
+			/** Metadata Provider */
+			metadata_provider: string;
+			/**
+			 * Library
+			 * @default Default
+			 */
+			library: string;
+			/** Original Language */
+			original_language?: string | null;
+		};
+		/** MovieRequest */
+		MovieRequest: {
+			min_quality: components['schemas']['Quality'];
+			wanted_quality: components['schemas']['Quality'];
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/**
+			 * Movie Id
+			 * Format: uuid
+			 */
+			movie_id: string;
+			requested_by?: components['schemas']['UserRead'] | null;
+			/**
+			 * Authorized
+			 * @default false
+			 */
+			authorized: boolean;
+			authorized_by?: components['schemas']['UserRead'] | null;
+		};
+		/** MovieRequestBase */
+		MovieRequestBase: {
+			min_quality: components['schemas']['Quality'];
+			wanted_quality: components['schemas']['Quality'];
+		};
+		/** MovieTorrent */
+		MovieTorrent: {
+			/**
+			 * Torrent Id
+			 * Format: uuid
+			 */
+			torrent_id: string;
+			/** Torrent Title */
+			torrent_title: string;
+			status: components['schemas']['TorrentStatus'];
+			quality: components['schemas']['Quality'];
+			/** Imported */
+			imported: boolean;
+			/** File Path Suffix */
+			file_path_suffix: string;
+			/** Usenet */
+			usenet: boolean;
+		};
+		/** Notification */
+		Notification: {
+			/**
+			 * Id
+			 * Format: uuid
+			 * @description Unique identifier for the notification
+			 */
+			id?: string;
+			/**
+			 * Read
+			 * @description Whether the notification has been read
+			 * @default false
+			 */
+			read: boolean;
+			/**
+			 * Message
+			 * @description The content of the notification
+			 */
+			message: string;
+			/**
+			 * Timestamp
+			 * Format: date-time
+			 * @description The timestamp of the notification
+			 */
+			timestamp?: string;
+		};
+		/** OAuth2AuthorizeResponse */
+		OAuth2AuthorizeResponse: {
+			/** Authorization Url */
+			authorization_url: string;
+		};
+		/** PublicMovie */
+		PublicMovie: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/** Name */
+			name: string;
+			/** Overview */
+			overview: string;
+			/** Year */
+			year: number | null;
+			/** External Id */
+			external_id: number;
+			/** Metadata Provider */
+			metadata_provider: string;
+			/**
+			 * Library
+			 * @default Default
+			 */
+			library: string;
+			/** Original Language */
+			original_language?: string | null;
+			/**
+			 * Downloaded
+			 * @default false
+			 */
+			downloaded: boolean;
+			/**
+			 * Torrents
+			 * @default []
+			 */
+			torrents: components['schemas']['MovieTorrent'][];
+		};
+		/** PublicMovieFile */
+		PublicMovieFile: {
+			/**
+			 * Movie Id
+			 * Format: uuid
+			 */
+			movie_id: string;
+			/** File Path Suffix */
+			file_path_suffix: string;
+			quality: components['schemas']['Quality'];
+			/** Torrent Id */
+			torrent_id?: string | null;
+			/**
+			 * Downloaded
+			 * @default false
+			 */
+			downloaded: boolean;
+		};
+		/** PublicSeason */
+		PublicSeason: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id: string;
+			/** Number */
+			number: number;
+			/**
+			 * Downloaded
+			 * @default false
+			 */
+			downloaded: boolean;
+			/** Name */
+			name: string;
+			/** Overview */
+			overview: string;
+			/** External Id */
+			external_id: number;
+			/** Episodes */
+			episodes: components['schemas']['Episode'][];
+		};
+		/** PublicSeasonFile */
+		PublicSeasonFile: {
+			/**
+			 * Season Id
+			 * Format: uuid
+			 */
+			season_id: string;
+			quality: components['schemas']['Quality'];
+			/** Torrent Id */
+			torrent_id: string | null;
+			/** File Path Suffix */
+			file_path_suffix: string;
+			/**
+			 * Downloaded
+			 * @default false
+			 */
+			downloaded: boolean;
+		};
+		/** PublicShow */
+		PublicShow: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id: string;
+			/** Name */
+			name: string;
+			/** Overview */
+			overview: string;
+			/** Year */
+			year: number | null;
+			/** External Id */
+			external_id: number;
+			/** Metadata Provider */
+			metadata_provider: string;
+			/**
+			 * Ended
+			 * @default false
+			 */
+			ended: boolean;
+			/**
+			 * Continuous Download
+			 * @default false
+			 */
+			continuous_download: boolean;
+			/** Library */
+			library: string;
+			/** Seasons */
+			seasons: components['schemas']['PublicSeason'][];
+		};
+		/**
+		 * Quality
+		 * @enum {integer}
+		 */
+		Quality: 1 | 2 | 3 | 4 | 5;
+		/** RichMovieRequest */
+		RichMovieRequest: {
+			min_quality: components['schemas']['Quality'];
+			wanted_quality: components['schemas']['Quality'];
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/**
+			 * Movie Id
+			 * Format: uuid
+			 */
+			movie_id: string;
+			requested_by?: components['schemas']['UserRead'] | null;
+			/**
+			 * Authorized
+			 * @default false
+			 */
+			authorized: boolean;
+			authorized_by?: components['schemas']['UserRead'] | null;
+			movie: components['schemas']['Movie'];
+		};
+		/** RichMovieTorrent */
+		RichMovieTorrent: {
+			/**
+			 * Movie Id
+			 * Format: uuid
+			 */
+			movie_id: string;
+			/** Name */
+			name: string;
+			/** Year */
+			year: number | null;
+			/** Metadata Provider */
+			metadata_provider: string;
+			/** Torrents */
+			torrents: components['schemas']['MovieTorrent'][];
+		};
+		/** RichSeasonRequest */
+		RichSeasonRequest: {
+			min_quality: components['schemas']['Quality'];
+			wanted_quality: components['schemas']['Quality'];
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/**
+			 * Season Id
+			 * Format: uuid
+			 */
+			season_id: string;
+			requested_by?: components['schemas']['UserRead'] | null;
+			/**
+			 * Authorized
+			 * @default false
+			 */
+			authorized: boolean;
+			authorized_by?: components['schemas']['UserRead'] | null;
+			show: components['schemas']['Show'];
+			season: components['schemas']['Season'];
+		};
+		/** RichSeasonTorrent */
+		RichSeasonTorrent: {
+			/**
+			 * Torrent Id
+			 * Format: uuid
+			 */
+			torrent_id: string;
+			/** Torrent Title */
+			torrent_title: string;
+			status: components['schemas']['TorrentStatus'];
+			quality: components['schemas']['Quality'];
+			/** Imported */
+			imported: boolean;
+			/** Usenet */
+			usenet: boolean;
+			/** File Path Suffix */
+			file_path_suffix: string;
+			/** Seasons */
+			seasons: number[];
+		};
+		/** RichShowTorrent */
+		RichShowTorrent: {
+			/**
+			 * Show Id
+			 * Format: uuid
+			 */
+			show_id: string;
+			/** Name */
+			name: string;
+			/** Year */
+			year: number | null;
+			/** Metadata Provider */
+			metadata_provider: string;
+			/** Torrents */
+			torrents: components['schemas']['RichSeasonTorrent'][];
+		};
+		/** Season */
+		Season: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/** Number */
+			number: number;
+			/** Name */
+			name: string;
+			/** Overview */
+			overview: string;
+			/** External Id */
+			external_id: number;
+			/** Episodes */
+			episodes: components['schemas']['Episode'][];
+		};
+		/** Show */
+		Show: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			/** Name */
+			name: string;
+			/** Overview */
+			overview: string;
+			/** Year */
+			year: number | null;
+			/**
+			 * Ended
+			 * @default false
+			 */
+			ended: boolean;
+			/** External Id */
+			external_id: number;
+			/** Metadata Provider */
+			metadata_provider: string;
+			/**
+			 * Continuous Download
+			 * @default false
+			 */
+			continuous_download: boolean;
+			/**
+			 * Library
+			 * @default Default
+			 */
+			library: string;
+			/** Original Language */
+			original_language?: string | null;
+			/** Seasons */
+			seasons: components['schemas']['Season'][];
+		};
+		/** Torrent */
+		Torrent: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id?: string;
+			status: components['schemas']['TorrentStatus'];
+			/** Title */
+			title: string;
+			quality: components['schemas']['Quality'];
+			/** Imported */
+			imported: boolean;
+			/** Hash */
+			hash: string;
+			/**
+			 * Usenet
+			 * @default false
+			 */
+			usenet: boolean;
+		};
+		/**
+		 * TorrentStatus
+		 * @enum {integer}
+		 */
+		TorrentStatus: 1 | 2 | 3 | 4;
+		/** UpdateSeasonRequest */
+		UpdateSeasonRequest: {
+			min_quality: components['schemas']['Quality'];
+			wanted_quality: components['schemas']['Quality'];
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id: string;
+		};
+		/** UserCreate */
+		UserCreate: {
+			/**
+			 * Email
+			 * Format: email
+			 */
+			email: string;
+			/** Password */
+			password: string;
+			/**
+			 * Is Active
+			 * @default true
+			 */
+			is_active: boolean | null;
+			/**
+			 * Is Superuser
+			 * @default false
+			 */
+			is_superuser: boolean | null;
+			/**
+			 * Is Verified
+			 * @default false
+			 */
+			is_verified: boolean | null;
+		};
+		/** UserRead */
+		UserRead: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id: string;
+			/**
+			 * Email
+			 * Format: email
+			 */
+			email: string;
+			/**
+			 * Is Active
+			 * @default true
+			 */
+			is_active: boolean;
+			/**
+			 * Is Superuser
+			 * @default false
+			 */
+			is_superuser: boolean;
+			/**
+			 * Is Verified
+			 * @default false
+			 */
+			is_verified: boolean;
+		};
+		/** UserUpdate */
+		UserUpdate: {
+			/** Password */
+			password?: string | null;
+			/** Email */
+			email?: string | null;
+			/** Is Active */
+			is_active?: boolean | null;
+			/** Is Superuser */
+			is_superuser?: boolean | null;
+			/** Is Verified */
+			is_verified?: boolean | null;
+		};
+		/** ValidationError */
+		ValidationError: {
+			/** Location */
+			loc: (string | number)[];
+			/** Message */
+			msg: string;
+			/** Error Type */
+			type: string;
+		};
+	};
+	responses: never;
+	parameters: never;
+	requestBodies: never;
+	headers: never;
+	pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
@@ -2571,6 +3281,7 @@ export interface operations {
 		parameters: {
 			query: {
 				show_id: number;
+				language?: string | null;
 				metadata_provider?: 'tmdb' | 'tvdb';
 			};
 			header?: never;
@@ -3423,6 +4134,7 @@ export interface operations {
 		parameters: {
 			query: {
 				movie_id: number;
+				language?: string | null;
 				metadata_provider?: 'tmdb' | 'tvdb';
 			};
 			header?: never;

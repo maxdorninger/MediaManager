@@ -7,7 +7,7 @@
 	import { getContext } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { toast } from 'svelte-sonner';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 
@@ -56,12 +56,6 @@
 			response = data.response;
 		}
 		if (response.ok) {
-			const requestIndex = requests.findIndex((r) => r.id === requestId);
-			if (requestIndex !== -1) {
-				let newAuthorizedStatus = !currentAuthorizedStatus;
-				requests[requestIndex]!.authorized = newAuthorizedStatus;
-				requests[requestIndex]!.authorized_by = newAuthorizedStatus ? user() : undefined;
-			}
 			toast.success(
 				`Request ${!currentAuthorizedStatus ? 'approved' : 'unapproved'} successfully.`
 			);
@@ -70,6 +64,7 @@
 			console.error(`Failed to update request status ${response.statusText}`, errorText);
 			toast.error(`Failed to update request status: ${response.statusText}`);
 		}
+		await invalidateAll();
 	}
 
 	async function deleteRequest(requestId: string) {
@@ -101,16 +96,12 @@
 			response = data.response;
 		}
 		if (response.ok) {
-			// remove the request from the list
-			const index = requests.findIndex((r) => r.id === requestId);
-			if (index > -1) {
-				requests.splice(index, 1);
-			}
 			toast.success('Request deleted successfully');
 		} else {
 			console.error(`Failed to delete request ${response.statusText}`, await response.text());
 			toast.error('Failed to delete request');
 		}
+		await invalidateAll();
 	}
 </script>
 

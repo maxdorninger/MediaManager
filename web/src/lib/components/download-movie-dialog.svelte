@@ -11,10 +11,11 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import client from '$lib/api';
 	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	let { movie } = $props();
 	let dialogueState = $state(false);
-	let torrentsPromise: any = $state();
+	let torrentsPromise: any = $state(null);
 	let tabState: string = $state('basic');
 	let isLoading: boolean = $state(false);
 	let advancedMode: boolean = $derived(tabState === 'advanced');
@@ -40,19 +41,16 @@
 			console.warn(errorMessage);
 			torrentsError = errorMessage;
 			if (dialogueState) toast.info(errorMessage);
-			return [];
 		} else if (!response.ok) {
 			const errorMessage = `Failed to download torrent for movie ${movie.id}: ${response.statusText}`;
 			console.error(errorMessage);
 			torrentsError = errorMessage;
 			toast.error(errorMessage);
-			return false;
 		} else {
 			console.log('Downloading torrent:', data);
 			toast.success('Torrent download started successfully!');
-
-			return true;
 		}
+		await invalidateAll();
 	}
 
 	async function search() {
@@ -75,7 +73,7 @@
 	}
 </script>
 
-<Dialog.Root bind:open={dialogueState} onOpenChange={() => (dialogueState ? search() : null)}>
+<Dialog.Root bind:open={dialogueState}>
 	<Dialog.Trigger class={buttonVariants({ variant: 'default' })}>Download Movie</Dialog.Trigger>
 	<Dialog.Content class="max-h-[90vh] w-fit min-w-[80vw] overflow-y-auto">
 		<Dialog.Header>
@@ -170,9 +168,17 @@
 									</Table.Cell>
 								</Table.Row>
 							{:else}
-								<Table.Cell colspan={7}>
-									<div class="font-light text-center w-full">No torrents found.</div>
-								</Table.Cell>
+								{#if data === null}
+									<Table.Cell colspan={7}>
+										<div class="font-light text-center w-full">
+											Start searching by clicking the search button!
+										</div>
+									</Table.Cell>
+								{:else}
+									<Table.Cell colspan={7}>
+										<div class="font-light text-center w-full">No torrents found.</div>
+									</Table.Cell>
+								{/if}
 							{/each}
 						</Table.Body>
 					</Table.Root>

@@ -2,7 +2,7 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import logo from '$lib/images/logo.svg';
 	import { PUBLIC_VERSION } from '$env/static/public';
 </script>
@@ -22,7 +22,11 @@
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item class="hidden md:block">
-					<Breadcrumb.Link href="{base}/dashboard">MediaManager</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>MediaManager</Breadcrumb.Link>
+				</Breadcrumb.Item>
+				<Breadcrumb.Separator class="hidden md:block" />
+				<Breadcrumb.Item>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>Home</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>

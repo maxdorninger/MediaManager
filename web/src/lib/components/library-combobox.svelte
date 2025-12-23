@@ -9,6 +9,7 @@
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
+	import { invalidateAll } from '$app/navigation';
 
 	let {
 		media,
@@ -70,6 +71,7 @@
 			toast.success(`Library updated to ${selectedLabel}`);
 			media.library = selectedLabel;
 		}
+		await invalidateAll();
 	}
 
 	function closeAndFocusTrigger() {

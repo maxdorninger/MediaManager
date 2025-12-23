@@ -56,6 +56,7 @@ class Show(BaseModel):
 
     continuous_download: bool = False
     library: str = "Default"
+    original_language: str | None = None
 
     seasons: list[Season]
 

@@ -12,4 +12,5 @@ class MetaDataProviderSearchResult(BaseModel):
     metadata_provider: str
     added: bool
     vote_average: float | None = None
+    original_language: str | None = None
     id: MovieId | ShowId | None = None  # Internal ID if already added

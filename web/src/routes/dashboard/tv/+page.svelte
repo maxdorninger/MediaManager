@@ -72,7 +72,7 @@
 			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each tvShows as show (show.id)}
-				<a href={resolve('/dashboard/tv/[showId]', { showId: show.id })}>
+				<a href={resolve('/dashboard/tv/[showId]', { showId: show.id! })}>
 					<Card.Root class="col-span-full max-w-[90vw] ">
 						<Card.Header>
 							<Card.Title class="h-6 truncate">{getFullyQualifiedMediaName(show)}</Card.Title>

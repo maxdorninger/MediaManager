@@ -2,7 +2,7 @@ import type { PageLoad } from './$types';
 import client from '$lib/api';
 
 export const load: PageLoad = async ({ fetch, params }) => {
-	const season = await client.GET('/api/v1/tv/seasons/{season_id}', {
+	const season = client.GET('/api/v1/tv/seasons/{season_id}', {
 		fetch: fetch,
 		params: {
 			path: {
@@ -10,7 +10,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
 			}
 		}
 	});
-	const seasonFiles = await client.GET('/api/v1/tv/seasons/{season_id}/files', {
+	const seasonFiles = client.GET('/api/v1/tv/seasons/{season_id}/files', {
 		fetch: fetch,
 		params: {
 			path: {
@@ -19,7 +19,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
 		}
 	});
 	return {
-		files: seasonFiles.data,
-		season: season.data
+		files: await seasonFiles.then((x) => x.data),
+		season: await season.then((x) => x.data)
 	};
 };

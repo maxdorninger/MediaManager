@@ -10,15 +10,15 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
+	import client from '$lib/api';
+	import type { components } from '$lib/api/api';
+	import { handleQueryNotificationToast } from '$lib/utils.ts';
 
 	let searchTerm: string = $state('');
 	let metadataProvider: 'tmdb' | 'tvdb' = $state('tmdb');
 	let data: components['schemas']['MetaDataProviderSearchResult'][] | null = $state(null);
 	let isSearching: boolean = $state(false);
-	import { resolve } from '$app/paths';
-	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
-	import { handleQueryNotificationToast } from '$lib/utils.ts';
 
 	onMount(() => {
 		search('');

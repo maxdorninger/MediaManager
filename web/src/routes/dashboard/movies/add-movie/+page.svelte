@@ -10,7 +10,7 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
 	import { onMount } from 'svelte';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
 	import { handleQueryNotificationToast } from '$lib/utils.ts';
@@ -62,15 +62,15 @@
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item class="hidden md:block">
-					<Breadcrumb.Link href="{base}/dashboard">MediaManager</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>MediaManager</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="{base}/dashboard">Home</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard', {})}>Home</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="{base}/dashboard/movies">Movies</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard/movies', {})}>Movies</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
