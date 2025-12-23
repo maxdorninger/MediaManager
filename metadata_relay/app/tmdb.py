@@ -29,7 +29,13 @@ else:
 
     @router.get("/tv/shows/{show_id}/{season_number}")
     async def get_tmdb_season(season_number: int, show_id: int, language: str = "en"):
-        return TV_Seasons(season_number=season_number, tv_id=show_id).info(language=language)
+        return TV_Seasons(season_number=season_number, tv_id=show_id).info(
+            language=language
+        )
+
+    @router.get("/tv/shows/{show_id}/external_ids")
+    async def get_tmdb_show_external_ids(show_id: int):
+        return TV(show_id).external_ids()
 
     @router.get("/movies/trending")
     async def get_tmdb_trending_movies(language: str = "en"):
@@ -42,3 +48,7 @@ else:
     @router.get("/movies/{movie_id}")
     async def get_tmdb_movie(movie_id: int, language: str = "en"):
         return Movies(movie_id).info(language=language)
+
+    @router.get("/movies/{movie_id/external_ids")
+    async def get_tmdb_movie_external_ids(movie_id: int):
+        return Movies(movie_id).external_ids()
