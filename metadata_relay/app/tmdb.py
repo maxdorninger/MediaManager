@@ -27,15 +27,15 @@ else:
     async def get_tmdb_show(show_id: int, language: str = "en"):
         return TV(show_id).info(language=language)
 
+    @router.get("/tv/shows/{show_id}/external_ids")
+    async def get_tmdb_show_external_ids(show_id: int):
+        return TV(show_id).external_ids()
+
     @router.get("/tv/shows/{show_id}/{season_number}")
     async def get_tmdb_season(season_number: int, show_id: int, language: str = "en"):
         return TV_Seasons(season_number=season_number, tv_id=show_id).info(
             language=language
         )
-
-    @router.get("/tv/shows/{show_id}/external_ids")
-    async def get_tmdb_show_external_ids(show_id: int):
-        return TV(show_id).external_ids()
 
     @router.get("/movies/trending")
     async def get_tmdb_trending_movies(language: str = "en"):
