@@ -75,10 +75,10 @@
 		if (errored) {
 			toast.error('Failed to import');
 		} else {
-			dialogOpen = false;
 			toast.success('Imported successfully!');
 		}
 		await invalidateAll();
+		dialogOpen = false;
 	}
 </script>
 
