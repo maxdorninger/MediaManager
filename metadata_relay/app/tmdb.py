@@ -49,6 +49,6 @@ else:
     async def get_tmdb_movie(movie_id: int, language: str = "en"):
         return Movies(movie_id).info(language=language)
 
-    @router.get("/movies/{movie_id/external_ids")
+    @router.get("/movies/{movie_id}/external_ids")
     async def get_tmdb_movie_external_ids(movie_id: int):
         return Movies(movie_id).external_ids()
