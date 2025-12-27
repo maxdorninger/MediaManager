@@ -20,6 +20,8 @@ class Movie(Base):
     year: Mapped[int | None]
     library: Mapped[str] = mapped_column(default="")
     original_language: Mapped[str | None] = mapped_column(default=None)
+    imdb_id: Mapped[str | None] = mapped_column(default=None)
+
     movie_requests: Mapped[list["MovieRequest"]] = relationship(
         "MovieRequest", back_populates="movie", cascade="all, delete-orphan"
     )

@@ -136,6 +136,7 @@ class TvRepository:
             db_show.overview = show.overview
             db_show.year = show.year
             db_show.original_language = show.original_language
+            db_show.imdb_id = show.imdb_id
         else:  # Insert new show
             db_show = Show(
                 id=show.id,
@@ -146,6 +147,7 @@ class TvRepository:
                 year=show.year,
                 ended=show.ended,
                 original_language=show.original_language,
+                imdb_id=show.imdb_id,
                 seasons=[
                     Season(
                         id=season.id,
@@ -643,10 +645,13 @@ class TvRepository:
         year: int | None = None,
         ended: bool | None = None,
         continuous_download: bool | None = None,
+        imdb_id: str | None = None,
     ) -> ShowSchema:  # Removed poster_url from params
         """
         Update attributes of an existing show.
 
+        :param imdb_id: The new IMDb ID for the show.
+        :param continuous_download: The new continuous download status for the show.
         :param show_id: The ID of the show to update.
         :param name: The new name for the show.
         :param overview: The new overview for the show.
@@ -676,6 +681,9 @@ class TvRepository:
             and db_show.continuous_download != continuous_download
         ):
             db_show.continuous_download = continuous_download
+            updated = True
+        if imdb_id is not None and db_show.imdb_id != imdb_id:
+            db_show.imdb_id = imdb_id
             updated = True
         if updated:
             self.db.commit()

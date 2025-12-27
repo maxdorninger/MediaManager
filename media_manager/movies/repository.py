@@ -116,6 +116,7 @@ class MovieRepository:
             db_movie.overview = movie.overview
             db_movie.year = movie.year
             db_movie.original_language = movie.original_language
+            db_movie.imdb_id = movie.imdb_id
         else:  # Insert new movie
             log.debug(f"Creating new movie: {movie.name}")
             db_movie = Movie(**movie.model_dump())
@@ -435,10 +436,12 @@ class MovieRepository:
         name: str | None = None,
         overview: str | None = None,
         year: int | None = None,
+        imdb_id: str | None = None,
     ) -> MovieSchema:
         """
         Update attributes of an existing movie.
 
+        :param imdb_id: The new IMDb ID for the movie.
         :param movie_id: The ID of the movie to update.
         :param name: The new name for the movie.
         :param overview: The new overview for the movie.
@@ -458,6 +461,9 @@ class MovieRepository:
             updated = True
         if year is not None and db_movie.year != year:
             db_movie.year = year
+            updated = True
+        if imdb_id is not None and db_movie.imdb_id != imdb_id:
+            db_movie.imdb_id = imdb_id
             updated = True
 
         if updated:

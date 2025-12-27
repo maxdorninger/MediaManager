@@ -69,7 +69,10 @@ class TvService:
         self.notification_service = notification_service
 
     def add_show(
-        self, external_id: int, metadata_provider: AbstractMetadataProvider, language: str | None = None
+        self,
+        external_id: int,
+        metadata_provider: AbstractMetadataProvider,
+        language: str | None = None,
     ) -> Show | None:
         """
         Add a new show to the database.
@@ -78,7 +81,9 @@ class TvService:
         :param metadata_provider: The name of the metadata provider.
         :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
-        show_with_metadata = metadata_provider.get_show_metadata(id=external_id, language=language)
+        show_with_metadata = metadata_provider.get_show_metadata(
+            id=external_id, language=language
+        )
         saved_show = self.tv_repository.save_show(show=show_with_metadata)
         metadata_provider.download_show_poster_image(show=saved_show)
         return saved_show
@@ -758,7 +763,9 @@ class TvService:
         # old_poster_url = db_show.poster_url # poster_url removed from db_show
 
         # Use stored original_language preference for metadata fetching
-        fresh_show_data = metadata_provider.get_show_metadata(id=db_show.external_id, language=db_show.original_language)
+        fresh_show_data = metadata_provider.get_show_metadata(
+            id=db_show.external_id, language=db_show.original_language
+        )
         if not fresh_show_data:
             log.warning(
                 f"Could not fetch fresh metadata for show {db_show.name} (External ID: {db_show.external_id}) from {db_show.metadata_provider}."
@@ -773,6 +780,7 @@ class TvService:
             overview=fresh_show_data.overview,
             year=fresh_show_data.year,
             ended=fresh_show_data.ended,
+            imdb_id=fresh_show_data.imdb_id,
             continuous_download=db_show.continuous_download
             if fresh_show_data.ended is False
             else False,
