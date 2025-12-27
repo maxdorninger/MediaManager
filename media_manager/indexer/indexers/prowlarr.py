@@ -9,6 +9,8 @@ from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.config import AllEncompassingConfig
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.indexer.utils import follow_redirects_to_final_torrent_url
+from media_manager.movies.schemas import Movie
+from media_manager.tv.schemas import Show
 
 log = logging.getLogger(__name__)
 
@@ -30,7 +32,7 @@ class Prowlarr(GenericIndexer):
         self.follow_redirects = config.follow_redirects
 
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
-        log.debug("Searching for " + query)
+        log.info(f"Searching for: {query}")
         url = self.url + "/api/v1/search"
 
         params = {
@@ -48,14 +50,14 @@ class Prowlarr(GenericIndexer):
 
             if response.status_code != 200:
                 log.error(f"Prowlarr Error: {response.status_code}")
-                return []
+                raise RuntimeError(f"Prowlarr Error: {response.status_code}")
 
             futures = []
             result_list: list[IndexerQueryResult] = []
 
             with ThreadPoolExecutor() as executor:
                 for item in response.json():
-                    future = executor.submit(self.process_result, item, session)
+                    future = executor.submit(self.__process_result, item, session)
                     futures.append(future)
 
                 for future in concurrent.futures.as_completed(futures):
@@ -64,13 +66,14 @@ class Prowlarr(GenericIndexer):
                         if result is not None:
                             result_list.append(result)
                     except Exception as e:
-                        log.error(f"1 search result failed with: {e}")
+                        log.error(f"Processing of one search result failed because: {e}")
 
             return result_list
 
-    def process_result(
+    def __process_result(
         self, result, session: requests.Session
     ) -> IndexerQueryResult | None:
+        # process usenet search result
         if result["protocol"] != "torrent":
             return IndexerQueryResult(
                 download_url=result["downloadUrl"],
@@ -92,8 +95,8 @@ class Prowlarr(GenericIndexer):
         elif "guid" in result:
             initial_url = result["guid"]
         else:
-            log.error(f"No valid download URL found for result: {result}")
-            return None
+            log.debug(f"No valid download URL found for result: {result}")
+            raise RuntimeError("No valid download URL found in torrent search result")
 
         if not initial_url.startswith("magnet:") and self.follow_redirects:
             try:
@@ -112,6 +115,7 @@ class Prowlarr(GenericIndexer):
                     final_download_url = initial_url
         else:
             final_download_url = initial_url
+
         return IndexerQueryResult(
             download_url=final_download_url,
             title=result["sortTitle"],
@@ -122,3 +126,9 @@ class Prowlarr(GenericIndexer):
             age=0,  # Torrent results do not need age information
             indexer=result["indexer"] if "indexer" in result else None,
         )
+
+    def search_season(self, query: str, show: Show, season_number: int) -> list[IndexerQueryResult]:
+        pass
+
+    def search_movie(self, query: str, movie: Movie) -> list[IndexerQueryResult]:
+        pass

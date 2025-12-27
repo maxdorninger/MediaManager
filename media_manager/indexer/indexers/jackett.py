@@ -9,6 +9,8 @@ import requests
 from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.config import AllEncompassingConfig
+from media_manager.movies.schemas import Movie
+from media_manager.tv.schemas import Show
 
 log = logging.getLogger(__name__)
 
@@ -120,3 +122,9 @@ class Jackett(GenericIndexer):
             f"found {len(result_list)} results for query '{query}' from indexer '{indexer}'"
         )
         return result_list
+
+    def search_season(self, query: str, show: Show, season_number: int) -> list[IndexerQueryResult]:
+        pass
+
+    def search_movie(self, query: str, movie: Movie) -> list[IndexerQueryResult]:
+        pass
