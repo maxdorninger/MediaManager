@@ -26,7 +26,9 @@ class GenericIndexer(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def search_season(self, query: str, show: Show, season_number: int) -> list[IndexerQueryResult]:
+    def search_season(
+        self, query: str, show: Show, season_number: int
+    ) -> list[IndexerQueryResult]:
         """
         Sends a search request to the Indexer for a specific season and returns the results.
 
