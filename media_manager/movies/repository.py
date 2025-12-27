@@ -116,6 +116,7 @@ class MovieRepository:
             db_movie.overview = movie.overview
             db_movie.year = movie.year
             db_movie.original_language = movie.original_language
+            db_movie.imdb_id = movie.imdb_id
         else:  # Insert new movie
             log.debug(f"Creating new movie: {movie.name}")
             db_movie = Movie(**movie.model_dump())
