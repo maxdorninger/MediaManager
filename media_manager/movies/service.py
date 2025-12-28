@@ -238,16 +238,8 @@ class MovieService:
         else:
             torrents = self.indexer_service.search_movie(movie=movie)
 
-            results: list[IndexerQueryResult] = []
-            for torrent in torrents:
-                if (
-                    movie.name.lower() in torrent.title.lower()
-                    and str(movie.year) in torrent.title
-                ):
-                    results.append(torrent)
-
             return evaluate_indexer_query_results(
-                is_tv=False, query_results=results, media=movie
+                is_tv=False, query_results=torrents, media=movie
             )
 
     def get_all_movies(self) -> list[Movie]:
