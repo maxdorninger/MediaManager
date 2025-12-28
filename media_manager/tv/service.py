@@ -699,7 +699,7 @@ class TvService:
 
         video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
 
-        success: bool = True  # determines if the import was successful, if true, the Imported flag will be set to True after the import
+        success: list[bool] = []
 
         log.debug(
             f"Importing these {len(video_files)} files:\n" + pprint.pformat(video_files)
@@ -719,6 +719,7 @@ class TvService:
                 subtitle_files=subtitle_files,
                 file_path_suffix=season_file.file_path_suffix,
             )
+            success.append(season_import_success)
             if season_import_success:
                 log.info(
                     f"Season {season.number} successfully imported from torrent {torrent.title}"
@@ -727,21 +728,26 @@ class TvService:
                 log.warning(
                     f"Season {season.number} failed to import from torrent {torrent.title}"
                 )
-                success = False
 
         log.info(
-            f"Finished importing files for torrent {torrent.title} {'without' if success else 'with'} errors"
+            f"Finished importing files for torrent {torrent.title} {'without' if all(success) else 'with'} errors"
         )
 
-        if success:
+        if all(success):
             torrent.imported = True
             self.torrent_service.torrent_repository.save_torrent(torrent=torrent)
 
             # Send successful season download notification
             if self.notification_service:
                 self.notification_service.send_notification_to_all_providers(
-                    title="TV Season Downloaded",
+                    title="TV Show imported successfully",
                     message=f"Successfully imported {show.name} ({show.year}) from torrent {torrent.title}.",
+                )
+        else:
+            if self.notification_service:
+                self.notification_service.send_notification_to_all_providers(
+                    title="Failed to import TV Show",
+                    message=f"Importing {show.name} ({show.year}) from torrent {torrent.title} completed with errors. Please check the logs for details.",
                 )
 
     def update_show_metadata(
