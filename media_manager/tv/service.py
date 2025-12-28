@@ -244,27 +244,25 @@ class TvService:
         :return: A list of indexer query results.
         """
         show = self.tv_repository.get_show_by_id(show_id=show_id)
-        if search_query_override:
-            search_query = search_query_override
-        else:
-            # TODO: add more Search query strings and combine all the results, like "season 3", "s03", "s3"
-            search_query = show.name + " s" + str(season_number).zfill(2)
-
-        torrents: list[IndexerQueryResult] = self.indexer_service.search(
-            query=search_query, is_tv=True
-        )
 
         if search_query_override:
+            torrents = self.indexer_service.search(
+                query=search_query_override, is_tv=True
+            )
             return torrents
+        else:
+            torrents = self.indexer_service.search_season(
+                show=show, season_number=season_number
+            )
 
-        result: list[IndexerQueryResult] = []
-        for torrent in torrents:
-            if season_number in torrent.season:
-                result.append(torrent)
+            results: list[IndexerQueryResult] = []
+            for torrent in torrents:
+                if season_number in torrent.season:
+                    results.append(torrent)
 
-        return evaluate_indexer_query_results(
-            is_tv=True, query_results=result, media=show
-        )
+            return evaluate_indexer_query_results(
+                is_tv=True, query_results=results, media=show
+            )
 
     def get_all_shows(self) -> list[Show]:
         """

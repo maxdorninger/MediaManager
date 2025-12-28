@@ -13,6 +13,7 @@ class ISOJsonFormatter(JsonFormatter):
         return dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
+LOG_LEVEL = logging.DEBUG
 LOG_FILE = Path(os.getenv("LOG_FILE", "/app/config/media_manager.log"))
 LOGGING_CONFIG = {
     "version": 1,
@@ -47,7 +48,7 @@ LOGGING_CONFIG = {
         },
     },
     "root": {
-        "level": "DEBUG",
+        "level": LOG_LEVEL,
         "handlers": ["console", "file"],
     },
     "loggers": {
@@ -59,7 +60,7 @@ LOGGING_CONFIG = {
 dictConfig(LOGGING_CONFIG)
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=LOG_LEVEL,
     format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s(): %(message)s",
     stream=sys.stdout,
 )

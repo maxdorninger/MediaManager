@@ -5,9 +5,7 @@ class ProwlarrConfig(BaseSettings):
     enabled: bool = False
     api_key: str = ""
     url: str = "http://localhost:9696"
-    reject_torrents_on_url_error: bool = True
     timeout_seconds: int = 60
-    follow_redirects: bool = False
 
 
 class JackettConfig(BaseSettings):

@@ -1,124 +1,181 @@
-import concurrent
 import logging
-from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 
-import requests
-from requests.adapters import HTTPAdapter
+from requests import Session
 
 from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.config import AllEncompassingConfig
+from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.indexer.utils import follow_redirects_to_final_torrent_url
+from media_manager.movies.schemas import Movie
+from media_manager.tv.schemas import Show
 
 log = logging.getLogger(__name__)
 
 
-class Prowlarr(GenericIndexer):
-    def __init__(self, **kwargs):
+@dataclass
+class IndexerInfo:
+    id: int
+    name: str
+
+    supports_tv_search: bool
+    supports_tv_search_tmdb: bool
+    supports_tv_search_imdb: bool
+    supports_tv_search_tvdb: bool
+    supports_tv_search_season: bool
+
+    supports_movie_search: bool
+    supports_movie_search_tmdb: bool
+    supports_movie_search_imdb: bool
+    supports_movie_search_tvdb: bool
+
+
+class Prowlarr(GenericIndexer, TorznabMixin):
+    def __init__(self):
         """
         A subclass of GenericIndexer for interacting with the Prowlarr API.
-
-        :param api_key: The API key for authenticating requests to Prowlarr.
-        :param kwargs: Additional keyword arguments to pass to the superclass constructor.
         """
         super().__init__(name="prowlarr")
-        config = AllEncompassingConfig().indexers.prowlarr
-        self.api_key = config.api_key
-        self.url = config.url
-        self.reject_torrents_on_url_error = config.reject_torrents_on_url_error
-        self.timeout_seconds = config.timeout_seconds
-        self.follow_redirects = config.follow_redirects
+        self.config = AllEncompassingConfig().indexers.prowlarr
 
-    def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
-        log.debug("Searching for " + query)
-        url = self.url + "/api/v1/search"
-
-        params = {
-            "query": query,
-            "apikey": self.api_key,
-            "categories": "5000" if is_tv else "2000",  # TV: 5000, Movies: 2000
-            "limit": 10000,
-        }
-        with requests.Session() as session:
-            adapter = HTTPAdapter(pool_connections=100, pool_maxsize=100)
-            session.mount("http://", adapter)
-            session.mount("https://", adapter)
-
-            response = session.get(url, params=params)
-
-            if response.status_code != 200:
-                log.error(f"Prowlarr Error: {response.status_code}")
-                return []
-
-            futures = []
-            result_list: list[IndexerQueryResult] = []
-
-            with ThreadPoolExecutor() as executor:
-                for item in response.json():
-                    future = executor.submit(self.process_result, item, session)
-                    futures.append(future)
-
-                for future in concurrent.futures.as_completed(futures):
-                    try:
-                        result = future.result()
-                        if result is not None:
-                            result_list.append(result)
-                    except Exception as e:
-                        log.error(f"1 search result failed with: {e}")
-
-            return result_list
-
-    def process_result(
-        self, result, session: requests.Session
-    ) -> IndexerQueryResult | None:
-        if result["protocol"] != "torrent":
-            return IndexerQueryResult(
-                download_url=result["downloadUrl"],
-                title=result["sortTitle"],
-                seeders=0,  # Usenet results do not have seeders
-                flags=result["indexerFlags"] if "indexerFlags" in result else [],
-                size=result["size"],
-                usenet=True,
-                age=int(result["ageMinutes"]) * 60,
-                indexer=result["indexer"] if "indexer" in result else None,
+    def _call_prowlarr_api(self, path: str, parameters: dict = None):
+        url = f"{self.config.url}/api/v1{path}"
+        headers = {"X-Api-Key": self.config.api_key}
+        with Session() as session:
+            return session.get(
+                url=url,
+                params=parameters,
+                timeout=self.config.timeout_seconds,
+                headers=headers,
             )
 
-        # process torrent search result
-        initial_url = None
-        if "downloadUrl" in result:
-            initial_url = result["downloadUrl"]
-        elif "magnetUrl" in result:
-            initial_url = result["magnetUrl"]
-        elif "guid" in result:
-            initial_url = result["guid"]
-        else:
-            log.error(f"No valid download URL found for result: {result}")
-            return None
+    def _newznab_search(
+        self, indexer: IndexerInfo, parameters: dict = None
+    ) -> list[IndexerQueryResult]:
+        if parameters is None:
+            parameters = {}
 
-        if not initial_url.startswith("magnet:") and self.follow_redirects:
-            try:
-                final_download_url = follow_redirects_to_final_torrent_url(
-                    initial_url=initial_url,
-                    session=session,
-                    timeout=self.timeout_seconds,
-                )
-            except RuntimeError as e:
-                log.warning(
-                    f"Failed to follow redirects for {initial_url}, falling back to the initial url as download url, error: {e}"
-                )
-                if self.reject_torrents_on_url_error:
-                    return None
-                else:
-                    final_download_url = initial_url
-        else:
-            final_download_url = initial_url
-        return IndexerQueryResult(
-            download_url=final_download_url,
-            title=result["sortTitle"],
-            seeders=result["seeders"] if "seeders" in result else 0,
-            flags=result["indexerFlags"] if "indexerFlags" in result else [],
-            size=result["size"],
-            usenet=False,
-            age=0,  # Torrent results do not need age information
-            indexer=result["indexer"] if "indexer" in result else None,
+        parameters["limit"] = 10000
+        results = self._call_prowlarr_api(
+            path=f"/indexer/{indexer.id}/newznab", parameters=parameters
         )
+        results = self.process_search_result(xml=results.content)
+        log.info(
+            f"Indexer {indexer.name} returned {len(results)} results for search: {parameters}"
+        )
+        return results
+
+    def _get_indexers(self) -> list[IndexerInfo]:
+        indexers = self._call_prowlarr_api(path="/indexer")
+        indexers = indexers.json()
+        indexer_info_list: list[IndexerInfo] = []
+        for indexer in indexers:
+            supports_tv_search = False
+            supports_movie_search = False
+            tv_search_params = []
+            movie_search_params = []
+
+            if not indexer["capabilities"].get("tvSearchParams"):
+                supports_tv_search = False
+            else:
+                supports_tv_search = True
+                tv_search_params = indexer["capabilities"]["tvSearchParams"]
+
+            if not indexer["capabilities"].get("movieSearchParams"):
+                supports_movie_search = False
+            else:
+                supports_movie_search = True
+                movie_search_params = indexer["capabilities"]["movieSearchParams"]
+
+            indexer_info = IndexerInfo(
+                id=indexer["id"],
+                name=indexer.get("name", "unknown"),
+                supports_tv_search=supports_tv_search,
+                supports_tv_search_tmdb="tmdbId" in tv_search_params,
+                supports_tv_search_imdb="imdbId" in tv_search_params,
+                supports_tv_search_tvdb="tvdbId" in tv_search_params,
+                supports_tv_search_season="season" in tv_search_params,
+                supports_movie_search=supports_movie_search,
+                supports_movie_search_tmdb="tmdbId" in movie_search_params,
+                supports_movie_search_imdb="imdbId" in movie_search_params,
+                supports_movie_search_tvdb="tvdbId" in movie_search_params,
+            )
+            indexer_info_list.append(indexer_info)
+        return indexer_info_list
+
+    def _get_tv_indexers(self) -> list[IndexerInfo]:
+        return [x for x in self._get_indexers() if x.supports_tv_search]
+
+    def _get_movie_indexers(self) -> list[IndexerInfo]:
+        return [x for x in self._get_indexers() if x.supports_movie_search]
+
+    def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
+        log.info(f"Searching for: {query}")
+        params = {
+            "q": query,
+            "t": "tvsearch" if is_tv else "movie",
+        }
+        raw_results = []
+        indexers = self._get_tv_indexers() if is_tv else self._get_movie_indexers()
+
+        for indexer in indexers:
+            raw_results.extend(self._newznab_search(parameters=params, indexer=indexer))
+
+        return raw_results
+
+    def search_season(
+        self, query: str, show: Show, season_number: int
+    ) -> list[IndexerQueryResult]:
+        indexers = self._get_tv_indexers()
+
+        raw_results = []
+
+        for indexer in indexers:
+            log.debug("Preparing search for indexer: " + indexer.name)
+            search_params = {
+                "cat": "5000",
+                "q": query,
+                "t": "tvsearch",
+            }
+
+            if indexer.supports_tv_search_tmdb and show.metadata_provider == "tmdb":
+                search_params["tmdbid"] = show.external_id
+            if indexer.supports_tv_search_tvdb and show.metadata_provider == "tvdb":
+                search_params["tvdbid"] = show.external_id
+            if indexer.supports_tv_search_imdb:
+                search_params["imdbid"] = show.imdb_id
+            if indexer.supports_tv_search_season:
+                search_params["season"] = season_number
+
+            raw_results.extend(
+                self._newznab_search(parameters=search_params, indexer=indexer)
+            )
+
+        return raw_results
+
+    def search_movie(self, query: str, movie: Movie) -> list[IndexerQueryResult]:
+        indexers = self._get_movie_indexers()
+
+        raw_results = []
+
+        for indexer in indexers:
+            log.debug("Preparing search for indexer: " + indexer.name)
+
+            search_params = {
+                "cat": "2000",
+                "q": query,
+                "t": "movie",
+            }
+
+            if indexer.supports_movie_search_tmdb and movie.metadata_provider == "tmdb":
+                search_params["tmdbid"] = movie.external_id
+            if indexer.supports_movie_search_tvdb and movie.metadata_provider == "tvdb":
+                search_params["tvdbid"] = movie.external_id
+            if indexer.supports_movie_search_imdb:
+                search_params["imdbid"] = movie.imdb_id
+
+            raw_results.extend(
+                self._newznab_search(parameters=search_params, indexer=indexer)
+            )
+
+        return raw_results

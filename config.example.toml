@@ -119,9 +119,7 @@ base_path = "/api"
 enabled = false
 url = "http://localhost:9696"
 api_key = ""
-reject_torrents_on_url_error = true
 timeout_seconds = 60
-follow_redirects = false
 
 # Jackett settings
 [indexers.jackett]
@@ -146,10 +144,10 @@ negate = false
 
 # Indexer flag-based scoring rules
 [[indexers.indexer_flag_scoring_rules]]
-name = "reject_non_freeleech"
+name = "prefer_freeleech"
 flags = ["freeleech", "freeleech75"]
-score_modifier = -10000
-negate = true
+score_modifier = 100
+negate = false
 
 [[indexers.indexer_flag_scoring_rules]]
 name = "reject_nuked"
@@ -161,12 +159,7 @@ negate = false
 [[indexers.scoring_rule_sets]]
 name = "default"
 libraries = ["ALL_TV", "ALL_MOVIES"]
-rule_names = ["prefer_h265", "avoid_cam", "reject_nuked"]
-
-[[indexers.scoring_rule_sets]]
-name = "strict_quality"
-libraries = ["ALL_MOVIES"]
-rule_names = ["prefer_h265", "avoid_cam", "reject_non_freeleech"]
+rule_names = ["prefer_h265", "avoid_cam", "reject_nuked", "prefer_freeleech"]
 
 # its very unlikely that you need to change this
 [metadata]
