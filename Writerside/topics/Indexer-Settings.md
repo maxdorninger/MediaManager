@@ -75,7 +75,6 @@ Here's a complete example of the indexers section in your `config.toml`:
 enabled = true
 url = "http://prowlarr:9696"
 api_key = "your_prowlarr_api_key"
-reject_torrents_on_url_error = true
 timeout_seconds = 60
 
 [indexers.jackett]
