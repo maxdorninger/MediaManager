@@ -231,29 +231,24 @@ class MovieService:
         log.debug(f"getting all available torrents for movie {movie_id}")
         movie = self.movie_repository.get_movie_by_id(movie_id=movie_id)
         if search_query_override:
-            search_query = search_query_override
-        else:
-            search_query = f"{movie.name}"
-
-        torrents: list[IndexerQueryResult] = self.indexer_service.search(
-            query=search_query, is_tv=False
-        )
-
-        if search_query_override:
-            log.debug(f"Found with search query override {torrents.__len__()} torrents")
+            torrents = self.indexer_service.search(
+                query=search_query_override, is_tv=False
+            )
             return torrents
+        else:
+            torrents = self.indexer_service.search_movie(movie=movie)
 
-        result: list[IndexerQueryResult] = []
-        for torrent in torrents:
-            if (
-                movie.name.lower() in torrent.title.lower()
-                and str(movie.year) in torrent.title
-            ):
-                result.append(torrent)
+            results: list[IndexerQueryResult] = []
+            for torrent in torrents:
+                if (
+                    movie.name.lower() in torrent.title.lower()
+                    and str(movie.year) in torrent.title
+                ):
+                    results.append(torrent)
 
-        return evaluate_indexer_query_results(
-            is_tv=False, query_results=result, media=movie
-        )
+            return evaluate_indexer_query_results(
+                is_tv=False, query_results=results, media=movie
+            )
 
     def get_all_movies(self) -> list[Movie]:
         """
