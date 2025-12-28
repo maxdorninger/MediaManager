@@ -56,7 +56,7 @@ class IndexerService:
         return results
 
     def search_movie(self, movie: Movie):
-        query = f"{movie.title} {movie.year}"
+        query = f"{movie.name} {movie.year}"
         query = remove_special_chars_and_parentheses(query)
 
         results = []
@@ -76,7 +76,7 @@ class IndexerService:
         return results
 
     def search_season(self, show: Show, season_number: int):
-        query = f"{show.title} S{season_number:02d}"
+        query = f"{show.name} S{season_number:02d}"
         query = remove_special_chars_and_parentheses(query)
 
         results = []
