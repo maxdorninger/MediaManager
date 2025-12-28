@@ -8,7 +8,6 @@ from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.torrent.utils import remove_special_chars_and_parentheses
 from media_manager.tv.schemas import Episode, Season, Show, SeasonNumber, EpisodeNumber
 from media_manager.movies.schemas import Movie
 from media_manager.notification.manager import notification_manager
@@ -100,7 +99,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response = requests.get(
                 url=f"{self.url}/tv/search",
                 params={
-                    "query": remove_special_chars_and_parentheses(query),
+                    "query": query,
                     "page": page,
                 },
             )
@@ -169,7 +168,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response = requests.get(
                 url=f"{self.url}/movies/search",
                 params={
-                    "query": remove_special_chars_and_parentheses(query),
+                    "query": query,
                     "page": page,
                 },
             )
