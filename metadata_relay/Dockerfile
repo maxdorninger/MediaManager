@@ -14,7 +14,7 @@ RUN groupadd -g 1000 mediamanager && \
 
 WORKDIR /app
 # Ensure mediamanager owns the app directory
-RUN chown mediamanager:mediamanager /app
+RUN chown -R mediamanager:mediamanager /app
 
 USER mediamanager
 

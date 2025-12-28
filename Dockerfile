@@ -29,7 +29,7 @@ RUN groupadd -g 1000 mediamanager && \
 FROM base AS dependencies
 WORKDIR /app
 # Ensure mediamanager owns /app
-RUN chown mediamanager:mediamanager /app
+RUN chown -R mediamanager:mediamanager /app
 
 USER mediamanager
 
