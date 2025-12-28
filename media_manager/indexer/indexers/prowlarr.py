@@ -201,7 +201,13 @@ class Prowlarr(GenericIndexer):
 
         searches = []
         for indexer in indexers:
-            search_params = {"id": indexer.id, "cat": "5000", "limit": 10000}
+            search_params = {
+                "id": indexer.id,
+                "cat": "5000",
+                "limit": 10000,
+                "q": query,
+                "t": "tvsearch",
+            }
 
             if indexer.supports_tv_search_tmdb and show.metadata_provider == "tmdb":
                 search_params["tmdbid"] = show.external_id
@@ -225,7 +231,13 @@ class Prowlarr(GenericIndexer):
 
         searches = []
         for indexer in indexers:
-            search_params = {"id": indexer.id, "cat": "2000", "limit": 10000}
+            search_params = {
+                "id": indexer.id,
+                "cat": "2000",
+                "limit": 10000,
+                "q": query,
+                "t": "movie",
+            }
 
             if indexer.supports_movie_search_tmdb and movie.metadata_provider == "tmdb":
                 search_params["tmdbid"] = movie.external_id
