@@ -52,7 +52,7 @@ class Prowlarr(GenericIndexer):
     @contextmanager
     def __get_api(self):
         with prowlarr.ApiClient(self.config) as api_instance:
-            yield prowlarr.IndexerApi(api_instance)
+            yield api_instance
 
     def __get_indexers(self) -> list[IndexerInfo]:
         with self.__get_api() as client:
@@ -178,7 +178,8 @@ class Prowlarr(GenericIndexer):
 
     def __get_newznab_api(self, searches: list) -> list:
         results = []
-        with prowlarr.NewznabApi(self.__get_api) as api:
+        with self.__get_api() as api_client:
+            api = prowlarr.NewznabApi(api_client)
             futures = []
             with ThreadPoolExecutor() as executor:
                 for search in searches:
