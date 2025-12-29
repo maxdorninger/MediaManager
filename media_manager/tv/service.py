@@ -155,7 +155,6 @@ class TvService:
             log.debug(f"Deleting ID: {show.id} - Name: {show.name}")
 
             if delete_files_on_disk:
-                # Get the show's directory path
                 show_dir = self.get_root_show_directory(show=show)
 
                 log.debug(f"Attempt to delete show directory: {show_dir}")
@@ -164,7 +163,6 @@ class TvService:
                     log.info(f"Deleted show directory: {show_dir}")
 
             if delete_torrents:
-                # Get all torrents associated with this show
                 torrents = self.tv_repository.get_torrents_by_show_id(show_id=show.id)
                 for torrent in torrents:
                     try:
@@ -173,7 +171,6 @@ class TvService:
                     except Exception as e:
                         log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
 
-        # Delete from database
         self.tv_repository.delete_show(show_id=show.id)
 
     def get_public_season_files_by_season_id(
@@ -287,7 +284,6 @@ class TvService:
             ):
                 result.added = True
 
-                # Fetch the internal show ID.
                 try:
                     show = self.tv_repository.get_show_by_external_id(
                         external_id=result.external_id,
@@ -615,7 +611,7 @@ class TvService:
             / episode_file_name
         )
 
-        # import subtitles
+        # import subtitle
         for subtitle_file in subtitle_files:
             regex_result = re.search(
                 subtitle_pattern, subtitle_file.name, re.IGNORECASE
@@ -759,9 +755,7 @@ class TvService:
         :param db_show: The Show to update
         :return: The updated Show object, or None if the show is not found or an error occurs.
         """
-        # Get the existing show from the database
         log.debug(f"Found show: {db_show.name} for metadata update.")
-        # old_poster_url = db_show.poster_url # poster_url removed from db_show
 
         # Use stored original_language preference for metadata fetching
         fresh_show_data = metadata_provider.get_show_metadata(
@@ -774,7 +768,6 @@ class TvService:
             return db_show
         log.debug(f"Fetched fresh metadata for show: {fresh_show_data.name}")
 
-        # Update show attributes (poster_url is not part of ShowSchema anymore)
         self.tv_repository.update_show_attributes(
             show_id=db_show.id,
             name=fresh_show_data.name,
@@ -787,7 +780,6 @@ class TvService:
             else False,
         )
 
-        # Process seasons and episodes
         existing_season_external_ids = {s.external_id: s for s in db_show.seasons}
 
         for fresh_season_data in fresh_show_data.seasons:

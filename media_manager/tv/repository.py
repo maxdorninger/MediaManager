@@ -2,7 +2,7 @@ from sqlalchemy import select, delete, func
 from sqlalchemy.exc import (
     IntegrityError,
     SQLAlchemyError,
-)  # Keep SQLAlchemyError for broader exception handling
+)
 from sqlalchemy.orm import Session, joinedload
 
 from media_manager.torrent.models import Torrent
@@ -15,7 +15,7 @@ from media_manager.tv.schemas import (
     SeasonId,
     Show as ShowSchema,
     ShowId,
-    Episode as EpisodeSchema,  # Added EpisodeSchema import
+    Episode as EpisodeSchema,
     SeasonRequest as SeasonRequestSchema,
     SeasonFile as SeasonFileSchema,
     SeasonNumber,
@@ -98,7 +98,7 @@ class TvRepository:
         try:
             stmt = select(Show).options(
                 joinedload(Show.seasons).joinedload(Season.episodes)
-            )  # Eager load seasons and episodes
+            )
             results = self.db.execute(stmt).scalars().unique().all()
             return [ShowSchema.model_validate(show) for show in results]
         except SQLAlchemyError as e:
@@ -382,7 +382,7 @@ class TvRepository:
             stmt = delete(SeasonFile).where(SeasonFile.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
-            deleted_count = result.rowcount  # rowcount is an int, not a callable
+            deleted_count = result.rowcount
             return deleted_count
         except SQLAlchemyError as e:
             self.db.rollback()
@@ -584,7 +584,6 @@ class TvRepository:
             episodes=[
                 Episode(
                     id=ep_schema.id,
-                    # season_id will be implicitly set by SQLAlchemy relationship
                     number=ep_schema.number,
                     external_id=ep_schema.external_id,
                     title=ep_schema.title,
@@ -646,7 +645,7 @@ class TvRepository:
         ended: bool | None = None,
         continuous_download: bool | None = None,
         imdb_id: str | None = None,
-    ) -> ShowSchema:  # Removed poster_url from params
+    ) -> ShowSchema:
         """
         Update attributes of an existing show.
 
