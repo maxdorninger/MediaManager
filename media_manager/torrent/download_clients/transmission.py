@@ -39,7 +39,6 @@ class TransmissionDownloadClient(AbstractDownloadClient):
             )
             # Test connection
             self._client.session_stats()
-            log.info("Successfully connected to Transmission")
         except Exception as e:
             log.error(f"Failed to connect to Transmission: {e}")
             raise
@@ -51,9 +50,7 @@ class TransmissionDownloadClient(AbstractDownloadClient):
         :param indexer_result: The indexer query result of the torrent file to download.
         :return: The torrent object with calculated hash and initial status.
         """
-        log.info(f"Attempting to download torrent: {indexer_result.title}")
         torrent_hash = get_torrent_hash(torrent=indexer_result)
-        log.info(f"parsed torrent hash: {torrent_hash}")
         download_dir = (
             AllEncompassingConfig().misc.torrent_directory / indexer_result.title
         )
@@ -91,11 +88,9 @@ class TransmissionDownloadClient(AbstractDownloadClient):
         :param torrent: The torrent to remove.
         :param delete_data: Whether to delete the downloaded data.
         """
-        log.info(f"Removing torrent: {torrent.title}")
 
         try:
             self._client.remove_torrent(torrent.hash, delete_data=delete_data)
-            log.info(f"Successfully removed torrent: {torrent.title}")
         except Exception as e:
             log.error(f"Failed to remove torrent: {e}")
             raise
@@ -107,7 +102,6 @@ class TransmissionDownloadClient(AbstractDownloadClient):
         :param torrent: The torrent to get the status of.
         :return: The status of the torrent.
         """
-        log.debug(f"Fetching status for torrent: {torrent.title}")
 
         try:
             transmission_torrent = self._client.get_torrent(torrent.hash)
@@ -126,7 +120,6 @@ class TransmissionDownloadClient(AbstractDownloadClient):
                     f"Torrent {torrent.title} has error status: {transmission_torrent.error_string}"
                 )
 
-            log.debug(f"Torrent {torrent.title} status: {status}")
             return status
 
         except Exception as e:
@@ -139,11 +132,9 @@ class TransmissionDownloadClient(AbstractDownloadClient):
 
         :param torrent: The torrent to pause.
         """
-        log.info(f"Pausing torrent: {torrent.title}")
-
         try:
             self._client.stop_torrent(torrent.hash)
-            log.info(f"Successfully paused torrent: {torrent.title}")
+            log.debug(f"Successfully paused torrent: {torrent.title}")
 
         except Exception as e:
             log.error(f"Failed to pause torrent: {e}")
@@ -155,11 +146,9 @@ class TransmissionDownloadClient(AbstractDownloadClient):
 
         :param torrent: The torrent to resume.
         """
-        log.info(f"Resuming torrent: {torrent.title}")
-
         try:
             self._client.start_torrent(torrent.hash)
-            log.info(f"Successfully resumed torrent: {torrent.title}")
+            log.debug(f"Successfully resumed torrent: {torrent.title}")
 
         except Exception as e:
             log.error(f"Failed to resume torrent: {e}")

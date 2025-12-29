@@ -46,17 +46,13 @@ class TorrentService:
         return self.torrent_repository.get_movie_of_torrent(torrent_id=torrent.id)
 
     def download(self, indexer_result: IndexerQueryResult) -> Torrent:
-        log.info(f"Attempting to download torrent: {indexer_result.title}")
-
+        log.info(f"Starting download for torrent: {indexer_result.title}")
         torrent = self.download_manager.download(indexer_result)
 
         return self.torrent_repository.save_torrent(torrent=torrent)
 
     def get_torrent_status(self, torrent: Torrent) -> Torrent:
-        log.info(f"Fetching status for torrent: {torrent.title}")
-
         torrent.status = self.download_manager.get_torrent_status(torrent)
-
         self.torrent_repository.save_torrent(torrent=torrent)
         return torrent
 
@@ -106,6 +102,7 @@ class TorrentService:
         )
 
     def delete_torrent(self, torrent_id: TorrentId):
+        log.info(f"Deleting torrent with ID: {torrent_id}")
         t = self.torrent_repository.get_torrent_by_id(torrent_id=torrent_id)
         delete_media_files = not t.imported
         self.torrent_repository.delete_torrent(

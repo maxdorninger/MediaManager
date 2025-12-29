@@ -43,9 +43,6 @@ class DownloadManager:
         if self.config.qbittorrent.enabled:
             try:
                 self._torrent_client = QbittorrentDownloadClient()
-                log.info(
-                    "qBittorrent client initialized and set as active torrent client"
-                )
             except Exception as e:
                 log.error(f"Failed to initialize qBittorrent client: {e}")
 
@@ -53,9 +50,6 @@ class DownloadManager:
         if self._torrent_client is None and self.config.transmission.enabled:
             try:
                 self._torrent_client = TransmissionDownloadClient()
-                log.info(
-                    "Transmission client initialized and set as active torrent client"
-                )
             except Exception as e:
                 log.error(f"Failed to initialize Transmission client: {e}")
 
@@ -63,7 +57,6 @@ class DownloadManager:
         if self.config.sabnzbd.enabled:
             try:
                 self._usenet_client = SabnzbdDownloadClient()
-                log.info("SABnzbd client initialized and set as active usenet client")
             except Exception as e:
                 log.error(f"Failed to initialize SABnzbd client: {e}")
 
@@ -72,10 +65,6 @@ class DownloadManager:
             active_clients.append(f"torrent ({self._torrent_client.name})")
         if self._usenet_client:
             active_clients.append(f"usenet ({self._usenet_client.name})")
-
-        log.info(
-            f"Download manager initialized with active download clients: {', '.join(active_clients) if active_clients else 'none'}"
-        )
 
     def _get_appropriate_client(
         self, indexer_result: IndexerQueryResult | Torrent
@@ -91,16 +80,10 @@ class DownloadManager:
         if indexer_result.usenet:
             if not self._usenet_client:
                 raise RuntimeError("No usenet download client configured")
-            log.info(
-                f"Selected usenet client: {self._usenet_client.__class__.__name__}"
-            )
             return self._usenet_client
         else:
             if not self._torrent_client:
                 raise RuntimeError("No torrent download client configured")
-            log.info(
-                f"Selected torrent client: {self._torrent_client.__class__.__name__}"
-            )
             return self._torrent_client
 
     def download(self, indexer_result: IndexerQueryResult) -> Torrent:
