@@ -529,7 +529,7 @@ class MovieService:
         misc_config = AllEncompassingConfig().misc
         movie_file_path = (
             misc_config.movie_directory
-            / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
+            / f"{remove_special_characters(movie.name)} ({movie.year}) [{movie.metadata_provider}id-{movie.external_id}]"
         )
         log.debug(
             f"Movie {movie.name} without special characters: {remove_special_characters(movie.name)}"
@@ -540,7 +540,7 @@ class MovieService:
                     log.debug(f"Using library {library.name} for movie {movie.name}")
                     return (
                         Path(library.path)
-                        / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
+                        / f"{remove_special_characters(movie.name)} ({movie.year}) [{movie.metadata_provider}id-{movie.external_id}]"
                     )
             else:
                 log.warning(
