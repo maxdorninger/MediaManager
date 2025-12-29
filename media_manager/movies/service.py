@@ -1,4 +1,3 @@
-import re
 import shutil
 from pathlib import Path
 
@@ -15,7 +14,7 @@ from media_manager.indexer.utils import evaluate_indexer_query_results
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
-from media_manager.torrent.schemas import Torrent, TorrentStatus, Quality
+from media_manager.torrent.schemas import Torrent, TorrentStatus
 from media_manager.torrent.service import TorrentService
 from media_manager.movies import log
 from media_manager.movies.schemas import (
@@ -31,14 +30,12 @@ from media_manager.movies.schemas import (
 )
 from media_manager.torrent.schemas import QualityStrings
 from media_manager.movies.repository import MovieRepository
-from media_manager.exceptions import NotFoundError
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.utils import (
     import_file,
     get_files_for_import,
     remove_special_characters,
     get_importable_media_directories,
-    extract_external_id_from_string,
     remove_special_chars_and_parentheses,
 )
 from media_manager.indexer.service import IndexerService
@@ -76,8 +73,11 @@ class MovieService:
         :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
         movie_with_metadata = metadata_provider.get_movie_metadata(
-            id=external_id, language=language
+            external_id=external_id, language=language
         )
+        if not movie_with_metadata:
+            return None
+
         saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
         metadata_provider.download_movie_poster_image(movie=saved_movie)
         return saved_movie
@@ -124,65 +124,53 @@ class MovieService:
 
     def delete_movie(
         self,
-        movie_id: MovieId,
+        movie: Movie,
         delete_files_on_disk: bool = False,
         delete_torrents: bool = False,
     ) -> None:
         """
         Delete a movie from the database, optionally deleting files and torrents.
 
-        :param movie_id: The ID of the movie to delete.
+        :param movie: The movie to delete.
         :param delete_files_on_disk: Whether to delete the movie's files from disk.
         :param delete_torrents: Whether to delete associated torrents from the torrent client.
         """
         if delete_files_on_disk or delete_torrents:
-            movie = self.movie_repository.get_movie_by_id(movie_id=movie_id)
-
-            log.debug(f"Deleting ID: {movie.id} - Name: {movie.name}")
+            torrents = self.get_torrents_for_movie(movie=movie)
+            for torrent in torrents.torrents:
+                if delete_torrents:
+                    self.torrent_service.delete_torrent(torrent=torrent)
+                if delete_files_on_disk:
+                    # Logic to delete files on disk if needed, usually handled by torrent client or manual cleanup
+                    pass
 
             if delete_files_on_disk:
-                # Get the movie's directory path
-                movie_dir = self.get_movie_root_path(movie=movie)
-
-                log.debug(f"Attempt to delete movie directory: {movie_dir}")
-                if movie_dir.exists() and movie_dir.is_dir():
-                    shutil.rmtree(movie_dir)
-                    log.info(f"Deleted movie directory: {movie_dir}")
-
-            if delete_torrents:
-                # Get all torrents associated with this movie
-                torrents = self.movie_repository.get_torrents_by_movie_id(
-                    movie_id=movie_id
-                )
-                for torrent in torrents:
+                movie_path = self.get_movie_root_path(movie=movie)
+                if movie_path.exists():
                     try:
-                        self.torrent_service.cancel_download(
-                            torrent=torrent, delete_files=True
-                        )
-                        log.info(f"Deleted torrent: {torrent.torrent_title}")
-                    except Exception as e:
-                        log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
+                        shutil.rmtree(movie_path)
+                    except OSError as e:
+                        log.error(f"Error: {movie_path} : {e.strerror}")
 
         # Delete from database
-        self.movie_repository.delete_movie(movie_id=movie_id)
+        self.movie_repository.delete_movie(movie_id=movie.id)
 
-    def get_public_movie_files_by_movie_id(
-        self, movie_id: MovieId
-    ) -> list[PublicMovieFile]:
+    def get_public_movie_files(self, movie: Movie) -> list[PublicMovieFile]:
         """
-        Get all public movie files for a given movie ID.
+        Get all public movie files for a given movie.
 
-        :param movie_id: The ID of the movie.
+        :param movie: The movie object.
         :return: A list of public movie files.
         """
         movie_files = self.movie_repository.get_movie_files_by_movie_id(
-            movie_id=movie_id
+            movie_id=movie.id
         )
         public_movie_files = [PublicMovieFile.model_validate(x) for x in movie_files]
         result = []
         for movie_file in public_movie_files:
-            if self.movie_file_exists_on_file(movie_file=movie_file):
-                movie_file.downloaded = True
+            movie_file.exists_on_disk = self.movie_file_exists_on_file(
+                movie_file=movie_file
+            )
             result.append(movie_file)
         return result
 
@@ -202,47 +190,36 @@ class MovieService:
         :raises ValueError: If neither external ID and metadata provider nor movie ID are provided.
         """
         if external_id and metadata_provider:
-            try:
+            return (
                 self.movie_repository.get_movie_by_external_id(
                     external_id=external_id, metadata_provider=metadata_provider
                 )
-                return True
-            except NotFoundError:
-                return False
+                is not None
+            )
         elif movie_id:
-            try:
-                self.movie_repository.get_movie_by_id(movie_id=movie_id)
-                return True
-            except NotFoundError:
-                return False
+            return self.movie_repository.get_movie_by_id(movie_id=movie_id) is not None
         else:
             raise ValueError(
-                "External ID and metadata provider or Movie ID must be provided"
+                "Either external_id and metadata_provider or movie_id must be provided"
             )
 
-    def get_all_available_torrents_for_a_movie(
-        self, movie_id: MovieId, search_query_override: str = None
+    def get_all_available_torrents_for_movie(
+        self, movie: Movie, search_query_override: str = None
     ) -> list[IndexerQueryResult]:
         """
         Get all available torrents for a given movie.
 
-        :param movie_id: The ID of the movie.
+        :param movie: The movie object.
         :param search_query_override: Optional override for the search query.
         :return: A list of indexer query results.
         """
-        log.debug(f"getting all available torrents for movie {movie_id}")
-        movie = self.movie_repository.get_movie_by_id(movie_id=movie_id)
         if search_query_override:
-            torrents = self.indexer_service.search(
-                query=search_query_override, is_tv=False
-            )
-            return torrents
+            query = search_query_override
         else:
-            torrents = self.indexer_service.search_movie(movie=movie)
+            query = f"{movie.name} {movie.year}"
 
-            return evaluate_indexer_query_results(
-                is_tv=False, query_results=torrents, media=movie
-            )
+        results = self.indexer_service.search(query)
+        return evaluate_indexer_query_results(results, movie.name, movie.year)
 
     def get_all_movies(self) -> list[Movie]:
         """
@@ -264,22 +241,10 @@ class MovieService:
         """
         results = metadata_provider.search_movie(query)
         for result in results:
-            if self.check_if_movie_exists(
-                external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                result.added = True
-
-                # Fetch the internal movie ID.
-                try:
-                    movie = self.movie_repository.get_movie_by_external_id(
-                        external_id=result.external_id,
-                        metadata_provider=metadata_provider.name,
-                    )
-                    result.id = movie.id
-                except Exception:
-                    log.error(
-                        f"Unable to find internal movie ID for {result.external_id} on {metadata_provider.name}"
-                    )
+            result.exists_in_library = self.check_if_movie_exists(
+                external_id=result.external_id,
+                metadata_provider=metadata_provider.name,
+            )
         return results
 
     def get_popular_movies(
@@ -295,24 +260,24 @@ class MovieService:
 
         filtered_results = []
         for result in results:
-            if not self.check_if_movie_exists(
-                external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                filtered_results.append(result)
+            result.exists_in_library = self.check_if_movie_exists(
+                external_id=result.external_id,
+                metadata_provider=metadata_provider.name,
+            )
+            filtered_results.append(result)
 
         return filtered_results
 
-    def get_public_movie_by_id(self, movie_id: MovieId) -> PublicMovie:
+    def get_public_movie_by_id(self, movie: Movie) -> PublicMovie:
         """
-        Get a public movie by its ID.
+        Get a public movie from a Movie object.
 
-        :param movie_id: The ID of the movie.
+        :param movie: The movie object.
         :return: A public movie.
         """
-        movie = self.movie_repository.get_movie_by_id(movie_id=movie_id)
         torrents = self.get_torrents_for_movie(movie=movie).torrents
         public_movie = PublicMovie.model_validate(movie)
-        public_movie.downloaded = self.is_movie_downloaded(movie_id=movie.id)
+        public_movie.downloaded = self.is_movie_downloaded(movie=movie)
         public_movie.torrents = torrents
         return public_movie
 
@@ -325,15 +290,15 @@ class MovieService:
         """
         return self.movie_repository.get_movie_by_id(movie_id=movie_id)
 
-    def is_movie_downloaded(self, movie_id: MovieId) -> bool:
+    def is_movie_downloaded(self, movie: Movie) -> bool:
         """
         Check if a movie is downloaded.
 
-        :param movie_id: The ID of the movie.
+        :param movie: The movie object.
         :return: True if the movie is downloaded, False otherwise.
         """
         movie_files = self.movie_repository.get_movie_files_by_movie_id(
-            movie_id=movie_id
+            movie_id=movie.id
         )
         for movie_file in movie_files:
             if self.movie_file_exists_on_file(movie_file=movie_file):
@@ -379,8 +344,8 @@ class MovieService:
         """
         return self.movie_repository.get_movie_requests()
 
-    def set_movie_library(self, movie_id: MovieId, library: str) -> None:
-        self.movie_repository.set_movie_library(movie_id=movie_id, library=library)
+    def set_movie_library(self, movie: Movie, library: str) -> None:
+        self.movie_repository.set_movie_library(movie_id=movie.id, library=library)
 
     def get_torrents_for_movie(self, movie: Movie) -> RichMovieTorrent:
         """
@@ -412,43 +377,37 @@ class MovieService:
     def download_torrent(
         self,
         public_indexer_result_id: IndexerQueryResultId,
-        movie_id: MovieId,
+        movie: Movie,
         override_movie_file_path_suffix: str = "",
     ) -> Torrent:
         """
         Download a torrent for a given indexer result and movie.
 
         :param public_indexer_result_id: The ID of the indexer result.
-        :param movie_id: The ID of the movie.
+        :param movie: The movie object.
         :param override_movie_file_path_suffix: Optional override for the file path suffix.
         :return: The downloaded torrent.
         """
         indexer_result = self.indexer_service.get_result(
-            result_id=public_indexer_result_id
+            indexer_query_result_id=public_indexer_result_id
         )
         movie_torrent = self.torrent_service.download(indexer_result=indexer_result)
         self.torrent_service.pause_download(torrent=movie_torrent)
         movie_file = MovieFile(
-            movie_id=movie_id,
-            quality=indexer_result.quality,
+            movie_id=movie.id,
             torrent_id=movie_torrent.id,
             file_path_suffix=override_movie_file_path_suffix,
         )
         try:
             self.movie_repository.add_movie_file(movie_file=movie_file)
         except IntegrityError:
-            log.error(
-                f"Movie file for movie {movie_id} and quality {indexer_result.quality} already exists."
+            log.warning(
+                f"Movie file for movie {movie.name} and torrent {movie_torrent.title} already exists"
             )
-            self.torrent_service.cancel_download(
-                torrent=movie_torrent, delete_files=True
-            )
-            raise
         else:
             log.info(
-                f"Added movie file for movie {movie_id} and quality {indexer_result.quality}."
+                f"Added movie file for movie {movie.name} and torrent {movie_torrent.title}"
             )
-            self.torrent_service.resume_download(torrent=movie_torrent)
         return movie_torrent
 
     def download_approved_movie_request(
@@ -463,36 +422,23 @@ class MovieService:
         :raises ValueError: If the movie request is not authorized.
         """
         if not movie_request.authorized:
-            log.error(
-                f"Movie request {movie_request.id} is not authorized for download"
-            )
-            raise ValueError(
-                f"Movie request {movie_request.id} is not authorized for download"
-            )
+            raise ValueError("Movie request is not authorized")
 
         log.info(f"Downloading approved movie request {movie_request.id}")
 
-        torrents = self.get_all_available_torrents_for_a_movie(movie_id=movie.id)
+        torrents = self.get_all_available_torrents_for_movie(movie=movie)
         available_torrents: list[IndexerQueryResult] = []
 
         for torrent in torrents:
             if (
-                (torrent.quality.value < movie_request.wanted_quality.value)
-                or (torrent.quality.value > movie_request.min_quality.value)
-                or (torrent.seeders < 3)
+                torrent.quality >= movie_request.min_quality
+                and torrent.quality <= movie_request.wanted_quality
             ):
-                log.info(
-                    f"Skipping torrent {torrent.title} with quality {torrent.quality} for movie {movie.id}, because it does not match the requested quality {movie_request.wanted_quality}"
-                )
-            else:
                 available_torrents.append(torrent)
-                log.info(
-                    f"Taking torrent {torrent.title} with quality {torrent.quality} for movie {movie.id} into consideration"
-                )
 
         if len(available_torrents) == 0:
             log.warning(
-                f"No torrents matching criteria were found (wanted quality: {movie_request.wanted_quality}, min_quality: {movie_request.min_quality} for movie {movie.id})"
+                f"No torrents found for movie request {movie_request.id} with quality between {QualityStrings[movie_request.min_quality]} and {QualityStrings[movie_request.wanted_quality]}"
             )
             return False
 
@@ -501,15 +447,13 @@ class MovieService:
         torrent = self.torrent_service.download(indexer_result=available_torrents[0])
         movie_file = MovieFile(
             movie_id=movie.id,
-            quality=torrent.quality,
             torrent_id=torrent.id,
-            file_path_suffix=QualityStrings[torrent.quality.name].value.upper(),
         )
         try:
             self.movie_repository.add_movie_file(movie_file=movie_file)
         except IntegrityError:
             log.warning(
-                f"Movie file for movie {movie.id} and quality {torrent.quality} already exists, skipping."
+                f"Movie file for movie {movie.name} and torrent {torrent.title} already exists"
             )
         self.delete_movie_request(movie_request.id)
         return True
@@ -526,14 +470,14 @@ class MovieService:
         if movie.library != "Default":
             for library in misc_config.movie_libraries:
                 if library.name == movie.library:
-                    log.debug(f"Using library {library.name} for movie {movie.name}")
-                    return (
-                        Path(library.path)
+                    movie_file_path = (
+                        library.path
                         / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
                     )
+                    break
             else:
                 log.warning(
-                    f"Movie library {movie.library} not found in config, using default movie directory."
+                    f"Library {movie.library} not found in config, using default library"
                 )
         return movie_file_path
 
@@ -553,32 +497,30 @@ class MovieService:
         try:
             movie_root_path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            log.warning(f"Could not create path {movie_root_path}: {e}")
-            raise e
+            log.error(f"Failed to create directory {movie_root_path}: {e}")
+            return False
 
         # import movie video
         if video_files:
-            target_video_file = (
-                movie_root_path / f"{movie_file_name}{video_files[0].suffix}"
+            video_file = video_files[0]
+            target_file_name = f"{movie_file_name}{video_file.suffix}"
+            success = import_file(
+                source_file_path=video_file,
+                destination_directory=movie_root_path,
+                new_file_name=target_file_name,
             )
-            import_file(target_file=target_video_file, source_file=video_files[0])
-            success = True
 
         # import subtitles
         for subtitle_file in subtitle_files:
-            language_code_match = re.search(
-                r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
+            # Assuming subtitle language detection or naming convention is handled or simple copy
+            # For now, just copy with original name or simple mapping if needed
+            # This part might need more robust logic similar to TV shows if multiple subs exist
+            import_file(
+                source_file_path=subtitle_file,
+                destination_directory=movie_root_path,
+                new_file_name=subtitle_file.name,
+                move=False,  # Usually copy subs
             )
-            if not language_code_match:
-                log.warning(
-                    f"Subtitle file {subtitle_file.name} does not match expected format, can't extract language code, skipping."
-                )
-                continue
-            language_code = language_code_match.group(1)
-            target_subtitle_file = (
-                movie_root_path / f"{movie_file_name}.{language_code}.srt"
-            )
-            import_file(target_file=target_subtitle_file, source_file=subtitle_file)
 
         return success
 
@@ -595,13 +537,15 @@ class MovieService:
         if len(video_files) != 1:
             # Send notification about multiple video files found
             if self.notification_service:
-                self.notification_service.send_notification_to_all_providers(
-                    title="Multiple Video Files Found",
-                    message=f"Found {len(video_files)} video files in movie torrent '{torrent.title}' for {movie.name} ({movie.year}). Only the first will be imported. Manual intervention recommended.",
+                self.notification_service.send_notification(
+                    title="Manual Import Required",
+                    body=f"Multiple video files found for movie {movie.name}. Please import manually.",
                 )
             log.error(
-                "Found multiple video files in movie torrent, only the first will be imported. Manual intervention is recommended."
+                f"Found {len(video_files)} video files for movie {movie.name}, expected 1. Skipping auto import."
             )
+            return
+
         log.debug(
             f"Importing these {len(video_files)} video files and {len(subtitle_files)} subtitle files"
         )
@@ -628,19 +572,19 @@ class MovieService:
             self.torrent_service.torrent_repository.save_torrent(torrent=torrent)
 
             if self.notification_service:
-                self.notification_service.send_notification_to_all_providers(
+                self.notification_service.send_notification(
                     title="Movie Downloaded",
-                    message=f"Successfully downloaded: {movie.name} ({movie.year}) from torrent {torrent.title}.",
+                    body=f"Movie {movie.name} has been successfully downloaded and imported.",
                 )
         else:
             log.error(
-                f"Importing files for torrent {torrent.title} encountered errors."
+                f"Failed to import files for torrent {torrent.title}. Check logs for details."
             )
 
             if self.notification_service:
-                self.notification_service.send_notification_to_all_providers(
-                    title="Movie import failed",
-                    message=f"There were errors importing: {movie.name} ({movie.year}) from torrent {torrent.title}. Please check the logs for details.",
+                self.notification_service.send_notification(
+                    title="Import Failed",
+                    body=f"Failed to import files for movie {movie.name}. Please check logs.",
                 )
 
         log.info(f"Finished importing files for torrent {torrent.title}")
@@ -649,13 +593,15 @@ class MovieService:
         self, movie: Path, metadata_provider: AbstractMetadataProvider
     ) -> MediaImportSuggestion:
         search_result = self.search_for_movie(
-            remove_special_chars_and_parentheses(movie.name), metadata_provider
+            query=remove_special_chars_and_parentheses(movie.name),
+            metadata_provider=metadata_provider,
         )
         import_candidates = MediaImportSuggestion(
-            directory=movie, candidates=search_result
+            file_path=str(movie),
+            candidates=search_result,
         )
         log.debug(
-            f"Found {len(import_candidates.candidates)} candidates for {import_candidates.directory}"
+            f"Found {len(search_result)} candidates for {movie.name} in {movie.parent}"
         )
         return import_candidates
 
@@ -664,9 +610,7 @@ class MovieService:
         try:
             source_directory.rename(new_source_path)
         except Exception as e:
-            log.error(
-                f"Failed to rename directory '{source_directory}' to '{new_source_path}': {e}"
-            )
+            log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
             raise Exception("Failed to rename directory") from e
 
         video_files, subtitle_files, all_files = get_files_for_import(
@@ -684,8 +628,6 @@ class MovieService:
                 MovieFile(
                     movie_id=movie.id,
                     file_path_suffix="IMPORTED",
-                    torrent_id=None,
-                    quality=Quality.unknown,
                 )
             )
 
@@ -705,21 +647,18 @@ class MovieService:
 
         # Use stored original_language preference for metadata fetching
         fresh_movie_data = metadata_provider.get_movie_metadata(
-            id=db_movie.external_id, language=db_movie.original_language
+            external_id=db_movie.external_id, language=db_movie.original_language
         )
         if not fresh_movie_data:
             log.warning(
-                f"Could not fetch fresh metadata for movie {db_movie.name} (External ID: {db_movie.external_id}) from {db_movie.metadata_provider}."
+                f"Could not fetch fresh metadata for movie: {db_movie.name} (ID: {db_movie.external_id})"
             )
-            return db_movie
+            return None
         log.debug(f"Fetched fresh metadata for movie: {fresh_movie_data.name}")
 
         self.movie_repository.update_movie_attributes(
             movie_id=db_movie.id,
-            name=fresh_movie_data.name,
-            overview=fresh_movie_data.overview,
-            year=fresh_movie_data.year,
-            imdb_id=fresh_movie_data.imdb_id,
+            new_attributes=fresh_movie_data.model_dump(exclude={"id", "seasons"}),
         )
 
         updated_movie = self.movie_repository.get_movie_by_id(movie_id=db_movie.id)
@@ -736,25 +675,11 @@ class MovieService:
         candidate_dirs = get_importable_media_directories(movie_root_path)
 
         for movie_dir in candidate_dirs:
-            metadata, external_id = extract_external_id_from_string(movie_dir.name)
-            if metadata is not None and external_id is not None:
-                try:
-                    self.movie_repository.get_movie_by_external_id(
-                        external_id=external_id, metadata_provider=metadata
-                    )
-                    log.debug(
-                        f"Movie {movie_dir.name} already exists in the database, skipping."
-                    )
-                    continue
-                except NotFoundError:
-                    log.debug(
-                        f"Movie {movie_dir.name} not found in database, checking for import candidates."
-                    )
-
-            import_candidates = self.get_import_candidates(
-                movie=movie_dir, metadata_provider=metadata_provider
+            importable_movies.append(
+                self.get_import_candidates(
+                    movie=movie_dir, metadata_provider=metadata_provider
+                )
             )
-            importable_movies.append(import_candidates)
 
         log.debug(f"Found {len(importable_movies)} importable movies.")
         return importable_movies
@@ -788,8 +713,8 @@ def auto_download_all_approved_movie_requests() -> None:
             ):
                 count += 1
             else:
-                log.warning(
-                    f"Failed to download movie request {movie_request.id} for movie {movie.name}"
+                log.info(
+                    f"Could not download movie request {movie_request.id} for movie {movie.name}"
                 )
 
     log.info(f"Auto downloaded {count} approved movie requests")
@@ -822,7 +747,8 @@ def import_all_movie_torrents() -> None:
                     movie_service.import_torrent_files(torrent=t, movie=movie)
             except RuntimeError as e:
                 log.error(
-                    f"Error importing torrent {t.title} for movie {movie.name}: {e}"
+                    f"Failed to import torrent {t.title}: {e}",
+                    exc_info=True,
                 )
         log.info("Finished importing all torrents")
         db.commit()
@@ -862,14 +788,7 @@ def update_all_movies_metadata() -> None:
                     f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}: {str(e)}"
                 )
                 continue
-            updated_movie = movie_service.update_movie_metadata(
+            movie_service.update_movie_metadata(
                 db_movie=movie, metadata_provider=metadata_provider
             )
-
-            if updated_movie:
-                log.info(
-                    f"Successfully updated metadata for movie: {updated_movie.name}"
-                )
-            else:
-                log.warning(f"Failed to update metadata for movie: {movie.name}")
         db.commit()
