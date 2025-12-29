@@ -588,7 +588,7 @@ class MovieService:
         """
 
         video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
-        success: bool = False  # determines if the import was successful, if true, the Imported flag will be set to True after the import
+        success: list[bool] = []
 
         if len(video_files) != 1:
             # Send notification about multiple video files found
@@ -612,22 +612,33 @@ class MovieService:
         )
 
         for movie_file in movie_files:
-            self.import_movie(
-                movie=movie,
-                video_files=video_files,
-                subtitle_files=subtitle_files,
-                file_path_suffix=movie_file.file_path_suffix,
+            success.append(
+                self.import_movie(
+                    movie=movie,
+                    video_files=video_files,
+                    subtitle_files=subtitle_files,
+                    file_path_suffix=movie_file.file_path_suffix,
+                )
             )
 
-        if success:
+        if all(success):
             torrent.imported = True
             self.torrent_service.torrent_repository.save_torrent(torrent=torrent)
 
-            # Send successful import notification
             if self.notification_service:
                 self.notification_service.send_notification_to_all_providers(
                     title="Movie Downloaded",
                     message=f"Successfully downloaded: {movie.name} ({movie.year}) from torrent {torrent.title}.",
+                )
+        else:
+            log.error(
+                f"Importing files for torrent {torrent.title} encountered errors."
+            )
+
+            if self.notification_service:
+                self.notification_service.send_notification_to_all_providers(
+                    title="Movie import failed",
+                    message=f"There were errors importing: {movie.name} ({movie.year}) from torrent {torrent.title}. Please check the logs for details.",
                 )
 
         log.info(f"Finished importing files for torrent {torrent.title}")
