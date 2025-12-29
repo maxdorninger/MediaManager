@@ -4,13 +4,13 @@ from abc import ABC, abstractmethod
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.tv.schemas import Show
 from media_manager.movies.schemas import Movie
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 
 log = logging.getLogger(__name__)
 
 
 class AbstractMetadataProvider(ABC):
-    storage_path = AllEncompassingConfig().misc.image_directory
+    storage_path = MediaManagerConfig().misc.image_directory
 
     @property
     @abstractmethod

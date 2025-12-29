@@ -1,6 +1,6 @@
 import requests
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.notification.schemas import MessageNotification
 from media_manager.notification.service_providers.abstractNotificationServiceProvider import (
     AbstractNotificationServiceProvider,
@@ -9,7 +9,7 @@ from media_manager.notification.service_providers.abstractNotificationServicePro
 
 class PushoverNotificationServiceProvider(AbstractNotificationServiceProvider):
     def __init__(self):
-        self.config = AllEncompassingConfig().notifications.pushover
+        self.config = MediaManagerConfig().notifications.pushover
 
     def send_notification(self, message: MessageNotification) -> bool:
         response = requests.post(

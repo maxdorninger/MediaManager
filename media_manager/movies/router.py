@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
-from media_manager.config import LibraryItem, AllEncompassingConfig
+from media_manager.config import LibraryItem, MediaManagerConfig
 from media_manager.indexer.schemas import (
     IndexerQueryResultId,
     IndexerQueryResult,
@@ -105,7 +105,7 @@ def import_detected_movie(
     """
     source_directory = Path(directory)
     if source_directory not in get_importable_media_directories(
-        AllEncompassingConfig().misc.movie_directory
+        MediaManagerConfig().misc.movie_directory
     ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
     success = movie_service.import_existing_movie(
@@ -186,7 +186,7 @@ def get_available_libraries():
     """
     Get available Movie libraries from configuration.
     """
-    return AllEncompassingConfig().misc.movie_libraries
+    return MediaManagerConfig().misc.movie_libraries
 
 
 # -----------------------------------------------------------------------------

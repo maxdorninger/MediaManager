@@ -3,7 +3,7 @@ import logging
 
 
 import media_manager.metadataProvider.utils
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
@@ -19,7 +19,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
     name = "tvdb"
 
     def __init__(self):
-        config = AllEncompassingConfig().metadata.tvdb
+        config = MediaManagerConfig().metadata.tvdb
         self.url = config.tvdb_relay_url
 
     def __get_show(self, id: int) -> dict:

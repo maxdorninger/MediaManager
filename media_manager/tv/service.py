@@ -3,7 +3,7 @@ import shutil
 
 from sqlalchemy.exc import IntegrityError
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.database import get_session
 from media_manager.exceptions import InvalidConfigError
 from media_manager.indexer.repository import IndexerRepository
@@ -568,7 +568,7 @@ class TvService:
         return True
 
     def get_root_show_directory(self, show: Show):
-        misc_config = AllEncompassingConfig().misc
+        misc_config = MediaManagerConfig().misc
         show_directory_name = f"{remove_special_characters(show.name)} ({show.year})  [{show.metadata_provider}id-{show.external_id}]"
         log.debug(
             f"Show {show.name} without special characters: {remove_special_characters(show.name)}"
@@ -921,7 +921,7 @@ class TvService:
     def get_importable_tv_shows(
         self, metadata_provider: AbstractMetadataProvider
     ) -> list[MediaImportSuggestion]:
-        tv_directory = AllEncompassingConfig().misc.tv_directory
+        tv_directory = MediaManagerConfig().misc.tv_directory
         import_suggestions: list[MediaImportSuggestion] = []
         candidate_dirs = get_importable_media_directories(tv_directory)
 

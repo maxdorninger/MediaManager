@@ -11,7 +11,7 @@ import requests
 import libtorrent
 from requests.exceptions import InvalidSchema
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.indexer.utils import follow_redirects_to_final_torrent_url
 from media_manager.torrent.schemas import Torrent
@@ -62,7 +62,7 @@ def extract_archives(files):
 
 
 def get_torrent_filepath(torrent: Torrent):
-    return AllEncompassingConfig().misc.torrent_directory / torrent.title
+    return MediaManagerConfig().misc.torrent_directory / torrent.title
 
 
 def import_file(target_file: Path, source_file: Path):
@@ -128,7 +128,7 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
     :return: The hash of the torrent.
     """
     torrent_filepath = (
-        AllEncompassingConfig().misc.torrent_directory / f"{torrent.title}.torrent"
+            MediaManagerConfig().misc.torrent_directory / f"{torrent.title}.torrent"
     )
     if torrent_filepath.exists():
         log.warning(f"Torrent file already exists at: {torrent_filepath}")
@@ -149,7 +149,7 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
             final_url = follow_redirects_to_final_torrent_url(
                 initial_url=torrent.download_url,
                 session=requests.Session(),
-                timeout=AllEncompassingConfig().indexers.prowlarr.timeout_seconds,
+                timeout=MediaManagerConfig().indexers.prowlarr.timeout_seconds,
             )
             torrent_hash = str(libtorrent.parse_magnet_uri(final_url).info_hash)
             return torrent_hash
@@ -217,8 +217,8 @@ def remove_special_chars_and_parentheses(title: str) -> str:
 
 def get_importable_media_directories(path: Path) -> list[Path]:
     libraries = []
-    libraries.extend(AllEncompassingConfig().misc.movie_libraries)
-    libraries.extend(AllEncompassingConfig().misc.tv_libraries)
+    libraries.extend(MediaManagerConfig().misc.movie_libraries)
+    libraries.extend(MediaManagerConfig().misc.tv_libraries)
 
     library_paths = {Path(library.path).absolute() for library in libraries}
 

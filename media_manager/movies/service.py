@@ -4,7 +4,7 @@ from pathlib import Path
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.exceptions import InvalidConfigError
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.database import SessionLocal, get_session
@@ -459,7 +459,7 @@ class MovieService:
         return True
 
     def get_movie_root_path(self, movie: Movie) -> Path:
-        misc_config = AllEncompassingConfig().misc
+        misc_config = MediaManagerConfig().misc
         movie_file_path = (
             misc_config.movie_directory
             / f"{remove_special_characters(movie.name)} ({movie.year})  [{movie.metadata_provider}id-{movie.external_id}]"
@@ -670,7 +670,7 @@ class MovieService:
     def get_importable_movies(
         self, metadata_provider: AbstractMetadataProvider
     ) -> list[MediaImportSuggestion]:
-        movie_root_path = AllEncompassingConfig().misc.movie_directory
+        movie_root_path = MediaManagerConfig().misc.movie_directory
         importable_movies: list[MediaImportSuggestion] = []
         candidate_dirs = get_importable_media_directories(movie_root_path)
 

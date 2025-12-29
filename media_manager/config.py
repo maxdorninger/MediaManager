@@ -49,7 +49,7 @@ class BasicConfig(BaseSettings):
     movie_libraries: list[LibraryItem] = []
 
 
-class AllEncompassingConfig(BaseSettings):
+class MediaManagerConfig(BaseSettings):
     model_config = SettingsConfigDict(
         toml_file=config_path,
         case_sensitive=False,

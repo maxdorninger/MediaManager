@@ -1,7 +1,7 @@
 from media_manager.logging import setup_logging, LOGGING_CONFIG
 from media_manager.scheduler import setup_scheduler
 from media_manager.filesystem_checks import run_filesystem_checks
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 import uvicorn
 import os
 from fastapi import FastAPI, APIRouter
@@ -39,7 +39,7 @@ import logging
 
 setup_logging()
 
-config = AllEncompassingConfig()
+config = MediaManagerConfig()
 log = logging.getLogger(__name__)
 
 if config.misc.development:
