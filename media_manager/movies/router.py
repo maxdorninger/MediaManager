@@ -18,7 +18,6 @@ from media_manager.movies import log
 from media_manager.movies.schemas import (
     Movie,
     MovieRequest,
-    MovieId,
     RichMovieTorrent,
     PublicMovie,
     PublicMovieFile,
@@ -115,7 +114,7 @@ def get_all_importable_movies(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def import_detected_movie(
-    movie_service: movie_service_dep, movie_id: MovieId, directory: str
+    movie_service: movie_service_dep, movie: movie_dep, directory: str
 ):
     """
     get a list of unknown movies that were detected in the movie directory and are importable
@@ -125,7 +124,6 @@ def import_detected_movie(
         AllEncompassingConfig().misc.movie_directory
     ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
-    movie = movie_service.get_movie_by_id(movie_id=movie_id)
     success = movie_service.import_existing_movie(
         movie=movie, source_directory=source_directory
     )
@@ -285,8 +283,8 @@ def delete_movie_request(
     dependencies=[Depends(current_active_user)],
     response_model=PublicMovie,
 )
-def get_movie_by_id(movie_service: movie_service_dep, movie_id: MovieId):
-    return movie_service.get_public_movie_by_id(movie_id=movie_id)
+def get_movie_by_id(movie_service: movie_service_dep, movie: movie_dep):
+    return movie_service.get_public_movie_by_id(movie_id=movie.id)
 
 
 @router.get(
@@ -294,13 +292,13 @@ def get_movie_by_id(movie_service: movie_service_dep, movie_id: MovieId):
     dependencies=[Depends(current_active_user)],
     response_model=list[IndexerQueryResult],
 )
-def get_all_available_torrents_for_a_movie(
+def search_for_torrents_for_movie(
     movie_service: movie_service_dep,
-    movie_id: MovieId,
+    movie: movie_dep,
     search_query_override: str | None = None,
 ):
     return movie_service.get_all_available_torrents_for_a_movie(
-        movie_id=movie_id, search_query_override=search_query_override
+        movie_id=movie.id, search_query_override=search_query_override
     )
 
 
@@ -312,13 +310,13 @@ def get_all_available_torrents_for_a_movie(
 )
 def download_torrent_for_movie(
     movie_service: movie_service_dep,
-    movie_id: MovieId,
+    movie: movie_dep,
     public_indexer_result_id: IndexerQueryResultId,
     override_file_path_suffix: str = "",
 ):
     return movie_service.download_torrent(
         public_indexer_result_id=public_indexer_result_id,
-        movie_id=movie_id,
+        movie_id=movie.id,
         override_movie_file_path_suffix=override_file_path_suffix,
     )
 
@@ -328,8 +326,8 @@ def download_torrent_for_movie(
     dependencies=[Depends(current_active_user)],
     response_model=list[PublicMovieFile],
 )
-def get_movie_files_by_movie_id(movie_service: movie_service_dep, movie_id: MovieId):
-    return movie_service.get_public_movie_files_by_movie_id(movie_id=movie_id)
+def get_movie_files_by_movie_id(movie_service: movie_service_dep, movie: movie_dep):
+    return movie_service.get_public_movie_files_by_movie_id(movie_id=movie.id)
 
 
 @router.post(
@@ -339,12 +337,12 @@ def get_movie_files_by_movie_id(movie_service: movie_service_dep, movie_id: Movi
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def set_library(
-    movie_id: MovieId,
+    movie: movie_dep,
     movie_service: movie_service_dep,
     library: str,
 ) -> None:
     """
     Sets the library of a movie.
     """
-    movie_service.set_movie_library(movie_id=movie_id, library=library)
+    movie_service.set_movie_library(movie_id=movie.id, library=library)
     return
