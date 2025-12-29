@@ -13,7 +13,7 @@ class ISOJsonFormatter(JsonFormatter):
         return dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = os.getenv("MEDIAMANAGER_LOG_LEVEL", "INFO").upper()
 LOG_FILE = Path(os.getenv("LOG_FILE", "/app/config/media_manager.log"))
 LOGGING_CONFIG = {
     "version": 1,

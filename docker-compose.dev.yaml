@@ -34,6 +34,7 @@ services:
       - MEDIAMANAGER_MISC__CORS_URLS=["http://localhost:5173"]
       - DISABLE_FRONTEND_MOUNT=TRUE
       - LOG_FILE=/dev/null
+      - MEDIAMANAGER_LOG_LEVEL=DEBUG
     volumes:
       #- ./web/build:/app/web/build # this is only needed to test built frontend when developing frontend
       - ./res/images/:/data/images/
@@ -60,33 +61,33 @@ services:
 # Additional services can be uncommented and configured as needed
 # ----------------------------
 
-#  prowlarr:
-#    image: lscr.io/linuxserver/prowlarr:latest
-#    container_name: prowlarr
-#    environment:
-#      - PUID=1000
-#      - PGID=1000
-#      - TZ=Etc/UTC
-#    volumes:
-#      - ./res/prowlarr:/config
-#    restart: unless-stopped
-#    ports:
-#      - "9696:9696"
-#  qbittorrent:
-#    image: lscr.io/linuxserver/qbittorrent:latest
-#    container_name: qbittorrent
-#    environment:
-#      - TZ=Etc/UTC
-#      - WEBUI_PORT=8080
-#      - TORRENTING_PORT=6881
-#    ports:
-#      - 8080:8080
-#      - 6881:6881
-#      - 6881:6881/udp
-#    restart: unless-stopped
-#    volumes:
-#      - ./res/torrents:/download
-#      - ./res/qbittorrent:/config
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./res/prowlarr:/config
+    restart: unless-stopped
+    ports:
+      - "9696:9696"
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - TZ=Etc/UTC
+      - WEBUI_PORT=8080
+      - TORRENTING_PORT=6881
+    ports:
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+    volumes:
+      - ./res/torrents:/download
+      - ./res/qbittorrent:/config
 #  transmission:
 #    image: lscr.io/linuxserver/transmission:latest
 #    container_name: transmission
