@@ -53,13 +53,11 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         )
         try:
             self.api_client.auth_log_in()
-            log.info("Successfully logged into qbittorrent")
         except Exception as e:
             log.error(f"Failed to log into qbittorrent: {e}")
             raise
 
         try:
-            log.info("Trying to create MediaManager category in qBittorrent")
             self.api_client.torrents_create_category(
                 name=self.config.category_name,
                 save_path=self.config.category_save_path
@@ -67,9 +65,6 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
                 else None,
             )
         except Conflict409Error:
-            log.info(
-                "MediaManager category already exists in qBittorrent, modifying existing category to reflect current config."
-            )
             try:
                 self.api_client.torrents_edit_category(
                     name=self.config.category_name,
@@ -78,11 +73,7 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
                     else None,
                 )
             except Exception as e:
-                if str(e) == "":
-                    log.info(
-                        "MediaManager category in qBittorrent is already up to date"
-                    )
-                else:
+                if str(e) != "":
                     log.error(
                         f"Error on updating MediaManager category in qBittorrent, error: {e}"
                     )
@@ -94,13 +85,9 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         :param indexer_result: The indexer query result of the torrent file to download.
         :return: The torrent object with calculated hash and initial status.
         """
-        log.info(f"Attempting to download torrent: {indexer_result.title}")
         torrent_hash = get_torrent_hash(torrent=indexer_result)
         answer = None
 
-        log.info(
-            f"Downloading torrent {indexer_result.title} with download_url: {indexer_result.download_url}"
-        )
         try:
             self.api_client.auth_log_in()
             answer = self.api_client.torrents_add(
@@ -158,7 +145,6 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         :param torrent: The torrent to get the status of.
         :return: The status of the torrent.
         """
-        log.info(f"Fetching status for torrent: {torrent.title}")
         try:
             self.api_client.auth_log_in()
             info = self.api_client.torrents_info(torrent_hashes=torrent.hash)
@@ -170,7 +156,6 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
             return TorrentStatus.unknown
         else:
             state: str = info[0]["state"]
-            log.info(f"Torrent {torrent.id} is in state: {state}")
 
             if state in self.DOWNLOADING_STATE:
                 return TorrentStatus.downloading
@@ -189,7 +174,6 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
 
         :param torrent: The torrent to pause.
         """
-        log.info(f"Pausing torrent: {torrent.title}")
         try:
             self.api_client.auth_log_in()
             self.api_client.torrents_pause(torrent_hashes=torrent.hash)
@@ -202,7 +186,6 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
 
         :param torrent: The torrent to resume.
         """
-        log.info(f"Resuming torrent: {torrent.title}")
         try:
             self.api_client.auth_log_in()
             self.api_client.torrents_resume(torrent_hashes=torrent.hash)

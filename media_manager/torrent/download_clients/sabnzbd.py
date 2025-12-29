@@ -36,9 +36,7 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         self.client._base_url = f"{self.config.host.rstrip('/')}:{self.config.port}{self.config.base_path}"  # the library expects a /sabnzbd prefix for whatever reason
         try:
             # Test connection
-            version = self.client.version()
-
-            log.info(f"Successfully connected to SABnzbd version: {version}")
+            self.client.version()
         except Exception as e:
             log.error(f"Failed to connect to SABnzbd: {e}")
             raise
@@ -50,8 +48,6 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         :param indexer_result: The indexer query result of the NZB file to download.
         :return: The torrent object with calculated hash and initial status.
         """
-        log.info(f"Attempting to download NZB: {indexer_result.title}")
-
         try:
             # Add NZB to SABnzbd queue
             response = self.client.add_uri(
@@ -64,8 +60,6 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
 
             # Generate a hash for the NZB (using title and download URL)
             nzo_id = response["nzo_ids"][0]
-
-            log.info(f"Successfully added NZB: {indexer_result.title}")
 
             # Create and return torrent object
             torrent = Torrent(
@@ -93,10 +87,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         :param torrent: The torrent to remove.
         :param delete_data: Whether to delete the downloaded files.
         """
-        log.info(f"Removing torrent: {torrent.title} (Delete data: {delete_data})")
         try:
             self.client.delete_job(nzo_id=torrent.hash, delete_files=delete_data)
-            log.info(f"Successfully removed torrent: {torrent.title}")
         except Exception as e:
             log.error(f"Failed to remove torrent {torrent.title}: {e}")
             raise
@@ -107,10 +99,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
 
         :param torrent: The torrent to pause.
         """
-        log.info(f"Pausing torrent: {torrent.title}")
         try:
             self.client.pause_job(nzo_id=torrent.hash)
-            log.info(f"Successfully paused torrent: {torrent.title}")
         except Exception as e:
             log.error(f"Failed to pause torrent {torrent.title}: {e}")
             raise
@@ -121,10 +111,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
 
         :param torrent: The torrent to resume.
         """
-        log.info(f"Resuming torrent: {torrent.title}")
         try:
             self.client.resume_job(nzo_id=torrent.hash)
-            log.info(f"Successfully resumed torrent: {torrent.title}")
         except Exception as e:
             log.error(f"Failed to resume torrent {torrent.title}: {e}")
             raise
@@ -136,11 +124,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         :param torrent: The torrent to get the status of.
         :return: The status of the torrent.
         """
-        log.info(f"Fetching status for download: {torrent.title}")
         response = self.client.get_downloads(nzo_ids=torrent.hash)
-        log.debug("SABnzbd response: %s", response)
         status = response["queue"]["status"]
-        log.info(f"Download status for NZB {torrent.title}: {status}")
         return self._map_status(status)
 
     def _map_status(self, sabnzbd_status: str) -> TorrentStatus:
