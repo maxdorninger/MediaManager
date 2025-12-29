@@ -6,7 +6,7 @@ from sqlalchemy.exc import (
 from sqlalchemy.orm import Session, joinedload
 import logging
 
-from media_manager.exceptions import NotFoundError
+from media_manager.exceptions import NotFoundError, ConflictError
 from media_manager.movies.models import Movie, MovieRequest, MovieFile
 from media_manager.movies.schemas import (
     Movie as MovieSchema,
@@ -130,7 +130,7 @@ class MovieRepository:
         except IntegrityError as e:
             self.db.rollback()
             log.error(f"Integrity error while saving movie {movie.name}: {e}")
-            raise ValueError(
+            raise ConflictError(
                 f"Movie with this primary key or unique constraint violation: {e.orig}"
             )
         except SQLAlchemyError as e:

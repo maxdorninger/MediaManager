@@ -9,7 +9,7 @@ from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import TorrentId, Torrent as TorrentSchema
 from media_manager.tv import log
 from media_manager.tv.models import Season, Show, Episode, SeasonRequest, SeasonFile
-from media_manager.exceptions import NotFoundError, MediaAlreadyExists
+from media_manager.exceptions import NotFoundError, ConflictError
 from media_manager.tv.schemas import (
     Season as SeasonSchema,
     SeasonId,
@@ -178,7 +178,7 @@ class TvRepository:
             return ShowSchema.model_validate(db_show)
         except IntegrityError as e:
             self.db.rollback()
-            raise MediaAlreadyExists(
+            raise ConflictError(
                 f"Show with this primary key or unique constraint violation: {e.orig}"
             ) from e
         except SQLAlchemyError as e:
