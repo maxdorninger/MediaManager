@@ -569,7 +569,7 @@ class TvService:
 
     def get_root_show_directory(self, show: Show):
         misc_config = MediaManagerConfig().misc
-        show_directory_name = f"{remove_special_characters(show.name)} ({show.year})  [{show.metadata_provider}id-{show.external_id}]"
+        show_directory_name = f"{remove_special_characters(show.name)} ({show.year}) [{show.metadata_provider}id-{show.external_id}]"
         log.debug(
             f"Show {show.name} without special characters: {remove_special_characters(show.name)}"
         )
@@ -780,6 +780,7 @@ class TvService:
             else False,
         )
 
+        # Process seasons and episodes
         existing_season_external_ids = {s.external_id: s for s in db_show.seasons}
 
         for fresh_season_data in fresh_show_data.seasons:
