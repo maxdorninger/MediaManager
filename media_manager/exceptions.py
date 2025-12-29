@@ -1,5 +1,7 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
+from psycopg.errors import UniqueViolation
 
 
 class MediaManagerException(Exception):
@@ -124,3 +126,15 @@ async def sqlalchemy_integrity_error_handler(
             "detail": "The entity to create already exists or is in a conflict with others."
         },
     )
+
+
+def register_exception_handlers(app):
+    app.add_exception_handler(NotFoundError, not_found_error_exception_handler)
+    app.add_exception_handler(
+        MediaAlreadyExists, media_already_exists_exception_handler
+    )
+    app.add_exception_handler(
+        InvalidConfigError, invalid_config_error_exception_handler
+    )
+    app.add_exception_handler(IntegrityError, sqlalchemy_integrity_error_handler)
+    app.add_exception_handler(UniqueViolation, sqlalchemy_integrity_error_handler)
