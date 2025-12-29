@@ -1,6 +1,7 @@
 import typing
 import uuid
 from uuid import UUID
+from datetime import date
 
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 
@@ -19,6 +20,7 @@ class Movie(BaseModel):
     name: str
     overview: str
     year: int | None
+    air_date: date | None = None
 
     external_id: int
     metadata_provider: str

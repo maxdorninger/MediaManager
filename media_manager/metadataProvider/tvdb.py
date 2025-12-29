@@ -1,5 +1,6 @@
 import requests
 import logging
+from datetime import datetime
 
 
 import media_manager.metadataProvider.utils
@@ -89,6 +90,15 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                 )
                 for episode in s["episodes"]
             ]
+            
+            # Parse air_date if available
+            air_date = None
+            if s.get("air_date"):
+                try:
+                    air_date = datetime.strptime(s["air_date"], "%Y-%m-%d").date()
+                except (ValueError, TypeError):
+                    log.warning(f"Could not parse air_date for season {s['number']}: {s.get('air_date')}")
+            
             seasons.append(
                 Season(
                     number=SeasonNumber(s["number"]),
@@ -96,6 +106,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                     overview="TVDB doesn't provide Season Overviews",
                     external_id=int(s["id"]),
                     episodes=episodes,
+                    air_date=air_date,
                 )
             )
         try:
@@ -259,17 +270,26 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         :return: returns a Movie object
         :rtype: Movie
         """
-        movie = self.__get_movie(id)
+        movie_data = self.__get_movie(id)
         try:
-            year = movie["year"]
+            year = movie_data["year"]
         except KeyError:
             year = None
 
+        # Parse air_date if available
+        air_date = None
+        if movie_data.get("release_date"):
+            try:
+                air_date = datetime.strptime(movie_data["release_date"], "%Y-%m-%d").date()
+            except (ValueError, TypeError):
+                log.warning(f"Could not parse release_date for movie {id}: {movie_data.get('release_date')}")
+
         movie = Movie(
-            name=movie["name"],
+            name=movie_data["name"],
             overview="TVDB does not provide overviews",
             year=year,
-            external_id=movie["id"],
+            air_date=air_date,
+            external_id=movie_data["id"],
             metadata_provider=self.name,
         )
 

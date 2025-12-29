@@ -48,6 +48,10 @@ class BasicConfig(BaseSettings):
     tv_libraries: list[LibraryItem] = []
     movie_libraries: list[LibraryItem] = []
 
+    # Air date check settings
+    prevent_unaired_tv_downloads: bool = False
+    prevent_unaired_movie_downloads: bool = False
+
 
 class AllEncompassingConfig(BaseSettings):
     model_config = SettingsConfigDict(

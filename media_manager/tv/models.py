@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import date
 
 from sqlalchemy import ForeignKey, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -39,6 +40,7 @@ class Season(Base):
     external_id: Mapped[int]
     name: Mapped[str]
     overview: Mapped[str]
+    air_date: Mapped[date | None]
 
     show: Mapped["Show"] = relationship(back_populates="seasons")
     episodes: Mapped[list["Episode"]] = relationship(

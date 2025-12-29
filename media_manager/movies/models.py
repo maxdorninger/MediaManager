@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import date
 
 from sqlalchemy import ForeignKey, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -18,6 +19,7 @@ class Movie(Base):
     name: Mapped[str]
     overview: Mapped[str]
     year: Mapped[int | None]
+    air_date: Mapped[date | None]
     library: Mapped[str] = mapped_column(default="")
     movie_requests: Mapped[list["MovieRequest"]] = relationship(
         "MovieRequest", back_populates="movie", cascade="all, delete-orphan"

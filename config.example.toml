@@ -18,6 +18,11 @@ torrent_directory = "/data/torrents" # this is where MediaManager will search fo
 # you probaly don't need to change this
 development = false
 
+# Air date check settings - prevent downloading content that hasn't aired/been released yet
+# This helps avoid fake releases on public indexers
+prevent_unaired_tv_downloads = false
+prevent_unaired_movie_downloads = false
+
 # Custom Media Libraries
 # These paths should match your volume mounts in docker-compose.yaml
 # Example: if you mount "./movies:/media/movies" then use path = "/media/movies/subdirectory"

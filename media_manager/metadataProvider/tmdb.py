@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import requests
 
@@ -177,6 +178,14 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                     )
                 )
 
+            # Parse air_date
+            air_date = None
+            if season_metadata.get("air_date"):
+                try:
+                    air_date = datetime.strptime(season_metadata["air_date"], "%Y-%m-%d").date()
+                except (ValueError, TypeError):
+                    log.warning(f"Could not parse air_date for season {season_metadata['season_number']}: {season_metadata.get('air_date')}")
+
             season_list.append(
                 Season(
                     external_id=int(season_metadata["id"]),
@@ -184,6 +193,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                     overview=season_metadata["overview"],
                     number=SeasonNumber(season_metadata["season_number"]),
                     episodes=episode_list,
+                    air_date=air_date,
                 )
             )
 
@@ -262,11 +272,20 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             movie_metadata["release_date"]
         )
 
+        # Parse air_date (release_date for movies)
+        air_date = None
+        if movie_metadata.get("release_date"):
+            try:
+                air_date = datetime.strptime(movie_metadata["release_date"], "%Y-%m-%d").date()
+            except (ValueError, TypeError):
+                log.warning(f"Could not parse release_date for movie {id}: {movie_metadata.get('release_date')}")
+
         movie = Movie(
             external_id=id,
             name=movie_metadata["title"],
             overview=movie_metadata["overview"],
             year=year,
+            air_date=air_date,
             metadata_provider=self.name,
         )
 

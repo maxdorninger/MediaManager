@@ -1,4 +1,5 @@
 import re
+from datetime import date
 
 from sqlalchemy.exc import IntegrityError
 
@@ -467,6 +468,18 @@ class TvService:
         log.info(f"Downloading approved season request {season_request.id}")
 
         season = self.get_season(season_id=season_request.season_id)
+        
+        # Check if season has aired (if air date check is enabled)
+        config = AllEncompassingConfig()
+        if config.misc.prevent_unaired_tv_downloads:
+            if season.air_date is not None:
+                today = date.today()
+                if season.air_date > today:
+                    log.info(
+                        f"Skipping season {season.number} of show {show.name} because it hasn't aired yet (air date: {season.air_date})"
+                    )
+                    return False
+        
         torrents = self.get_all_available_torrents_for_a_season(
             season_number=season.number, show_id=show.id
         )

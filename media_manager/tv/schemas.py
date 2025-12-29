@@ -1,6 +1,7 @@
 import typing
 import uuid
 from uuid import UUID
+from datetime import date
 
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 
@@ -36,6 +37,7 @@ class Season(BaseModel):
     overview: str
 
     external_id: int
+    air_date: date | None = None
 
     episodes: list[Episode]
 
@@ -145,6 +147,7 @@ class PublicSeason(BaseModel):
     overview: str
 
     external_id: int
+    air_date: date | None = None
 
     episodes: list[Episode]
 
