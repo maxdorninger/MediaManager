@@ -142,9 +142,10 @@ class MovieService:
 
                 if movie_dir.exists() and movie_dir.is_dir():
                     try:
-                        shutil.rmtree(movie_path)
+                        shutil.rmtree(movie_dir)
+                        log.info(f"Deleted movie directory: {movie_dir}")
                     except OSError as e:
-                        log.error(f"Error: {movie_path} : {e.strerror}")                    log.info(f"Deleted movie directory: {movie_dir}")
+                        log.error(f"Deleting movie directory: {movie_dir} : {e.strerror}")
 
             if delete_torrents:
                 # Get all torrents associated with this movie
