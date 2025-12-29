@@ -52,7 +52,7 @@ class TransmissionDownloadClient(AbstractDownloadClient):
         """
         torrent_hash = get_torrent_hash(torrent=indexer_result)
         download_dir = (
-                MediaManagerConfig().misc.torrent_directory / indexer_result.title
+            MediaManagerConfig().misc.torrent_directory / indexer_result.title
         )
         try:
             self._client.add_torrent(

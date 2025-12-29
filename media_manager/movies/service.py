@@ -1,3 +1,4 @@
+import re
 import shutil
 from pathlib import Path
 
@@ -5,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from media_manager.config import MediaManagerConfig
-from media_manager.exceptions import InvalidConfigError
+from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.database import SessionLocal, get_session
 from media_manager.indexer.schemas import IndexerQueryResult
@@ -37,6 +38,7 @@ from media_manager.torrent.utils import (
     remove_special_characters,
     get_importable_media_directories,
     remove_special_chars_and_parentheses,
+    extract_external_id_from_string,
 )
 from media_manager.indexer.service import IndexerService
 from media_manager.metadataProvider.abstractMetaDataProvider import (
@@ -145,7 +147,9 @@ class MovieService:
                         shutil.rmtree(movie_dir)
                         log.info(f"Deleted movie directory: {movie_dir}")
                     except OSError as e:
-                        log.error(f"Deleting movie directory: {movie_dir} : {e.strerror}")
+                        log.error(
+                            f"Deleting movie directory: {movie_dir} : {e.strerror}"
+                        )
 
             if delete_torrents:
                 # Get all torrents associated with this movie
@@ -177,9 +181,7 @@ class MovieService:
         public_movie_files = [PublicMovieFile.model_validate(x) for x in movie_files]
         result = []
         for movie_file in public_movie_files:
-            movie_file.imported = self.movie_file_exists_on_file(
-                movie_file=movie_file
-            )
+            movie_file.imported = self.movie_file_exists_on_file(movie_file=movie_file)
             result.append(movie_file)
         return result
 
