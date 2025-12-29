@@ -52,13 +52,13 @@ I use IntellijIdea with the Pycharm and Webstorm plugins to develop this, but th
 Normally I'd recommend Intellij, but unfortunately only Intellij Ultimate has support for FastAPI and some other
 features.
 
-### Recommended VSCode Plugins:
+### Recommended VSCode Plugins
 
 - Python
 - Svelte for VSCode
 - and probably more, but I don't use VSCode myself, so I can't recommend anymore.
 
-### Recommended Intellij/Pycharm Plugins:
+### Recommended Intellij/Pycharm Plugins
 
 - Python
 - Svelte
@@ -109,12 +109,15 @@ you don't need to configure anything manually.
 This is the easiest and recommended way to get started. Everything runs in Docker with hot-reloading enabled.
 
 1. Copy the example config & .env:
+
    ```bash
+   mkdir -p res/config # Only needed on first run
    cp config.dev.toml res/config/config.toml
    cp web/.env.example web/.env
    ```
 
 2. Start all services:
+
    ```bash
    # Recommended: Use make commands for easy development
    make up
@@ -127,10 +130,11 @@ This is the easiest and recommended way to get started. Everything runs in Docke
    shell into backend), and more.</tip>
 
 3. Access the application:
-    - Frontend (with HMR): http://localhost:5173
-    - Backend API: http://localhost:8000
-    - Database: localhost:5432
+   - Frontend (with HMR): <http://localhost:5173>
+   - Backend API: <http://localhost:8000>
+   - Database: localhost:5432
 
+The default user email is `admin@example.com` and password is `admin`, these are printed out in the logs accessible with `make logs`.
 That's it! Now you can edit code and see changes instantly:
 
 - Edit Python files → Backend auto-reloads
@@ -144,28 +148,34 @@ That's it! Now you can edit code and see changes instantly:
 3. [Install `uv`.](https://docs.astral.sh/uv/getting-started/installation/)
 4. run `uv --version` to verify that `uv` is installed correctly
 5. Install python if you haven't already:
-    ```bash
-    uv python install 3.13
-    ```
+
+   ```bash
+   uv python install 3.13
+   ```
+
 6. Create a virtual environment with uv
-    ```bash
-    uv venv --python 3.13
-    ```
+
+   ```bash
+   uv venv --python 3.13
+   ```
 
 7. Install dependencies:
-    ```bash
-    uv sync
-    ```
+
+   ```bash
+   uv sync
+   ```
 
 8. run db migrations with
-    ```bash
-      uv run alembic upgrade head
+
+   ```bash
+     uv run alembic upgrade head
    ```
 
 9. run the backend with
-    ```bash
-    uv run fastapi run media_manager/main.py --reload --port 8000
-    ```
+
+   ```bash
+   uv run fastapi run media_manager/main.py --reload --port 8000
+   ```
 
 - format code with `uv run ruff format .`
 - lint code with `uv run ruff check .`
@@ -181,18 +191,24 @@ Using the Docker setup above is recommended. This section is for those who prefe
 3. cd into `web` directory
 4. Install Node.js and npm if you haven't already, I
    used [nvm-windows](https://github.com/coreybutler/nvm-windows?tab=readme-ov-file):
-    ```powershell
-    nvm install 24.1.0
-    nvm use 24.1.0
-    ```
+
+   ```powershell
+   nvm install 24.1.0
+   nvm use 24.1.0
+   ```
+
    I also needed to run the following command to be able to use `npm`:
+
    ```powershell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
+
 5. Create a `.env` file in the `web` directory:
+
    ```bash
    cp .env.example .env
    ```
+
    Update `PUBLIC_API_URL` if your backend is not at `http://localhost:8000`
 
 6. Install the dependencies with npm: `npm install`
@@ -254,9 +270,9 @@ config file.</tip>
 
 #### Volume permission issues (Linux)
 
-- Docker containers may create files as root, causing permission issues
-- Solution: Run containers with your user ID or use Docker's `user:` directive
-- Alternatively: `sudo chown -R $USER:$USER .` to reclaim ownership
+- Docker containers may create files as root, causing permission issues, which can make the login page fail to show up.
+- Solution: `sudo chown -R $USER:$USER res/` to reclaim ownership.
+- Alternatively: Run containers with your user ID or use Docker's `user:` directive, this may fail though.
 
 #### Complete reset
 
@@ -274,7 +290,7 @@ make up
 ```mermaid
 sequenceDiagram
     title Step-by-step: going from adding a show to importing a torrent of one of its seasons
-    
+
     User->>TV Router: Add a show (POST /tv/shows)
     TV Router->>TV Service: Receive Show Request
     TV Service->>MetadataProviderService: Get Metadata for Show

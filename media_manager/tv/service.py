@@ -576,7 +576,7 @@ class TvService:
 
     def get_root_show_directory(self, show: Show):
         misc_config = AllEncompassingConfig().misc
-        show_directory_name = f"{remove_special_characters(show.name)} ({show.year})  [{show.metadata_provider}id-{show.external_id}]"
+        show_directory_name = f"{remove_special_characters(show.name)} ({show.year}) [{show.metadata_provider}id-{show.external_id}]"
         log.debug(
             f"Show {show.name} without special characters: {remove_special_characters(show.name)}"
         )
