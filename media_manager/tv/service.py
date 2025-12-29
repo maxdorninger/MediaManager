@@ -127,8 +127,8 @@ class TvService:
         self.tv_repository.delete_season_request(season_request_id=season_request.id)
         return self.tv_repository.add_season_request(season_request=season_request)
 
-    def set_show_library(self, show_id: ShowId, library: str) -> None:
-        self.tv_repository.set_show_library(show_id=show_id, library=library)
+    def set_show_library(self, show: Show, library: str) -> None:
+        self.tv_repository.set_show_library(show_id=show.id, library=library)
 
     def delete_season_request(self, season_request_id: SeasonRequestId) -> None:
         """
@@ -140,20 +140,18 @@ class TvService:
 
     def delete_show(
         self,
-        show_id: ShowId,
+        show: Show,
         delete_files_on_disk: bool = False,
         delete_torrents: bool = False,
     ) -> None:
         """
         Delete a show from the database, optionally deleting files and torrents.
 
-        :param show_id: The ID of the show to delete.
+        :param show: The show to delete.
         :param delete_files_on_disk: Whether to delete the show's files from disk.
         :param delete_torrents: Whether to delete associated torrents from the torrent client.
         """
         if delete_files_on_disk or delete_torrents:
-            show = self.tv_repository.get_show_by_id(show_id)
-
             log.debug(f"Deleting ID: {show.id} - Name: {show.name}")
 
             if delete_files_on_disk:
@@ -167,7 +165,7 @@ class TvService:
 
             if delete_torrents:
                 # Get all torrents associated with this show
-                torrents = self.tv_repository.get_torrents_by_show_id(show_id=show_id)
+                torrents = self.tv_repository.get_torrents_by_show_id(show_id=show.id)
                 for torrent in torrents:
                     try:
                         self.torrent_service.cancel_download(torrent, delete_files=True)
@@ -176,19 +174,19 @@ class TvService:
                         log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
 
         # Delete from database
-        self.tv_repository.delete_show(show_id=show_id)
+        self.tv_repository.delete_show(show_id=show.id)
 
     def get_public_season_files_by_season_id(
-        self, season_id: SeasonId
+        self, season: Season
     ) -> list[PublicSeasonFile]:
         """
-        Get all public season files for a given season ID.
+        Get all public season files for a given season.
 
-        :param season_id: The ID of the season.
+        :param season: The season object.
         :return: A list of public season files.
         """
         season_files = self.tv_repository.get_season_files_by_season_id(
-            season_id=season_id
+            season_id=season.id
         )
         public_season_files = [PublicSeasonFile.model_validate(x) for x in season_files]
         result = []
@@ -322,14 +320,13 @@ class TvService:
 
         return filtered_results
 
-    def get_public_show_by_id(self, show_id: ShowId) -> PublicShow:
+    def get_public_show_by_id(self, show: Show) -> PublicShow:
         """
-        Get a public show by its ID.
+        Get a public show from a Show object.
 
-        :param show_id: The ID of the show.
+        :param show: The show object.
         :return: A public show.
         """
-        show = self.tv_repository.get_show_by_id(show_id=show_id)
         seasons = [PublicSeason.model_validate(season) for season in show.seasons]
         for season in seasons:
             season.downloaded = self.is_season_downloaded(season_id=season.id)
@@ -874,17 +871,17 @@ class TvService:
         return updated_show
 
     def set_show_continuous_download(
-        self, show_id: ShowId, continuous_download: bool
+        self, show: Show, continuous_download: bool
     ) -> Show:
         """
         Set the continuous download flag for a show.
 
-        :param show_id: The ID of the show.
+        :param show: The show object.
         :param continuous_download: True to enable continuous download, False to disable.
         :return: The updated Show object.
         """
         return self.tv_repository.update_show_attributes(
-            show_id=show_id, continuous_download=continuous_download
+            show_id=show.id, continuous_download=continuous_download
         )
 
     def get_import_candidates(
