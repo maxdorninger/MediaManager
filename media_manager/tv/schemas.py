@@ -24,6 +24,7 @@ class Episode(BaseModel):
     number: EpisodeNumber
     external_id: int
     title: str
+    overview: str | None = None
 
 
 class Season(BaseModel):

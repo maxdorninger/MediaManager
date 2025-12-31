@@ -163,6 +163,7 @@ class TvRepository:
                                 number=episode.number,
                                 external_id=episode.external_id,
                                 title=episode.title,
+                                overview=episode.overview,
                             )
                             for episode in season.episodes
                         ],

@@ -824,6 +824,7 @@ class TvService:
                         self.tv_repository.update_episode_attributes(
                             episode_id=existing_episode.id,
                             title=fresh_episode_data.title,
+                            overview=fresh_episode_data.overview,
                         )
                     else:
                         # Add new episode
@@ -835,6 +836,7 @@ class TvService:
                             number=fresh_episode_data.number,
                             external_id=fresh_episode_data.external_id,
                             title=fresh_episode_data.title,
+                            overview=fresh_episode_data.overview,
                         )
                         self.tv_repository.add_episode_to_season(
                             season_id=existing_season.id, episode_data=episode_schema
@@ -852,6 +854,7 @@ class TvService:
                             number=ep_data.number,
                             external_id=ep_data.external_id,
                             title=ep_data.title,
+                            overview=ep_data.overview,
                         )
                     )
 

@@ -66,6 +66,7 @@ class Episode(Base):
     number: Mapped[int]
     external_id: Mapped[int]
     title: Mapped[str]
+    overview: Mapped[str]
 
     season: Mapped["Season"] = relationship(back_populates="episodes")
 

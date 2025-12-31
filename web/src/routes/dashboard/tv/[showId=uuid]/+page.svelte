@@ -4,6 +4,7 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { goto } from '$app/navigation';
 	import { ImageOff } from 'lucide-svelte';
+	import { Ellipsis } from 'lucide-svelte';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { getContext } from 'svelte';
 	import type { components } from '$lib/api/api';
@@ -26,6 +27,17 @@
 	let show: components['schemas']['PublicShow'] = $derived(page.data.showData);
 	let torrents: components['schemas']['RichShowTorrent'] = $derived(page.data.torrentsData);
 	let user: () => components['schemas']['UserRead'] = getContext('user');
+
+	let expandedSeasons = $state<Set<string>>(new Set());
+
+	function toggleSeason(seasonId: string) {
+		if (expandedSeasons.has(seasonId)) {
+			expandedSeasons.delete(seasonId);
+		} else {
+			expandedSeasons.add(seasonId);
+		}
+		expandedSeasons = new Set(expandedSeasons);
+	}
 
 	let continuousDownloadEnabled = $derived(show.continuous_download);
 
@@ -109,7 +121,7 @@
 					<Card.Title>Overview</Card.Title>
 				</Card.Header>
 				<Card.Content>
-					<p class="leading-7 not-first:mt-6">
+					<p class="text-sm leading-6 text-muted-foreground text-justify hyphens-auto">
 						{show.overview}
 					</p>
 				</Card.Content>
@@ -162,35 +174,72 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="w-full overflow-x-auto">
-				<Table.Root>
+				<Table.Root class="w-full table-fixed">
 					<Table.Caption>A list of all seasons.</Table.Caption>
 					<Table.Header>
 						<Table.Row>
-							<Table.Head>Number</Table.Head>
-							<Table.Head>Exists on file</Table.Head>
-							<Table.Head>Title</Table.Head>
+							<Table.Head class="w-[80px]">Number</Table.Head>
+							<Table.Head class="w-[100px]">Exists on file</Table.Head>
+							<Table.Head class="w-[240px]">Title</Table.Head>
 							<Table.Head>Overview</Table.Head>
+							<Table.Head class="text-center w-[64px]">Details</Table.Head>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
 						{#if show.seasons.length > 0}
 							{#each show.seasons as season (season.id)}
 								<Table.Row
-									onclick={() =>
-										goto(
-											resolve('/dashboard/tv/[showId]/[seasonId]', {
-												showId: show.id,
-												seasonId: season.id
-											})
-										)}
+									class={`group cursor-pointer transition-colors hover:bg-muted/60 ${
+										expandedSeasons.has(season.id) ? 'bg-muted/50' : 'bg-muted/10'
+									}`}
+									onclick={() => toggleSeason(season.id)}
 								>
-									<Table.Cell class="min-w-[10px] font-medium">{season.number}</Table.Cell>
+									<Table.Cell class="min-w-[10px] font-medium">
+										S{String(season.number).padStart(2, '0')}
+									</Table.Cell>
 									<Table.Cell class="min-w-[10px] font-medium">
 										<CheckmarkX state={season.downloaded} />
 									</Table.Cell>
 									<Table.Cell class="min-w-[50px]">{season.name}</Table.Cell>
 									<Table.Cell class="max-w-[300px] truncate">{season.overview}</Table.Cell>
-								</Table.Row>
+									<Table.Cell class="w-[64px] text-center">
+										<button
+											class="inline-flex items-center justify-center
+												cursor-pointer
+												rounded-md p-1
+												transition-colors
+												hover:bg-muted/95
+												focus-visible:outline-none
+												focus-visible:ring-2 focus-visible:ring-ring"
+											onclick={(e) => {
+												e.stopPropagation();
+												goto(
+													resolve('/dashboard/tv/[showId]/[seasonId]', {
+														showId: show.id,
+														seasonId: season.id
+													})
+												);
+											}}
+											aria-label="Season details"
+										>
+											<Ellipsis size={16} class="text-muted-foreground" />
+										</button>
+									</Table.Cell>
+								</Table.Row>									
+									{#if expandedSeasons.has(season.id)}
+										{#each season.episodes as episode (episode.id)}
+											<Table.Row class="bg-muted/20">
+												<Table.Cell class="min-w-[10px] font-medium">
+													E{String(episode.number).padStart(2, '0')}
+												</Table.Cell>
+												<Table.Cell class="min-w-[10px] font-medium"></Table.Cell>
+												<Table.Cell class="min-w-[50px]">{episode.title}</Table.Cell>
+												<Table.Cell colspan={2} class="truncate">{episode.overview}</Table.Cell>
+											</Table.Row>
+										{/each}
+									{/if}
+								
+
 							{/each}
 						{:else}
 							<Table.Row>
