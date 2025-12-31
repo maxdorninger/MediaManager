@@ -80,7 +80,7 @@
 					<Card.Title>Overview</Card.Title>
 				</Card.Header>
 				<Card.Content>
-					<p class="leading-7 not-first:mt-6">
+					<p class="text-sm leading-6 text-muted-foreground text-justify hyphens-auto">
 						{movie.overview}
 					</p>
 				</Card.Content>
