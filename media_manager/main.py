@@ -112,8 +112,10 @@ api_app.include_router(movies_router.router, prefix="/movies", tags=["movie"])
 api_app.include_router(
     notification_router, prefix="/notification", tags=["notification"]
 )
-api_app.mount(
-    "/static/image",
+
+# serve static image files
+app.mount(
+    "/api/v1/static/image",
     StaticFiles(directory=config.misc.image_directory),
     name="static-images",
 )
