@@ -28,6 +28,8 @@ from media_manager.exceptions import (
     InvalidConfigError,
     invalid_config_error_exception_handler,
     sqlalchemy_integrity_error_handler,
+    ConflictError,
+    conflict_error_handler,
 )
 from sqlalchemy.exc import IntegrityError
 from psycopg.errors import UniqueViolation
@@ -162,6 +164,7 @@ app.add_exception_handler(MediaAlreadyExists, media_already_exists_exception_han
 app.add_exception_handler(InvalidConfigError, invalid_config_error_exception_handler)
 app.add_exception_handler(IntegrityError, sqlalchemy_integrity_error_handler)
 app.add_exception_handler(UniqueViolation, sqlalchemy_integrity_error_handler)
+app.add_exception_handler(ConflictError, conflict_error_handler)
 
 if __name__ == "__main__":
     uvicorn.run(
