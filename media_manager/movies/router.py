@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, MediaManagerConfig
+from media_manager.exceptions import ConflictError
 from media_manager.indexer.schemas import (
     IndexerQueryResultId,
     IndexerQueryResult,
@@ -158,7 +159,7 @@ def add_a_movie(
             metadata_provider=metadata_provider,
             language=language,
         )
-    except ValueError:
+    except ConflictError:
         movie = movie_service.get_movie_by_external_id(
             external_id=movie_id, metadata_provider=metadata_provider.name
         )
