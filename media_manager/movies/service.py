@@ -201,14 +201,19 @@ class MovieService:
         :raises ValueError: If neither external ID and metadata provider nor movie ID are provided.
         """
         if external_id and metadata_provider:
-            return (
+            try:
                 self.movie_repository.get_movie_by_external_id(
                     external_id=external_id, metadata_provider=metadata_provider
                 )
-                is not None
-            )
+                return True
+            except NotFoundError:
+                return False
         elif movie_id:
-            return self.movie_repository.get_movie_by_id(movie_id=movie_id) is not None
+            try:
+                self.movie_repository.get_movie_by_id(movie_id=movie_id)
+            except NotFoundError:
+                return False
+
         else:
             raise ValueError(
                 "Either external_id and metadata_provider or movie_id must be provided"
