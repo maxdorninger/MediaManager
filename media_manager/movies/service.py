@@ -75,7 +75,7 @@ class MovieService:
         :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
         movie_with_metadata = metadata_provider.get_movie_metadata(
-            external_id=external_id, language=language
+            id=external_id, language=language
         )
         if not movie_with_metadata:
             return None
@@ -697,7 +697,7 @@ class MovieService:
 
         # Use stored original_language preference for metadata fetching
         fresh_movie_data = metadata_provider.get_movie_metadata(
-            external_id=db_movie.external_id, language=db_movie.original_language
+            id=db_movie.external_id, language=db_movie.original_language
         )
         if not fresh_movie_data:
             log.warning(

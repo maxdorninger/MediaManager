@@ -64,11 +64,13 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             log.warning(f"image for show {show.name} could not be downloaded")
             return False
 
-    def get_show_metadata(self, id: int = None) -> Show:
+    def get_show_metadata(self, id: int = None, language: str | None = None) -> Show:
         """
 
         :param id: the external id of the show
         :type id: int
+        :param language: does nothing, TVDB does not support multiple languages
+        :type language: str | None
         :return: returns a ShowMetadata object
         :rtype: ShowMetadata
         """
@@ -266,11 +268,13 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             log.warning(f"image for show {movie.name} could not be downloaded")
             return False
 
-    def get_movie_metadata(self, id: int = None) -> Movie:
+    def get_movie_metadata(self, id: int = None, language: str | None = None) -> Movie:
         """
 
         :param id: the external id of the movie
         :type id: int
+        :param language: does nothing, TVDB does not support multiple languages
+        :type language: str | None
         :return: returns a Movie object
         :rtype: Movie
         """
