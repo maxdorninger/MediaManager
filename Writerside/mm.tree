@@ -26,6 +26,7 @@
         <toc-element topic="url-prefix.md"/>
         <toc-element topic="metadata-provider-configuration.md"/>
         <toc-element topic="Custom-port.md"/>
+        <toc-element topic="Follow-symlinks-in-frontend-files.md"/>
     </toc-element>
     <toc-element topic="troubleshooting.md"/>
     <toc-element topic="developer-guide.md"/>

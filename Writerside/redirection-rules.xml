@@ -38,4 +38,8 @@
         <description>Created after removal of "Reverse Proxy" from MediaManager</description>
         <accepts>Reverse-Proxy.html</accepts>
     </rule>
+    <rule id="7683f141">
+        <description>Created after removal of "Other Settings" from MediaManager</description>
+        <accepts>Other-Settings.html</accepts>
+    </rule>
 </rules>

@@ -53,11 +53,10 @@ run_filesystem_checks(config, log)
 
 BASE_PATH = os.getenv("BASE_PATH", "")
 FRONTEND_FILES_DIR = os.getenv("FRONTEND_FILES_DIR")
-DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() in [
-    "true",
-    "1",
-    "yes",
-]
+DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() == "true"
+FRONTEND_FOLLOW_SYMLINKS = os.getenv("FRONTEND_FOLLOW_SYMLINKS", "").lower() == "true"
+
+
 app = FastAPI(root_path=BASE_PATH)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 origins = config.misc.cors_urls
@@ -126,7 +125,13 @@ app.include_router(api_app)
 # handle static frontend files
 if not DISABLE_FRONTEND_MOUNT:
     app.mount(
-        "/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True), name="frontend"
+        "/web",
+        StaticFiles(
+            directory=FRONTEND_FILES_DIR,
+            html=True,
+            follow_symlink=FRONTEND_FOLLOW_SYMLINKS,
+        ),
+        name="frontend",
     )
     log.debug(f"Mounted frontend at /web from {FRONTEND_FILES_DIR}")
 else:
