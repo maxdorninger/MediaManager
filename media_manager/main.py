@@ -214,6 +214,11 @@ DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() in [
     "1",
     "yes",
 ]
+FRONTEND_FOLLOW_SYMLINKS = os.getenv("FRONTEND_FOLLOW_SYMLINKS", "").lower() in [
+    "true",
+    "1",
+    "yes",
+]
 
 
 app = FastAPI(lifespan=lifespan, root_path=BASE_PATH)
@@ -321,7 +326,7 @@ app.include_router(api_app)
 
 if not DISABLE_FRONTEND_MOUNT:
     app.mount(
-        "/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True), name="frontend"
+        "/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True, follow_symlink=FRONTEND_FOLLOW_SYMLINKS), name="frontend"
     )
     log.info(f"Mounted frontend at /web from {FRONTEND_FILES_DIR}")
 else:
