@@ -125,7 +125,13 @@ app.include_router(api_app)
 # handle static frontend files
 if not DISABLE_FRONTEND_MOUNT:
     app.mount(
-        "/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True, follow_symlink=FRONTEND_FOLLOW_SYMLINKS), name="frontend"
+        "/web",
+        StaticFiles(
+            directory=FRONTEND_FILES_DIR,
+            html=True,
+            follow_symlink=FRONTEND_FOLLOW_SYMLINKS,
+        ),
+        name="frontend",
     )
     log.debug(f"Mounted frontend at /web from {FRONTEND_FILES_DIR}")
 else:
