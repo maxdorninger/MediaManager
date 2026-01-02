@@ -201,6 +201,9 @@
 												<ArrowUp />
 											{:else if getSortedColumnState(id) === false}
 												<ArrowDown />
+											{:else}
+												<!-- Preserve layout (column width) when no sort is applied -->
+												<ArrowUp class="invisible"></ArrowUp>
 											{/if}
 										</div>
 									</Table.Head>

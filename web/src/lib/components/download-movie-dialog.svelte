@@ -171,7 +171,7 @@
 			{:then}
 				<h3 class="mb-2 text-lg font-semibold">Found Torrents:</h3>
 				<div class="overflow-y-auto rounded-md border p-2">
-					<Table.Root class="torrentResult">
+					<Table.Root>
 						<Table.Header>
 							<Table.Row>
 								<Table.Head>Title</Table.Head>
@@ -183,6 +183,9 @@
 												<ArrowUp />
 											{:else if getSortedColumnState(id) === false}
 												<ArrowDown />
+											{:else}
+												<!-- Preserve layout (column width) when no sort is applied -->
+												<ArrowUp class="invisible"></ArrowUp>
 											{/if}
 										</div>
 									</Table.Head>
