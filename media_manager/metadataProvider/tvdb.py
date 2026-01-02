@@ -148,8 +148,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
                         formatted_results.append(
                             MetaDataProviderSearchResult(
-                                poster_path=result["image_url"],
-                                overview=result["overview"],
+                                poster_path=result.get("image_url"),
+                                overview=result.get("overview"),
                                 name=result["name"],
                                 external_id=result["tvdb_id"],
                                 year=year,
