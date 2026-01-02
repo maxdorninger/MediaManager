@@ -118,8 +118,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             year = series["year"]
         except KeyError:
             year = None
-        # NOTE: the TVDB API is fucking shit and seems to be very poorly documentated, I can't for the life of me
-        #  figure out which statuses this fucking api returns
+
         show = Show(
             name=series["name"],
             overview=series["overview"],
