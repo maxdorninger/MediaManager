@@ -1,16 +1,14 @@
 import requests
 import logging
 
-
 import media_manager.metadataProvider.utils
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.tv.schemas import Episode, Season, Show, SeasonNumber
 from media_manager.movies.schemas import Movie
-
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +17,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
     name = "tvdb"
 
     def __init__(self):
-        config = AllEncompassingConfig().metadata.tvdb
+        config = MediaManagerConfig().metadata.tvdb
         self.url = config.tvdb_relay_url
 
     def __get_show(self, id: int) -> dict:
@@ -64,11 +62,13 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             log.warning(f"image for show {show.name} could not be downloaded")
             return False
 
-    def get_show_metadata(self, id: int = None) -> Show:
+    def get_show_metadata(self, id: int = None, language: str | None = None) -> Show:
         """
 
         :param id: the external id of the show
         :type id: int
+        :param language: does nothing, TVDB does not support multiple languages
+        :type language: str | None
         :return: returns a ShowMetadata object
         :rtype: ShowMetadata
         """
@@ -116,8 +116,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             year = series["year"]
         except KeyError:
             year = None
-        # NOTE: the TVDB API is fucking shit and seems to be very poorly documentated, I can't for the life of me
-        #  figure out which statuses this fucking api returns
+
         show = Show(
             name=series["name"],
             overview=series["overview"],
@@ -147,8 +146,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
                         formatted_results.append(
                             MetaDataProviderSearchResult(
-                                poster_path=result["image_url"],
-                                overview=result["overview"],
+                                poster_path=result.get("image_url"),
+                                overview=result.get("overview"),
                                 name=result["name"],
                                 external_id=result["tvdb_id"],
                                 year=year,
@@ -173,8 +172,11 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
                         formatted_results.append(
                             MetaDataProviderSearchResult(
-                                poster_path=result["image"],
-                                overview=result["overview"],
+                                poster_path="https://artworks.thetvdb.com"
+                                + result.get("image")
+                                if result.get("image")
+                                else None,
+                                overview=result.get("overview"),
                                 name=result["name"],
                                 external_id=result["id"],
                                 year=year,
@@ -190,35 +192,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
     def search_movie(
         self, query: str | None = None
     ) -> list[MetaDataProviderSearchResult]:
-        if query is None:
-            results = self.__get_trending_movies()
-            results = results[0:20]
-            log.debug(f"got {len(results)} results from TVDB search")
-            formatted_results = []
-            for result in results:
-                result = self.__get_movie(result["id"])
-                try:
-                    try:
-                        year = result["year"]
-                    except KeyError:
-                        year = None
-
-                    formatted_results.append(
-                        MetaDataProviderSearchResult(
-                            poster_path=result["image"],
-                            overview="TVDB does not provide overviews",
-                            name=result["name"],
-                            external_id=result["id"],
-                            year=year,
-                            metadata_provider=self.name,
-                            added=False,
-                            vote_average=None,
-                        )
-                    )
-                except Exception as e:
-                    log.warning(f"Error processing search result: {e}")
-            return formatted_results
-        else:
+        if query:
             results = self.__search_movie(query=query)
             results = results[0:20]
             log.debug(f"got {len(results)} results from TVDB search")
@@ -237,10 +211,41 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
                     formatted_results.append(
                         MetaDataProviderSearchResult(
-                            poster_path=result["image_url"],
-                            overview="TVDB does not provide overviews",
+                            poster_path=result.get("image_url"),
+                            overview=result.get("overview"),
                             name=result["name"],
                             external_id=result["tvdb_id"],
+                            year=year,
+                            metadata_provider=self.name,
+                            added=False,
+                            vote_average=None,
+                        )
+                    )
+                except Exception as e:
+                    log.warning(f"Error processing search result: {e}")
+            return formatted_results
+        else:
+            results = self.__get_trending_movies()
+            results = results[0:20]
+            log.debug(f"got {len(results)} results from TVDB search")
+            formatted_results = []
+            for result in results:
+                result = self.__get_movie(result["id"])
+                try:
+                    try:
+                        year = result["year"]
+                    except KeyError:
+                        year = None
+
+                    formatted_results.append(
+                        MetaDataProviderSearchResult(
+                            poster_path="https://artworks.thetvdb.com"
+                            + result.get("image")
+                            if result.get("image")
+                            else None,
+                            overview=result.get("overview"),
+                            name=result["name"],
+                            external_id=result["id"],
                             year=year,
                             metadata_provider=self.name,
                             added=False,
@@ -266,11 +271,13 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             log.warning(f"image for show {movie.name} could not be downloaded")
             return False
 
-    def get_movie_metadata(self, id: int = None) -> Movie:
+    def get_movie_metadata(self, id: int = None, language: str | None = None) -> Movie:
         """
 
         :param id: the external id of the movie
         :type id: int
+        :param language: does nothing, TVDB does not support multiple languages
+        :type language: str | None
         :return: returns a Movie object
         :rtype: Movie
         """

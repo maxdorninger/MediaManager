@@ -3,13 +3,13 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 
 log = logging.getLogger(__name__)
 
 
 def send_email(subject: str, html: str, addressee: str) -> None:
-    email_conf = AllEncompassingConfig().notifications.smtp_config
+    email_conf = MediaManagerConfig().notifications.smtp_config
     message = MIMEMultipart()
     message["From"] = email_conf.from_email
     message["To"] = addressee

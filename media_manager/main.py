@@ -1,109 +1,26 @@
-import logging
+from media_manager.logging import setup_logging, LOGGING_CONFIG
+from media_manager.scheduler import setup_scheduler
+from media_manager.filesystem_checks import run_filesystem_checks
+from media_manager.config import MediaManagerConfig
+import uvicorn
 import os
-import sys
-from logging.config import dictConfig
-from pythonjsonlogger.json import JsonFormatter
-from pathlib import Path
-from datetime import datetime, timezone
-
-
-class ISOJsonFormatter(JsonFormatter):
-    def formatTime(self, record, datefmt=None):
-        dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
-        return dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")
-
-
-LOG_LEVEL = os.getenv("MEDIAMANAGER_LOG_LEVEL", "INFO").upper()
-LOG_FILE = Path(os.getenv("LOG_FILE", "/app/config/media_manager.log"))
-LOGGING_CONFIG = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "default": {
-            "format": "%(asctime)s - %(levelname)s - %(name)s - %(funcName)s(): %(message)s"
-        },
-        "json": {
-            "()": ISOJsonFormatter,
-            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
-            "rename_fields": {
-                "levelname": "level",
-                "asctime": "timestamp",
-                "name": "module",
-            },
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "default",
-            "stream": sys.stdout,
-        },
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "json",
-            "filename": str(LOG_FILE),
-            "maxBytes": 10485760,
-            "backupCount": 5,
-            "encoding": "utf-8",
-        },
-    },
-    "root": {
-        "level": LOG_LEVEL,
-        "handlers": ["console", "file"],
-    },
-    "loggers": {
-        "uvicorn": {"handlers": ["console", "file"], "level": "DEBUG"},
-        "uvicorn.access": {"handlers": ["console", "file"], "level": "DEBUG"},
-        "fastapi": {"handlers": ["console", "file"], "level": "DEBUG"},
-    },
-}
-dictConfig(LOGGING_CONFIG)
-
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s(): %(message)s",
-    stream=sys.stdout,
-)
-
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-logging.getLogger("requests").setLevel(logging.WARNING)
-logging.getLogger("transmission_rpc").setLevel(logging.WARNING)
-logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
-logging.getLogger("sabnzbd_api").setLevel(logging.WARNING)
-
-log = logging.getLogger(__name__)
-
-from psycopg.errors import UniqueViolation  # noqa: E402
-from sqlalchemy.exc import IntegrityError  # noqa: E402
-from media_manager.config import AllEncompassingConfig  # noqa: E402
-import media_manager.torrent.router as torrent_router  # noqa: E402
-import media_manager.movies.router as movies_router  # noqa: E402
-import media_manager.tv.router as tv_router  # noqa: E402
-from media_manager.tv.service import (  # noqa: E402
-    auto_download_all_approved_season_requests,
-    import_all_show_torrents,
-    update_all_non_ended_shows_metadata,
-)
-from media_manager.movies.service import (  # noqa: E402
-    import_all_movie_torrents,
-    update_all_movies_metadata,
-    auto_download_all_approved_movie_requests,
-)
-from media_manager.notification.router import router as notification_router  # noqa: E402
-import uvicorn  # noqa: E402
-from fastapi.staticfiles import StaticFiles  # noqa: E402
-from media_manager.auth.router import users_router as custom_users_router  # noqa: E402
-from media_manager.auth.router import auth_metadata_router  # noqa: E402
-from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate  # noqa: E402
-from media_manager.auth.router import get_openid_router  # noqa: E402
-
-from media_manager.auth.users import (  # noqa: E402
+from fastapi import FastAPI, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import RedirectResponse, FileResponse, Response
+from media_manager.auth.users import (
     bearer_auth_backend,
     fastapi_users,
     cookie_auth_backend,
-    create_default_admin_user,
 )
-from media_manager.exceptions import (  # noqa: E402
+from media_manager.auth.router import (
+    users_router as custom_users_router,
+    auth_metadata_router,
+    get_openid_router,
+)
+from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate
+from media_manager.exceptions import (
     NotFoundError,
     not_found_error_exception_handler,
     MediaAlreadyExists,
@@ -111,101 +28,28 @@ from media_manager.exceptions import (  # noqa: E402
     InvalidConfigError,
     invalid_config_error_exception_handler,
     sqlalchemy_integrity_error_handler,
+    ConflictError,
+    conflict_error_handler,
 )
+from sqlalchemy.exc import IntegrityError
+from psycopg.errors import UniqueViolation
+import media_manager.torrent.router as torrent_router
+import media_manager.movies.router as movies_router
+import media_manager.tv.router as tv_router
+from media_manager.notification.router import router as notification_router
+import logging
 
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore  # noqa: E402
-from starlette.responses import FileResponse, RedirectResponse  # noqa: E402
+setup_logging()
 
-import media_manager.database  # noqa: E402
-import shutil  # noqa: E402
-from fastapi import FastAPI, APIRouter  # noqa: E402
-from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware  # noqa: E402
-from starlette.responses import Response  # noqa: E402
-from contextlib import asynccontextmanager  # noqa: E402
-from apscheduler.schedulers.background import BackgroundScheduler  # noqa: E402
-from apscheduler.triggers.cron import CronTrigger  # noqa: E402
-from media_manager.database import init_engine  # noqa: E402
-
-config = AllEncompassingConfig()
+config = MediaManagerConfig()
+log = logging.getLogger(__name__)
 
 if config.misc.development:
     log.warning("Development Mode activated!")
-else:
-    log.info("Development Mode not activated!")
 
+scheduler = setup_scheduler(config, log)
 
-def hourly_tasks():
-    log.info(f"Hourly tasks are running at {datetime.now()}")
-    auto_download_all_approved_season_requests()
-    import_all_show_torrents()
-    import_all_movie_torrents()
-
-
-def weekly_tasks():
-    log.info(f"Weekly tasks are running at {datetime.now()}")
-    update_all_non_ended_shows_metadata()
-    update_all_movies_metadata()
-
-
-init_engine(config.database)
-
-jobstores = {"default": SQLAlchemyJobStore(engine=media_manager.database.engine)}
-
-scheduler = BackgroundScheduler(jobstores=jobstores)
-every_15_minutes_trigger = CronTrigger(minute="*/15", hour="*")
-daily_trigger = CronTrigger(hour=0, minute=0, jitter=60 * 60 * 24 * 2)
-weekly_trigger = CronTrigger(
-    day_of_week="mon", hour=0, minute=0, jitter=60 * 60 * 24 * 2
-)
-
-scheduler.add_job(
-    import_all_movie_torrents,
-    every_15_minutes_trigger,
-    id="import_all_movie_torrents",
-    replace_existing=True,
-)
-scheduler.add_job(
-    import_all_show_torrents,
-    every_15_minutes_trigger,
-    id="import_all_show_torrents",
-    replace_existing=True,
-)
-scheduler.add_job(
-    auto_download_all_approved_season_requests,
-    daily_trigger,
-    id="auto_download_all_approved_season_requests",
-    replace_existing=True,
-)
-scheduler.add_job(
-    auto_download_all_approved_movie_requests,
-    daily_trigger,
-    id="auto_download_all_approved_movie_requests",
-    replace_existing=True,
-)
-scheduler.add_job(
-    update_all_movies_metadata,
-    weekly_trigger,
-    id="update_all_movies_metadata",
-    replace_existing=True,
-)
-scheduler.add_job(
-    update_all_non_ended_shows_metadata,
-    weekly_trigger,
-    id="update_all_non_ended_shows_metadata",
-    replace_existing=True,
-)
-scheduler.start()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup: Create default admin user if needed
-    await create_default_admin_user()
-    yield
-    # Shutdown
-    scheduler.shutdown()
-
+run_filesystem_checks(config, log)
 
 BASE_PATH = os.getenv("BASE_PATH", "")
 FRONTEND_FILES_DIR = os.getenv("FRONTEND_FILES_DIR")
@@ -213,44 +57,23 @@ DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() == "tru
 FRONTEND_FOLLOW_SYMLINKS = os.getenv("FRONTEND_FOLLOW_SYMLINKS", "").lower() == "true"
 
 
-app = FastAPI(lifespan=lifespan, root_path=BASE_PATH)
+app = FastAPI(root_path=BASE_PATH)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
-
 origins = config.misc.cors_urls
 log.info(f"CORS URLs activated for following origins: {origins}")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=[
-        "GET",
-        "PUT",
-        "POST",
-        "DELETE",
-        "PATCH",
-        "HEAD",
-        "OPTIONS",
-    ],
+    allow_methods=["GET", "PUT", "POST", "DELETE", "PATCH", "HEAD", "OPTIONS"],
 )
-
 api_app = APIRouter(prefix="/api/v1")
-
-# ----------------------------
-# Hello World Router
-# ----------------------------
 
 
 @api_app.get("/health")
 async def hello_world() -> dict:
-    """
-    A simple endpoint to check if the API is running.
-    """
     return {"message": "Hello World!", "version": os.getenv("PUBLIC_VERSION")}
 
-
-# ----------------------------
-# Standard Auth Routers
-# ----------------------------
 
 api_app.include_router(
     fastapi_users.get_auth_router(bearer_auth_backend),
@@ -268,32 +91,19 @@ api_app.include_router(
     tags=["auth"],
 )
 api_app.include_router(
-    fastapi_users.get_reset_password_router(),
-    prefix="/auth",
-    tags=["auth"],
+    fastapi_users.get_reset_password_router(), prefix="/auth", tags=["auth"]
 )
 api_app.include_router(
-    fastapi_users.get_verify_router(UserRead),
-    prefix="/auth",
-    tags=["auth"],
+    fastapi_users.get_verify_router(UserRead), prefix="/auth", tags=["auth"]
 )
-
-# ----------------------------
-# User Management Routers
-# ----------------------------
-
 api_app.include_router(custom_users_router, tags=["users"])
 api_app.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/users",
     tags=["users"],
 )
-
-# ----------------------------
-# OpenID Connect Routers
-# ----------------------------
-
 api_app.include_router(auth_metadata_router, tags=["openid"])
+
 if get_openid_router():
     api_app.include_router(get_openid_router(), tags=["openid"], prefix="/auth/oauth")
 
@@ -304,35 +114,22 @@ api_app.include_router(
     notification_router, prefix="/notification", tags=["notification"]
 )
 
+# serve static image files
 app.mount(
     "/api/v1/static/image",
     StaticFiles(directory=config.misc.image_directory),
     name="static-images",
 )
-
 app.include_router(api_app)
 
-# ----------------------------
-# Frontend mounting (disabled in development)
-# ----------------------------
-
+# handle static frontend files
 if not DISABLE_FRONTEND_MOUNT:
     app.mount(
-        "/web",
-        StaticFiles(
-            directory=FRONTEND_FILES_DIR,
-            html=True,
-            follow_symlink=FRONTEND_FOLLOW_SYMLINKS,
-        ),
-        name="frontend",
+        "/web", StaticFiles(directory=FRONTEND_FILES_DIR, html=True, follow_symlink=FRONTEND_FOLLOW_SYMLINKS), name="frontend"
     )
-    log.info(f"Mounted frontend at /web from {FRONTEND_FILES_DIR}")
+    log.debug(f"Mounted frontend at /web from {FRONTEND_FILES_DIR}")
 else:
     log.info("Frontend mounting disabled (DISABLE_FRONTEND_MOUNT is set)")
-
-# ----------------------------
-# Redirects to frontend
-# ----------------------------
 
 
 @app.get("/")
@@ -350,17 +147,7 @@ async def login():
     return RedirectResponse(url="/web/")
 
 
-# ----------------------------
-# Custom Exception Handlers
-# ----------------------------
-
-app.add_exception_handler(NotFoundError, not_found_error_exception_handler)
-app.add_exception_handler(MediaAlreadyExists, media_already_exists_exception_handler)
-app.add_exception_handler(InvalidConfigError, invalid_config_error_exception_handler)
-app.add_exception_handler(IntegrityError, sqlalchemy_integrity_error_handler)
-app.add_exception_handler(UniqueViolation, sqlalchemy_integrity_error_handler)
-
-
+# this will serve the custom 404 page for frontend routes, so SvelteKit can handle routing
 @app.exception_handler(404)
 async def not_found_handler(request, exc):
     if not DISABLE_FRONTEND_MOUNT and any(
@@ -370,69 +157,13 @@ async def not_found_handler(request, exc):
     return Response(content="Not Found", status_code=404)
 
 
-# ----------------------------
-# Hello World
-# ----------------------------
-
-log.info("Hello World!")
-
-# ----------------------------
-# Startup filesystem checks
-# ----------------------------
-try:
-    log.info("Creating directories if they don't exist...")
-    config.misc.tv_directory.mkdir(parents=True, exist_ok=True)
-    config.misc.movie_directory.mkdir(parents=True, exist_ok=True)
-    config.misc.torrent_directory.mkdir(parents=True, exist_ok=True)
-    config.misc.image_directory.mkdir(parents=True, exist_ok=True)
-
-    log.info("Conducting filesystem tests...")
-    test_dir = config.misc.tv_directory / Path(".media_manager_test_dir")
-    test_dir.mkdir(parents=True, exist_ok=True)
-    test_dir.rmdir()
-    log.info(f"Successfully created test dir in TV directory at: {test_dir}")
-
-    test_dir = config.misc.movie_directory / Path(".media_manager_test_dir")
-    test_dir.mkdir(parents=True, exist_ok=True)
-    test_dir.rmdir()
-    log.info(f"Successfully created test dir in Movie directory at: {test_dir}")
-
-    test_dir = config.misc.image_directory / Path(".media_manager_test_dir")
-    test_dir.touch()
-    test_dir.unlink()
-    log.info(f"Successfully created test file in Image directory at: {test_dir}")
-
-    # check if hardlink creation works
-    test_dir = config.misc.tv_directory / Path(".media_manager_test_dir")
-    test_dir.mkdir(parents=True, exist_ok=True)
-
-    torrent_dir = config.misc.torrent_directory / Path(".media_manager_test_dir")
-    torrent_dir.mkdir(parents=True, exist_ok=True)
-
-    test_torrent_file = torrent_dir / Path(".media_manager.test.torrent")
-    test_torrent_file.touch()
-
-    test_hardlink = test_dir / Path(".media_manager.test.hardlink")
-    try:
-        test_hardlink.hardlink_to(test_torrent_file)
-        if not test_hardlink.samefile(test_torrent_file):
-            log.critical("Hardlink creation failed!")
-        log.info("Successfully created test hardlink in TV directory")
-    except OSError as e:
-        log.error(
-            f"Hardlink creation failed, falling back to copying files. Error: {e}"
-        )
-        shutil.copy(src=test_torrent_file, dst=test_hardlink)
-    finally:
-        test_hardlink.unlink()
-        test_torrent_file.unlink()
-        torrent_dir.rmdir()
-        test_dir.rmdir()
-
-except Exception as e:
-    log.error(f"Error creating test directory: {e}")
-    raise
-
+# Register exception handlers for custom exceptions
+app.add_exception_handler(NotFoundError, not_found_error_exception_handler)
+app.add_exception_handler(MediaAlreadyExists, media_already_exists_exception_handler)
+app.add_exception_handler(InvalidConfigError, invalid_config_error_exception_handler)
+app.add_exception_handler(IntegrityError, sqlalchemy_integrity_error_handler)
+app.add_exception_handler(UniqueViolation, sqlalchemy_integrity_error_handler)
+app.add_exception_handler(ConflictError, conflict_error_handler)
 
 if __name__ == "__main__":
     uvicorn.run(
