@@ -5,40 +5,132 @@ from fastapi import APIRouter, Depends, status, HTTPException
 
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
-from media_manager.config import LibraryItem, AllEncompassingConfig
+from media_manager.config import LibraryItem, MediaManagerConfig
+from media_manager.exceptions import ConflictError
 from media_manager.indexer.schemas import (
     IndexerQueryResultId,
     IndexerQueryResult,
 )
+from media_manager.metadataProvider.dependencies import metadata_provider_dep
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.schemas import MediaImportSuggestion
-from media_manager.torrent.utils import get_importable_media_directories
-from media_manager.torrent.schemas import Torrent
 from media_manager.movies import log
+from media_manager.movies.dependencies import (
+    movie_service_dep,
+    movie_dep,
+)
 from media_manager.movies.schemas import (
     Movie,
     MovieRequest,
-    MovieId,
     RichMovieTorrent,
     PublicMovie,
     PublicMovieFile,
     CreateMovieRequest,
     MovieRequestId,
     RichMovieRequest,
+    MovieRequestBase,
 )
-from media_manager.movies.dependencies import (
-    movie_service_dep,
-    movie_dep,
-)
-from media_manager.metadataProvider.dependencies import metadata_provider_dep
-from media_manager.movies.schemas import MovieRequestBase
+from media_manager.schemas import MediaImportSuggestion
+from media_manager.torrent.schemas import Torrent
+from media_manager.torrent.utils import get_importable_media_directories
 
 router = APIRouter()
 
+# -----------------------------------------------------------------------------
+# METADATA & SEARCH
+# -----------------------------------------------------------------------------
 
-# --------------------------------
-# CREATE AND DELETE MOVIES
-# --------------------------------
+
+@router.get(
+    "/search",
+    dependencies=[Depends(current_active_user)],
+    response_model=list[MetaDataProviderSearchResult],
+)
+def search_for_movie(
+    query: str,
+    movie_service: movie_service_dep,
+    metadata_provider: metadata_provider_dep,
+):
+    """
+    Search for a movie on the configured metadata provider.
+    """
+    return movie_service.search_for_movie(
+        query=query, metadata_provider=metadata_provider
+    )
+
+
+@router.get(
+    "/recommended",
+    dependencies=[Depends(current_active_user)],
+    response_model=list[MetaDataProviderSearchResult],
+)
+def get_popular_movies(
+    movie_service: movie_service_dep,
+    metadata_provider: metadata_provider_dep,
+):
+    """
+    Get a list of recommended/popular movies from the metadata provider.
+    """
+    return movie_service.get_popular_movies(metadata_provider=metadata_provider)
+
+
+# -----------------------------------------------------------------------------
+# IMPORTING
+# -----------------------------------------------------------------------------
+
+
+@router.get(
+    "/importable",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(current_superuser)],
+    response_model=list[MediaImportSuggestion],
+)
+def get_all_importable_movies(
+    movie_service: movie_service_dep, metadata_provider: metadata_provider_dep
+):
+    """
+    Get a list of unknown movies that were detected in the movie directory and are importable.
+    """
+    return movie_service.get_importable_movies(metadata_provider=metadata_provider)
+
+
+@router.post(
+    "/importable/{movie_id}",
+    dependencies=[Depends(current_superuser)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def import_detected_movie(
+    movie_service: movie_service_dep, movie: movie_dep, directory: str
+):
+    """
+    Import a detected movie from the specified directory into the library.
+    """
+    source_directory = Path(directory)
+    if source_directory not in get_importable_media_directories(
+        MediaManagerConfig().misc.movie_directory
+    ):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
+    success = movie_service.import_existing_movie(
+        movie=movie, source_directory=source_directory
+    )
+    if not success:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Error on importing")
+
+
+# -----------------------------------------------------------------------------
+# MOVIES
+# -----------------------------------------------------------------------------
+
+
+@router.get(
+    "",
+    dependencies=[Depends(current_active_user)],
+    response_model=list[PublicMovie],
+)
+def get_all_movies(movie_service: movie_service_dep):
+    """
+    Get all movies in the library.
+    """
+    return movie_service.get_all_movies()
 
 
 @router.post(
@@ -58,124 +150,20 @@ def add_a_movie(
     movie_id: int,
     language: str | None = None,
 ):
+    """
+    Add a new movie to the library.
+    """
     try:
         movie = movie_service.add_movie(
             external_id=movie_id,
             metadata_provider=metadata_provider,
             language=language,
         )
-    except ValueError:
+    except ConflictError:
         movie = movie_service.get_movie_by_external_id(
             external_id=movie_id, metadata_provider=metadata_provider.name
         )
     return movie
-
-
-@router.delete(
-    "/{movie_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(current_superuser)],
-)
-def delete_a_movie(
-    movie_service: movie_service_dep,
-    movie: movie_dep,
-    delete_files_on_disk: bool = False,
-    delete_torrents: bool = False,
-):
-    movie_service.delete_movie(
-        movie_id=movie.id,
-        delete_files_on_disk=delete_files_on_disk,
-        delete_torrents=delete_torrents,
-    )
-
-
-# --------------------------------
-# GET MOVIES
-# --------------------------------
-
-
-@router.get(
-    "/importable",
-    status_code=status.HTTP_200_OK,
-    dependencies=[Depends(current_superuser)],
-    response_model=list[MediaImportSuggestion],
-)
-def get_all_importable_movies(
-    movie_service: movie_service_dep, metadata_provider: metadata_provider_dep
-):
-    """
-    get a list of unknown movies that were detected in the movie directory and are importable
-    """
-    return movie_service.get_importable_movies(metadata_provider=metadata_provider)
-
-
-@router.post(
-    "/importable/{movie_id}",
-    dependencies=[Depends(current_superuser)],
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def import_detected_movie(
-    movie_service: movie_service_dep, movie_id: MovieId, directory: str
-):
-    """
-    get a list of unknown movies that were detected in the movie directory and are importable
-    """
-    source_directory = Path(directory)
-    if source_directory not in get_importable_media_directories(
-        AllEncompassingConfig().misc.movie_directory
-    ):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
-    movie = movie_service.get_movie_by_id(movie_id=movie_id)
-    success = movie_service.import_existing_movie(
-        movie=movie, source_directory=source_directory
-    )
-    if not success:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Error on importing")
-
-
-@router.get(
-    "",
-    dependencies=[Depends(current_active_user)],
-    response_model=list[PublicMovie],
-)
-def get_all_movies(movie_service: movie_service_dep):
-    return movie_service.get_all_movies()
-
-
-@router.get(
-    "/libraries",
-    dependencies=[Depends(current_active_user)],
-    response_model=list[LibraryItem],
-)
-def get_available_libraries():
-    return AllEncompassingConfig().misc.movie_libraries
-
-
-@router.get(
-    "/search",
-    dependencies=[Depends(current_active_user)],
-    response_model=list[MetaDataProviderSearchResult],
-)
-def search_for_movie(
-    query: str,
-    movie_service: movie_service_dep,
-    metadata_provider: metadata_provider_dep,
-):
-    return movie_service.search_for_movie(
-        query=query, metadata_provider=metadata_provider
-    )
-
-
-@router.get(
-    "/recommended",
-    dependencies=[Depends(current_active_user)],
-    response_model=list[MetaDataProviderSearchResult],
-)
-def get_popular_movies(
-    movie_service: movie_service_dep,
-    metadata_provider: metadata_provider_dep,
-):
-    return movie_service.get_popular_movies(metadata_provider=metadata_provider)
 
 
 @router.get(
@@ -184,12 +172,39 @@ def get_popular_movies(
     response_model=list[RichMovieTorrent],
 )
 def get_all_movies_with_torrents(movie_service: movie_service_dep):
+    """
+    Get all movies that are associated with torrents.
+    """
     return movie_service.get_all_movies_with_torrents()
 
 
-# --------------------------------
+@router.get(
+    "/libraries",
+    dependencies=[Depends(current_active_user)],
+    response_model=list[LibraryItem],
+)
+def get_available_libraries():
+    """
+    Get available Movie libraries from configuration.
+    """
+    return MediaManagerConfig().misc.movie_libraries
+
+
+# -----------------------------------------------------------------------------
 # MOVIE REQUESTS
-# --------------------------------
+# -----------------------------------------------------------------------------
+
+
+@router.get(
+    "/requests",
+    dependencies=[Depends(current_active_user)],
+    response_model=list[RichMovieRequest],
+)
+def get_all_movie_requests(movie_service: movie_service_dep):
+    """
+    Get all movie requests.
+    """
+    return movie_service.get_all_movie_requests()
 
 
 @router.post(
@@ -202,6 +217,9 @@ def create_movie_request(
     movie_request: CreateMovieRequest,
     user: Annotated[UserRead, Depends(current_active_user)],
 ):
+    """
+    Create a new movie request.
+    """
     log.info(
         f"User {user.email} is creating a movie request for {movie_request.movie_id}"
     )
@@ -214,15 +232,6 @@ def create_movie_request(
     return movie_service.add_movie_request(movie_request=movie_request)
 
 
-@router.get(
-    "/requests",
-    dependencies=[Depends(current_active_user)],
-    response_model=list[RichMovieRequest],
-)
-def get_all_movie_requests(movie_service: movie_service_dep):
-    return movie_service.get_all_movie_requests()
-
-
 @router.put(
     "/requests/{movie_request_id}",
     response_model=MovieRequest,
@@ -233,6 +242,9 @@ def update_movie_request(
     update_movie_request: MovieRequestBase,
     user: Annotated[UserRead, Depends(current_active_user)],
 ):
+    """
+    Update an existing movie request.
+    """
     movie_request = movie_service.get_movie_request_by_id(
         movie_request_id=movie_request_id
     )
@@ -251,7 +263,7 @@ def authorize_request(
     authorized_status: bool = False,
 ):
     """
-    updates the request flag to true
+    Authorize or de-authorize a movie request.
     """
     movie_request = movie_service.get_movie_request_by_id(
         movie_request_id=movie_request_id
@@ -272,12 +284,15 @@ def authorize_request(
 def delete_movie_request(
     movie_service: movie_service_dep, movie_request_id: MovieRequestId
 ):
+    """
+    Delete a movie request.
+    """
     movie_service.delete_movie_request(movie_request_id=movie_request_id)
 
 
-# --------------------------------
-# TORRENTS
-# --------------------------------
+# -----------------------------------------------------------------------------
+# MOVIES - SINGLE RESOURCE
+# -----------------------------------------------------------------------------
 
 
 @router.get(
@@ -285,8 +300,62 @@ def delete_movie_request(
     dependencies=[Depends(current_active_user)],
     response_model=PublicMovie,
 )
-def get_movie_by_id(movie_service: movie_service_dep, movie_id: MovieId):
-    return movie_service.get_public_movie_by_id(movie_id=movie_id)
+def get_movie_by_id(movie_service: movie_service_dep, movie: movie_dep):
+    """
+    Get details for a specific movie.
+    """
+    return movie_service.get_public_movie_by_id(movie=movie)
+
+
+@router.delete(
+    "/{movie_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(current_superuser)],
+)
+def delete_a_movie(
+    movie_service: movie_service_dep,
+    movie: movie_dep,
+    delete_files_on_disk: bool = False,
+    delete_torrents: bool = False,
+):
+    """
+    Delete a movie from the library.
+    """
+    movie_service.delete_movie(
+        movie=movie,
+        delete_files_on_disk=delete_files_on_disk,
+        delete_torrents=delete_torrents,
+    )
+
+
+@router.post(
+    "/{movie_id}/library",
+    dependencies=[Depends(current_superuser)],
+    response_model=None,
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def set_library(
+    movie: movie_dep,
+    movie_service: movie_service_dep,
+    library: str,
+) -> None:
+    """
+    Set the library path for a Movie.
+    """
+    movie_service.set_movie_library(movie=movie, library=library)
+    return
+
+
+@router.get(
+    "/{movie_id}/files",
+    dependencies=[Depends(current_active_user)],
+    response_model=list[PublicMovieFile],
+)
+def get_movie_files_by_movie_id(movie_service: movie_service_dep, movie: movie_dep):
+    """
+    Get files associated with a specific movie.
+    """
+    return movie_service.get_public_movie_files(movie=movie)
 
 
 @router.get(
@@ -294,13 +363,16 @@ def get_movie_by_id(movie_service: movie_service_dep, movie_id: MovieId):
     dependencies=[Depends(current_active_user)],
     response_model=list[IndexerQueryResult],
 )
-def get_all_available_torrents_for_a_movie(
+def search_for_torrents_for_movie(
     movie_service: movie_service_dep,
-    movie_id: MovieId,
+    movie: movie_dep,
     search_query_override: str | None = None,
 ):
-    return movie_service.get_all_available_torrents_for_a_movie(
-        movie_id=movie_id, search_query_override=search_query_override
+    """
+    Search for torrents for a specific movie.
+    """
+    return movie_service.get_all_available_torrents_for_movie(
+        movie=movie, search_query_override=search_query_override
     )
 
 
@@ -312,39 +384,15 @@ def get_all_available_torrents_for_a_movie(
 )
 def download_torrent_for_movie(
     movie_service: movie_service_dep,
-    movie_id: MovieId,
+    movie: movie_dep,
     public_indexer_result_id: IndexerQueryResultId,
     override_file_path_suffix: str = "",
 ):
+    """
+    Trigger a download for a specific torrent for a movie.
+    """
     return movie_service.download_torrent(
         public_indexer_result_id=public_indexer_result_id,
-        movie_id=movie_id,
+        movie=movie,
         override_movie_file_path_suffix=override_file_path_suffix,
     )
-
-
-@router.get(
-    "/{movie_id}/files",
-    dependencies=[Depends(current_active_user)],
-    response_model=list[PublicMovieFile],
-)
-def get_movie_files_by_movie_id(movie_service: movie_service_dep, movie_id: MovieId):
-    return movie_service.get_public_movie_files_by_movie_id(movie_id=movie_id)
-
-
-@router.post(
-    "/{movie_id}/library",
-    dependencies=[Depends(current_superuser)],
-    response_model=None,
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def set_library(
-    movie_id: MovieId,
-    movie_service: movie_service_dep,
-    library: str,
-) -> None:
-    """
-    Sets the library of a movie.
-    """
-    movie_service.set_movie_library(movie_id=movie_id, library=library)
-    return

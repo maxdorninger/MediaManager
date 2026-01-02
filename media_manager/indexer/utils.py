@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.config import ScoringRuleSet
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie
@@ -15,8 +15,8 @@ log = logging.getLogger(__name__)
 def evaluate_indexer_query_result(
     query_result: IndexerQueryResult, ruleset: ScoringRuleSet
 ) -> (IndexerQueryResult, bool):
-    title_rules = AllEncompassingConfig().indexers.title_scoring_rules
-    indexer_flag_rules = AllEncompassingConfig().indexers.indexer_flag_scoring_rules
+    title_rules = MediaManagerConfig().indexers.title_scoring_rules
+    indexer_flag_rules = MediaManagerConfig().indexers.indexer_flag_scoring_rules
     for rule_name in ruleset.rule_names:
         for rule in title_rules:
             if rule.name == rule_name:
@@ -80,7 +80,7 @@ def evaluate_indexer_query_results(
     query_results: list[IndexerQueryResult], media: Show | Movie, is_tv: bool
 ) -> list[IndexerQueryResult]:
     scoring_rulesets: list[ScoringRuleSet] = (
-        AllEncompassingConfig().indexers.scoring_rule_sets
+        MediaManagerConfig().indexers.scoring_rule_sets
     )
     for ruleset in scoring_rulesets:
         if (

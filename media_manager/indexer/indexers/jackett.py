@@ -7,7 +7,7 @@ import requests
 from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.movies.schemas import Movie
 from media_manager.tv.schemas import Show
 
@@ -21,7 +21,7 @@ class Jackett(GenericIndexer, TorznabMixin):
 
         """
         super().__init__(name="jackett")
-        config = AllEncompassingConfig().indexers.jackett
+        config = MediaManagerConfig().indexers.jackett
         self.api_key = config.api_key
         self.url = config.url
         self.indexers = config.indexers

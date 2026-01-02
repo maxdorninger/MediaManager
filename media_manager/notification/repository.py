@@ -6,7 +6,7 @@ from sqlalchemy.exc import (
 from sqlalchemy.orm import Session
 import logging
 
-from media_manager.exceptions import NotFoundError, MediaAlreadyExists
+from media_manager.exceptions import NotFoundError, ConflictError
 from media_manager.notification.models import Notification
 from media_manager.notification.schemas import (
     NotificationId,
@@ -24,7 +24,7 @@ class NotificationRepository:
         result = self.db.get(Notification, id)
 
         if not result:
-            raise NotFoundError
+            raise NotFoundError(f"Notification with id {id} not found.")
 
         return NotificationSchema.model_validate(result)
 
@@ -69,7 +69,7 @@ class NotificationRepository:
             self.db.commit()
         except IntegrityError as e:
             log.error(f"Could not save notification, Error: {e}")
-            raise MediaAlreadyExists(
+            raise ConflictError(
                 f"Notification with id {notification.id} already exists."
             )
         return

@@ -1,6 +1,6 @@
 import requests
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.notification.schemas import MessageNotification
 from media_manager.notification.service_providers.abstractNotificationServiceProvider import (
     AbstractNotificationServiceProvider,
@@ -13,7 +13,7 @@ class GotifyNotificationServiceProvider(AbstractNotificationServiceProvider):
     """
 
     def __init__(self):
-        self.config = AllEncompassingConfig().notifications.gotify
+        self.config = MediaManagerConfig().notifications.gotify
 
     def send_notification(self, message: MessageNotification) -> bool:
         response = requests.post(

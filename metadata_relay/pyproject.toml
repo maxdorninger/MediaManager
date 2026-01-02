@@ -9,5 +9,4 @@ dependencies = [
     "tmdbsimple>=2.9.1",
     "tvdb-v4-official>=1.1.0",
     "uvicorn>=0.34.3",
-    "valkey>=6.1.0",
 ]

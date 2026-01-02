@@ -30,7 +30,7 @@ from media_manager.tv.models import Show, Season, Episode, SeasonFile, SeasonReq
 from media_manager.movies.models import Movie, MovieFile, MovieRequest  # noqa: E402
 from media_manager.notification.models import Notification  # noqa: E402
 from media_manager.database import Base  # noqa: E402
-from media_manager.config import AllEncompassingConfig  # noqa: E402
+from media_manager.config import MediaManagerConfig  # noqa: E402
 
 target_metadata = Base.metadata
 
@@ -59,7 +59,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 
-db_config = AllEncompassingConfig().database
+db_config = MediaManagerConfig().database
 db_url = (
     "postgresql+psycopg"
     + "://"
