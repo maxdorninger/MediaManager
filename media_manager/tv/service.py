@@ -370,7 +370,6 @@ class TvService:
                 )
 
                 if torrent_file.imported:
-                    print("Servas")
                     return True
             except RuntimeError as e:
                 log.error(f"Error retrieving torrent, error: {e}")
