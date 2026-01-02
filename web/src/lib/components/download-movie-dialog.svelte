@@ -15,13 +15,36 @@
 
 	let { movie } = $props();
 	let dialogueState = $state(false);
-	let torrentsPromise: any = $state(null);
-	let tabState: string = $state('basic');
-	let isLoading: boolean = $state(false);
-	let advancedMode: boolean = $derived(tabState === 'advanced');
+	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
 	let filePathSuffix: string = $state('');
-	let torrentsError: string | null = $state(null);
+
+	let torrentsPromise: any = $state(null);
+	let torrentsData: any[] | null = $state(null);
+	let tabState: string = $state('basic');
+	let isLoading: boolean = $state(false);
+	let sortBy = $state({ col: 'score', ascending: false });
+
+	let advancedMode: boolean = $derived(tabState === 'advanced');
+
+	function arrowClass(column: string | undefined): string {
+		return sortBy.col === column ? `sorted-${sortBy.ascending ? 'asc' : 'desc'}` : '';
+	}
+
+	function sortData(column?: string | undefined) {
+		if (column !== undefined) {
+			if (column === sortBy.col) {
+				sortBy.ascending = !sortBy.ascending;
+			} else {
+				sortBy = { col: column, ascending: true };
+			}
+		}
+
+		let modifier = sortBy.ascending ? 1 : -1;
+		torrentsData?.sort((a, b) =>
+			a[sortBy.col] < b[sortBy.col] ? -1 * modifier : a[sortBy.col] > b[sortBy.col] ? modifier : 0
+		);
+	}
 
 	async function downloadTorrent(result_id: string) {
 		torrentsError = null;
@@ -56,6 +79,7 @@
 	async function search() {
 		isLoading = true;
 		torrentsError = null;
+		torrentsData = null;
 		torrentsPromise = client
 			.GET('/api/v1/movies/{movie_id}/torrents', {
 				params: {
@@ -67,9 +91,13 @@
 					}
 				}
 			})
+			.then((data) => data?.data)
 			.finally(() => (isLoading = false));
 		toast.info('Searching for torrents...');
-		toast.info('Found ' + (await torrentsPromise).data?.length + ' torrents.');
+
+		torrentsData = await torrentsPromise;
+		sortData();
+		toast.info('Found ' + torrentsData?.length + ' torrents.');
 	}
 </script>
 
@@ -131,23 +159,22 @@
 					<LoaderCircle class="animate-spin" />
 					<p>Loading torrents...</p>
 				</div>
-			{:then data}
+			{:then}
 				<h3 class="mb-2 text-lg font-semibold">Found Torrents:</h3>
 				<div class="overflow-y-auto rounded-md border p-2">
-					<Table.Root>
+					<Table.Root class="torrentResult">
 						<Table.Header>
 							<Table.Row>
-								<Table.Head>Title</Table.Head>
-								<Table.Head>Size</Table.Head>
-								<Table.Head>Seeders</Table.Head>
-								<Table.Head>Score</Table.Head>
-								<Table.Head>Indexer</Table.Head>
-								<Table.Head>Indexer Flags</Table.Head>
+								{#each [['Title', 'title'], ['Size', 'size'], ['Seeders', 'seeders'], ['Score', 'score'], ['Indexer', 'indexer'], ['Indexer Flags', 'flags']] as [name, id]}
+									<Table.Head onclick={() => sortData(id)} class="{arrowClass(id)} sortable">
+										{name}
+									</Table.Head>
+								{/each}
 								<Table.Head class="text-right">Actions</Table.Head>
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each data?.data as torrent (torrent.id)}
+							{#each torrentsData as torrent (torrent.id)}
 								<Table.Row>
 									<Table.Cell class="max-w-[300px] font-medium">{torrent.title}</Table.Cell>
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
@@ -168,7 +195,7 @@
 									</Table.Cell>
 								</Table.Row>
 							{:else}
-								{#if data === null}
+								{#if torrentsData === null}
 									<Table.Cell colspan={7}>
 										<div class="font-light text-center w-full">
 											Start searching by clicking the search button!
@@ -190,3 +217,28 @@
 		</div>
 	</Dialog.Content>
 </Dialog.Root>
+
+<style>
+	:global {
+		.torrentResult th.sortable {
+			cursor: pointer;
+			user-select: none;
+			text-align: left;
+			position: relative; /* Needed for the arrow positioning */
+		}
+
+		.torrentResult th.sortable::before {
+			content: ''; /* No text */
+			position: absolute;
+			right: 10px; /* Adjust for your layout */
+			font-size: 0.8rem;
+		}
+		.torrentResult th.sortable.sorted-asc::before {
+			content: '▲';
+		}
+
+		.torrentResult th.sortable.sorted-desc::before {
+			content: '▼';
+		}
+	}
+</style>
