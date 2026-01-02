@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { toast } from 'svelte-sonner';
 	import { convertTorrentSeasonRangeToIntegerRange, formatSecondsToOptimalUnit } from '$lib/utils';
-	import { LoaderCircle } from 'lucide-svelte';
+	import { ArrowDown, ArrowUp, LoaderCircle } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
@@ -29,8 +29,20 @@
 
 	let advancedMode: boolean = $derived(tabState === 'advanced');
 
-	function arrowClass(column: string | undefined): string {
-		return sortBy.col === column ? `sorted-${sortBy.ascending ? 'asc' : 'desc'}` : '';
+	const tableColumnHeadings = [
+		{ name: 'Size', id: 'size' },
+		{ name: 'Usenet', id: 'usenet' },
+		{ name: 'Seeders', id: 'seeders' },
+		{ name: 'Age', id: 'age' },
+		{ name: 'Score', id: 'score' },
+		{ name: 'Indexer', id: 'indexer' },
+		{ name: 'Indexer Flags', id: 'flags' },
+		{ name: 'Seasons', id: 'season' }
+	];
+
+	function getSortedColumnState(column: string | undefined): boolean | null {
+		if (sortBy.col !== column) return null;
+		return sortBy.ascending;
 	}
 
 	function sortData(column?: string | undefined) {
@@ -180,9 +192,17 @@
 					<Table.Root class="torrentResult">
 						<Table.Header>
 							<Table.Row>
-								{#each [['Title', 'title'], ['Size', 'size'], ['Usenet', 'usenet'], ['Seeders', 'seeders'], ['Age', 'age'], ['Score', 'score'], ['Indexer', 'indexer'], ['Indexer Flags', 'flags'], ['Seasons', 'season']] as [name, id]}
-									<Table.Head onclick={() => sortData(id)} class="{arrowClass(id)} sortable">
-										{name}
+								<Table.Head>Title</Table.Head>
+								{#each tableColumnHeadings as { name, id } (id)}
+									<Table.Head onclick={() => sortData(id)} class="cursor-pointer">
+										<div class="inline-flex items-center">
+											{name}
+											{#if getSortedColumnState(id) === true}
+												<ArrowUp />
+											{:else if getSortedColumnState(id) === false}
+												<ArrowDown />
+											{/if}
+										</div>
 									</Table.Head>
 								{/each}
 								<Table.Head class="text-right">Actions</Table.Head>
@@ -247,28 +267,3 @@
 		</div>
 	</Dialog.Content>
 </Dialog.Root>
-
-<style>
-	:global {
-		.torrentResult th.sortable {
-			cursor: pointer;
-			user-select: none;
-			text-align: left;
-			position: relative; /* Needed for the arrow positioning */
-		}
-
-		.torrentResult th.sortable::before {
-			content: ''; /* No text */
-			position: absolute;
-			right: 10px; /* Adjust for your layout */
-			font-size: 0.8rem;
-		}
-		.torrentResult th.sortable.sorted-asc::before {
-			content: '▲';
-		}
-
-		.torrentResult th.sortable.sorted-desc::before {
-			content: '▼';
-		}
-	}
-</style>
