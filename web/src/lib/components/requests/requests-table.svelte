@@ -3,9 +3,9 @@
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import type { components } from '$lib/api/api';
 
-	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Table from '$lib/components/ui/table';
 	import { getContext } from 'svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';

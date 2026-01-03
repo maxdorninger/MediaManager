@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Select from '$lib/components/ui/select';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils.js';
 	import { toast } from 'svelte-sonner';
