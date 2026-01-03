@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SignupCard from '$lib/components/signup-card.svelte';
+	import SignupCard from '$lib/components/auth/signup-card.svelte';
 	import { page } from '$app/state';
 
 	let oauthProviders: string[] = $derived(page.data.oauthProviders);

@@ -3,7 +3,7 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import RequestsTable from '$lib/components/season-requests-table.svelte';
+	import RequestsTable from '$lib/components/requests/requests-table.svelte';
 	import { resolve } from '$app/paths';
 
 	let requests = $derived(page.data.requestsData);

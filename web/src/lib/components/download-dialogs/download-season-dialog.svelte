@@ -1,25 +1,30 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-
+	import {
+		convertTorrentSeasonRangeToIntegerRange,
+		formatSecondsToOptimalUnit
+	} from '$lib/utils.ts';
 	import { ArrowDown, ArrowUp, LoaderCircle } from 'lucide-svelte';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Table from '$lib/components/ui/table';
+	import { Badge } from '$lib/components/ui/badge';
 	import client from '$lib/api';
-	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
+	import type { components } from '$lib/api/api';
+	import SelectFilePathSuffixDialog from '$lib/components/download-dialogs/select-file-path-suffix-dialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 
-	let { movie } = $props();
+	let { show }: { show: components['schemas']['Show'] } = $props();
 	let dialogueState = $state(false);
+	let selectedSeasonNumber: number = $state(1);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');
 	let filePathSuffix: string = $state('');
 
-	let torrentsPromise: any = $state(null);
+	let torrentsPromise: any = $state();
 	let torrentsData: any[] | null = $state(null);
 	let tabState: string = $state('basic');
 	let isLoading: boolean = $state(false);
@@ -29,10 +34,13 @@
 
 	const tableColumnHeadings = [
 		{ name: 'Size', id: 'size' },
+		{ name: 'Usenet', id: 'usenet' },
 		{ name: 'Seeders', id: 'seeders' },
+		{ name: 'Age', id: 'age' },
 		{ name: 'Score', id: 'score' },
 		{ name: 'Indexer', id: 'indexer' },
-		{ name: 'Indexer Flags', id: 'flags' }
+		{ name: 'Indexer Flags', id: 'flags' },
+		{ name: 'Seasons', id: 'season' }
 	];
 
 	function getSortedColumnState(column: string | undefined): boolean | null {
@@ -57,29 +65,26 @@
 
 	async function downloadTorrent(result_id: string) {
 		torrentsError = null;
-		const { data, response } = await client.POST(`/api/v1/movies/{movie_id}/torrents`, {
+		const { response } = await client.POST('/api/v1/tv/torrents', {
 			params: {
-				path: {
-					movie_id: movie.id
-				},
 				query: {
+					show_id: show.id!,
 					public_indexer_result_id: result_id,
 					override_file_path_suffix: filePathSuffix === '' ? undefined : filePathSuffix
 				}
 			}
 		});
 		if (response.status === 409) {
-			const errorMessage = `There already is a Movie File using the Filepath Suffix '${filePathSuffix}'. Try again with a different Filepath Suffix.`;
+			const errorMessage = `There already is a Season File using the Filepath Suffix '${filePathSuffix}'. Try again with a different Filepath Suffix.`;
 			console.warn(errorMessage);
 			torrentsError = errorMessage;
 			if (dialogueState) toast.info(errorMessage);
 		} else if (!response.ok) {
-			const errorMessage = `Failed to download torrent for movie ${movie.id}: ${response.statusText}`;
+			const errorMessage = `Failed to download torrent for show ${show.id} and season ${selectedSeasonNumber}: ${response.statusText}`;
 			console.error(errorMessage);
 			torrentsError = errorMessage;
 			toast.error(errorMessage);
 		} else {
-			console.log('Downloading torrent:', data);
 			toast.success('Torrent download started successfully!');
 		}
 		await invalidateAll();
@@ -90,18 +95,18 @@
 		torrentsError = null;
 		torrentsData = null;
 		torrentsPromise = client
-			.GET('/api/v1/movies/{movie_id}/torrents', {
+			.GET('/api/v1/tv/torrents', {
 				params: {
 					query: {
-						search_query_override: advancedMode ? queryOverride : undefined
-					},
-					path: {
-						movie_id: movie.id
+						show_id: show.id!,
+						search_query_override: advancedMode ? queryOverride : undefined,
+						season_number: advancedMode ? undefined : selectedSeasonNumber
 					}
 				}
 			})
 			.then((data) => data?.data)
 			.finally(() => (isLoading = false));
+
 		toast.info('Searching for torrents...');
 
 		torrentsData = await torrentsPromise;
@@ -111,10 +116,10 @@
 </script>
 
 <Dialog.Root bind:open={dialogueState}>
-	<Dialog.Trigger class={buttonVariants({ variant: 'default' })}>Download Movie</Dialog.Trigger>
+	<Dialog.Trigger class={buttonVariants({ variant: 'default' })}>Download Seasons</Dialog.Trigger>
 	<Dialog.Content class="max-h-[90vh] w-fit min-w-[80vw] overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title>Download a Movie</Dialog.Title>
+			<Dialog.Title>Download a Season</Dialog.Title>
 			<Dialog.Description>
 				Search and download torrents for a specific season or season packs.
 			</Dialog.Description>
@@ -126,22 +131,16 @@
 			</Tabs.List>
 			<Tabs.Content value="basic">
 				<div class="grid w-full items-center gap-1.5">
-					<Button
-						disabled={isLoading}
-						class="w-fit"
-						onclick={() => {
-							search();
-						}}
-					>
-						Search for Torrents
-					</Button>
-				</div>
-			</Tabs.Content>
-			<Tabs.Content value="advanced">
-				<div class="grid w-full items-center gap-1.5">
-					<Label for="query-override">Enter a custom query</Label>
+					<Label for="season-number">
+						Enter a season number from 1 to {show.seasons.at(-1)?.number}
+					</Label>
 					<div class="flex w-full max-w-sm items-center space-x-2">
-						<Input bind:value={queryOverride} id="query-override" type="text" />
+						<Input
+							type="number"
+							id="season-number"
+							bind:value={selectedSeasonNumber}
+							max={show.seasons.at(-1)?.number}
+						/>
 						<Button
 							disabled={isLoading}
 							class="w-fit"
@@ -153,8 +152,30 @@
 						</Button>
 					</div>
 					<p class="text-sm text-muted-foreground">
-						The custom query will override the default search string like "A Minecraft Movie
-						(2025)".
+						Enter the season's number you want to search for. The first, usually 1, or the last
+						season number usually yield the most season packs. Note that only Seasons which are
+						listed in the "Seasons" cell will be imported!
+					</p>
+				</div>
+			</Tabs.Content>
+			<Tabs.Content value="advanced">
+				<div class="grid w-full items-center gap-1.5">
+					<Label for="query-override">Enter a custom query</Label>
+					<div class="flex w-full max-w-sm items-center space-x-2">
+						<Input type="text" id="query-override" bind:value={queryOverride} />
+						<Button
+							disabled={isLoading}
+							class="w-fit"
+							onclick={() => {
+								search();
+							}}
+						>
+							Search for Torrents
+						</Button>
+					</div>
+					<p class="text-sm text-muted-foreground">
+						The custom query will override the default search string like "The Simpsons Season 3".
+						Note that only Seasons which are listed in the "Seasons" cell will be imported!
 					</p>
 				</div>
 			</Tabs.Content>
@@ -171,7 +192,7 @@
 			{:then}
 				<h3 class="mb-2 text-lg font-semibold">Found Torrents:</h3>
 				<div class="overflow-y-auto rounded-md border p-2">
-					<Table.Root>
+					<Table.Root class="torrentResult">
 						<Table.Header>
 							<Table.Row>
 								<Table.Head>Title</Table.Head>
@@ -198,18 +219,33 @@
 								<Table.Row>
 									<Table.Cell class="max-w-[300px] font-medium">{torrent.title}</Table.Cell>
 									<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
-									<Table.Cell>{torrent.seeders}</Table.Cell>
+									<Table.Cell>{torrent.usenet}</Table.Cell>
+									<Table.Cell>{torrent.usenet ? 'N/A' : torrent.seeders}</Table.Cell>
+									<Table.Cell
+										>{torrent.age
+											? formatSecondsToOptimalUnit(torrent.age)
+											: torrent.usenet
+												? 'N/A'
+												: ''}</Table.Cell
+									>
 									<Table.Cell>{torrent.score}</Table.Cell>
-									<Table.Cell>{torrent.indexer ?? 'Unknown'}</Table.Cell>
+									<Table.Cell>{torrent.indexer ?? 'unknown'}</Table.Cell>
 									<Table.Cell>
-										{#each torrent.flags as flag (flag)}
-											<Badge variant="outline">{flag}</Badge>
-										{/each}
+										{#if torrent.flags}
+											{#each torrent.flags as flag (flag)}
+												<Badge variant="outline">{flag}</Badge>
+											{/each}
+										{/if}
+									</Table.Cell>
+									<Table.Cell>
+										{#if torrent.season}
+											{convertTorrentSeasonRangeToIntegerRange(torrent.season)}
+										{/if}
 									</Table.Cell>
 									<Table.Cell class="text-right">
 										<SelectFilePathSuffixDialog
-											media={movie}
 											bind:filePathSuffix
+											media={show}
 											callback={() => downloadTorrent(torrent.id!)}
 										/>
 									</Table.Cell>

@@ -93,10 +93,10 @@
 </script>
 
 <script lang="ts">
-	import NavMain from '$lib/components/nav-main.svelte';
-	import NavSecondary from '$lib/components/nav-secondary.svelte';
-	import NavUser from '$lib/components/nav-user.svelte';
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import NavMain from '$lib/components/nav/nav-main.svelte';
+	import NavSecondary from '$lib/components/nav/nav-secondary.svelte';
+	import NavUser from '$lib/components/nav/nav-user.svelte';
+	import * as Sidebar from '$lib/components/ui/sidebar';
 	import type { ComponentProps } from 'svelte';
 	import logo from '$lib/images/logo.svg';
 
