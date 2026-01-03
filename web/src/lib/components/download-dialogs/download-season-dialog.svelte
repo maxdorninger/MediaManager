@@ -14,7 +14,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import client from '$lib/api';
 	import type { components } from '$lib/api/api';
-	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
+	import SelectFilePathSuffixDialog from '$lib/components/download-dialogs/select-file-path-suffix-dialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 
 	let { show }: { show: components['schemas']['Show'] } = $props();

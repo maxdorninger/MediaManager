@@ -10,7 +10,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Table from '$lib/components/ui/table';
 	import client from '$lib/api';
-	import SelectFilePathSuffixDialog from '$lib/components/select-file-path-suffix-dialog.svelte';
+	import SelectFilePathSuffixDialog from '$lib/components/download-dialogs/select-file-path-suffix-dialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 
 	let { movie } = $props();
