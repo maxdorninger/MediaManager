@@ -29,7 +29,7 @@
 	}
 	function sort(data: any[], column: string, ascending: boolean): any[] {
 		let modifier = ascending ? 1 : -1;
-		data.sort((a, b) => {
+		return [...data].sort((a, b) => {
 			if (a[column] < b[column]) {
 				return -1 * modifier;
 			} else if (a[column] > b[column]) {
@@ -38,7 +38,6 @@
 				return 0;
 			}
 		});
-		return data;
 	}
 </script>
 
