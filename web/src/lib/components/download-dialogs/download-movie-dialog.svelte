@@ -109,7 +109,7 @@
 	{/if}
 	<TorrentTable {torrentsPromise} columns={tableColumnHeadings}>
 		{#snippet rowSnippet(torrent)}
-			<Table.Cell class="max-w-[300px] font-medium">{torrent.title}</Table.Cell>
+			<Table.Cell class="font-medium">{torrent.title}</Table.Cell>
 			<Table.Cell>{(torrent.size / 1024 / 1024 / 1024).toFixed(2)}GB</Table.Cell>
 			<Table.Cell>{torrent.seeders}</Table.Cell>
 			<Table.Cell>{torrent.score}</Table.Cell>
