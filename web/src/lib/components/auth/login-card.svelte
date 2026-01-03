@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import * as Alert from '$lib/components/ui/alert/index.js';
+	import * as Alert from '$lib/components/ui/alert';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import LoadingBar from '$lib/components/loading-bar.svelte';
 	import client from '$lib/api';
