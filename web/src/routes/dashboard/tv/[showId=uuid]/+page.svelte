@@ -8,7 +8,7 @@
 	import { getContext } from 'svelte';
 	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
-	import DownloadSeasonDialog from '$lib/components/download-season-dialog.svelte';
+	import DownloadSeasonDialog from '$lib/components/download-dialogs/download-season-dialog.svelte';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import { page } from '$app/state';
 	import TorrentTable from '$lib/components/torrent-table.svelte';

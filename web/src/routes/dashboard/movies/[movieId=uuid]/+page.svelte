@@ -10,7 +10,7 @@
 	import { page } from '$app/state';
 	import TorrentTable from '$lib/components/torrent-table.svelte';
 	import MediaPicture from '$lib/components/media-picture.svelte';
-	import DownloadMovieDialog from '$lib/components/download-movie-dialog.svelte';
+	import DownloadMovieDialog from '$lib/components/download-dialogs/download-movie-dialog.svelte';
 	import RequestMovieDialog from '$lib/components/request-movie-dialog.svelte';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
 	import { resolve } from '$app/paths';
