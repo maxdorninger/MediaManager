@@ -3,7 +3,7 @@ import logging
 import qbittorrentapi
 from qbittorrentapi import Conflict409Error
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.download_clients.abstractDownloadClient import (
     AbstractDownloadClient,
@@ -44,7 +44,7 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
     UNKNOWN_STATE = ("unknown",)
 
     def __init__(self):
-        self.config = AllEncompassingConfig().torrents.qbittorrent
+        self.config = MediaManagerConfig().torrents.qbittorrent
         self.api_client = qbittorrentapi.Client(
             host=self.config.host,
             port=self.config.port,

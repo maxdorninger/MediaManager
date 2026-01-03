@@ -9,11 +9,11 @@
 	import { getContext } from 'svelte';
 	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
-	import DownloadSeasonDialog from '$lib/components/download-season-dialog.svelte';
+	import DownloadSeasonDialog from '$lib/components/download-dialogs/download-season-dialog.svelte';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import { page } from '$app/state';
-	import TorrentTable from '$lib/components/torrent-table.svelte';
-	import RequestSeasonDialog from '$lib/components/request-season-dialog.svelte';
+	import TorrentTable from '$lib/components/torrents/torrent-table.svelte';
+	import RequestSeasonDialog from '$lib/components/requests/request-season-dialog.svelte';
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { toast } from 'svelte-sonner';

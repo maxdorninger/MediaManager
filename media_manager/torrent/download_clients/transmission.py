@@ -1,7 +1,7 @@
 import logging
 
 import transmission_rpc
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.download_clients.abstractDownloadClient import (
     AbstractDownloadClient,
@@ -27,7 +27,7 @@ class TransmissionDownloadClient(AbstractDownloadClient):
     }
 
     def __init__(self):
-        self.config = AllEncompassingConfig().torrents.transmission
+        self.config = MediaManagerConfig().torrents.transmission
         try:
             self._client = transmission_rpc.Client(
                 host=self.config.host,
@@ -52,7 +52,7 @@ class TransmissionDownloadClient(AbstractDownloadClient):
         """
         torrent_hash = get_torrent_hash(torrent=indexer_result)
         download_dir = (
-            AllEncompassingConfig().misc.torrent_directory / indexer_result.title
+            MediaManagerConfig().misc.torrent_directory / indexer_result.title
         )
         try:
             self._client.add_torrent(

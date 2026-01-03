@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from requests import Session
 
 from media_manager.indexer.indexers.generic import GenericIndexer
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie
@@ -36,7 +36,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
         A subclass of GenericIndexer for interacting with the Prowlarr API.
         """
         super().__init__(name="prowlarr")
-        self.config = AllEncompassingConfig().indexers.prowlarr
+        self.config = MediaManagerConfig().indexers.prowlarr
 
     def _call_prowlarr_api(self, path: str, parameters: dict = None):
         url = f"{self.config.url}/api/v1{path}"

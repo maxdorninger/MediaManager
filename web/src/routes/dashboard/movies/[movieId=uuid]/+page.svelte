@@ -8,10 +8,10 @@
 	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils';
 	import { page } from '$app/state';
-	import TorrentTable from '$lib/components/torrent-table.svelte';
+	import TorrentTable from '$lib/components/torrents/torrent-table.svelte';
 	import MediaPicture from '$lib/components/media-picture.svelte';
-	import DownloadMovieDialog from '$lib/components/download-movie-dialog.svelte';
-	import RequestMovieDialog from '$lib/components/request-movie-dialog.svelte';
+	import DownloadMovieDialog from '$lib/components/download-dialogs/download-movie-dialog.svelte';
+	import RequestMovieDialog from '$lib/components/requests/request-movie-dialog.svelte';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
 	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';

@@ -1,7 +1,7 @@
 import logging
 from enum import Enum
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.download_clients.abstractDownloadClient import (
     AbstractDownloadClient,
@@ -33,7 +33,7 @@ class DownloadManager:
     def __init__(self):
         self._torrent_client: AbstractDownloadClient | None = None
         self._usenet_client: AbstractDownloadClient | None = None
-        self.config = AllEncompassingConfig().torrents
+        self.config = MediaManagerConfig().torrents
         self._initialize_clients()
 
     def _initialize_clients(self) -> None:

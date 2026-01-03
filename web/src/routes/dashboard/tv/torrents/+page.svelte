@@ -6,7 +6,7 @@
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import TorrentTable from '$lib/components/torrent-table.svelte';
+	import TorrentTable from '$lib/components/torrents/torrent-table.svelte';
 	import { resolve } from '$app/paths';
 </script>
 

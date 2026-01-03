@@ -8,7 +8,7 @@ dependencies = [
     "cachetools>=6.0.0",
     "fastapi[standard]>=0.115.12",
     "fastapi-restful[all]>=0.6.0",
-    "fastapi-users[sqlalchemy]>=14.0.1",
+    "fastapi-users[sqlalchemy]>=15.0.2",
     "httpx>=0.28.1",
     "httpx-oauth>=0.16.1",
     "jsonschema>=4.24.0",
@@ -20,7 +20,7 @@ dependencies = [
     "qbittorrent-api>=2025.5.0",
     "requests>=2.32.3",
     "sqlalchemy>=2.0.41",
-    "starlette>=0.46.2",
+    "starlette>=0.49.1",
     "tmdbsimple>=2.9.1",
     "tvdb-v4-official>=1.1.0",
     "typing-inspect>=0.9.0",
@@ -29,12 +29,11 @@ dependencies = [
     "apscheduler>=3.11.0",
     "alembic>=1.16.1",
     "pytest>=8.4.0",
-    "pillow>=11.2.1",
+    "pillow>=11.3.0",
     "pillow-avif-plugin>=1.5.2",
     "sabnzbd-api>=0.1.2",
     "transmission-rpc>=7.0.11",
     "libtorrent>=2.0.11",
-    "prowlarr-py>=1.1.0",
 ]
 
 [tool.setuptools.packages.find]

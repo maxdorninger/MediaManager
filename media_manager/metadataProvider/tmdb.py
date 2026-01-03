@@ -3,7 +3,7 @@ import logging
 import requests
 
 import media_manager.metadataProvider.utils
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
@@ -22,7 +22,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
     name = "tmdb"
 
     def __init__(self):
-        config = AllEncompassingConfig().metadata.tmdb
+        config = MediaManagerConfig().metadata.tmdb
         self.url = config.tmdb_relay_url
         self.primary_languages = config.primary_languages
         self.default_language = config.default_language

@@ -4,7 +4,7 @@ from fastapi_users.router import get_oauth_router
 from httpx_oauth.oauth2 import OAuth2
 from sqlalchemy import select
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.auth.db import User
 from media_manager.auth.schemas import UserRead, AuthMetadata
 from media_manager.auth.users import (
@@ -50,7 +50,7 @@ def get_openid_router():
         )
 
 
-openid_config = AllEncompassingConfig().auth.openid_connect
+openid_config = MediaManagerConfig().auth.openid_connect
 
 
 @users_router.get(

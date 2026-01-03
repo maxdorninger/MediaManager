@@ -1,6 +1,6 @@
 import logging
 
-from media_manager.config import AllEncompassingConfig
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.download_clients.abstractDownloadClient import (
     AbstractDownloadClient,
@@ -27,7 +27,7 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
     UNKNOWN_STATE = ("Unknown",)
 
     def __init__(self):
-        self.config = AllEncompassingConfig().torrents.sabnzbd
+        self.config = MediaManagerConfig().torrents.sabnzbd
         self.client = sabnzbd_api.SabnzbdClient(
             host=self.config.host,
             port=str(self.config.port),
