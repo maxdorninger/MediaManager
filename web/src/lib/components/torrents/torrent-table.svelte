@@ -5,14 +5,14 @@
 		getTorrentStatusString
 	} from '$lib/utils.js';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
-	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Table from '$lib/components/ui/table';
 	import type { components } from '$lib/api/api';
 	import { getContext } from 'svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button } from '$lib/components/ui/button';
 	import client from '$lib/api';
 	import { toast } from 'svelte-sonner';
-	import DeleteTorrentDialog from '$lib/components/delete-torrent-dialog.svelte';
-	import EditTorrentDialog from '$lib/components/edit-torrent-dialog.svelte';
+	import DeleteTorrentDialog from '$lib/components/torrents/delete-torrent-dialog.svelte';
+	import EditTorrentDialog from '$lib/components/torrents/edit-torrent-dialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 	let {
 		torrents,

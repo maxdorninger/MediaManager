@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import client from '$lib/api';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { invalidateAll } from '$app/navigation';

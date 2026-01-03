@@ -8,7 +8,7 @@
 	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils';
 	import { page } from '$app/state';
-	import TorrentTable from '$lib/components/torrent-table.svelte';
+	import TorrentTable from '$lib/components/torrents/torrent-table.svelte';
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import DownloadMovieDialog from '$lib/components/download-dialogs/download-movie-dialog.svelte';
 	import RequestMovieDialog from '$lib/components/request-dialogs/request-movie-dialog.svelte';
