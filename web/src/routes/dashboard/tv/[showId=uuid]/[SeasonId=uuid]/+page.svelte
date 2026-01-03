@@ -68,13 +68,25 @@
 		</div>
 		<div class="h-full w-full flex-auto rounded-xl md:w-1/4">
 			<Card.Root class="h-full w-full">
-				<Card.Header>
-					<Card.Title>Overview</Card.Title>
-				</Card.Header>
-				<Card.Content>
-					<p class="leading-7 not-first:mt-6">
-						{show.overview}
-					</p>
+				<Card.Content class="flex flex-col gap-6">
+					<div>
+						<Card.Title class="text-base mb-2">
+							Series Overview
+						</Card.Title>
+						<p class="text-sm leading-6 text-muted-foreground text-justify hyphens-auto">
+							{show.overview}
+						</p>
+					</div>
+					<div class="border-t border-border"></div>
+					<div>
+						<Card.Title class="text-base mb-2">
+							Season Overview
+						</Card.Title>
+						<p class="text-sm leading-6 text-muted-foreground text-justify hyphens-auto">
+							{season.overview}
+						</p>
+					</div>
+
 				</Card.Content>
 			</Card.Root>
 		</div>
@@ -132,19 +144,21 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="w-full overflow-x-auto">
-				<Table.Root>
+				<Table.Root class="w-full table-fixed">
 					<Table.Caption>A list of all episodes.</Table.Caption>
 					<Table.Header>
 						<Table.Row>
-							<Table.Head class="w-[100px]">Number</Table.Head>
-							<Table.Head class="min-w-[50px]">Title</Table.Head>
+							<Table.Head class="w-[80px]">Number</Table.Head>
+							<Table.Head class="w-[240px]">Title</Table.Head>
+							<Table.Head>Overview</Table.Head>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
 						{#each season.episodes as episode (episode.id)}
 							<Table.Row>
-								<Table.Cell class="w-[100px] font-medium">{episode.number}</Table.Cell>
+								<Table.Cell class="w-[100px] font-medium">E{String(episode.number).padStart(2, '0')}</Table.Cell>
 								<Table.Cell class="min-w-[50px]">{episode.title}</Table.Cell>
+								<Table.Cell colspan={2} class="truncate">{episode.overview}</Table.Cell>
 							</Table.Row>
 						{/each}
 					</Table.Body>

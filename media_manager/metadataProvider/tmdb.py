@@ -266,6 +266,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                         external_id=int(episode["id"]),
                         title=episode["name"],
                         number=EpisodeNumber(episode["episode_number"]),
+                        overview=episode["overview"],
                     )
                 )
 
