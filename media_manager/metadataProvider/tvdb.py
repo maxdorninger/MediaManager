@@ -1,4 +1,5 @@
 import logging
+from typing import override
 
 import requests
 
@@ -46,6 +47,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
     def __get_trending_movies(self) -> dict:
         return requests.get(url=f"{self.url}/movies/trending", timeout=60).json()
 
+    @override
     def download_show_poster_image(self, show: Show) -> bool:
         show_metadata = self.__get_show(show_id=show.external_id)
 
@@ -61,6 +63,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             log.warning(f"image for show {show.name} could not be downloaded")
             return False
 
+    @override
     def get_show_metadata(
         self, show_id: int | None = None, language: str | None = None
     ) -> Show:
@@ -127,6 +130,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
         return show
 
+    @override
     def search_show(
         self, query: str | None = None
     ) -> list[MetaDataProviderSearchResult]:
@@ -186,6 +190,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                     log.warning(f"Error processing search result: {e}")
             return formatted_results
 
+    @override
     def search_movie(
         self, query: str | None = None
     ) -> list[MetaDataProviderSearchResult]:
@@ -253,6 +258,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                     log.warning(f"Error processing search result: {e}")
             return formatted_results
 
+    @override
     def download_movie_poster_image(self, movie: Movie) -> bool:
         movie_metadata = self.__get_movie(movie.external_id)
 
@@ -268,6 +274,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             log.warning(f"image for show {movie.name} could not be downloaded")
             return False
 
+    @override
     def get_movie_metadata(
         self, movie_id: int | None = None, language: str | None = None
     ) -> Movie:

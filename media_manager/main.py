@@ -51,7 +51,7 @@ log = logging.getLogger(__name__)
 if config.misc.development:
     log.warning("Development Mode activated!")
 
-scheduler = setup_scheduler(config, log)
+scheduler = setup_scheduler(config)
 
 run_filesystem_checks(config, log)
 
@@ -159,7 +159,7 @@ async def login():
 
 # this will serve the custom 404 page for frontend routes, so SvelteKit can handle routing
 @app.exception_handler(404)
-async def not_found_handler(request, exc):
+async def not_found_handler(request, _exc):
     if not DISABLE_FRONTEND_MOUNT and any(
         base_path in ["/web", "/dashboard", "/login"] for base_path in request.url.path
     ):

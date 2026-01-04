@@ -15,7 +15,7 @@ from media_manager.tv.service import (
 )
 
 
-def setup_scheduler(config, log):
+def setup_scheduler(config):
     from media_manager.database import init_engine
 
     init_engine(config.database)

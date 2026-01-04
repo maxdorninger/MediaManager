@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from psycopg.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError
@@ -72,53 +72,53 @@ class UnprocessableEntityError(MediaManagerException):
 
 # Exception handlers
 async def media_already_exists_exception_handler(
-    request: Request, exc: MediaAlreadyExists
+    _request: Request, exc: MediaAlreadyExists
 ) -> JSONResponse:
     return JSONResponse(status_code=409, content={"detail": exc.message})
 
 
 async def not_found_error_exception_handler(
-    request: Request, exc: NotFoundError
+    _request: Request, exc: NotFoundError
 ) -> JSONResponse:
     return JSONResponse(status_code=404, content={"detail": exc.message})
 
 
 async def invalid_config_error_exception_handler(
-    request: Request, exc: InvalidConfigError
+    _request: Request, exc: InvalidConfigError
 ) -> JSONResponse:
     return JSONResponse(status_code=500, content={"detail": exc.message})
 
 
 async def bad_request_error_handler(
-    request: Request, exc: BadRequestError
+    _request: Request, exc: BadRequestError
 ) -> JSONResponse:
     return JSONResponse(status_code=400, content={"detail": exc.message})
 
 
 async def unauthorized_error_handler(
-    request: Request, exc: UnauthorizedError
+    _request: Request, exc: UnauthorizedError
 ) -> JSONResponse:
     return JSONResponse(status_code=401, content={"detail": exc.message})
 
 
 async def forbidden_error_handler(
-    request: Request, exc: ForbiddenError
+    _request: Request, exc: ForbiddenError
 ) -> JSONResponse:
     return JSONResponse(status_code=403, content={"detail": exc.message})
 
 
-async def conflict_error_handler(request: Request, exc: ConflictError) -> JSONResponse:
+async def conflict_error_handler(_request: Request, exc: ConflictError) -> JSONResponse:
     return JSONResponse(status_code=409, content={"detail": exc.message})
 
 
 async def unprocessable_entity_error_handler(
-    request: Request, exc: UnprocessableEntityError
+    _request: Request, exc: UnprocessableEntityError
 ) -> JSONResponse:
     return JSONResponse(status_code=422, content={"detail": exc.message})
 
 
 async def sqlalchemy_integrity_error_handler(
-    request: Request, exc: Exception
+    _request: Request, _exc: Exception
 ) -> JSONResponse:
     return JSONResponse(
         status_code=409,
@@ -128,7 +128,7 @@ async def sqlalchemy_integrity_error_handler(
     )
 
 
-def register_exception_handlers(app):
+def register_exception_handlers(app: FastAPI):
     app.add_exception_handler(NotFoundError, not_found_error_exception_handler)
     app.add_exception_handler(
         MediaAlreadyExists, media_already_exists_exception_handler

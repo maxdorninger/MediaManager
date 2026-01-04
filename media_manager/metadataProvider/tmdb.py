@@ -1,4 +1,5 @@
 import logging
+from typing import override
 
 import requests
 
@@ -211,6 +212,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 )
             raise
 
+    @override
     def download_show_poster_image(self, show: Show) -> bool:
         # Determine which language to use based on show's original_language
         language = self.__get_language_param(show.original_language)
@@ -236,6 +238,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             return False
         return True
 
+    @override
     def get_show_metadata(
         self, show_id: int | None = None, language: str | None = None
     ) -> Show:
@@ -310,6 +313,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
         return show
 
+    @override
     def search_show(
         self, query: str | None = None, max_pages: int = 5
     ) -> list[MetaDataProviderSearchResult]:
@@ -369,6 +373,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 log.warning(f"Error processing search result: {e}")
         return formatted_results
 
+    @override
     def get_movie_metadata(
         self, movie_id: int | None = None, language: str | None = None
     ) -> Movie:
@@ -413,6 +418,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
         return movie
 
+    @override
     def search_movie(
         self, query: str | None = None, max_pages: int = 5
     ) -> list[MetaDataProviderSearchResult]:
@@ -472,6 +478,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 log.warning(f"Error processing search result: {e}")
         return formatted_results
 
+    @override
     def download_movie_poster_image(self, movie: Movie) -> bool:
         # Determine which language to use based on movie's original_language
         language = self.__get_language_param(movie.original_language)

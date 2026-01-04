@@ -1,7 +1,7 @@
 import contextlib
 import logging
 import uuid
-from typing import Any, Optional
+from typing import Any, Optional, override
 
 from fastapi import Depends, Request
 from fastapi.responses import RedirectResponse, Response
@@ -44,6 +44,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
+    @override
     async def on_after_update(
         self,
         user: models.UP,
@@ -57,12 +58,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             updated_user = UserUpdate(is_verified=True)
             await self.update(user=user, user_update=updated_user)
 
+    @override
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         log.info(f"User {user.id} has registered.")
         if user.email in config.admin_emails:
             updated_user = UserUpdate(is_superuser=True, is_verified=True)
             await self.update(user=user, user_update=updated_user)
 
+    @override
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
     ):
@@ -93,11 +96,13 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         )
         log.info(f"Sent password reset email to {user.email}")
 
+    @override
     async def on_after_reset_password(
         self, user: User, request: Optional[Request] = None
     ):
         log.info(f"User {user.id} has reset their password.")
 
+    @override
     async def on_after_request_verify(
         self, user: User, token: str, request: Optional[Request] = None
     ):
@@ -105,6 +110,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             f"Verification requested for user {user.id}. Verification token: {token}"
         )
 
+    @override
     async def on_after_verify(self, user: User, request: Optional[Request] = None):
         log.info(f"User {user.id} has been verified")
 

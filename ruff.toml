@@ -3,9 +3,9 @@ line-ending = "lf"
 quote-style = "double"
 
 [lint]
-# to be enabled: ANN, ARG, BLE, C90, CPY, D, DOC, DTZ, FBT, G, INP, INT, N, PERF, PIE, PL, PTH, RET, RSE, SLF, SIM, TC, TRY, UP
+# to be enabled: ANN, BLE, C90, CPY, D, DOC, DTZ, FBT, G, INP, INT, N, PERF, PIE, PL, PTH, RET, RSE, SLF, SIM, TC, TRY, UP
 extend-select = [
-    "A", "ASYNC",
+    "A", "ARG", "ASYNC",
     "B",
     "C4", "COM",
     "E", "EM", "EXE",
