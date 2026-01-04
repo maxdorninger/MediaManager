@@ -175,12 +175,27 @@ jobs:
           VERSION_NO_V=${VERSION#v}
           echo "version_no_v=$VERSION_NO_V" >> $GITHUB_OUTPUT
 
-      - name: Extract metadata (tags)
+      - name: Extract tags (GHCR)
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
+          tags: |
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name != 'release' }}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Extract tags (Quay)
+        id: meta_quay
+        uses: docker/metadata-action@v5
+        with:
+          images: |
             quay.io/${{ env.QUAY_ORG }}/metadata_relay
           tags: |
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
@@ -195,7 +210,7 @@ jobs:
       - name: Push to GHCR
         working-directory: /tmp/digests
         run: |
-          GHCR_TAGS=$(jq -cr '.tags | map(select(startswith("ghcr.io/"))) | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          GHCR_TAGS=$(jq -cr '.tags | map(select(startswith("ghcr.io/"))) | map("-t " + .) | join(" ")' <<< "${{ steps.meta.outputs.json }}")
           
           docker buildx imagetools create $GHCR_TAGS \
             $(printf 'ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:%s ' *)
@@ -203,7 +218,7 @@ jobs:
       - name: Push to Quay
         working-directory: /tmp/digests
         run: |
-          QUAY_TAGS=$(jq -cr '.tags | map(select(startswith("quay.io/"))) | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          QUAY_TAGS=$(jq -cr '.tags | map(select(startswith("quay.io/"))) | map("-t " + .) | join(" ")' <<< "${{ steps.meta_quay.outputs.json }}")
 
           docker buildx imagetools create $QUAY_TAGS \
             $(printf 'quay.io/${{ env.QUAY_ORG }}/metadata_relay@sha256:%s ' *)
