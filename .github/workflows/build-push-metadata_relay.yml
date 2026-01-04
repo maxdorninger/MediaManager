@@ -210,17 +210,20 @@ jobs:
       - name: Push to GHCR
         working-directory: /tmp/digests
         run: |
-          GHCR_TAGS=$(printf '%s\n' "${{ steps.meta.outputs.tags }}" | grep '^ghcr.io/' | sed 's/^/-t /')          
-          docker buildx imagetools create $GHCR_TAGS \
-            $(printf 'ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:%s ' *)
+          GHCR_TAGS=$(printf '%s\n' "${{ steps.meta.outputs.tags }}" | sed 's/^/-t /')
+          if [ -z "$GHCR_TAGS" ]; then echo "No ghcr tags found"; exit 1; fi
+
+          DIGEST_ARGS=$(printf 'ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:%s ' /tmp/digests/*)
+          docker buildx imagetools create $GHCR_TAGS $DIGEST_ARGS
 
       - name: Push to Quay
         working-directory: /tmp/digests
         run: |
-          QUAY_TAGS=$(printf '%s\n' "${{ steps.meta_quay.outputs.tags }}" | grep '^ghcr.io/' | sed 's/^/-t /') 
+          QUAY_TAGS=$(printf '%s\n' "${{ steps.meta_quay.outputs.tags }}" | sed 's/^/-t /')
+          if [ -z "$QUAY_TAGS" ]; then echo "No quay tags found"; exit 1; fi
 
-          docker buildx imagetools create $QUAY_TAGS \
-            $(printf 'quay.io/${{ env.QUAY_ORG }}/metadata_relay@sha256:%s ' *)
+          DIGEST_ARGS=$(printf 'quay.io/${{ env.QUAY_ORG }}/metadata_relay@sha256:%s ' /tmp/digests/*)
+          docker buildx imagetools create $QUAY_TAGS $DIGEST_ARGS
 
       - name: Inspect image
         run: |
