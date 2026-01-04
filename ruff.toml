@@ -9,7 +9,7 @@ extend-select = [
     "B",
     "C4", "COM",
     "E", "EM", "EXE",
-    "F", "FA", "FIX", "FLY", "FURB",
+    "F", "FA", "FAST", "FIX", "FLY", "FURB",
     "ICN",
     "LOG",
     "PGH", "PT", "PYI",
@@ -25,6 +25,8 @@ ignore = [
     "COM812",
     # lines too long
     "E501",
+    # currently a bug?! with providers and depends
+    "FAST003",
 ]
 
 [lint.flake8-bugbear]

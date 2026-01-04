@@ -43,13 +43,12 @@ router = APIRouter()
 @router.get(
     "/search",
     dependencies=[Depends(current_active_user)],
-    response_model=list[MetaDataProviderSearchResult],
 )
 def search_for_movie(
     query: str,
     movie_service: movie_service_dep,
     metadata_provider: metadata_provider_dep,
-):
+) -> list[MetaDataProviderSearchResult]:
     """
     Search for a movie on the configured metadata provider.
     """
@@ -61,12 +60,11 @@ def search_for_movie(
 @router.get(
     "/recommended",
     dependencies=[Depends(current_active_user)],
-    response_model=list[MetaDataProviderSearchResult],
 )
 def get_popular_movies(
     movie_service: movie_service_dep,
     metadata_provider: metadata_provider_dep,
-):
+) -> list[MetaDataProviderSearchResult]:
     """
     Get a list of recommended/popular movies from the metadata provider.
     """
@@ -82,11 +80,10 @@ def get_popular_movies(
     "/importable",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(current_superuser)],
-    response_model=list[MediaImportSuggestion],
 )
 def get_all_importable_movies(
     movie_service: movie_service_dep, metadata_provider: metadata_provider_dep
-):
+) -> list[MediaImportSuggestion]:
     """
     Get a list of unknown movies that were detected in the movie directory and are importable.
     """
@@ -124,9 +121,8 @@ def import_detected_movie(
 @router.get(
     "",
     dependencies=[Depends(current_active_user)],
-    response_model=list[PublicMovie],
 )
-def get_all_movies(movie_service: movie_service_dep):
+def get_all_movies(movie_service: movie_service_dep) -> list[Movie]:
     """
     Get all movies in the library.
     """
@@ -169,9 +165,10 @@ def add_a_movie(
 @router.get(
     "/torrents",
     dependencies=[Depends(current_active_user)],
-    response_model=list[RichMovieTorrent],
 )
-def get_all_movies_with_torrents(movie_service: movie_service_dep):
+def get_all_movies_with_torrents(
+    movie_service: movie_service_dep,
+) -> list[RichMovieTorrent]:
     """
     Get all movies that are associated with torrents.
     """
@@ -181,9 +178,8 @@ def get_all_movies_with_torrents(movie_service: movie_service_dep):
 @router.get(
     "/libraries",
     dependencies=[Depends(current_active_user)],
-    response_model=list[LibraryItem],
 )
-def get_available_libraries():
+def get_available_libraries() -> list[LibraryItem]:
     """
     Get available Movie libraries from configuration.
     """
@@ -198,9 +194,8 @@ def get_available_libraries():
 @router.get(
     "/requests",
     dependencies=[Depends(current_active_user)],
-    response_model=list[RichMovieRequest],
 )
-def get_all_movie_requests(movie_service: movie_service_dep):
+def get_all_movie_requests(movie_service: movie_service_dep) -> list[RichMovieRequest]:
     """
     Get all movie requests.
     """
@@ -210,13 +205,12 @@ def get_all_movie_requests(movie_service: movie_service_dep):
 @router.post(
     "/requests",
     status_code=status.HTTP_201_CREATED,
-    response_model=MovieRequest,
 )
 def create_movie_request(
     movie_service: movie_service_dep,
     movie_request: CreateMovieRequest,
     user: Annotated[UserRead, Depends(current_active_user)],
-):
+) -> MovieRequest:
     """
     Create a new movie request.
     """
@@ -234,14 +228,13 @@ def create_movie_request(
 
 @router.put(
     "/requests/{movie_request_id}",
-    response_model=MovieRequest,
 )
 def update_movie_request(
     movie_service: movie_service_dep,
     movie_request_id: MovieRequestId,
     update_movie_request: MovieRequestBase,
     user: Annotated[UserRead, Depends(current_active_user)],
-):
+) -> MovieRequest:
     """
     Update an existing movie request.
     """
@@ -298,9 +291,8 @@ def delete_movie_request(
 @router.get(
     "/{movie_id}",
     dependencies=[Depends(current_active_user)],
-    response_model=PublicMovie,
 )
-def get_movie_by_id(movie_service: movie_service_dep, movie: movie_dep):
+def get_movie_by_id(movie_service: movie_service_dep, movie: movie_dep) -> PublicMovie:
     """
     Get details for a specific movie.
     """
@@ -331,7 +323,6 @@ def delete_a_movie(
 @router.post(
     "/{movie_id}/library",
     dependencies=[Depends(current_superuser)],
-    response_model=None,
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def set_library(
@@ -349,9 +340,10 @@ def set_library(
 @router.get(
     "/{movie_id}/files",
     dependencies=[Depends(current_active_user)],
-    response_model=list[PublicMovieFile],
 )
-def get_movie_files_by_movie_id(movie_service: movie_service_dep, movie: movie_dep):
+def get_movie_files_by_movie_id(
+    movie_service: movie_service_dep, movie: movie_dep
+) -> list[PublicMovieFile]:
     """
     Get files associated with a specific movie.
     """
@@ -361,13 +353,12 @@ def get_movie_files_by_movie_id(movie_service: movie_service_dep, movie: movie_d
 @router.get(
     "/{movie_id}/torrents",
     dependencies=[Depends(current_active_user)],
-    response_model=list[IndexerQueryResult],
 )
 def search_for_torrents_for_movie(
     movie_service: movie_service_dep,
     movie: movie_dep,
     search_query_override: str | None = None,
-):
+) -> list[IndexerQueryResult]:
     """
     Search for torrents for a specific movie.
     """
@@ -380,14 +371,13 @@ def search_for_torrents_for_movie(
     "/{movie_id}/torrents",
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(current_active_user)],
-    response_model=Torrent,
 )
 def download_torrent_for_movie(
     movie_service: movie_service_dep,
     movie: movie_dep,
     public_indexer_result_id: IndexerQueryResultId,
     override_file_path_suffix: str = "",
-):
+) -> Torrent:
     """
     Trigger a download for a specific torrent for a movie.
     """

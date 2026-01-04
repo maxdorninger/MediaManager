@@ -15,9 +15,10 @@ router = APIRouter()
 @router.get(
     "",
     dependencies=[Depends(current_active_user)],
-    response_model=list[Notification],
 )
-def get_all_notifications(notification_service: notification_service_dep):
+def get_all_notifications(
+    notification_service: notification_service_dep,
+) -> list[Notification]:
     """
     Get all notifications.
     """
@@ -27,9 +28,10 @@ def get_all_notifications(notification_service: notification_service_dep):
 @router.get(
     "/unread",
     dependencies=[Depends(current_active_user)],
-    response_model=list[Notification],
 )
-def get_unread_notifications(notification_service: notification_service_dep):
+def get_unread_notifications(
+    notification_service: notification_service_dep,
+) -> list[Notification]:
     """
     Get all unread notifications.
     """
@@ -39,14 +41,13 @@ def get_unread_notifications(notification_service: notification_service_dep):
 @router.get(
     "/{notification_id}",
     dependencies=[Depends(current_active_user)],
-    response_model=Notification,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Notification not found"},
     },
 )
 def get_notification(
     notification_id: NotificationId, notification_service: notification_service_dep
-):
+) -> Notification:
     """
     Get a specific notification by ID.
     """
