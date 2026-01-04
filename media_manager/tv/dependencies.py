@@ -47,7 +47,7 @@ def get_show_by_id(
         raise HTTPException(
             status_code=404,
             detail=f"Show with ID {show_id} not found.",
-        )
+        ) from None
     return show
 
 
@@ -64,7 +64,7 @@ def get_season_by_id(
         raise HTTPException(
             status_code=404,
             detail=f"Season with ID {season_id} not found.",
-        )
+        ) from None
     return season
 
 

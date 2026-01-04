@@ -6,6 +6,7 @@ quote-style = "double"
 # to be enabled: A, ANN, ARG, BLE, C90, CPY, D, DOC, DTZ, FBT, G, INP, INT, N, PERF, PIE, PL, PTH, RET, RSE, SLF, SIM, TC, TRY, UP
 extend-select = [
     "ASYNC",
+    "B",
     "COM",
     "E", "EXE",
     "F", "FA", "FIX", "FLY", "FURB",
@@ -25,3 +26,6 @@ ignore = [
     # lines too long
     "E501",
 ]
+
+[lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Path"]

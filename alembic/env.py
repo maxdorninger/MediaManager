@@ -36,21 +36,21 @@ target_metadata = Base.metadata
 
 # this is to keep pycharm from complaining about/optimizing unused imports
 # noinspection PyStatementEffect
-(
-    User,
-    OAuthAccount,
-    IndexerQueryResult,
-    Torrent,
-    Show,
-    Season,
-    Episode,
-    SeasonFile,
-    SeasonRequest,
-    Movie,
-    MovieFile,
-    MovieRequest,
-    Notification,
-)
+__all__ = [
+    "User",
+    "OAuthAccount",
+    "IndexerQueryResult",
+    "Torrent",
+    "Show",
+    "Season",
+    "Episode",
+    "SeasonFile",
+    "SeasonRequest",
+    "Movie",
+    "MovieFile",
+    "MovieRequest",
+    "Notification",
+]
 
 
 # other values from the config, defined by the needs of env.py,

@@ -39,7 +39,7 @@ def get_torrent_by_id(
     except NotFoundError:
         raise HTTPException(
             status_code=404, detail=f"Torrent with ID {torrent_id} not found"
-        )
+        ) from None
     return torrent
 
 

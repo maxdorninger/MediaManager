@@ -47,7 +47,7 @@ def get_movie_by_id(
         raise HTTPException(
             status_code=404,
             detail=f"Movie with ID {movie_id} not found.",
-        )
+        ) from None
     return movie
 
 

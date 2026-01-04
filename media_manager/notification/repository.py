@@ -71,7 +71,7 @@ class NotificationRepository:
             log.error(f"Could not save notification, Error: {e}")
             raise ConflictError(
                 f"Notification with id {notification.id} already exists."
-            )
+            ) from None
         return
 
     def mark_notification_as_read(self, id: NotificationId) -> None:

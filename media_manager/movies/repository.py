@@ -132,7 +132,7 @@ class MovieRepository:
             log.error(f"Integrity error while saving movie {movie.name}: {e}")
             raise ConflictError(
                 f"Movie with this primary key or unique constraint violation: {e.orig}"
-            )
+            ) from e
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(f"Database error while saving movie {movie.name}: {e}")
