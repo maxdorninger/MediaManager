@@ -63,16 +63,11 @@ jobs:
   build-and-push:
     needs: [lint-frontend, lint-backend]
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        platform: [linux/amd64, linux/arm64]
-      fail-fast: false
     permissions:
       contents: read
-      packages: write
+      packages:  write
     env:
       QUAY_ORG: ${{ secrets.QUAY_ORG }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
