@@ -234,7 +234,7 @@ jobs:
           GHCR_TAGS=$(jq -cr '.tags | map(select(startswith("ghcr.io/"))) | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON")
           
           docker buildx imagetools create $GHCR_TAGS \
-            $(printf 'ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:%s ' *)
+            $(printf 'ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/mediamanager@sha256:%s ' *)
 
       - name: Push to Quay
         working-directory: /tmp/digests
@@ -242,7 +242,7 @@ jobs:
           QUAY_TAGS=$(jq -cr '.tags | map(select(startswith("quay.io/"))) | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON")
 
           docker buildx imagetools create $QUAY_TAGS \
-            $(printf 'quay.io/${{ env.QUAY_ORG }}/metadata_relay@sha256:%s ' *)
+            $(printf 'quay.io/${{ env.QUAY_ORG }}/mediamanager@sha256:%s ' *)
 
       - name: Inspect image
         run: |
