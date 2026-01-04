@@ -88,6 +88,9 @@
 		<a href="https://github.com/LITUATUI"
 			><img alt="LITUATUI" src="https://github.com/LITUATUI.png" width="80px" /></a
 		>&nbsp;&nbsp;
+		<a href="https://github.com/seferino-fernandez"
+			><img alt="Seferino" src="https://avatars.githubusercontent.com/u/5546622" width="80px" /></a
+		>&nbsp;&nbsp;
 		<a href="https://buymeacoffee.com/maxdorninger"
 			><img
 				alt="Nicolas"
