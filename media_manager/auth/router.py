@@ -36,9 +36,9 @@ def get_openid_router():
         return get_oauth_router(
             oauth_client=OAuth2(
                 client_id="mock",
-                client_secret="mock",
+                client_secret="mock",  # noqa: S106
                 authorize_endpoint="https://example.com/authorize",
-                access_token_endpoint="https://example.com/token",
+                access_token_endpoint="https://example.com/token",  # noqa: S106
             ),
             backend=openid_cookie_auth_backend,
             get_user_manager=fastapi_users.get_user_manager,

@@ -165,7 +165,7 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
         log.debug(f"parsing torrent file: {torrent.download_url}")
         try:
             decoded_content = bencoder.decode(torrent_content)
-            torrent_hash = hashlib.sha1(
+            torrent_hash = hashlib.sha1(  # noqa: S324
                 bencoder.encode(decoded_content[b"info"])
             ).hexdigest()
         except Exception as e:

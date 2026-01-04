@@ -22,6 +22,7 @@ class NtfyNotificationServiceProvider(AbstractNotificationServiceProvider):
             headers={
                 "Title": "MediaManager - " + message.title,
             },
+            timeout=60,
         )
         if response.status_code not in range(200, 300):
             return False

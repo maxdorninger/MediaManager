@@ -13,7 +13,7 @@ def get_year_from_date(first_air_date: str | None) -> int | None:
 
 
 def download_poster_image(storage_path: Path, poster_url: str, id: UUID) -> bool:
-    res = requests.get(poster_url, stream=True)
+    res = requests.get(poster_url, stream=True, timeout=60)
 
     if res.status_code == 200:
         image_file_path = storage_path.joinpath(str(id)).with_suffix("jpg")

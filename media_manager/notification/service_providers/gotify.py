@@ -22,6 +22,7 @@ class GotifyNotificationServiceProvider(AbstractNotificationServiceProvider):
                 "message": message.message,
                 "title": message.title,
             },
+            timeout=60,
         )
         if response.status_code not in range(200, 300):
             return False

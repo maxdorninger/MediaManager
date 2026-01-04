@@ -15,7 +15,7 @@ extend-select = [
     "PGH", "PT", "PYI",
     "Q",
     "RUF",
-    "SLOT",
+    "S", "SLOT",
     "T10", "TD", "TID",
     "W",
     "YTT"

@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 class TorznabMixin:
     def process_search_result(self, xml: str) -> list[IndexerQueryResult]:
         result_list: list[IndexerQueryResult] = []
-        xml_tree = ET.fromstring(xml)
+        xml_tree = ET.fromstring(xml)  # noqa: S314  # trusted source, since it is user controlled
         xmlns = {
             "torznab": "http://torznab.com/schemas/2015/feed",
             "atom": "http://www.w3.org/2005/Atom",

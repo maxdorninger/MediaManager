@@ -140,7 +140,7 @@ async def create_default_admin_user():
                             if config.auth.admin_emails
                             else "admin@example.com"
                         )
-                        default_password = "admin"  # Simple default password
+                        default_password = "admin"  # noqa: S105 # Simple default password
 
                         user_create = UserCreate(
                             email=admin_email,

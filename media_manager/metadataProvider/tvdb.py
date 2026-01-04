@@ -22,31 +22,29 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         self.url = config.tvdb_relay_url
 
     def __get_show(self, id: int) -> dict:
-        return requests.get(f"{self.url}/tv/shows/{id}").json()
+        return requests.get(url=f"{self.url}/tv/shows/{id}", timeout=60).json()
 
     def __get_season(self, id: int) -> dict:
-        return requests.get(f"{self.url}/tv/seasons/{id}").json()
+        return requests.get(url=f"{self.url}/tv/seasons/{id}", timeout=60).json()
 
     def __search_tv(self, query: str) -> dict:
         return requests.get(
-            f"{self.url}/tv/search",
-            params={"query": query},
+            url=f"{self.url}/tv/search", params={"query": query}, timeout=60
         ).json()
 
     def __get_trending_tv(self) -> dict:
-        return requests.get(f"{self.url}/tv/trending").json()
+        return requests.get(url=f"{self.url}/tv/trending", timeout=60).json()
 
     def __get_movie(self, id: int) -> dict:
-        return requests.get(f"{self.url}/movies/{id}").json()
+        return requests.get(url=f"{self.url}/movies/{id}", timeout=60).json()
 
     def __search_movie(self, query: str) -> dict:
         return requests.get(
-            f"{self.url}/movies/search",
-            params={"query": query},
+            url=f"{self.url}/movies/search", params={"query": query}, timeout=60
         ).json()
 
     def __get_trending_movies(self) -> dict:
-        return requests.get(f"{self.url}/movies/trending").json()
+        return requests.get(url=f"{self.url}/movies/trending", timeout=60).json()
 
     def download_show_poster_image(self, show: Show) -> bool:
         show_metadata = self.__get_show(id=show.external_id)

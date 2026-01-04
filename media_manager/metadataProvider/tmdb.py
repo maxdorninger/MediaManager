@@ -43,7 +43,9 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             language = self.default_language
         try:
             response = requests.get(
-                url=f"{self.url}/tv/shows/{id}", params={"language": language}
+                url=f"{self.url}/tv/shows/{id}",
+                params={"language": language},
+                timeout=60,
             )
             response.raise_for_status()
             return response.json()
@@ -58,7 +60,10 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
     def __get_show_external_ids(self, id: int) -> dict:
         try:
-            response = requests.get(url=f"{self.url}/tv/shows/{id}/external_ids")
+            response = requests.get(
+                url=f"{self.url}/tv/shows/{id}/external_ids",
+                timeout=60,
+            )
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -79,6 +84,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response = requests.get(
                 url=f"{self.url}/tv/shows/{show_id}/{season_number}",
                 params={"language": language},
+                timeout=60,
             )
             response.raise_for_status()
             return response.json()
@@ -101,6 +107,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                     "query": query,
                     "page": page,
                 },
+                timeout=60,
             )
             response.raise_for_status()
             return response.json()
@@ -118,6 +125,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response = requests.get(
                 url=f"{self.url}/tv/trending",
                 params={"language": self.default_language},
+                timeout=60,
             )
             response.raise_for_status()
             return response.json()
@@ -135,7 +143,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             language = self.default_language
         try:
             response = requests.get(
-                url=f"{self.url}/movies/{id}", params={"language": language}
+                url=f"{self.url}/movies/{id}", params={"language": language}, timeout=60
             )
             response.raise_for_status()
             return response.json()
@@ -150,7 +158,9 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
     def __get_movie_external_ids(self, id: int) -> dict:
         try:
-            response = requests.get(url=f"{self.url}/movies/{id}/external_ids")
+            response = requests.get(
+                url=f"{self.url}/movies/{id}/external_ids", timeout=60
+            )
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -170,6 +180,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                     "query": query,
                     "page": page,
                 },
+                timeout=60,
             )
             response.raise_for_status()
             return response.json()
@@ -187,6 +198,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response = requests.get(
                 url=f"{self.url}/movies/trending",
                 params={"language": self.default_language},
+                timeout=60,
             )
             response.raise_for_status()
             return response.json()
