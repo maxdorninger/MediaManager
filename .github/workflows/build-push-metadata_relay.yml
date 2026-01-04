@@ -12,7 +12,7 @@ on:
       - 'metadata_relay/**'
       - '.github/workflows/build-push-metadata_relay.yml'
   release:
-    types: [ published ]
+    types:  [ published ]
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/ruff-action@v3
+      - uses:  astral-sh/ruff-action@v3
         with:
           src: "./metadata_relay"
 
@@ -32,8 +32,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
+          - platform:  linux/arm64
+            runner:  ubuntu-24.04-arm
           - platform: linux/amd64
             runner: ubuntu-24.04
     permissions:
@@ -54,7 +54,7 @@ jobs:
         id: platform_slug
         run: echo "slug=${{ matrix.platform }}" | tr '/' '-' >> $GITHUB_OUTPUT
 
-      - name:  Set up Docker Buildx
+      - name:   Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
@@ -71,7 +71,7 @@ jobs:
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASSWORD }}
+          password:  ${{ secrets.QUAY_PASSWORD }}
 
       - name: Extract version
         id: version
@@ -94,11 +94,11 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
             quay.io/${{ env.QUAY_ORG }}/metadata_relay
 
-      - name: Build and push by digest
+      - name:  Build and push by digest
         id: build
         uses: docker/build-push-action@v6
         with:
-          context: ./metadata_relay
+          context:  ./metadata_relay
           file: ./metadata_relay/Dockerfile
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -124,7 +124,7 @@ jobs:
 
   merge:
     needs: build
-    runs-on:  ubuntu-latest
+    runs-on:   ubuntu-latest
     permissions:
       contents: read
       packages:  write
@@ -139,6 +139,15 @@ jobs:
           path: /tmp/digests
           merge-multiple: true
 
+      - name: Check digests exist
+        run: |
+          if [ !  -d "/tmp/digests" ] || [ -z "$(ls -A /tmp/digests)" ]; then
+            echo "Error: No digests found!  Build jobs may have failed or not uploaded artifacts."
+            exit 1
+          fi
+          echo "Found digests:"
+          ls -la /tmp/digests/
+
       - name: Set repository name to lowercase
         id: repo_name
         run: echo "name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
@@ -147,9 +156,9 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses:  docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry:  ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -160,7 +169,7 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
-      - name: Extract version
+      - name:  Extract version
         id: version
         run: |
           if [[ "${{ github.event_name }}" == "release" ]]; then
@@ -177,9 +186,9 @@ jobs:
 
       - name: Extract tags (GHCR)
         id: meta
-        uses: docker/metadata-action@v5
+        uses:  docker/metadata-action@v5
         with:
-          images: |
+          images:  |
             ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
           tags: |
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
@@ -215,12 +224,22 @@ jobs:
 
           DIGEST_ARGS=""
           for f in /tmp/digests/*; do
-            d=$(basename "$f")
-            DIGEST_ARGS="$DIGEST_ARGS ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:$d"
+            if [ -f "$f" ]; then
+              d=$(basename "$f")
+              DIGEST_ARGS="$DIGEST_ARGS ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:$d"
+            fi
           done
+          
+          if [ -z "$DIGEST_ARGS" ]; then
+            echo "Error: No valid digest files found"
+            exit 1
+          fi
+          
+          echo "Creating manifest with tags: $GHCR_TAGS"
+          echo "Using digests: $DIGEST_ARGS"
           docker buildx imagetools create $GHCR_TAGS $DIGEST_ARGS
 
-      - name: Push to Quay
+      - name:  Push to Quay
         working-directory: /tmp/digests
         run: |
           QUAY_TAGS=$(printf '%s\n' "${{ steps.meta_quay.outputs.tags }}" | grep '^quay.io/' | sed 's/^/-t /')
@@ -228,9 +247,19 @@ jobs:
 
           DIGEST_ARGS=""
           for f in /tmp/digests/*; do
-            d=$(basename "$f")
-            DIGEST_ARGS="$DIGEST_ARGS quay.io/${{ env.QUAY_ORG }}/metadata_relay@sha256:$d"
+            if [ -f "$f" ]; then
+              d=$(basename "$f")
+              DIGEST_ARGS="$DIGEST_ARGS quay.io/${{ env.QUAY_ORG }}/metadata_relay@sha256:$d"
+            fi
           done
+          
+          if [ -z "$DIGEST_ARGS" ]; then
+            echo "Error: No valid digest files found"
+            exit 1
+          fi
+          
+          echo "Creating manifest with tags: $QUAY_TAGS"
+          echo "Using digests: $DIGEST_ARGS"
           docker buildx imagetools create $QUAY_TAGS $DIGEST_ARGS
 
       - name: Inspect image
