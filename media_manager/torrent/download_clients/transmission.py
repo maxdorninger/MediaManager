@@ -1,4 +1,5 @@
 import logging
+from types import MappingProxyType
 
 import transmission_rpc
 
@@ -17,15 +18,17 @@ class TransmissionDownloadClient(AbstractDownloadClient):
     name = "transmission"
 
     # Transmission status mappings
-    STATUS_MAPPING = {
-        "stopped": TorrentStatus.unknown,
-        "check pending": TorrentStatus.downloading,
-        "checking": TorrentStatus.downloading,
-        "download pending": TorrentStatus.downloading,
-        "downloading": TorrentStatus.downloading,
-        "seed pending": TorrentStatus.finished,
-        "seeding": TorrentStatus.finished,
-    }
+    STATUS_MAPPING = MappingProxyType(
+        {
+            "stopped": TorrentStatus.unknown,
+            "check pending": TorrentStatus.downloading,
+            "checking": TorrentStatus.downloading,
+            "download pending": TorrentStatus.downloading,
+            "downloading": TorrentStatus.downloading,
+            "seed pending": TorrentStatus.finished,
+            "seeding": TorrentStatus.finished,
+        }
+    )
 
     def __init__(self):
         self.config = MediaManagerConfig().torrents.transmission

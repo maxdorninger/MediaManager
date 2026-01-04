@@ -38,7 +38,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
         super().__init__(name="prowlarr")
         self.config = MediaManagerConfig().indexers.prowlarr
 
-    def _call_prowlarr_api(self, path: str, parameters: dict = None):
+    def _call_prowlarr_api(self, path: str, parameters: dict | None = None):
         url = f"{self.config.url}/api/v1{path}"
         headers = {"X-Api-Key": self.config.api_key}
         with Session() as session:
@@ -50,7 +50,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
             )
 
     def _newznab_search(
-        self, indexer: IndexerInfo, parameters: dict = None
+        self, indexer: IndexerInfo, parameters: dict | None = None
     ) -> list[IndexerQueryResult]:
         if parameters is None:
             parameters = {}

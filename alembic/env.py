@@ -1,6 +1,6 @@
 import sys
 
-sys.path = ["", ".."] + sys.path[1:]
+sys.path = ["", "..", *sys.path[1:]]
 
 
 from logging.config import fileConfig  # noqa: E402
@@ -46,19 +46,19 @@ target_metadata = Base.metadata
 # this is to keep pycharm from complaining about/optimizing unused imports
 # noinspection PyStatementEffect
 __all__ = [
-    "User",
-    "OAuthAccount",
-    "IndexerQueryResult",
-    "Torrent",
-    "Show",
-    "Season",
     "Episode",
-    "SeasonFile",
-    "SeasonRequest",
+    "IndexerQueryResult",
     "Movie",
     "MovieFile",
     "MovieRequest",
     "Notification",
+    "OAuthAccount",
+    "Season",
+    "SeasonFile",
+    "SeasonRequest",
+    "Show",
+    "Torrent",
+    "User",
 ]
 
 

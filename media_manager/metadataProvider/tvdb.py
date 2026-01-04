@@ -63,7 +63,9 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             log.warning(f"image for show {show.name} could not be downloaded")
             return False
 
-    def get_show_metadata(self, id: int = None, language: str | None = None) -> Show:
+    def get_show_metadata(
+        self, id: int | None = None, language: str | None = None
+    ) -> Show:
         """
 
         :param id: the external id of the show
@@ -272,7 +274,9 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             log.warning(f"image for show {movie.name} could not be downloaded")
             return False
 
-    def get_movie_metadata(self, id: int = None, language: str | None = None) -> Movie:
+    def get_movie_metadata(
+        self, id: int | None = None, language: str | None = None
+    ) -> Movie:
         """
 
         :param id: the external id of the movie

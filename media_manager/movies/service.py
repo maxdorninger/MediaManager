@@ -251,7 +251,7 @@ class MovieService:
             raise ValueError(msg)
 
     def get_all_available_torrents_for_movie(
-        self, movie: Movie, search_query_override: str = None
+        self, movie: Movie, search_query_override: str | None = None
     ) -> list[IndexerQueryResult]:
         """
         Get all available torrents for a given movie.
@@ -612,7 +612,7 @@ class MovieService:
         :param movie: The Movie object
         """
 
-        video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
+        video_files, subtitle_files, _all_files = get_files_for_import(torrent=torrent)
         success: list[bool] = []
 
         if len(video_files) != 1:
@@ -695,7 +695,7 @@ class MovieService:
             msg = "Failed to rename directory"
             raise Exception(msg) from e
 
-        video_files, subtitle_files, all_files = get_files_for_import(
+        video_files, subtitle_files, _all_files = get_files_for_import(
             directory=new_source_path
         )
 
@@ -886,7 +886,7 @@ def update_all_movies_metadata() -> None:
                     continue
             except InvalidConfigError as e:
                 log.error(
-                    f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}: {str(e)}"
+                    f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}: {e}"
                 )
                 continue
             movie_service.update_movie_metadata(

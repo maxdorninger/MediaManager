@@ -8,12 +8,8 @@ from media_manager.tv.schemas import Show
 class GenericIndexer(ABC):
     name: str
 
-    def __init__(self, name: str = None):
-        if name:
-            self.name = name
-        else:
-            msg = "indexer name must not be None"
-            raise ValueError(msg)
+    def __init__(self, name: str):
+        self.name = name
 
     @abstractmethod
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:

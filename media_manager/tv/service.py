@@ -230,18 +230,21 @@ class TvService:
                 return True
             except NotFoundError:
                 return False
-        elif show_id:
+        elif show_id is not None:
             try:
                 self.tv_repository.get_show_by_id(show_id=show_id)
                 return True
             except NotFoundError:
                 return False
         else:
-            msg = "External ID and metadata provider or Show ID must be provided"
+            msg = "Use one of the provided overloads for this function!"
             raise ValueError(msg)
 
     def get_all_available_torrents_for_a_season(
-        self, season_number: int, show_id: ShowId, search_query_override: str = None
+        self,
+        season_number: int,
+        show_id: ShowId,
+        search_query_override: str | None = None,
     ) -> list[IndexerQueryResult]:
         """
         Get all available torrents for a given season.
@@ -251,7 +254,6 @@ class TvService:
         :param search_query_override: Optional override for the search query.
         :return: A list of indexer query results.
         """
-        show = self.tv_repository.get_show_by_id(show_id=show_id)
 
         if search_query_override:
             torrents = self.indexer_service.search(
@@ -259,6 +261,8 @@ class TvService:
             )
             return torrents
         else:
+            show = self.tv_repository.get_show_by_id(show_id=show_id)
+
             torrents = self.indexer_service.search_season(
                 show=show, season_number=season_number
             )
@@ -701,7 +705,7 @@ class TvService:
         :param show: The Show object
         """
 
-        video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
+        video_files, subtitle_files, _all_files = get_files_for_import(torrent=torrent)
 
         success: list[bool] = []
 
@@ -716,7 +720,7 @@ class TvService:
 
         for season_file in season_files:
             season = self.get_season(season_id=season_file.season_id)
-            season_import_success, imported_episodes_count = self.import_season(
+            season_import_success, _imported_episodes_count = self.import_season(
                 show=show,
                 season=season,
                 video_files=video_files,
@@ -911,7 +915,7 @@ class TvService:
             msg = "Failed to rename source directory"
             raise Exception(msg) from e
 
-        video_files, subtitle_files, all_files = get_files_for_import(
+        video_files, subtitle_files, _all_files = get_files_for_import(
             directory=new_source_path
         )
         for season in tv_show.seasons:
@@ -1065,7 +1069,7 @@ def update_all_non_ended_shows_metadata() -> None:
                     continue
             except InvalidConfigError as e:
                 log.error(
-                    f"Error initializing metadata provider {show.metadata_provider} for show {show.name}: {str(e)}"
+                    f"Error initializing metadata provider {show.metadata_provider} for show {show.name}: {e}"
                 )
                 continue
             updated_show = tv_service.update_show_metadata(

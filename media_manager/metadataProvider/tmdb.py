@@ -52,7 +52,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch show metadata for ID {id} from TMDB. Error: {str(e)}",
+                    message=f"Failed to fetch show metadata for ID {id} from TMDB. Error: {e}",
                 )
             raise
 
@@ -66,7 +66,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch show external IDs for ID {id} from TMDB. Error: {str(e)}",
+                    message=f"Failed to fetch show external IDs for ID {id} from TMDB. Error: {e}",
                 )
             raise
 
@@ -89,7 +89,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch season {season_number} metadata for show ID {show_id} from TMDB. Error: {str(e)}",
+                    message=f"Failed to fetch season {season_number} metadata for show ID {show_id} from TMDB. Error: {e}",
                 )
             raise
 
@@ -109,7 +109,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to search TV shows with query '{query}' on TMDB. Error: {str(e)}",
+                    message=f"Failed to search TV shows with query '{query}' on TMDB. Error: {e}",
                 )
             raise
 
@@ -126,7 +126,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch trending TV shows from TMDB. Error: {str(e)}",
+                    message=f"Failed to fetch trending TV shows from TMDB. Error: {e}",
                 )
             raise
 
@@ -144,7 +144,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch movie metadata for ID {id} from TMDB. Error: {str(e)}",
+                    message=f"Failed to fetch movie metadata for ID {id} from TMDB. Error: {e}",
                 )
             raise
 
@@ -158,7 +158,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch movie external IDs for ID {id} from TMDB. Error: {str(e)}",
+                    message=f"Failed to fetch movie external IDs for ID {id} from TMDB. Error: {e}",
                 )
             raise
 
@@ -178,7 +178,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to search movies with query '{query}' on TMDB. Error: {str(e)}",
+                    message=f"Failed to search movies with query '{query}' on TMDB. Error: {e}",
                 )
             raise
 
@@ -195,7 +195,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch trending movies from TMDB. Error: {str(e)}",
+                    message=f"Failed to fetch trending movies from TMDB. Error: {e}",
                 )
             raise
 
@@ -224,7 +224,9 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             return False
         return True
 
-    def get_show_metadata(self, id: int = None, language: str | None = None) -> Show:
+    def get_show_metadata(
+        self, id: int | None = None, language: str | None = None
+    ) -> Show:
         """
 
         :param id: the external id of the show
@@ -355,7 +357,9 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 log.warning(f"Error processing search result: {e}")
         return formatted_results
 
-    def get_movie_metadata(self, id: int = None, language: str | None = None) -> Movie:
+    def get_movie_metadata(
+        self, id: int | None = None, language: str | None = None
+    ) -> Movie:
         """
         Get movie metadata with language-aware fetching.
 

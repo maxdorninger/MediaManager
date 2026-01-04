@@ -422,7 +422,7 @@ def get_torrents_for_a_season(
     tv_service: tv_service_dep,
     show_id: ShowId,
     season_number: int = 1,
-    search_query_override: str = None,
+    search_query_override: str | None = None,
 ) -> list[IndexerQueryResult]:
     """
     Search for torrents for a specific season of a show.

@@ -51,7 +51,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         request: Optional[Request] = None,
     ) -> None:
         log.info(f"User {user.id} has been updated.")
-        if "is_superuser" in update_dict and update_dict["is_superuser"]:
+        if update_dict.get("is_superuser"):
             log.info(f"User {user.id} has been granted superuser privileges.")
         if "email" in update_dict:
             updated_user = UserUpdate(is_verified=True)
