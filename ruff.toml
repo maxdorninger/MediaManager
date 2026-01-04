@@ -16,7 +16,7 @@ extend-select = [
     "Q",
     "RUF",
     "S", "SLOT",
-    "T10", "TD", "TID",
+    "T10", "T20", "TD", "TID",
     "W",
     "YTT"
 ]

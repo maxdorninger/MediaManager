@@ -5,7 +5,6 @@ from app.tvdb import router as tvdb_router
 from fastapi import FastAPI
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-print("Hello world!")
 app = FastAPI(root_path=os.getenv("BASE_PATH"))
 
 app.add_middleware(PrometheusMiddleware)
