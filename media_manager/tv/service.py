@@ -2,6 +2,7 @@ import pprint
 import re
 import shutil
 from pathlib import Path
+from typing import overload
 
 from sqlalchemy.exc import IntegrityError
 
@@ -197,22 +198,31 @@ class TvService:
             result.append(season_file)
         return result
 
-    def check_if_show_exists(
-        self,
-        external_id: int = None,
-        metadata_provider: str = None,
-        show_id: ShowId = None,
-    ) -> bool:
+    @overload
+    def check_if_show_exists(self, *, external_id: int, metadata_provider: str) -> bool:
         """
         Check if a show exists in the database.
 
         :param external_id: The external ID of the show.
         :param metadata_provider: The metadata provider.
+        :return: True if the show exists, False otherwise.
+        """
+        ...
+
+    @overload
+    def check_if_show_exists(self, *, show_id: ShowId) -> bool:
+        """
+        Check if a show exists in the database.
+
         :param show_id: The ID of the show.
         :return: True if the show exists, False otherwise.
-        :raises ValueError: If neither external ID and metadata provider nor show ID are provided.
         """
-        if external_id and metadata_provider:
+        ...
+
+    def check_if_show_exists(
+        self, *, external_id=None, metadata_provider=None, show_id=None
+    ) -> bool:
+        if not (external_id is None or metadata_provider is None):
             try:
                 self.tv_repository.get_show_by_external_id(
                     external_id=external_id, metadata_provider=metadata_provider

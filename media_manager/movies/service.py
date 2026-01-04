@@ -1,6 +1,7 @@
 import re
 import shutil
 from pathlib import Path
+from typing import overload
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -192,11 +193,35 @@ class MovieService:
             result.append(movie_file)
         return result
 
+    @overload
+    def check_if_movie_exists(
+        self, *, external_id: int, metadata_provider: str
+    ) -> bool:
+        """
+        Check if a movie exists in the database.
+
+        :param external_id: The external ID of the movie.
+        :param metadata_provider: The metadata provider.
+        :return: True if the movie exists, False otherwise.
+        """
+        ...
+
+    @overload
+    def check_if_movie_exists(self, *, movie_id: MovieId) -> bool:
+        """
+        Check if a movie exists in the database.
+
+        :param movie_id: The ID of the movie.
+        :return: True if the movie exists, False otherwise.
+        """
+        ...
+
     def check_if_movie_exists(
         self,
-        external_id: int = None,
-        metadata_provider: str = None,
-        movie_id: MovieId = None,
+        *,
+        external_id=None,
+        metadata_provider=None,
+        movie_id=None,
     ) -> bool:
         """
         Check if a movie exists in the database.
@@ -207,7 +232,7 @@ class MovieService:
         :return: True if the movie exists, False otherwise.
         :raises ValueError: If neither external ID and metadata provider nor movie ID are provided.
         """
-        if external_id and metadata_provider:
+        if not (external_id is None or metadata_provider is None):
             try:
                 self.movie_repository.get_movie_by_external_id(
                     external_id=external_id, metadata_provider=metadata_provider
@@ -215,17 +240,14 @@ class MovieService:
                 return True
             except NotFoundError:
                 return False
-        elif movie_id:
+        elif movie_id is not None:
             try:
                 self.movie_repository.get_movie_by_id(movie_id=movie_id)
                 return True
             except NotFoundError:
                 return False
-
         else:
-            msg = (
-                "Either external_id and metadata_provider or movie_id must be provided"
-            )
+            msg = "Use one of the provided overloads for this function!"
             raise ValueError(msg)
 
     def get_all_available_torrents_for_movie(
