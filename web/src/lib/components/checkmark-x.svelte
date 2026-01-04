@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
 	import X from '@lucide/svelte/icons/x';
 	import Check from '@lucide/svelte/icons/check';
 
-	let { state } = $props();
+	let { state }: { state: boolean } = $props();
 </script>
 
 {#if state}

@@ -15,7 +15,7 @@ from media_manager.indexer.utils import evaluate_indexer_query_results
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
-from media_manager.torrent.schemas import Torrent, TorrentStatus
+from media_manager.torrent.schemas import Torrent, TorrentStatus, Quality
 from media_manager.torrent.service import TorrentService
 from media_manager.movies import log
 from media_manager.movies.schemas import (
@@ -153,10 +153,12 @@ class MovieService:
 
             if delete_torrents:
                 # Get all torrents associated with this movie
-                torrents = self.movie_repository.get_torrents_by_movie_id(
+                movie_torrents = self.movie_repository.get_torrents_by_movie_id(
                     movie_id=movie.id
                 )
-                for torrent in torrents:
+
+                for movie_torrent in movie_torrents:
+                    torrent = self.torrent_service.get_torrent_by_id(torrent_id=movie_torrent.torrent_id)
                     try:
                         self.torrent_service.cancel_download(
                             torrent=torrent, delete_files=True
@@ -211,6 +213,7 @@ class MovieService:
         elif movie_id:
             try:
                 self.movie_repository.get_movie_by_id(movie_id=movie_id)
+                return True
             except NotFoundError:
                 return False
 
@@ -420,7 +423,7 @@ class MovieService:
         :return: The downloaded torrent.
         """
         indexer_result = self.indexer_service.get_result(
-            indexer_query_result_id=public_indexer_result_id
+            result_id=public_indexer_result_id
         )
         movie_torrent = self.torrent_service.download(indexer_result=indexer_result)
         self.torrent_service.pause_download(torrent=movie_torrent)
@@ -483,7 +486,7 @@ class MovieService:
 
         if len(available_torrents) == 0:
             log.warning(
-                f"No torrents found for movie request {movie_request.id} with quality between {QualityStrings[movie_request.min_quality]} and {QualityStrings[movie_request.wanted_quality]}"
+                f"No torrents found for movie request {movie_request.id} with quality between {QualityStrings[movie_request.min_quality.name]} and {QualityStrings[movie_request.wanted_quality.name]}"
             )
             return False
 
@@ -586,9 +589,9 @@ class MovieService:
         if len(video_files) != 1:
             # Send notification about multiple video files found
             if self.notification_service:
-                self.notification_service.send_notification(
+                self.notification_service.send_notification_to_all_providers(
                     title="Manual Import Required",
-                    body=f"Multiple video files found for movie {movie.name}. Please import manually.",
+                    message=f"Multiple video files found for movie {movie.name}. Please import manually.",
                 )
             log.error(
                 f"Found {len(video_files)} video files for movie {movie.name}, expected 1. Skipping auto import."
@@ -621,9 +624,9 @@ class MovieService:
             self.torrent_service.torrent_repository.save_torrent(torrent=torrent)
 
             if self.notification_service:
-                self.notification_service.send_notification(
+                self.notification_service.send_notification_to_all_providers(
                     title="Movie Downloaded",
-                    body=f"Movie {movie.name} has been successfully downloaded and imported.",
+                    message=f"Movie {movie.name} has been successfully downloaded and imported.",
                 )
         else:
             log.error(
@@ -631,9 +634,9 @@ class MovieService:
             )
 
             if self.notification_service:
-                self.notification_service.send_notification(
+                self.notification_service.send_notification_to_all_providers(
                     title="Import Failed",
-                    body=f"Failed to import files for movie {movie.name}. Please check logs.",
+                    message=f"Failed to import files for movie {movie.name}. Please check logs.",
                 )
 
         log.info(f"Finished importing files for torrent {torrent.title}")
@@ -678,6 +681,7 @@ class MovieService:
                     movie_id=movie.id,
                     file_path_suffix="IMPORTED",
                     torrent_id=None,
+                    quality=Quality.unknown
                 )
             )
 

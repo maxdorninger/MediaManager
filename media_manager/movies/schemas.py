@@ -37,7 +37,7 @@ class MovieFile(BaseModel):
 
 
 class PublicMovieFile(MovieFile):
-    downloaded: bool = False
+    imported: bool = False
 
 
 class MovieRequestBase(BaseModel):
