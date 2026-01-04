@@ -2,3 +2,26 @@
 line-ending = "lf"
 quote-style = "double"
 
+[lint]
+# to be enabled: A, ANN, ARG, BLE, C90, CPY, D, DOC, DTZ, FBT, G, INP, INT, N, PERF, PIE, PL, PTH, RET, RSE, SLF, SIM, TC, TRY, UP
+extend-select = [
+    "ASYNC",
+    "COM",
+    "E", "EXE",
+    "F", "FA", "FIX", "FLY", "FURB",
+    "ICN",
+    "LOG",
+    "PGH", "PT", "PYI",
+    "Q",
+    "SLOT",
+    "T10", "TD", "TID",
+    "W",
+    "YTT"
+]
+
+ignore = [
+    # incompatible with formatter
+    "COM812",
+    # lines too long
+    "E501",
+]
