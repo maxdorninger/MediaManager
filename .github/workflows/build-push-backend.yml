@@ -138,7 +138,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/mediamanager,push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' || github. event.pull_request.head. repo.full_name == github. repository }}
+            type=image,name=ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/mediamanager,push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
             type=image,name=quay.io/${{ env.QUAY_ORG }}/mediamanager,push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
