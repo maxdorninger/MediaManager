@@ -159,7 +159,7 @@
 				<Card.Description>A list of all torrents associated with this movie.</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col gap-4">
-				<TorrentTable isShow={false} torrents={movie.torrents} />
+				<TorrentTable isShow={false} torrents={movie.torrents} movieId={movie.id} />
 			</Card.Content>
 		</Card.Root>
 	</div>
