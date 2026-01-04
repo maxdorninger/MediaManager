@@ -88,10 +88,10 @@
 		<a href="https://github.com/LITUATUI"
 			><img alt="LITUATUI" src="https://github.com/LITUATUI.png" width="80px" /></a
 		>&nbsp;&nbsp;
-		<a href="https://buymeacoffee.com/seferinofernandez"
+		<a href="https://github.com/seferino-fernandez"
 			><img
 				alt="Seferino"
-				src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2023/07/Kq0SH4O5pMhFoIAQ.jpg"
+				src="https://avatars.githubusercontent.com/u/5546622"
 				width="80px"
 			/></a
 		>&nbsp;&nbsp;
