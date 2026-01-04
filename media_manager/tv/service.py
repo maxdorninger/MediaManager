@@ -87,7 +87,7 @@ class TvService:
         :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
         show_with_metadata = metadata_provider.get_show_metadata(
-            id=external_id, language=language
+            show_id=external_id, language=language
         )
         saved_show = self.tv_repository.save_show(show=show_with_metadata)
         metadata_provider.download_show_poster_image(show=saved_show)
@@ -774,7 +774,7 @@ class TvService:
 
         # Use stored original_language preference for metadata fetching
         fresh_show_data = metadata_provider.get_show_metadata(
-            id=db_show.external_id, language=db_show.original_language
+            show_id=db_show.external_id, language=db_show.original_language
         )
         if not fresh_show_data:
             log.warning(

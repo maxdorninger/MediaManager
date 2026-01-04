@@ -19,13 +19,13 @@ class AbstractMetadataProvider(ABC):
 
     @abstractmethod
     def get_show_metadata(
-        self, id: int | None = None, language: str | None = None
+        self, show_id: int | None = None, language: str | None = None
     ) -> Show:
         raise NotImplementedError()
 
     @abstractmethod
     def get_movie_metadata(
-        self, id: int | None = None, language: str | None = None
+        self, movie_id: int | None = None, language: str | None = None
     ) -> Movie:
         raise NotImplementedError()
 

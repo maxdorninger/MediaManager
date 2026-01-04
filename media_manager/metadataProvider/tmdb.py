@@ -38,40 +38,40 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             return original_language
         return self.default_language
 
-    def __get_show_metadata(self, id: int, language: str | None = None) -> dict:
+    def __get_show_metadata(self, show_id: int, language: str | None = None) -> dict:
         if language is None:
             language = self.default_language
         try:
             response = requests.get(
-                url=f"{self.url}/tv/shows/{id}",
+                url=f"{self.url}/tv/shows/{show_id}",
                 params={"language": language},
                 timeout=60,
             )
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting show metadata for ID {id}: {e}")
+            log.error(f"TMDB API error getting show metadata for ID {show_id}: {e}")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch show metadata for ID {id} from TMDB. Error: {e}",
+                    message=f"Failed to fetch show metadata for ID {show_id} from TMDB. Error: {e}",
                 )
             raise
 
-    def __get_show_external_ids(self, id: int) -> dict:
+    def __get_show_external_ids(self, show_id: int) -> dict:
         try:
             response = requests.get(
-                url=f"{self.url}/tv/shows/{id}/external_ids",
+                url=f"{self.url}/tv/shows/{show_id}/external_ids",
                 timeout=60,
             )
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting show external IDs for ID {id}: {e}")
+            log.error(f"TMDB API error getting show external IDs for ID {show_id}: {e}")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch show external IDs for ID {id} from TMDB. Error: {e}",
+                    message=f"Failed to fetch show external IDs for ID {show_id} from TMDB. Error: {e}",
                 )
             raise
 
@@ -138,37 +138,37 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 )
             raise
 
-    def __get_movie_metadata(self, id: int, language: str | None = None) -> dict:
+    def __get_movie_metadata(self, movie_id: int, language: str | None = None) -> dict:
         if language is None:
             language = self.default_language
         try:
             response = requests.get(
-                url=f"{self.url}/movies/{id}", params={"language": language}, timeout=60
+                url=f"{self.url}/movies/{movie_id}", params={"language": language}, timeout=60
             )
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting movie metadata for ID {id}: {e}")
+            log.error(f"TMDB API error getting movie metadata for ID {movie_id}: {e}")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch movie metadata for ID {id} from TMDB. Error: {e}",
+                    message=f"Failed to fetch movie metadata for ID {movie_id} from TMDB. Error: {e}",
                 )
             raise
 
-    def __get_movie_external_ids(self, id: int) -> dict:
+    def __get_movie_external_ids(self, movie_id: int) -> dict:
         try:
             response = requests.get(
-                url=f"{self.url}/movies/{id}/external_ids", timeout=60
+                url=f"{self.url}/movies/{movie_id}/external_ids", timeout=60
             )
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting movie external IDs for ID {id}: {e}")
+            log.error(f"TMDB API error getting movie external IDs for ID {movie_id}: {e}")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
-                    message=f"Failed to fetch movie external IDs for ID {id} from TMDB. Error: {e}",
+                    message=f"Failed to fetch movie external IDs for ID {movie_id} from TMDB. Error: {e}",
                 )
             raise
 
@@ -225,7 +225,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 "https://image.tmdb.org/t/p/original" + show_metadata["poster_path"]
             )
             if media_manager.metadataProvider.utils.download_poster_image(
-                storage_path=self.storage_path, poster_url=poster_url, id=show.id
+                storage_path=self.storage_path, poster_url=poster_url, uuid=show.id
             ):
                 log.info("Successfully downloaded poster image for show " + show.name)
             else:
@@ -237,7 +237,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         return True
 
     def get_show_metadata(
-        self, id: int | None = None, language: str | None = None
+        self, show_id: int | None = None, language: str | None = None
     ) -> Show:
         """
 
@@ -250,17 +250,17 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         """
         # If language not provided, fetch once to determine original language
         if language is None:
-            show_metadata = self.__get_show_metadata(id)
+            show_metadata = self.__get_show_metadata(show_id)
             language = show_metadata.get("original_language")
 
         # Determine which language to use for metadata
         language = self.__get_language_param(language)
 
         # Fetch show metadata in the appropriate language
-        show_metadata = self.__get_show_metadata(id, language=language)
+        show_metadata = self.__get_show_metadata(show_id, language=language)
 
         # get imdb id
-        external_ids = self.__get_show_external_ids(id=id)
+        external_ids = self.__get_show_external_ids(show_id=show_id)
         imdb_id = external_ids.get("imdb_id")
 
         season_list = []
@@ -297,7 +297,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         )
 
         show = Show(
-            external_id=id,
+            external_id=show_id,
             name=show_metadata["name"],
             overview=show_metadata["overview"],
             year=year,
@@ -370,7 +370,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         return formatted_results
 
     def get_movie_metadata(
-        self, id: int | None = None, language: str | None = None
+        self, movie_id: int | None = None, language: str | None = None
     ) -> Movie:
         """
         Get movie metadata with language-aware fetching.
@@ -384,17 +384,17 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         """
         # If language not provided, fetch once to determine original language
         if language is None:
-            movie_metadata = self.__get_movie_metadata(id=id)
+            movie_metadata = self.__get_movie_metadata(movie_id=movie_id)
             language = movie_metadata.get("original_language")
 
         # Determine which language to use for metadata
         language = self.__get_language_param(language)
 
         # Fetch movie metadata in the appropriate language
-        movie_metadata = self.__get_movie_metadata(id=id, language=language)
+        movie_metadata = self.__get_movie_metadata(movie_id=movie_id, language=language)
 
         # get imdb id
-        external_ids = self.__get_movie_external_ids(id=id)
+        external_ids = self.__get_movie_external_ids(movie_id=movie_id)
         imdb_id = external_ids.get("imdb_id")
 
         year = media_manager.metadataProvider.utils.get_year_from_date(
@@ -402,7 +402,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         )
 
         movie = Movie(
-            external_id=id,
+            external_id=movie_id,
             name=movie_metadata["title"],
             overview=movie_metadata["overview"],
             year=year,
@@ -478,7 +478,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
         # Fetch metadata in the appropriate language to get localized poster
         movie_metadata = self.__get_movie_metadata(
-            id=movie.external_id, language=language
+            movie_id=movie.external_id, language=language
         )
 
         # downloading the poster
@@ -488,7 +488,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 "https://image.tmdb.org/t/p/original" + movie_metadata["poster_path"]
             )
             if media_manager.metadataProvider.utils.download_poster_image(
-                storage_path=self.storage_path, poster_url=poster_url, id=movie.id
+                storage_path=self.storage_path, poster_url=poster_url, uuid=movie.id
             ):
                 log.info("Successfully downloaded poster image for movie " + movie.name)
             else:

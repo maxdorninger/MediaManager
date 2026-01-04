@@ -51,7 +51,7 @@ def get_notification(
     """
     Get a specific notification by ID.
     """
-    return notification_service.get_notification(id=notification_id)
+    return notification_service.get_notification(nid=notification_id)
 
 
 # --------------------------------
@@ -73,7 +73,7 @@ def mark_notification_as_read(
     """
     Mark a notification as read.
     """
-    notification_service.mark_notification_as_read(id=notification_id)
+    notification_service.mark_notification_as_read(nid=notification_id)
 
 
 @router.patch(
@@ -90,7 +90,7 @@ def mark_notification_as_unread(
     """
     Mark a notification as unread.
     """
-    notification_service.mark_notification_as_unread(id=notification_id)
+    notification_service.mark_notification_as_unread(nid=notification_id)
 
 
 @router.delete(
@@ -107,4 +107,4 @@ def delete_notification(
     """
     Delete a notification.
     """
-    notification_service.delete_notification(id=notification_id)
+    notification_service.delete_notification(nid=notification_id)

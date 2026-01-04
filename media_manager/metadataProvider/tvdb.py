@@ -21,11 +21,11 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         config = MediaManagerConfig().metadata.tvdb
         self.url = config.tvdb_relay_url
 
-    def __get_show(self, id: int) -> dict:
-        return requests.get(url=f"{self.url}/tv/shows/{id}", timeout=60).json()
+    def __get_show(self, show_id: int) -> dict:
+        return requests.get(url=f"{self.url}/tv/shows/{show_id}", timeout=60).json()
 
-    def __get_season(self, id: int) -> dict:
-        return requests.get(url=f"{self.url}/tv/seasons/{id}", timeout=60).json()
+    def __get_season(self, show_id: int) -> dict:
+        return requests.get(url=f"{self.url}/tv/seasons/{show_id}", timeout=60).json()
 
     def __search_tv(self, query: str) -> dict:
         return requests.get(
@@ -35,8 +35,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
     def __get_trending_tv(self) -> dict:
         return requests.get(url=f"{self.url}/tv/trending", timeout=60).json()
 
-    def __get_movie(self, id: int) -> dict:
-        return requests.get(url=f"{self.url}/movies/{id}", timeout=60).json()
+    def __get_movie(self, movie_id: int) -> dict:
+        return requests.get(url=f"{self.url}/movies/{movie_id}", timeout=60).json()
 
     def __search_movie(self, query: str) -> dict:
         return requests.get(
@@ -47,13 +47,13 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         return requests.get(url=f"{self.url}/movies/trending", timeout=60).json()
 
     def download_show_poster_image(self, show: Show) -> bool:
-        show_metadata = self.__get_show(id=show.external_id)
+        show_metadata = self.__get_show(show_id=show.external_id)
 
         if show_metadata["image"] is not None:
             media_manager.metadataProvider.utils.download_poster_image(
                 storage_path=self.storage_path,
                 poster_url=show_metadata["image"],
-                id=show.id,
+                uuid=show.id,
             )
             log.debug("Successfully downloaded poster image for show " + show.name)
             return True
@@ -62,18 +62,14 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             return False
 
     def get_show_metadata(
-        self, id: int | None = None, language: str | None = None
+        self, show_id: int | None = None, language: str | None = None
     ) -> Show:
         """
 
         :param id: the external id of the show
-        :type id: int
         :param language: does nothing, TVDB does not support multiple languages
-        :type language: str | None
-        :return: returns a ShowMetadata object
-        :rtype: ShowMetadata
         """
-        series = self.__get_show(id=id)
+        series = self.__get_show(show_id)
         seasons = []
         seasons_ids = [season["id"] for season in series["seasons"]]
 
@@ -86,7 +82,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                     imdb_id = remote_id.get("id")
 
         for season in seasons_ids:
-            s = self.__get_season(id=season)
+            s = self.__get_season(show_id=season)
             # the seasons need to be filtered to a certain type,
             # otherwise the same season will be imported in aired and dvd order,
             # which causes duplicate season number + show ids which in turn violates a unique constraint of the season table
@@ -264,7 +260,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             media_manager.metadataProvider.utils.download_poster_image(
                 storage_path=self.storage_path,
                 poster_url=movie_metadata["image"],
-                id=movie.id,
+                uuid=movie.id,
             )
             log.info("Successfully downloaded poster image for show " + movie.name)
             return True
@@ -273,18 +269,15 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             return False
 
     def get_movie_metadata(
-        self, id: int | None = None, language: str | None = None
+        self, movie_id: int | None = None, language: str | None = None
     ) -> Movie:
         """
 
-        :param id: the external id of the movie
-        :type id: int
+        :param movie_id: the external id of the movie
         :param language: does nothing, TVDB does not support multiple languages
-        :type language: str | None
         :return: returns a Movie object
-        :rtype: Movie
         """
-        movie = self.__get_movie(id)
+        movie = self.__get_movie(movie_id)
 
         # get imdb id from remote ids
         imdb_id = None

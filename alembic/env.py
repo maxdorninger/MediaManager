@@ -106,7 +106,7 @@ def run_migrations_online() -> None:
 
     """
 
-    def include_object(object, name, type_, reflected, compare_to):
+    def include_object(_object, name, type_, _reflected, _compare_to):
         if type_ == "table" and name == "apscheduler_jobs":
             return False
         return True

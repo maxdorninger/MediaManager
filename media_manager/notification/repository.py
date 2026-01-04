@@ -23,11 +23,11 @@ class NotificationRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_notification(self, id: NotificationId) -> NotificationSchema:
-        result = self.db.get(Notification, id)
+    def get_notification(self, nid: NotificationId) -> NotificationSchema:
+        result = self.db.get(Notification, nid)
 
         if not result:
-            msg = f"Notification with id {id} not found."
+            msg = f"Notification with id {nid} not found."
             raise NotFoundError(msg)
 
         return NotificationSchema.model_validate(result)
@@ -77,21 +77,21 @@ class NotificationRepository:
             raise ConflictError(msg) from None
         return
 
-    def mark_notification_as_read(self, id: NotificationId) -> None:
-        stmt = update(Notification).where(Notification.id == id).values(read=True)
+    def mark_notification_as_read(self, nid: NotificationId) -> None:
+        stmt = update(Notification).where(Notification.id == nid).values(read=True)
         self.db.execute(stmt)
         return
 
-    def mark_notification_as_unread(self, id: NotificationId) -> None:
-        stmt = update(Notification).where(Notification.id == id).values(read=False)
+    def mark_notification_as_unread(self, nid: NotificationId) -> None:
+        stmt = update(Notification).where(Notification.id == nid).values(read=False)
         self.db.execute(stmt)
         return
 
-    def delete_notification(self, id: NotificationId) -> None:
-        stmt = delete(Notification).where(Notification.id == id)
+    def delete_notification(self, nid: NotificationId) -> None:
+        stmt = delete(Notification).where(Notification.id == nid)
         result = self.db.execute(stmt)
         if result.rowcount == 0:
-            msg = f"Notification with id {id} not found."
+            msg = f"Notification with id {nid} not found."
             raise NotFoundError(msg)
         self.db.commit()
         return
