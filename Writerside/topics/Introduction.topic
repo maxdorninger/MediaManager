@@ -40,25 +40,27 @@
             <cards narrow="true">
                 <title>MediaManager Sponsors</title>
                 <card href="https://github.com/ldrrp"
-                      summary="@ldrrp" image="https://github.com/ldrrp.png" />
+                      summary="ldrrp" image="https://github.com/ldrrp.png" />
                 <card href="https://fosstodon.org/@aljazmerzen"
-                      summary="@aljamerzen" image="https://cdn.fosstodon.org/accounts/avatars/107/626/197/378/907/137/original/e93602705171fd0a.jpg"/>
+                      summary="aljamerzen" image="https://cdn.fosstodon.org/accounts/avatars/107/626/197/378/907/137/original/e93602705171fd0a.jpg"/>
                 <card href="https://github.com/SeimusS"
-                      summary="@SeimusS" image="https://github.com/SeimusS.png" />
+                      summary="SeimusS" image="https://github.com/SeimusS.png" />
                 <card href="https://github.com/HadrienKerlero"
-                      summary="@HadrienKerlero" image="https://github.com/HadrienKerlero.png" />
+                      summary="HadrienKerlero" image="https://github.com/HadrienKerlero.png" />
                 <card href="https://github.com/brandon-dacrib"
-                      summary="@brandon-dacrib" image="https://github.com/brandon-dacrib.png" />
+                      summary="brandon-dacrib" image="https://github.com/brandon-dacrib.png" />
                 <card href="https://github.com/keyxmakerx"
-                      summary="@keyxmakerx" image="https://github.com/keyxmakerx.png" />
+                      summary="keyxmakerx" image="https://github.com/keyxmakerx.png" />
                 <card href="https://github.com/LITUATUI"
-                      summary="@LITUATUI" image="https://github.com/LITUATUI.png" />
+                      summary="LITUATUI" image="https://github.com/LITUATUI.png" />
                 <card href="https://buymeacoffee.com/maxdorninger"
                       summary="Nicolas" image="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/B6CDBD/NI.png" />
                 <card href="https://buymeacoffee.com/maxdorninger"
                       summary="Josh" image="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/DEBBB9/JO.png" />
                 <card href="https://buymeacoffee.com/maxdorninger"
-                      summary="@PuppiestDoggo" image="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/11/2VeQ8sTGPhj4tiLy.jpg" />
+                      summary="PuppiestDoggo" image="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/11/2VeQ8sTGPhj4tiLy.jpg" />
+                <card href="https://buymeacoffee.com/seferinofernandez"
+                      summary="Seferino" image="https://cdn.buymeacoffee.com/uploads/profile_pictures/2023/07/Kq0SH4O5pMhFoIAQ.jpg" />
             </cards>
             <links>
                 <group>
