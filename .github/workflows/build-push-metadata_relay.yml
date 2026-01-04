@@ -25,23 +25,14 @@ jobs:
         with:
           src: "./metadata_relay"
 
-  build:
+  build-and-push:
     needs: lint-code
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform:  linux/arm64
-            runner:  ubuntu-24.04-arm
-          - platform: linux/amd64
-            runner: ubuntu-24.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages:  write
     env:
       QUAY_ORG: ${{ secrets.QUAY_ORG }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -50,11 +41,7 @@ jobs:
         id: repo_name
         run: echo "name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-      - name: Prepare platform slug
-        id: platform_slug
-        run: echo "slug=${{ matrix.platform }}" | tr '/' '-' >> $GITHUB_OUTPUT
-
-      - name:   Set up Docker Buildx
+      - name:  Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
@@ -85,183 +72,39 @@ jobs:
             VERSION="dev-${DATE_STAMP}-${{ github.run_number }}"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION_NO_V=${VERSION#v}
+          echo "version_no_v=$VERSION_NO_V" >> $GITHUB_OUTPUT
 
-      - name: Extract metadata (labels only)
+      - name: Extract metadata (tags + labels)
         id: meta
         uses:  docker/metadata-action@v5
         with:
           images:  |
             ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
             quay.io/${{ env.QUAY_ORG }}/metadata_relay
+          tags: |
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name != 'release' }}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
 
-      - name:  Build and push by digest
-        id: build
+      - name: Build and push multi-arch image
         uses: docker/build-push-action@v6
         with:
           context:  ./metadata_relay
           file: ./metadata_relay/Dockerfile
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: |
-            type=image,name=ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay,push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-            type=image,name=quay.io/${{ env.QUAY_ORG }}/metadata_relay,push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
 
-      - name: Export digest
-        run: |
-          mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"
-
-      - name: Upload digest
-        uses: actions/upload-artifact@v4
-        with:
-          name: digests-relay-${{ strategy.job-index }}
-          path:  /tmp/digests/*
-          if-no-files-found:  error
-          retention-days: 1
-
-  merge:
-    needs: build
-    runs-on:   ubuntu-latest
-    permissions:
-      contents: read
-      packages:  write
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    env:
-      QUAY_ORG: ${{ secrets.QUAY_ORG }}
-    steps:
-      - name:  Download digests
-        uses: actions/download-artifact@v4
-        with:
-          pattern: digests-relay-*
-          path: /tmp/digests
-          merge-multiple: true
-
-      - name: Check digests exist
-        run: |
-          if [ !  -d "/tmp/digests" ] || [ -z "$(ls -A /tmp/digests)" ]; then
-            echo "Error: No digests found!  Build jobs may have failed or not uploaded artifacts."
-            exit 1
-          fi
-          echo "Found digests:"
-          ls -la /tmp/digests/
-
-      - name: Set repository name to lowercase
-        id: repo_name
-        run: echo "name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses:  docker/login-action@v3
-        with:
-          registry:  ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to Quay
-        uses: docker/login-action@v3
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASSWORD }}
-
-      - name:  Extract version
-        id: version
-        run: |
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            VERSION="${{ github.event.release.tag_name }}"
-          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
-            VERSION="${{ github.ref_name }}"
-          else
-            DATE_STAMP=$(date -u +'%Y.%m.%d')
-            VERSION="dev-${DATE_STAMP}-${{ github.run_number }}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          VERSION_NO_V=${VERSION#v}
-          echo "version_no_v=$VERSION_NO_V" >> $GITHUB_OUTPUT
-
-      - name: Extract tags (GHCR)
-        id: meta
-        uses:  docker/metadata-action@v5
-        with:
-          images:  |
-            ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
-          tags: |
-            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
-            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name != 'release' }}
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
-
-      - name: Extract tags (Quay)
-        id: meta_quay
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            quay.io/${{ env.QUAY_ORG }}/metadata_relay
-          tags: |
-            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
-            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name != 'release' }}
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
-
-      - name: Push to GHCR
-        working-directory: /tmp/digests
-        run: |
-          GHCR_TAGS=$(printf '%s\n' "${{ steps.meta.outputs.tags }}" | grep '^ghcr.io/' | sed 's/^/-t /')
-          if [ -z "$GHCR_TAGS" ]; then echo "No ghcr tags found"; exit 1; fi
-
-          DIGEST_ARGS=""
-          for f in /tmp/digests/*; do
-            if [ -f "$f" ]; then
-              d=$(basename "$f")
-              DIGEST_ARGS="$DIGEST_ARGS ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:$d"
-            fi
-          done
-          
-          if [ -z "$DIGEST_ARGS" ]; then
-            echo "Error: No valid digest files found"
-            exit 1
-          fi
-          
-          echo "Creating manifest with tags: $GHCR_TAGS"
-          echo "Using digests: $DIGEST_ARGS"
-          docker buildx imagetools create $GHCR_TAGS $DIGEST_ARGS
-
-      - name:  Push to Quay
-        working-directory: /tmp/digests
-        run: |
-          QUAY_TAGS=$(printf '%s\n' "${{ steps.meta_quay.outputs.tags }}" | grep '^quay.io/' | sed 's/^/-t /')
-          if [ -z "$QUAY_TAGS" ]; then echo "No quay tags found"; exit 1; fi
-
-          DIGEST_ARGS=""
-          for f in /tmp/digests/*; do
-            if [ -f "$f" ]; then
-              d=$(basename "$f")
-              DIGEST_ARGS="$DIGEST_ARGS quay.io/${{ env.QUAY_ORG }}/metadata_relay@sha256:$d"
-            fi
-          done
-          
-          if [ -z "$DIGEST_ARGS" ]; then
-            echo "Error: No valid digest files found"
-            exit 1
-          fi
-          
-          echo "Creating manifest with tags: $QUAY_TAGS"
-          echo "Using digests: $DIGEST_ARGS"
-          docker buildx imagetools create $QUAY_TAGS $DIGEST_ARGS
-
-      - name: Inspect image
+      - name: Inspect image (GHCR)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
           docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay:${{ steps.version.outputs.version_no_v }}
