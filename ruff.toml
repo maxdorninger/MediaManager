@@ -7,7 +7,7 @@ quote-style = "double"
 extend-select = [
     "ASYNC",
     "B",
-    "COM",
+    "C4", "COM",
     "E", "EXE",
     "F", "FA", "FIX", "FLY", "FURB",
     "ICN",

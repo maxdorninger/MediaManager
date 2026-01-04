@@ -2,7 +2,6 @@ import logging
 
 from media_manager.indexer.schemas import IndexerQueryResult
 import xml.etree.ElementTree as ET
-from xml.etree.ElementTree import Element
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
 
@@ -33,9 +32,7 @@ class TorznabMixin:
                     item.find("enclosure").attrib["type"] != "application/x-bittorrent"
                 )
 
-                attributes: list[Element] = [
-                    x for x in item.findall("torznab:attr", xmlns)
-                ]
+                attributes = list(item.findall("torznab:attr", xmlns))
                 for attribute in attributes:
                     if is_usenet:
                         if attribute.attrib["name"] == "usenetdate":
