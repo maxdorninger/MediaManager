@@ -17,12 +17,6 @@ Base URL of your Prowlarr instance.
 
 API key for Prowlarr. You can find this in Prowlarr's settings under General.
 
-- `reject_torrents_on_url_error`
-
-Set to `true` to reject torrents if there is a URL error when fetching from Prowlarr. Until MediaManager v1.9.0 the
-default behavior was `false`, but from v1.9.0 onwards the default is `true`. It's recommended to set this to `true` to
-avoid adding possibly invalid torrents.
-
 - `timeout_seconds`
 
 Timeout in seconds for requests to Prowlarr. Default is `60` seconds.
@@ -35,13 +29,6 @@ DEBUG - media_manager.indexer.utils -
    HTTPConnectionPool(host='<some-host>', port=<some-port>):
     Read timed out. (read timeout=10)
 ```
-
-- `follow_redirects`
-
-This is necessary for some indexers that use redirect links for torrent downloads. Especially useful if your download
-client cannot access Prowlarr directly. This increases the time it takes to fetch torrent details, so only enable it if
-you really need it.
-Default is `false`.
 
 ## Jackett (`[indexers.jackett]`)
 
