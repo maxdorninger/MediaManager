@@ -39,6 +39,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      QUAY_ORG: ${{ secrets.QUAY_ORG }}
 
     steps:
       - name: Checkout repository
@@ -63,6 +65,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Quay
+        uses: docker/login-action@v3
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
       - name: Extract version
         id: version
         run: |
@@ -80,7 +90,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
+            quay.io/${{ env.QUAY_ORG }}/metadata_relay
 
       - name: Build and push by digest
         id: build
@@ -90,7 +102,7 @@ jobs:
           file: ./metadata_relay/Dockerfile
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay,push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay,name=quay.io/${{ env.QUAY_ORG }}/metadata_relay,push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
 
@@ -115,6 +127,8 @@ jobs:
       contents: read
       packages: write
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      QUAY_ORG: ${{ secrets.QUAY_ORG }}
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
@@ -137,6 +151,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Quay
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
       - name: Extract version
         id: version
         run: |
@@ -156,7 +177,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay
+            quay.io/${{ env.QUAY_ORG }}/metadata_relay
           tags: |
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name != 'release' }}
@@ -171,7 +194,8 @@ jobs:
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf 'ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:%s ' *)
+            $(printf 'ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/metadata_relay@sha256:%s ' *) \
+            $(printf 'quay.io/${{ env.QUAY_ORG }}/metadata_relay@sha256:%s ' *)
 
       - name: Inspect image
         run: |
