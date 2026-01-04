@@ -60,19 +60,7 @@ __all__ = [
 
 
 db_config = MediaManagerConfig().database
-db_url = (
-    "postgresql+psycopg"
-    + "://"
-    + db_config.user
-    + ":"
-    + db_config.password
-    + "@"
-    + db_config.host
-    + ":"
-    + str(db_config.port)
-    + "/"
-    + db_config.dbname
-)
+db_url = f"postgresql+psycopg://{db_config.user}:{db_config.password}@{db_config.host}:{db_config.port}/{db_config.dbname}"
 
 config.set_main_option("sqlalchemy.url", db_url)
 

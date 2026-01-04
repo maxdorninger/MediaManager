@@ -10,7 +10,7 @@ extend-select = [
     "C4", "COM",
     "E", "EM", "EXE",
     "F", "FA", "FAST", "FIX", "FLY", "FURB",
-    "ICN",
+    "ICN", "ISC",
     "LOG",
     "PGH", "PT", "PYI",
     "Q",
