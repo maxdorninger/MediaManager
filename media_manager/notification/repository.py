@@ -24,7 +24,8 @@ class NotificationRepository:
         result = self.db.get(Notification, id)
 
         if not result:
-            raise NotFoundError(f"Notification with id {id} not found.")
+            msg = f"Notification with id {id} not found."
+            raise NotFoundError(msg)
 
         return NotificationSchema.model_validate(result)
 
@@ -69,9 +70,8 @@ class NotificationRepository:
             self.db.commit()
         except IntegrityError as e:
             log.error(f"Could not save notification, Error: {e}")
-            raise ConflictError(
-                f"Notification with id {notification.id} already exists."
-            ) from None
+            msg = f"Notification with id {notification.id} already exists."
+            raise ConflictError(msg) from None
         return
 
     def mark_notification_as_read(self, id: NotificationId) -> None:
@@ -88,6 +88,7 @@ class NotificationRepository:
         stmt = delete(Notification).where(Notification.id == id)
         result = self.db.execute(stmt)
         if result.rowcount == 0:
-            raise NotFoundError(f"Notification with id {id} not found.")
+            msg = f"Notification with id {id} not found."
+            raise NotFoundError(msg)
         self.db.commit()
         return

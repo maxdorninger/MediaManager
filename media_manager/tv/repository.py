@@ -51,7 +51,8 @@ class TvRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                raise NotFoundError(f"Show with id {show_id} not found.")
+                msg = f"Show with id {show_id} not found."
+                raise NotFoundError(msg)
             return ShowSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving show {show_id}: {e}")
@@ -78,9 +79,8 @@ class TvRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                raise NotFoundError(
-                    f"Show with external_id {external_id} and provider {metadata_provider} not found."
-                )
+                msg = f"Show with external_id {external_id} and provider {metadata_provider} not found."
+                raise NotFoundError(msg)
             return ShowSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(
@@ -178,9 +178,8 @@ class TvRepository:
             return ShowSchema.model_validate(db_show)
         except IntegrityError as e:
             self.db.rollback()
-            raise ConflictError(
-                f"Show with this primary key or unique constraint violation: {e.orig}"
-            ) from e
+            msg = f"Show with this primary key or unique constraint violation: {e.orig}"
+            raise ConflictError(msg) from e
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(f"Database error while saving show {show.name}: {e}")
@@ -197,7 +196,8 @@ class TvRepository:
         try:
             show = self.db.get(Show, show_id)
             if not show:
-                raise NotFoundError(f"Show with id {show_id} not found.")
+                msg = f"Show with id {show_id} not found."
+                raise NotFoundError(msg)
             self.db.delete(show)
             self.db.commit()
         except SQLAlchemyError as e:
@@ -217,7 +217,8 @@ class TvRepository:
         try:
             season = self.db.get(Season, season_id)
             if not season:
-                raise NotFoundError(f"Season with id {season_id} not found.")
+                msg = f"Season with id {season_id} not found."
+                raise NotFoundError(msg)
             return SeasonSchema.model_validate(season)
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving season {season_id}: {e}")
@@ -274,9 +275,8 @@ class TvRepository:
             result = self.db.execute(stmt)
             if result.rowcount == 0:
                 self.db.rollback()
-                raise NotFoundError(
-                    f"SeasonRequest with id {season_request_id} not found."
-                )
+                msg = f"SeasonRequest with id {season_request_id} not found."
+                raise NotFoundError(msg)
             self.db.commit()
         except SQLAlchemyError as e:
             self.db.rollback()
@@ -304,9 +304,8 @@ class TvRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                raise NotFoundError(
-                    f"Season number {season_number} for show_id {show_id} not found."
-                )
+                msg = f"Season number {season_number} for show_id {show_id} not found."
+                raise NotFoundError(msg)
             return SeasonSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(
@@ -403,7 +402,8 @@ class TvRepository:
         try:
             show = self.db.get(Show, show_id)
             if not show:
-                raise NotFoundError(f"Show with id {show_id} not found.")
+                msg = f"Show with id {show_id} not found."
+                raise NotFoundError(msg)
             show.library = library
             self.db.commit()
         except SQLAlchemyError as e:
@@ -514,9 +514,8 @@ class TvRepository:
             request = self.db.get(SeasonRequest, season_request_id)
             if not request:
                 log.warning(f"Season request with id {season_request_id} not found.")
-                raise NotFoundError(
-                    f"Season request with id {season_request_id} not found."
-                )
+                msg = f"Season request with id {season_request_id} not found."
+                raise NotFoundError(msg)
             return SeasonRequestSchema.model_validate(request)
         except SQLAlchemyError as e:
             log.error(
@@ -542,7 +541,8 @@ class TvRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                raise NotFoundError(f"Show for season_id {season_id} not found.")
+                msg = f"Show for season_id {season_id} not found."
+                raise NotFoundError(msg)
             return ShowSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(f"Database error retrieving show by season_id {season_id}: {e}")
@@ -563,7 +563,8 @@ class TvRepository:
         """
         db_show = self.db.get(Show, show_id)
         if not db_show:
-            raise NotFoundError(f"Show with id {show_id} not found.")
+            msg = f"Show with id {show_id} not found."
+            raise NotFoundError(msg)
 
         stmt = (
             select(Season)
@@ -612,7 +613,8 @@ class TvRepository:
         """
         db_season = self.db.get(Season, season_id)
         if not db_season:
-            raise NotFoundError(f"Season with id {season_id} not found.")
+            msg = f"Season with id {season_id} not found."
+            raise NotFoundError(msg)
 
         stmt = (
             select(Episode)
@@ -660,7 +662,8 @@ class TvRepository:
         """
         db_show = self.db.get(Show, show_id)
         if not db_show:
-            raise NotFoundError(f"Show with id {show_id} not found.")
+            msg = f"Show with id {show_id} not found."
+            raise NotFoundError(msg)
 
         updated = False
         if name is not None and db_show.name != name:
@@ -705,7 +708,8 @@ class TvRepository:
         """
         db_season = self.db.get(Season, season_id)
         if not db_season:
-            raise NotFoundError(f"Season with id {season_id} not found.")
+            msg = f"Season with id {season_id} not found."
+            raise NotFoundError(msg)
 
         updated = False
         if name is not None and db_season.name != name:
@@ -735,7 +739,8 @@ class TvRepository:
         """
         db_episode = self.db.get(Episode, episode_id)
         if not db_episode:
-            raise NotFoundError(f"Episode with id {episode_id} not found.")
+            msg = f"Episode with id {episode_id} not found."
+            raise NotFoundError(msg)
 
         updated = False
         if title is not None and db_episode.title != title:

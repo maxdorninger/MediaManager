@@ -12,7 +12,8 @@ class GenericIndexer(ABC):
         if name:
             self.name = name
         else:
-            raise ValueError("indexer name must not be None")
+            msg = "indexer name must not be None"
+            raise ValueError(msg)
 
     @abstractmethod
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:

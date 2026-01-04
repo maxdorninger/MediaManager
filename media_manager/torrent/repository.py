@@ -52,7 +52,8 @@ class TorrentRepository:
     def get_torrent_by_id(self, torrent_id: TorrentId) -> TorrentSchema:
         result = self.db.get(Torrent, torrent_id)
         if result is None:
-            raise NotFoundError(f"Torrent with ID {torrent_id} not found.")
+            msg = f"Torrent with ID {torrent_id} not found."
+            raise NotFoundError(msg)
         return TorrentSchema.model_validate(result)
 
     def delete_torrent(

@@ -45,7 +45,8 @@ class MovieRepository:
             stmt = select(Movie).where(Movie.id == movie_id)
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                raise NotFoundError(f"Movie with id {movie_id} not found.")
+                msg = f"Movie with id {movie_id} not found."
+                raise NotFoundError(msg)
             return MovieSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving movie {movie_id}: {e}")
@@ -71,9 +72,8 @@ class MovieRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                raise NotFoundError(
-                    f"Movie with external_id {external_id} and provider {metadata_provider} not found."
-                )
+                msg = f"Movie with external_id {external_id} and provider {metadata_provider} not found."
+                raise NotFoundError(msg)
             return MovieSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(
@@ -130,9 +130,10 @@ class MovieRepository:
         except IntegrityError as e:
             self.db.rollback()
             log.error(f"Integrity error while saving movie {movie.name}: {e}")
-            raise ConflictError(
+            msg = (
                 f"Movie with this primary key or unique constraint violation: {e.orig}"
-            ) from e
+            )
+            raise ConflictError(msg) from e
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(f"Database error while saving movie {movie.name}: {e}")
@@ -151,7 +152,8 @@ class MovieRepository:
             movie = self.db.get(Movie, movie_id)
             if not movie:
                 log.warning(f"Movie with id {movie_id} not found for deletion.")
-                raise NotFoundError(f"Movie with id {movie_id} not found.")
+                msg = f"Movie with id {movie_id} not found."
+                raise NotFoundError(msg)
             self.db.delete(movie)
             self.db.commit()
             log.info(f"Successfully deleted movie with id: {movie_id}")
@@ -212,7 +214,8 @@ class MovieRepository:
         try:
             movie = self.db.get(Movie, movie_id)
             if not movie:
-                raise NotFoundError(f"movie with id {movie_id} not found.")
+                msg = f"movie with id {movie_id} not found."
+                raise NotFoundError(msg)
             movie.library = library
             self.db.commit()
         except SQLAlchemyError as e:
@@ -233,9 +236,8 @@ class MovieRepository:
             result = self.db.execute(stmt)
             if result.rowcount == 0:
                 self.db.rollback()
-                raise NotFoundError(
-                    f"movie request with id {movie_request_id} not found."
-                )
+                msg = f"movie request with id {movie_request_id} not found."
+                raise NotFoundError(msg)
             self.db.commit()
             # Successfully deleted movie request with id: {movie_request_id}
         except SQLAlchemyError as e:
@@ -395,9 +397,8 @@ class MovieRepository:
         try:
             request = self.db.get(MovieRequest, movie_request_id)
             if not request:
-                raise NotFoundError(
-                    f"Movie request with id {movie_request_id} not found."
-                )
+                msg = f"Movie request with id {movie_request_id} not found."
+                raise NotFoundError(msg)
             return MovieRequestSchema.model_validate(request)
         except SQLAlchemyError as e:
             log.error(
@@ -422,7 +423,8 @@ class MovieRepository:
             )
             result = self.db.execute(stmt).unique().scalar_one_or_none()
             if not result:
-                raise NotFoundError(f"Movie for torrent_id {torrent_id} not found.")
+                msg = f"Movie for torrent_id {torrent_id} not found."
+                raise NotFoundError(msg)
             return MovieSchema.model_validate(result)
         except SQLAlchemyError as e:
             log.error(
@@ -450,7 +452,8 @@ class MovieRepository:
         """
         db_movie = self.db.get(Movie, movie_id)
         if not db_movie:
-            raise NotFoundError(f"Movie with id {movie_id} not found.")
+            msg = f"Movie with id {movie_id} not found."
+            raise NotFoundError(msg)
 
         updated = False
         if name is not None and db_movie.name != name:

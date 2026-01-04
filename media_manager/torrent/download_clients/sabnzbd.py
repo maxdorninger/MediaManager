@@ -56,7 +56,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
             if not response["status"]:
                 error_msg = response
                 log.error(f"Failed to add NZB to SABnzbd: {error_msg}")
-                raise RuntimeError(f"Failed to add NZB to SABnzbd: {error_msg}")
+                msg = f"Failed to add NZB to SABnzbd: {error_msg}"
+                raise RuntimeError(msg)
 
             # Generate a hash for the NZB (using title and download URL)
             nzo_id = response["nzo_ids"][0]

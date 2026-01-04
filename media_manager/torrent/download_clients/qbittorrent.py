@@ -102,9 +102,8 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
             log.error(
                 f"Failed to download torrent, API-Answer isn't 'Ok.'; API Answer: {answer}"
             )
-            raise RuntimeError(
-                f"Failed to download torrent, API-Answer isn't 'Ok.'; API Answer: {answer}"
-            )
+            msg = f"Failed to download torrent, API-Answer isn't 'Ok.'; API Answer: {answer}"
+            raise RuntimeError(msg)
 
         log.info(f"Successfully processed torrent: {indexer_result.title}")
 

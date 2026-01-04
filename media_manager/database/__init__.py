@@ -51,7 +51,8 @@ def init_engine(
         if db_config is None:
             url = os.getenv("DATABASE_URL")
             if not url:
-                raise RuntimeError("DB config or `DATABASE_URL` must be provided")
+                msg = "DB config or `DATABASE_URL` must be provided"
+                raise RuntimeError(msg)
         else:
             url = build_db_url(
                 db_config.user,
@@ -76,15 +77,15 @@ def init_engine(
 
 def get_engine() -> Engine:
     if engine is None:
-        raise RuntimeError("Engine not initialized. Call init_engine(...) first.")
+        msg = "Engine not initialized. Call init_engine(...) first."
+        raise RuntimeError(msg)
     return engine
 
 
 def get_session() -> Generator[Session, Any, None]:
     if SessionLocal is None:
-        raise RuntimeError(
-            "Session factory not initialized. Call init_engine(...) first."
-        )
+        msg = "Session factory not initialized. Call init_engine(...) first."
+        raise RuntimeError(msg)
     db = SessionLocal()
     try:
         yield db

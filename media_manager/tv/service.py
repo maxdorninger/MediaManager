@@ -223,9 +223,8 @@ class TvService:
             except NotFoundError:
                 return False
         else:
-            raise ValueError(
-                "External ID and metadata provider or Show ID must be provided"
-            )
+            msg = "External ID and metadata provider or Show ID must be provided"
+            raise ValueError(msg)
 
     def get_all_available_torrents_for_a_season(
         self, season_number: int, show_id: ShowId, search_query_override: str = None
@@ -511,9 +510,8 @@ class TvService:
         :raises ValueError: If the season request is not authorized.
         """
         if not season_request.authorized:
-            raise ValueError(
-                f"Season request {season_request.id} is not authorized for download"
-            )
+            msg = f"Season request {season_request.id} is not authorized for download"
+            raise ValueError(msg)
 
         log.info(f"Downloading approved season request {season_request.id}")
 
@@ -633,9 +631,8 @@ class TvService:
                 import_file(target_file=target_video_file, source_file=file)
                 return True
         else:
-            raise Exception(
-                f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
-            )
+            msg = f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
+            raise Exception(msg)
 
     def import_season(
         self,
@@ -654,7 +651,8 @@ class TvService:
             season_path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
             log.warning(f"Could not create path {season_path}: {e}")
-            raise Exception(f"Could not create path {season_path}") from e
+            msg = f"Could not create path {season_path}"
+            raise Exception(msg) from e
 
         for episode in season.episodes:
             try:
@@ -896,7 +894,8 @@ class TvService:
             source_directory.rename(new_source_path)
         except Exception as e:
             log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
-            raise Exception("Failed to rename source directory") from e
+            msg = "Failed to rename source directory"
+            raise Exception(msg) from e
 
         video_files, subtitle_files, all_files = get_files_for_import(
             directory=new_source_path

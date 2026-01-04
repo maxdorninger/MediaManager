@@ -8,7 +8,7 @@ extend-select = [
     "ASYNC",
     "B",
     "C4", "COM",
-    "E", "EXE",
+    "E", "EM", "EXE",
     "F", "FA", "FIX", "FLY", "FURB",
     "ICN",
     "LOG",

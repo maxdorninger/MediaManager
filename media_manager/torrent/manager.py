@@ -79,11 +79,13 @@ class DownloadManager:
         # Use the usenet flag from the indexer result to determine the client type
         if indexer_result.usenet:
             if not self._usenet_client:
-                raise RuntimeError("No usenet download client configured")
+                msg = "No usenet download client configured"
+                raise RuntimeError(msg)
             return self._usenet_client
         else:
             if not self._torrent_client:
-                raise RuntimeError("No torrent download client configured")
+                msg = "No torrent download client configured"
+                raise RuntimeError(msg)
             return self._torrent_client
 
     def download(self, indexer_result: IndexerQueryResult) -> Torrent:

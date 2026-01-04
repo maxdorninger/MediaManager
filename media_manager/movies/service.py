@@ -218,9 +218,10 @@ class MovieService:
                 return False
 
         else:
-            raise ValueError(
+            msg = (
                 "Either external_id and metadata_provider or movie_id must be provided"
             )
+            raise ValueError(msg)
 
     def get_all_available_torrents_for_movie(
         self, movie: Movie, search_query_override: str = None
@@ -462,7 +463,8 @@ class MovieService:
         :raises ValueError: If the movie request is not authorized.
         """
         if not movie_request.authorized:
-            raise ValueError("Movie request is not authorized")
+            msg = "Movie request is not authorized"
+            raise ValueError(msg)
 
         log.info(f"Downloading approved movie request {movie_request.id}")
 
@@ -663,7 +665,8 @@ class MovieService:
             source_directory.rename(new_source_path)
         except Exception as e:
             log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
-            raise Exception("Failed to rename directory") from e
+            msg = "Failed to rename directory"
+            raise Exception(msg) from e
 
         video_files, subtitle_files, all_files = get_files_for_import(
             directory=new_source_path
