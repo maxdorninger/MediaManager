@@ -143,7 +143,7 @@
 									{file.file_path_suffix}
 								</Table.Cell>
 								<Table.Cell class="w-[10px] font-medium">
-									<CheckmarkX state={file.downloaded} />
+									<CheckmarkX state={file.imported} />
 								</Table.Cell>
 							</Table.Row>
 						{/each}

@@ -11,10 +11,7 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/**
-		 * Hello World
-		 * @description A simple endpoint to check if the API is running.
-		 */
+		/** Hello World */
 		get: operations['hello_world_api_v1_health_get'];
 		put?: never;
 		post?: never;
@@ -285,25 +282,7 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	'/api/v1/tv/shows': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Get All Shows */
-		get: operations['get_all_shows_api_v1_tv_shows_get'];
-		put?: never;
-		/** Add A Show */
-		post: operations['add_a_show_api_v1_tv_shows_post'];
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/api/v1/tv/episodes/count': {
+	'/api/v1/tv/search': {
 		parameters: {
 			query?: never;
 			header?: never;
@@ -311,10 +290,10 @@ export interface paths {
 			cookie?: never;
 		};
 		/**
-		 * Get Total Count Of Downloaded Episodes
-		 * @description Total number of episodes downloaded
+		 * Search Metadata Providers For A Show
+		 * @description Search for a show on the configured metadata provider.
 		 */
-		get: operations['get_total_count_of_downloaded_episodes_api_v1_tv_episodes_count_get'];
+		get: operations['search_metadata_providers_for_a_show_api_v1_tv_search_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
@@ -323,19 +302,21 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	'/api/v1/tv/shows/{show_id}': {
+	'/api/v1/tv/recommended': {
 		parameters: {
 			query?: never;
 			header?: never;
 			path?: never;
 			cookie?: never;
 		};
-		/** Get A Show */
-		get: operations['get_a_show_api_v1_tv_shows__show_id__get'];
+		/**
+		 * Get Recommended Shows
+		 * @description Get a list of recommended/popular shows from the metadata provider.
+		 */
+		get: operations['get_recommended_shows_api_v1_tv_recommended_get'];
 		put?: never;
 		post?: never;
-		/** Delete A Show */
-		delete: operations['delete_a_show_api_v1_tv_shows__show_id__delete'];
+		delete?: never;
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -350,7 +331,7 @@ export interface paths {
 		};
 		/**
 		 * Get All Importable Shows
-		 * @description get a list of unknown shows that were detected in the tv directory and are importable
+		 * @description Get a list of unknown shows that were detected in the TV directory and are importable.
 		 */
 		get: operations['get_all_importable_shows_api_v1_tv_importable_get'];
 		put?: never;
@@ -381,6 +362,30 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/api/v1/tv/shows': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get All Shows
+		 * @description Get all shows in the library.
+		 */
+		get: operations['get_all_shows_api_v1_tv_shows_get'];
+		put?: never;
+		/**
+		 * Add A Show
+		 * @description Add a new show to the library.
+		 */
+		post: operations['add_a_show_api_v1_tv_shows_post'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/api/v1/tv/shows/torrents': {
 		parameters: {
 			query?: never;
@@ -390,8 +395,7 @@ export interface paths {
 		};
 		/**
 		 * Get Shows With Torrents
-		 * @description get all shows that are associated with torrents
-		 *     :return: A list of shows with all their torrents
+		 * @description Get all shows that are associated with torrents.
 		 */
 		get: operations['get_shows_with_torrents_api_v1_tv_shows_torrents_get'];
 		put?: never;
@@ -409,11 +413,38 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Get Available Libraries */
+		/**
+		 * Get Available Libraries
+		 * @description Get available TV libraries from configuration.
+		 */
 		get: operations['get_available_libraries_api_v1_tv_shows_libraries_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/tv/shows/{show_id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get A Show
+		 * @description Get details for a specific show.
+		 */
+		get: operations['get_a_show_api_v1_tv_shows__show_id__get'];
+		put?: never;
+		post?: never;
+		/**
+		 * Delete A Show
+		 * @description Delete a show from the library.
+		 */
+		delete: operations['delete_a_show_api_v1_tv_shows__show_id__delete'];
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -430,7 +461,7 @@ export interface paths {
 		put?: never;
 		/**
 		 * Update Shows Metadata
-		 * @description Updates a shows metadata.
+		 * @description Update a show's metadata from the provider.
 		 */
 		post: operations['update_shows_metadata_api_v1_tv_shows__show_id__metadata_post'];
 		delete?: never;
@@ -450,26 +481,9 @@ export interface paths {
 		put?: never;
 		/**
 		 * Set Continuous Download
-		 * @description Toggles whether future seasons of a show will be downloaded.
+		 * @description Toggle whether future seasons of a show will be automatically downloaded.
 		 */
 		post: operations['set_continuous_download_api_v1_tv_shows__show_id__continuousDownload_post'];
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/api/v1/tv/shows/{show_id}/torrents': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Get A Shows Torrents */
-		get: operations['get_a_shows_torrents_api_v1_tv_shows__show_id__torrents_get'];
-		put?: never;
-		post?: never;
 		delete?: never;
 		options?: never;
 		head?: never;
@@ -487,9 +501,29 @@ export interface paths {
 		put?: never;
 		/**
 		 * Set Library
-		 * @description Sets the library of a Show.
+		 * @description Set the library path for a Show.
 		 */
 		post: operations['set_library_api_v1_tv_shows__show_id__library_post'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/tv/shows/{show_id}/torrents': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get A Shows Torrents
+		 * @description Get torrents associated with a specific show.
+		 */
+		get: operations['get_a_shows_torrents_api_v1_tv_shows__show_id__torrents_get'];
+		put?: never;
+		post?: never;
 		delete?: never;
 		options?: never;
 		head?: never;
@@ -503,33 +537,22 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Get Season Requests */
+		/**
+		 * Get Season Requests
+		 * @description Get all season requests.
+		 */
 		get: operations['get_season_requests_api_v1_tv_seasons_requests_get'];
-		/** Update Request */
+		/**
+		 * Update Request
+		 * @description Update an existing season request.
+		 */
 		put: operations['update_request_api_v1_tv_seasons_requests_put'];
 		/**
 		 * Request A Season
-		 * @description adds request flag to a season
+		 * @description Create a new season request.
 		 */
 		post: operations['request_a_season_api_v1_tv_seasons_requests_post'];
 		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/api/v1/tv/seasons/requests/{request_id}': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		post?: never;
-		/** Delete Season Request */
-		delete: operations['delete_season_request_api_v1_tv_seasons_requests__request_id__delete'];
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -550,9 +573,29 @@ export interface paths {
 		head?: never;
 		/**
 		 * Authorize Request
-		 * @description updates the request flag to true
+		 * @description Authorize or de-authorize a season request.
 		 */
 		patch: operations['authorize_request_api_v1_tv_seasons_requests__season_request_id__patch'];
+		trace?: never;
+	};
+	'/api/v1/tv/seasons/requests/{request_id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/**
+		 * Delete Season Request
+		 * @description Delete a season request.
+		 */
+		delete: operations['delete_season_request_api_v1_tv_seasons_requests__request_id__delete'];
+		options?: never;
+		head?: never;
+		patch?: never;
 		trace?: never;
 	};
 	'/api/v1/tv/seasons/{season_id}': {
@@ -562,7 +605,10 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Get Season */
+		/**
+		 * Get Season
+		 * @description Get details for a specific season.
+		 */
 		get: operations['get_season_api_v1_tv_seasons__season_id__get'];
 		put?: never;
 		post?: never;
@@ -579,7 +625,10 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Get Season Files */
+		/**
+		 * Get Season Files
+		 * @description Get files associated with a specific season.
+		 */
 		get: operations['get_season_files_api_v1_tv_seasons__season_id__files_get'];
 		put?: never;
 		post?: never;
@@ -596,10 +645,17 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Get Torrents For A Season */
+		/**
+		 * Get Torrents For A Season
+		 * @description Search for torrents for a specific season of a show.
+		 *     Default season_number is 1 because it often returns multi-season torrents.
+		 */
 		get: operations['get_torrents_for_a_season_api_v1_tv_torrents_get'];
 		put?: never;
-		/** Download A Torrent */
+		/**
+		 * Download A Torrent
+		 * @description Trigger a download for a specific torrent.
+		 */
 		post: operations['download_a_torrent_api_v1_tv_torrents_post'];
 		delete?: never;
 		options?: never;
@@ -607,32 +663,18 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	'/api/v1/tv/search': {
+	'/api/v1/tv/episodes/count': {
 		parameters: {
 			query?: never;
 			header?: never;
 			path?: never;
 			cookie?: never;
 		};
-		/** Search Metadata Providers For A Show */
-		get: operations['search_metadata_providers_for_a_show_api_v1_tv_search_get'];
-		put?: never;
-		post?: never;
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/api/v1/tv/recommended': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Get Recommended Shows */
-		get: operations['get_recommended_shows_api_v1_tv_recommended_get'];
+		/**
+		 * Get Total Count Of Downloaded Episodes
+		 * @description Total number of episodes downloaded
+		 */
+		get: operations['get_total_count_of_downloaded_episodes_api_v1_tv_episodes_count_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
@@ -710,37 +752,41 @@ export interface paths {
 		patch: operations['update_torrent_status_api_v1_torrent__torrent_id__status_patch'];
 		trace?: never;
 	};
-	'/api/v1/movies': {
+	'/api/v1/movies/search': {
 		parameters: {
 			query?: never;
 			header?: never;
 			path?: never;
 			cookie?: never;
 		};
-		/** Get All Movies */
-		get: operations['get_all_movies_api_v1_movies_get'];
+		/**
+		 * Search For Movie
+		 * @description Search for a movie on the configured metadata provider.
+		 */
+		get: operations['search_for_movie_api_v1_movies_search_get'];
 		put?: never;
-		/** Add A Movie */
-		post: operations['add_a_movie_api_v1_movies_post'];
+		post?: never;
 		delete?: never;
 		options?: never;
 		head?: never;
 		patch?: never;
 		trace?: never;
 	};
-	'/api/v1/movies/{movie_id}': {
+	'/api/v1/movies/recommended': {
 		parameters: {
 			query?: never;
 			header?: never;
 			path?: never;
 			cookie?: never;
 		};
-		/** Get Movie By Id */
-		get: operations['get_movie_by_id_api_v1_movies__movie_id__get'];
+		/**
+		 * Get Popular Movies
+		 * @description Get a list of recommended/popular movies from the metadata provider.
+		 */
+		get: operations['get_popular_movies_api_v1_movies_recommended_get'];
 		put?: never;
 		post?: never;
-		/** Delete A Movie */
-		delete: operations['delete_a_movie_api_v1_movies__movie_id__delete'];
+		delete?: never;
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -755,7 +801,7 @@ export interface paths {
 		};
 		/**
 		 * Get All Importable Movies
-		 * @description get a list of unknown movies that were detected in the movie directory and are importable
+		 * @description Get a list of unknown movies that were detected in the movie directory and are importable.
 		 */
 		get: operations['get_all_importable_movies_api_v1_movies_importable_get'];
 		put?: never;
@@ -777,7 +823,7 @@ export interface paths {
 		put?: never;
 		/**
 		 * Import Detected Movie
-		 * @description get a list of unknown movies that were detected in the movie directory and are importable
+		 * @description Import a detected movie from the specified directory into the library.
 		 */
 		post: operations['import_detected_movie_api_v1_movies_importable__movie_id__post'];
 		delete?: never;
@@ -786,51 +832,24 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	'/api/v1/movies/libraries': {
+	'/api/v1/movies': {
 		parameters: {
 			query?: never;
 			header?: never;
 			path?: never;
 			cookie?: never;
 		};
-		/** Get Available Libraries */
-		get: operations['get_available_libraries_api_v1_movies_libraries_get'];
+		/**
+		 * Get All Movies
+		 * @description Get all movies in the library.
+		 */
+		get: operations['get_all_movies_api_v1_movies_get'];
 		put?: never;
-		post?: never;
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/api/v1/movies/search': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Search For Movie */
-		get: operations['search_for_movie_api_v1_movies_search_get'];
-		put?: never;
-		post?: never;
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/api/v1/movies/recommended': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Get Popular Movies */
-		get: operations['get_popular_movies_api_v1_movies_recommended_get'];
-		put?: never;
-		post?: never;
+		/**
+		 * Add A Movie
+		 * @description Add a new movie to the library.
+		 */
+		post: operations['add_a_movie_api_v1_movies_post'];
 		delete?: never;
 		options?: never;
 		head?: never;
@@ -844,8 +863,31 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Get All Movies With Torrents */
+		/**
+		 * Get All Movies With Torrents
+		 * @description Get all movies that are associated with torrents.
+		 */
 		get: operations['get_all_movies_with_torrents_api_v1_movies_torrents_get'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/movies/libraries': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get Available Libraries
+		 * @description Get available Movie libraries from configuration.
+		 */
+		get: operations['get_available_libraries_api_v1_movies_libraries_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
@@ -861,10 +903,16 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Get All Movie Requests */
+		/**
+		 * Get All Movie Requests
+		 * @description Get all movie requests.
+		 */
 		get: operations['get_all_movie_requests_api_v1_movies_requests_get'];
 		put?: never;
-		/** Create Movie Request */
+		/**
+		 * Create Movie Request
+		 * @description Create a new movie request.
+		 */
 		post: operations['create_movie_request_api_v1_movies_requests_post'];
 		delete?: never;
 		options?: never;
@@ -880,50 +928,45 @@ export interface paths {
 			cookie?: never;
 		};
 		get?: never;
-		/** Update Movie Request */
+		/**
+		 * Update Movie Request
+		 * @description Update an existing movie request.
+		 */
 		put: operations['update_movie_request_api_v1_movies_requests__movie_request_id__put'];
 		post?: never;
-		/** Delete Movie Request */
+		/**
+		 * Delete Movie Request
+		 * @description Delete a movie request.
+		 */
 		delete: operations['delete_movie_request_api_v1_movies_requests__movie_request_id__delete'];
 		options?: never;
 		head?: never;
 		/**
 		 * Authorize Request
-		 * @description updates the request flag to true
+		 * @description Authorize or de-authorize a movie request.
 		 */
 		patch: operations['authorize_request_api_v1_movies_requests__movie_request_id__patch'];
 		trace?: never;
 	};
-	'/api/v1/movies/{movie_id}/torrents': {
+	'/api/v1/movies/{movie_id}': {
 		parameters: {
 			query?: never;
 			header?: never;
 			path?: never;
 			cookie?: never;
 		};
-		/** Get All Available Torrents For A Movie */
-		get: operations['get_all_available_torrents_for_a_movie_api_v1_movies__movie_id__torrents_get'];
-		put?: never;
-		/** Download Torrent For Movie */
-		post: operations['download_torrent_for_movie_api_v1_movies__movie_id__torrents_post'];
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/api/v1/movies/{movie_id}/files': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Get Movie Files By Movie Id */
-		get: operations['get_movie_files_by_movie_id_api_v1_movies__movie_id__files_get'];
+		/**
+		 * Get Movie By Id
+		 * @description Get details for a specific movie.
+		 */
+		get: operations['get_movie_by_id_api_v1_movies__movie_id__get'];
 		put?: never;
 		post?: never;
-		delete?: never;
+		/**
+		 * Delete A Movie
+		 * @description Delete a movie from the library.
+		 */
+		delete: operations['delete_a_movie_api_v1_movies__movie_id__delete'];
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -940,9 +983,53 @@ export interface paths {
 		put?: never;
 		/**
 		 * Set Library
-		 * @description Sets the library of a movie.
+		 * @description Set the library path for a Movie.
 		 */
 		post: operations['set_library_api_v1_movies__movie_id__library_post'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/movies/{movie_id}/files': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get Movie Files By Movie Id
+		 * @description Get files associated with a specific movie.
+		 */
+		get: operations['get_movie_files_by_movie_id_api_v1_movies__movie_id__files_get'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/movies/{movie_id}/torrents': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Search For Torrents For Movie
+		 * @description Search for torrents for a specific movie.
+		 */
+		get: operations['search_for_torrents_for_movie_api_v1_movies__movie_id__torrents_get'];
+		put?: never;
+		/**
+		 * Download Torrent For Movie
+		 * @description Trigger a download for a specific torrent for a movie.
+		 */
+		post: operations['download_torrent_for_movie_api_v1_movies__movie_id__torrents_post'];
 		delete?: never;
 		options?: never;
 		head?: never;
@@ -1467,10 +1554,10 @@ export interface components {
 			/** Torrent Id */
 			torrent_id?: string | null;
 			/**
-			 * Downloaded
+			 * Imported
 			 * @default false
 			 */
-			downloaded: boolean;
+			imported: boolean;
 		};
 		/** PublicSeason */
 		PublicSeason: {
@@ -2555,31 +2642,10 @@ export interface operations {
 			};
 		};
 	};
-	get_all_shows_api_v1_tv_shows_get: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['Show'][];
-				};
-			};
-		};
-	};
-	add_a_show_api_v1_tv_shows_post: {
+	search_metadata_providers_for_a_show_api_v1_tv_search_get: {
 		parameters: {
 			query: {
-				show_id: number;
-				language?: string | null;
+				query: string;
 				metadata_provider?: 'tmdb' | 'tvdb';
 			};
 			header?: never;
@@ -2588,13 +2654,13 @@ export interface operations {
 		};
 		requestBody?: never;
 		responses: {
-			/** @description Successfully created show */
-			201: {
+			/** @description Successful Response */
+			200: {
 				headers: {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['Show'];
+					'application/json': components['schemas']['MetaDataProviderSearchResult'][];
 				};
 			};
 			/** @description Validation Error */
@@ -2608,9 +2674,11 @@ export interface operations {
 			};
 		};
 	};
-	get_total_count_of_downloaded_episodes_api_v1_tv_episodes_count_get: {
+	get_recommended_shows_api_v1_tv_recommended_get: {
 		parameters: {
-			query?: never;
+			query?: {
+				metadata_provider?: 'tmdb' | 'tvdb';
+			};
 			header?: never;
 			path?: never;
 			cookie?: never;
@@ -2623,64 +2691,8 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': number;
+					'application/json': components['schemas']['MetaDataProviderSearchResult'][];
 				};
-			};
-		};
-	};
-	get_a_show_api_v1_tv_shows__show_id__get: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path: {
-				/** @description The ID of the show */
-				show_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['PublicShow'];
-				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	delete_a_show_api_v1_tv_shows__show_id__delete: {
-		parameters: {
-			query?: {
-				delete_files_on_disk?: boolean;
-				delete_torrents?: boolean;
-			};
-			header?: never;
-			path: {
-				/** @description The ID of the show */
-				show_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			204: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content?: never;
 			};
 			/** @description Validation Error */
 			422: {
@@ -2756,6 +2768,59 @@ export interface operations {
 			};
 		};
 	};
+	get_all_shows_api_v1_tv_shows_get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Show'][];
+				};
+			};
+		};
+	};
+	add_a_show_api_v1_tv_shows_post: {
+		parameters: {
+			query: {
+				show_id: number;
+				language?: string | null;
+				metadata_provider?: 'tmdb' | 'tvdb';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successfully created show */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Show'];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
 	get_shows_with_torrents_api_v1_tv_shows_torrents_get: {
 		parameters: {
 			query?: never;
@@ -2792,6 +2857,71 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['LibraryItem'][];
+				};
+			};
+		};
+	};
+	get_a_show_api_v1_tv_shows__show_id__get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				/** @description The ID of the show */
+				show_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PublicShow'];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	delete_a_show_api_v1_tv_shows__show_id__delete: {
+		parameters: {
+			query?: {
+				delete_files_on_disk?: boolean;
+				delete_torrents?: boolean;
+			};
+			header?: never;
+			path: {
+				/** @description The ID of the show */
+				show_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
 				};
 			};
 		};
@@ -2864,38 +2994,6 @@ export interface operations {
 			};
 		};
 	};
-	get_a_shows_torrents_api_v1_tv_shows__show_id__torrents_get: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path: {
-				/** @description The ID of the show */
-				show_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['RichShowTorrent'];
-				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
 	set_library_api_v1_tv_shows__show_id__library_post: {
 		parameters: {
 			query: {
@@ -2916,6 +3014,38 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	get_a_shows_torrents_api_v1_tv_shows__show_id__torrents_get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				/** @description The ID of the show */
+				show_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['RichShowTorrent'];
+				};
 			};
 			/** @description Validation Error */
 			422: {
@@ -3010,12 +3140,14 @@ export interface operations {
 			};
 		};
 	};
-	delete_season_request_api_v1_tv_seasons_requests__request_id__delete: {
+	authorize_request_api_v1_tv_seasons_requests__season_request_id__patch: {
 		parameters: {
-			query?: never;
+			query?: {
+				authorized_status?: boolean;
+			};
 			header?: never;
 			path: {
-				request_id: string;
+				season_request_id: string;
 			};
 			cookie?: never;
 		};
@@ -3039,14 +3171,12 @@ export interface operations {
 			};
 		};
 	};
-	authorize_request_api_v1_tv_seasons_requests__season_request_id__patch: {
+	delete_season_request_api_v1_tv_seasons_requests__request_id__delete: {
 		parameters: {
-			query?: {
-				authorized_status?: boolean;
-			};
+			query?: never;
 			header?: never;
 			path: {
-				season_request_id: string;
+				request_id: string;
 			};
 			cookie?: never;
 		};
@@ -3200,12 +3330,9 @@ export interface operations {
 			};
 		};
 	};
-	search_metadata_providers_for_a_show_api_v1_tv_search_get: {
+	get_total_count_of_downloaded_episodes_api_v1_tv_episodes_count_get: {
 		parameters: {
-			query: {
-				query: string;
-				metadata_provider?: 'tmdb' | 'tvdb';
-			};
+			query?: never;
 			header?: never;
 			path?: never;
 			cookie?: never;
@@ -3218,47 +3345,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['MetaDataProviderSearchResult'][];
-				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	get_recommended_shows_api_v1_tv_recommended_get: {
-		parameters: {
-			query?: {
-				metadata_provider?: 'tmdb' | 'tvdb';
-			};
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['MetaDataProviderSearchResult'][];
-				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
+					'application/json': number;
 				};
 			};
 		};
@@ -3408,205 +3495,6 @@ export interface operations {
 			};
 		};
 	};
-	get_all_movies_api_v1_movies_get: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['PublicMovie'][];
-				};
-			};
-		};
-	};
-	add_a_movie_api_v1_movies_post: {
-		parameters: {
-			query: {
-				movie_id: number;
-				language?: string | null;
-				metadata_provider?: 'tmdb' | 'tvdb';
-			};
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successfully created movie */
-			201: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['Movie'];
-				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	get_movie_by_id_api_v1_movies__movie_id__get: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path: {
-				movie_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['PublicMovie'];
-				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	delete_a_movie_api_v1_movies__movie_id__delete: {
-		parameters: {
-			query?: {
-				delete_files_on_disk?: boolean;
-				delete_torrents?: boolean;
-			};
-			header?: never;
-			path: {
-				/** @description The ID of the movie */
-				movie_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			204: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content?: never;
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	get_all_importable_movies_api_v1_movies_importable_get: {
-		parameters: {
-			query?: {
-				metadata_provider?: 'tmdb' | 'tvdb';
-			};
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['MediaImportSuggestion'][];
-				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	import_detected_movie_api_v1_movies_importable__movie_id__post: {
-		parameters: {
-			query: {
-				directory: string;
-			};
-			header?: never;
-			path: {
-				movie_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			204: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content?: never;
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	get_available_libraries_api_v1_movies_libraries_get: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['LibraryItem'][];
-				};
-			};
-		};
-	};
 	search_for_movie_api_v1_movies_search_get: {
 		parameters: {
 			query: {
@@ -3670,6 +3558,122 @@ export interface operations {
 			};
 		};
 	};
+	get_all_importable_movies_api_v1_movies_importable_get: {
+		parameters: {
+			query?: {
+				metadata_provider?: 'tmdb' | 'tvdb';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaImportSuggestion'][];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	import_detected_movie_api_v1_movies_importable__movie_id__post: {
+		parameters: {
+			query: {
+				directory: string;
+			};
+			header?: never;
+			path: {
+				/** @description The ID of the movie */
+				movie_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	get_all_movies_api_v1_movies_get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PublicMovie'][];
+				};
+			};
+		};
+	};
+	add_a_movie_api_v1_movies_post: {
+		parameters: {
+			query: {
+				movie_id: number;
+				language?: string | null;
+				metadata_provider?: 'tmdb' | 'tvdb';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successfully created movie */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Movie'];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
 	get_all_movies_with_torrents_api_v1_movies_torrents_get: {
 		parameters: {
 			query?: never;
@@ -3686,6 +3690,26 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['RichMovieTorrent'][];
+				};
+			};
+		};
+	};
+	get_available_libraries_api_v1_movies_libraries_get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['LibraryItem'][];
 				};
 			};
 		};
@@ -3838,13 +3862,143 @@ export interface operations {
 			};
 		};
 	};
-	get_all_available_torrents_for_a_movie_api_v1_movies__movie_id__torrents_get: {
+	get_movie_by_id_api_v1_movies__movie_id__get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				/** @description The ID of the movie */
+				movie_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PublicMovie'];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	delete_a_movie_api_v1_movies__movie_id__delete: {
+		parameters: {
+			query?: {
+				delete_files_on_disk?: boolean;
+				delete_torrents?: boolean;
+			};
+			header?: never;
+			path: {
+				/** @description The ID of the movie */
+				movie_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	set_library_api_v1_movies__movie_id__library_post: {
+		parameters: {
+			query: {
+				library: string;
+			};
+			header?: never;
+			path: {
+				/** @description The ID of the movie */
+				movie_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	get_movie_files_by_movie_id_api_v1_movies__movie_id__files_get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				/** @description The ID of the movie */
+				movie_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PublicMovieFile'][];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	search_for_torrents_for_movie_api_v1_movies__movie_id__torrents_get: {
 		parameters: {
 			query?: {
 				search_query_override?: string | null;
 			};
 			header?: never;
 			path: {
+				/** @description The ID of the movie */
 				movie_id: string;
 			};
 			cookie?: never;
@@ -3879,6 +4033,7 @@ export interface operations {
 			};
 			header?: never;
 			path: {
+				/** @description The ID of the movie */
 				movie_id: string;
 			};
 			cookie?: never;
@@ -3893,68 +4048,6 @@ export interface operations {
 				content: {
 					'application/json': components['schemas']['Torrent'];
 				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	get_movie_files_by_movie_id_api_v1_movies__movie_id__files_get: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path: {
-				movie_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['PublicMovieFile'][];
-				};
-			};
-			/** @description Validation Error */
-			422: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['HTTPValidationError'];
-				};
-			};
-		};
-	};
-	set_library_api_v1_movies__movie_id__library_post: {
-		parameters: {
-			query: {
-				library: string;
-			};
-			header?: never;
-			path: {
-				movie_id: string;
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description Successful Response */
-			204: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content?: never;
 			};
 			/** @description Validation Error */
 			422: {
