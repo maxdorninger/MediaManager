@@ -76,7 +76,7 @@ class IndexerService:
         return results
 
     def search_season(self, show: Show, season_number: int):
-        query = f"{show.name} S{season_number:02d}"
+        query = f"{show.name} {show.year} S{season_number:02d}"
         query = remove_special_chars_and_parentheses(query)
 
         results = []
