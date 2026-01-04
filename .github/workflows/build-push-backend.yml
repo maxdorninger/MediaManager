@@ -225,7 +225,9 @@ jobs:
           mapfile -t TAGS <<< "${{ steps.meta.outputs.tags }}"
           for TAG in "${TAGS[@]}"; do
             docker buildx imagetools create \
-              --tag "${TAG}"
+              --tag "${TAG}" \
+              "${TAG}-amd64" \
+              "${TAG}-arm64"
           done
 
       - name: Inspect image (GHCR)
