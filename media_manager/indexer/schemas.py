@@ -30,7 +30,7 @@ class IndexerQueryResult(BaseModel):
 
     indexer: str | None
 
-    @computed_field(return_type=Quality)
+    @computed_field
     @property
     def quality(self) -> Quality:
         high_quality_pattern = r"\b(4k)\b"
@@ -49,7 +49,7 @@ class IndexerQueryResult(BaseModel):
 
         return Quality.unknown
 
-    @computed_field(return_type=list[int])
+    @computed_field
     @property
     def season(self) -> list[int]:
         pattern = r"\b[sS](\d+)\b"
