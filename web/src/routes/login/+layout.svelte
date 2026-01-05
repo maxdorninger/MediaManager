@@ -31,7 +31,7 @@
 			<a
 				target="_blank"
 				class="underline"
-				href="https://maxdorninger.github.io/MediaManager/troubleshooting.html"
+				href="https://maximilian-dorninger.gitbook.io/mediamanager/troubleshooting"
 			>
 				Trouble logging in?
 			</a>

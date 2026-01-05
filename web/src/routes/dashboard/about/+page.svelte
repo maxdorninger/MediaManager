@@ -46,7 +46,7 @@
 		explore trending content—all in one place.
 	</p>
 	<p class="mb-2 text-sm text-muted-foreground">
-		Version: v{PUBLIC_VERSION}
+		Version: {PUBLIC_VERSION}
 	</p>
 	<h2
 		class="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0"

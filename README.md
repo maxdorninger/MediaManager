@@ -1,6 +1,6 @@
 <br />
 <div align="center">
-  <a href="https://maxdorninger.github.io/MediaManager">
+  <a href="https://maximilian-dorninger.gitbook.io/mediamanager">
     <img src="https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/Writerside/images/logo.svg" alt="Logo" width="260" height="260">
   </a>
 
@@ -9,7 +9,7 @@
   <p align="center">
     Modern management system for your media library
     <br />
-    <a href="https://maxdorninger.github.io/MediaManager/introduction.html"><strong>Explore the docs »</strong></a>
+    <a href="https://maximilian-dorninger.gitbook.io/mediamanager"><strong>Explore the docs »</strong></a>
     <br />
     <a href="https://github.com/maxdorninger/MediaManager/issues/new?labels=bug&template=bug_report.md">Report Bug</a>
     &middot;
@@ -37,7 +37,7 @@ wget -O ./config/config.toml https://raw.githubusercontent.com/maxdorninger/Medi
 docker compose up -d
 ```
 
-### [View the docs for installation instructions and more](https://maxdorninger.github.io/MediaManager/configuration-overview.html#configuration-overview)
+### [View the docs for installation instructions and more](https://maximilian-dorninger.gitbook.io/mediamanager)
 
 ## Support MediaManager
 
@@ -82,7 +82,7 @@ docker compose up -d
 
 ## Developer Quick Start
 
-For the developer guide see the [Developer Guide](https://maxdorninger.github.io/MediaManager/developer-guide.html).
+For the developer guide see the [Developer Guide](https://maximilian-dorninger.gitbook.io/mediamanager).
 
 <!-- LICENSE -->
 
