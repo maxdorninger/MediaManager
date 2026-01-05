@@ -55,9 +55,7 @@ class IndexerQueryResult(BaseModel):
         pattern = r"\bS(\d+)\b"
         matches = re.findall(pattern, self.title, re.IGNORECASE)
         if matches.__len__() == 2:
-            result = []
-            for i in range(int(matches[0]), int(matches[1]) + 1):
-                result.append(i)
+            result = list(range(int(matches[0]), int(matches[1]) + 1))
         elif matches.__len__() == 1:
             result = [int(matches[0])]
         else:
