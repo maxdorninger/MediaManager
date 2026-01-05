@@ -35,6 +35,9 @@ dependencies = [
     "libtorrent>=2.0.11",
 ]
 
+[dependency-groups]
+dev = ["ruff"]
+
 [tool.setuptools.packages.find]
 include = ["media_manager*"]
 exclude = ["web*", "Writerside*", "metadata_relay*", "tests*"]
