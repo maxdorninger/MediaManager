@@ -44,3 +44,14 @@ your media library, hard linking will not work.
   <a href="qBittorrent-Category.md">carefully read this page about MM with qBittorrent save paths.</a>
 
 <note>If it still doesn't work, <a href="https://github.com/maxdorninger/MediaManager/issues">please open an Issue.</a> It is possible that a bug is causing the issue.</note>
+
+## Docker Image Pull Issues
+
+- If you get a 401 or 403 error when pulling the image from GHCR, this is not a permission issue with the
+  repository/image. It errors because your Docker client is misconfigured.
+- This is not a MediaManager issue per se, so please don't open an issue about this on the MediaManager GitHub repo.
+
+### Possible Fixes:
+
+- [Unable to pull image from GitHub Container Registry (Stack Overflow)](https://stackoverflow.com/questions/74656167/unable-to-pull-image-from-github-container-registry-ghcr)
+- [Try pulling the image from Quay.io](configuration-overview.md#mediamanager-and-metadatarelay-docker-images)
