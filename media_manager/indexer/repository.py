@@ -4,8 +4,10 @@ from sqlalchemy.orm import Session
 
 from media_manager.indexer.models import IndexerQueryResult
 from media_manager.indexer.schemas import (
-    IndexerQueryResultId,
     IndexerQueryResult as IndexerQueryResultSchema,
+)
+from media_manager.indexer.schemas import (
+    IndexerQueryResultId,
 )
 
 log = logging.getLogger(__name__)

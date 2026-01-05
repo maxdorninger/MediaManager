@@ -1,20 +1,21 @@
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+
 import media_manager.database
+from media_manager.movies.service import (
+    auto_download_all_approved_movie_requests,
+    import_all_movie_torrents,
+    update_all_movies_metadata,
+)
 from media_manager.tv.service import (
     auto_download_all_approved_season_requests,
     import_all_show_torrents,
     update_all_non_ended_shows_metadata,
 )
-from media_manager.movies.service import (
-    import_all_movie_torrents,
-    update_all_movies_metadata,
-    auto_download_all_approved_movie_requests,
-)
 
 
-def setup_scheduler(config, log):
+def setup_scheduler(config):
     from media_manager.database import init_engine
 
     init_engine(config.database)

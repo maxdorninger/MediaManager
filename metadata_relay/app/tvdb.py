@@ -1,7 +1,7 @@
+import logging
 import os
 
 import tvdb_v4_official
-import logging
 from fastapi import APIRouter
 
 log = logging.getLogger(__name__)

@@ -1,13 +1,16 @@
 import logging
 import os
 import sys
-from logging.config import dictConfig
-from pythonjsonlogger.json import JsonFormatter
-from pathlib import Path
 from datetime import datetime, timezone
+from logging.config import dictConfig
+from pathlib import Path
+from typing import override
+
+from pythonjsonlogger.json import JsonFormatter
 
 
 class ISOJsonFormatter(JsonFormatter):
+    @override
     def formatTime(self, record, datefmt=None):
         dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
         return dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")

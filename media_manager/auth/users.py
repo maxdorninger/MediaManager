@@ -1,9 +1,10 @@
 import contextlib
 import logging
 import uuid
-from typing import Optional, Any
+from typing import Any, Optional, override
 
 from fastapi import Depends, Request
+from fastapi.responses import RedirectResponse, Response
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin, models
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -13,13 +14,12 @@ from fastapi_users.authentication import (
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.openid import OpenID
-from fastapi.responses import RedirectResponse, Response
+from sqlalchemy import func, select
 from starlette import status
-from sqlalchemy import select, func
 
 import media_manager.notification.utils
-from media_manager.auth.db import User, get_user_db, get_async_session
-from media_manager.auth.schemas import UserUpdate, UserCreate
+from media_manager.auth.db import User, get_async_session, get_user_db
+from media_manager.auth.schemas import UserCreate, UserUpdate
 from media_manager.config import MediaManagerConfig
 
 log = logging.getLogger(__name__)
@@ -44,6 +44,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
+    @override
     async def on_after_update(
         self,
         user: models.UP,
@@ -51,18 +52,20 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         request: Optional[Request] = None,
     ) -> None:
         log.info(f"User {user.id} has been updated.")
-        if "is_superuser" in update_dict and update_dict["is_superuser"]:
+        if update_dict.get("is_superuser"):
             log.info(f"User {user.id} has been granted superuser privileges.")
         if "email" in update_dict:
             updated_user = UserUpdate(is_verified=True)
             await self.update(user=user, user_update=updated_user)
 
+    @override
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         log.info(f"User {user.id} has registered.")
         if user.email in config.admin_emails:
             updated_user = UserUpdate(is_superuser=True, is_verified=True)
             await self.update(user=user, user_update=updated_user)
 
+    @override
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
     ):
@@ -93,11 +96,13 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         )
         log.info(f"Sent password reset email to {user.email}")
 
+    @override
     async def on_after_reset_password(
         self, user: User, request: Optional[Request] = None
     ):
         log.info(f"User {user.id} has reset their password.")
 
+    @override
     async def on_after_request_verify(
         self, user: User, token: str, request: Optional[Request] = None
     ):
@@ -105,6 +110,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             f"Verification requested for user {user.id}. Verification token: {token}"
         )
 
+    @override
     async def on_after_verify(self, user: User, request: Optional[Request] = None):
         log.info(f"User {user.id} has been verified")
 
@@ -140,7 +146,7 @@ async def create_default_admin_user():
                             if config.auth.admin_emails
                             else "admin@example.com"
                         )
-                        default_password = "admin"  # Simple default password
+                        default_password = "admin"  # noqa: S105 # Simple default password
 
                         user_create = UserCreate(
                             email=admin_email,

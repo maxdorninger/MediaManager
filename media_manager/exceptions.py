@@ -1,10 +1,10 @@
-from fastapi import Request
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy.exc import IntegrityError
 from psycopg.errors import UniqueViolation
+from sqlalchemy.exc import IntegrityError
 
 
-class MediaManagerException(Exception):
+class MediaManagerError(Exception):
     """Base exception for MediaManager errors."""
 
     def __init__(self, message: str = "An error occurred."):
@@ -12,7 +12,7 @@ class MediaManagerException(Exception):
         self.message = message
 
 
-class MediaAlreadyExists(MediaManagerException):
+class MediaAlreadyExistsError(MediaManagerError):
     """Raised when a media entity already exists (HTTP 409)."""
 
     def __init__(
@@ -21,49 +21,49 @@ class MediaAlreadyExists(MediaManagerException):
         super().__init__(message)
 
 
-class NotFoundError(MediaManagerException):
+class NotFoundError(MediaManagerError):
     """Raised when an entity is not found (HTTP 404)."""
 
     def __init__(self, message: str = "The requested entity was not found."):
         super().__init__(message)
 
 
-class InvalidConfigError(MediaManagerException):
+class InvalidConfigError(MediaManagerError):
     """Raised when the server is improperly configured (HTTP 500)."""
 
     def __init__(self, message: str = "The server is improperly configured."):
         super().__init__(message)
 
 
-class BadRequestError(MediaManagerException):
+class BadRequestError(MediaManagerError):
     """Raised for invalid client requests (HTTP 400)."""
 
     def __init__(self, message: str = "Bad request."):
         super().__init__(message)
 
 
-class UnauthorizedError(MediaManagerException):
+class UnauthorizedError(MediaManagerError):
     """Raised for authentication failures (HTTP 401)."""
 
     def __init__(self, message: str = "Unauthorized."):
         super().__init__(message)
 
 
-class ForbiddenError(MediaManagerException):
+class ForbiddenError(MediaManagerError):
     """Raised for forbidden actions (HTTP 403)."""
 
     def __init__(self, message: str = "Forbidden."):
         super().__init__(message)
 
 
-class ConflictError(MediaManagerException):
+class ConflictError(MediaManagerError):
     """Raised for resource conflicts (HTTP 409)."""
 
     def __init__(self, message: str = "Conflict."):
         super().__init__(message)
 
 
-class UnprocessableEntityError(MediaManagerException):
+class UnprocessableEntityError(MediaManagerError):
     """Raised for validation errors (HTTP 422)."""
 
     def __init__(self, message: str = "Unprocessable entity."):
@@ -72,53 +72,53 @@ class UnprocessableEntityError(MediaManagerException):
 
 # Exception handlers
 async def media_already_exists_exception_handler(
-    request: Request, exc: MediaAlreadyExists
+    _request: Request, exc: MediaAlreadyExistsError
 ) -> JSONResponse:
     return JSONResponse(status_code=409, content={"detail": exc.message})
 
 
 async def not_found_error_exception_handler(
-    request: Request, exc: NotFoundError
+    _request: Request, exc: NotFoundError
 ) -> JSONResponse:
     return JSONResponse(status_code=404, content={"detail": exc.message})
 
 
 async def invalid_config_error_exception_handler(
-    request: Request, exc: InvalidConfigError
+    _request: Request, exc: InvalidConfigError
 ) -> JSONResponse:
     return JSONResponse(status_code=500, content={"detail": exc.message})
 
 
 async def bad_request_error_handler(
-    request: Request, exc: BadRequestError
+    _request: Request, exc: BadRequestError
 ) -> JSONResponse:
     return JSONResponse(status_code=400, content={"detail": exc.message})
 
 
 async def unauthorized_error_handler(
-    request: Request, exc: UnauthorizedError
+    _request: Request, exc: UnauthorizedError
 ) -> JSONResponse:
     return JSONResponse(status_code=401, content={"detail": exc.message})
 
 
 async def forbidden_error_handler(
-    request: Request, exc: ForbiddenError
+    _request: Request, exc: ForbiddenError
 ) -> JSONResponse:
     return JSONResponse(status_code=403, content={"detail": exc.message})
 
 
-async def conflict_error_handler(request: Request, exc: ConflictError) -> JSONResponse:
+async def conflict_error_handler(_request: Request, exc: ConflictError) -> JSONResponse:
     return JSONResponse(status_code=409, content={"detail": exc.message})
 
 
 async def unprocessable_entity_error_handler(
-    request: Request, exc: UnprocessableEntityError
+    _request: Request, exc: UnprocessableEntityError
 ) -> JSONResponse:
     return JSONResponse(status_code=422, content={"detail": exc.message})
 
 
 async def sqlalchemy_integrity_error_handler(
-    request: Request, exc: Exception
+    _request: Request, _exc: Exception
 ) -> JSONResponse:
     return JSONResponse(
         status_code=409,
@@ -128,10 +128,10 @@ async def sqlalchemy_integrity_error_handler(
     )
 
 
-def register_exception_handlers(app):
+def register_exception_handlers(app: FastAPI):
     app.add_exception_handler(NotFoundError, not_found_error_exception_handler)
     app.add_exception_handler(
-        MediaAlreadyExists, media_already_exists_exception_handler
+        MediaAlreadyExistsError, media_already_exists_exception_handler
     )
     app.add_exception_handler(
         InvalidConfigError, invalid_config_error_exception_handler

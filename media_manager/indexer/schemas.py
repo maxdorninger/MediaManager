@@ -3,7 +3,7 @@ import typing
 from uuid import UUID, uuid4
 
 import pydantic
-from pydantic import BaseModel, computed_field, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
 from media_manager.torrent.models import Quality
 
@@ -30,7 +30,7 @@ class IndexerQueryResult(BaseModel):
 
     indexer: str | None
 
-    @computed_field(return_type=Quality)
+    @computed_field
     @property
     def quality(self) -> Quality:
         high_quality_pattern = r"\b(4k)\b"
@@ -40,24 +40,22 @@ class IndexerQueryResult(BaseModel):
 
         if re.search(high_quality_pattern, self.title, re.IGNORECASE):
             return Quality.uhd
-        elif re.search(medium_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(medium_quality_pattern, self.title, re.IGNORECASE):
             return Quality.fullhd
-        elif re.search(low_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(low_quality_pattern, self.title, re.IGNORECASE):
             return Quality.hd
-        elif re.search(very_low_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(very_low_quality_pattern, self.title, re.IGNORECASE):
             return Quality.sd
 
         return Quality.unknown
 
-    @computed_field(return_type=list[int])
+    @computed_field
     @property
     def season(self) -> list[int]:
-        pattern = r"\b[sS](\d+)\b"
+        pattern = r"\bS(\d+)\b"
         matches = re.findall(pattern, self.title, re.IGNORECASE)
         if matches.__len__() == 2:
-            result = []
-            for i in range(int(matches[0]), int(matches[1]) + 1):
-                result.append(i)
+            result = list(range(int(matches[0]), int(matches[1]) + 1))
         elif matches.__len__() == 1:
             result = [int(matches[0])]
         else:

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.torrent.schemas import TorrentStatus, Torrent
+from media_manager.torrent.schemas import Torrent, TorrentStatus
 
 
 class AbstractDownloadClient(ABC):
@@ -23,7 +23,6 @@ class AbstractDownloadClient(ABC):
         :param torrent: The indexer query result of the torrent file to download.
         :return: The torrent object with calculated hash and initial status.
         """
-        pass
 
     @abstractmethod
     def remove_torrent(self, torrent: Torrent, delete_data: bool = False) -> None:
@@ -33,7 +32,6 @@ class AbstractDownloadClient(ABC):
         :param torrent: The torrent to remove.
         :param delete_data: Whether to delete the downloaded data.
         """
-        pass
 
     @abstractmethod
     def get_torrent_status(self, torrent: Torrent) -> TorrentStatus:
@@ -43,7 +41,6 @@ class AbstractDownloadClient(ABC):
         :param torrent: The torrent to get the status of.
         :return: The status of the torrent.
         """
-        pass
 
     @abstractmethod
     def pause_torrent(self, torrent: Torrent) -> None:
@@ -52,7 +49,6 @@ class AbstractDownloadClient(ABC):
 
         :param torrent: The torrent to pause.
         """
-        pass
 
     @abstractmethod
     def resume_torrent(self, torrent: Torrent) -> None:
@@ -61,4 +57,3 @@ class AbstractDownloadClient(ABC):
 
         :param torrent: The torrent to resume.
         """
-        pass

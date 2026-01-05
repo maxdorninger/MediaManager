@@ -5,10 +5,10 @@ from qbittorrentapi import Conflict409Error
 
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.torrent.download_clients.abstractDownloadClient import (
+from media_manager.torrent.download_clients.abstract_download_client import (
     AbstractDownloadClient,
 )
-from media_manager.torrent.schemas import TorrentStatus, Torrent
+from media_manager.torrent.schemas import Torrent, TorrentStatus
 from media_manager.torrent.utils import get_torrent_hash
 
 log = logging.getLogger(__name__)
@@ -102,9 +102,8 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
             log.error(
                 f"Failed to download torrent, API-Answer isn't 'Ok.'; API Answer: {answer}"
             )
-            raise RuntimeError(
-                f"Failed to download torrent, API-Answer isn't 'Ok.'; API Answer: {answer}"
-            )
+            msg = f"Failed to download torrent, API-Answer isn't 'Ok.'; API Answer: {answer}"
+            raise RuntimeError(msg)
 
         log.info(f"Successfully processed torrent: {indexer_result.title}")
 
@@ -154,19 +153,17 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         if not info:
             log.warning(f"No information found for torrent: {torrent.id}")
             return TorrentStatus.unknown
-        else:
-            state: str = info[0]["state"]
+        state: str = info[0]["state"]
 
-            if state in self.DOWNLOADING_STATE:
-                return TorrentStatus.downloading
-            elif state in self.FINISHED_STATE:
-                return TorrentStatus.finished
-            elif state in self.ERROR_STATE:
-                return TorrentStatus.error
-            elif state in self.UNKNOWN_STATE:
-                return TorrentStatus.unknown
-            else:
-                return TorrentStatus.error
+        if state in self.DOWNLOADING_STATE:
+            return TorrentStatus.downloading
+        if state in self.FINISHED_STATE:
+            return TorrentStatus.finished
+        if state in self.ERROR_STATE:
+            return TorrentStatus.error
+        if state in self.UNKNOWN_STATE:
+            return TorrentStatus.unknown
+        return TorrentStatus.error
 
     def pause_torrent(self, torrent: Torrent) -> None:
         """

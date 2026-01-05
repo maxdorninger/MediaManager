@@ -4,10 +4,10 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 import requests
 
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.config import MediaManagerConfig
 from media_manager.movies.schemas import Movie
 from media_manager.tv.schemas import Show
 

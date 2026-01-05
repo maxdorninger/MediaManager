@@ -1,16 +1,15 @@
 from typing import Annotated
 
-from fastapi import Depends, Path
+from fastapi import Depends, HTTPException, Path
 
 from media_manager.database import DbSessionDependency
+from media_manager.exceptions import NotFoundError
+from media_manager.indexer.dependencies import indexer_service_dep
 from media_manager.movies.repository import MovieRepository
 from media_manager.movies.schemas import Movie, MovieId
 from media_manager.movies.service import MovieService
-from media_manager.exceptions import NotFoundError
-from fastapi import HTTPException
-from media_manager.indexer.dependencies import indexer_service_dep
-from media_manager.torrent.dependencies import torrent_service_dep
 from media_manager.notification.dependencies import notification_service_dep
+from media_manager.torrent.dependencies import torrent_service_dep
 
 
 def get_movie_repository(db_session: DbSessionDependency) -> MovieRepository:
@@ -47,7 +46,7 @@ def get_movie_by_id(
         raise HTTPException(
             status_code=404,
             detail=f"Movie with ID {movie_id} not found.",
-        )
+        ) from None
     return movie
 
 

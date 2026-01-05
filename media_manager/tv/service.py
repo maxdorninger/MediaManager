@@ -1,58 +1,63 @@
+import pprint
 import re
 import shutil
+from pathlib import Path
+from typing import overload
 
 from sqlalchemy.exc import IntegrityError
 
 from media_manager.config import MediaManagerConfig
 from media_manager.database import get_session
-from media_manager.exceptions import InvalidConfigError
+from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.indexer.repository import IndexerRepository
-from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.indexer.schemas import IndexerQueryResultId
-from media_manager.indexer.utils import evaluate_indexer_query_results
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.notification.service import NotificationService
-from media_manager.torrent.schemas import Torrent, TorrentStatus, Quality
-from media_manager.torrent.service import TorrentService
-from media_manager.tv import log
-from media_manager.tv.schemas import (
-    Show,
-    ShowId,
-    SeasonRequest,
-    SeasonFile,
-    SeasonId,
-    Season,
-    RichShowTorrent,
-    RichSeasonTorrent,
-    PublicSeason,
-    PublicShow,
-    PublicSeasonFile,
-    SeasonRequestId,
-    RichSeasonRequest,
-    EpisodeId,
-    Episode as EpisodeSchema,
-)
-from media_manager.torrent.schemas import QualityStrings
-from media_manager.tv.repository import TvRepository
-from media_manager.exceptions import NotFoundError
-import pprint
-from pathlib import Path
-from media_manager.torrent.repository import TorrentRepository
-from media_manager.torrent.utils import (
-    import_file,
-    get_files_for_import,
-    remove_special_characters,
-    get_importable_media_directories,
-    extract_external_id_from_string,
-    remove_special_chars_and_parentheses,
-)
+from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
-from media_manager.metadataProvider.abstractMetaDataProvider import (
+from media_manager.indexer.utils import evaluate_indexer_query_results
+from media_manager.metadataProvider.abstract_metadata_provider import (
     AbstractMetadataProvider,
 )
+from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
+from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
+from media_manager.torrent.repository import TorrentRepository
+from media_manager.torrent.schemas import (
+    Quality,
+    QualityStrings,
+    Torrent,
+    TorrentStatus,
+)
+from media_manager.torrent.service import TorrentService
+from media_manager.torrent.utils import (
+    extract_external_id_from_string,
+    get_files_for_import,
+    get_importable_media_directories,
+    import_file,
+    remove_special_characters,
+    remove_special_chars_and_parentheses,
+)
+from media_manager.tv import log
+from media_manager.tv.repository import TvRepository
+from media_manager.tv.schemas import (
+    Episode as EpisodeSchema,
+)
+from media_manager.tv.schemas import (
+    EpisodeId,
+    PublicSeason,
+    PublicSeasonFile,
+    PublicShow,
+    RichSeasonRequest,
+    RichSeasonTorrent,
+    RichShowTorrent,
+    Season,
+    SeasonFile,
+    SeasonId,
+    SeasonRequest,
+    SeasonRequestId,
+    Show,
+    ShowId,
+)
 
 
 class TvService:
@@ -82,7 +87,7 @@ class TvService:
         :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
         show_with_metadata = metadata_provider.get_show_metadata(
-            id=external_id, language=language
+            show_id=external_id, language=language
         )
         saved_show = self.tv_repository.save_show(show=show_with_metadata)
         metadata_provider.download_show_poster_image(show=saved_show)
@@ -193,22 +198,29 @@ class TvService:
             result.append(season_file)
         return result
 
-    def check_if_show_exists(
-        self,
-        external_id: int = None,
-        metadata_provider: str = None,
-        show_id: ShowId = None,
-    ) -> bool:
+    @overload
+    def check_if_show_exists(self, *, external_id: int, metadata_provider: str) -> bool:
         """
         Check if a show exists in the database.
 
         :param external_id: The external ID of the show.
         :param metadata_provider: The metadata provider.
+        :return: True if the show exists, False otherwise.
+        """
+
+    @overload
+    def check_if_show_exists(self, *, show_id: ShowId) -> bool:
+        """
+        Check if a show exists in the database.
+
         :param show_id: The ID of the show.
         :return: True if the show exists, False otherwise.
-        :raises ValueError: If neither external ID and metadata provider nor show ID are provided.
         """
-        if external_id and metadata_provider:
+
+    def check_if_show_exists(
+        self, *, external_id=None, metadata_provider=None, show_id=None
+    ) -> bool:
+        if not (external_id is None or metadata_provider is None):
             try:
                 self.tv_repository.get_show_by_external_id(
                     external_id=external_id, metadata_provider=metadata_provider
@@ -216,19 +228,21 @@ class TvService:
                 return True
             except NotFoundError:
                 return False
-        elif show_id:
+        elif show_id is not None:
             try:
                 self.tv_repository.get_show_by_id(show_id=show_id)
                 return True
             except NotFoundError:
                 return False
         else:
-            raise ValueError(
-                "External ID and metadata provider or Show ID must be provided"
-            )
+            msg = "Use one of the provided overloads for this function!"
+            raise ValueError(msg)
 
     def get_all_available_torrents_for_a_season(
-        self, season_number: int, show_id: ShowId, search_query_override: str = None
+        self,
+        season_number: int,
+        show_id: ShowId,
+        search_query_override: str | None = None,
     ) -> list[IndexerQueryResult]:
         """
         Get all available torrents for a given season.
@@ -238,26 +252,21 @@ class TvService:
         :param search_query_override: Optional override for the search query.
         :return: A list of indexer query results.
         """
-        show = self.tv_repository.get_show_by_id(show_id=show_id)
 
         if search_query_override:
-            torrents = self.indexer_service.search(
-                query=search_query_override, is_tv=True
-            )
-            return torrents
-        else:
-            torrents = self.indexer_service.search_season(
-                show=show, season_number=season_number
-            )
+            return self.indexer_service.search(query=search_query_override, is_tv=True)
 
-            results: list[IndexerQueryResult] = []
-            for torrent in torrents:
-                if season_number in torrent.season:
-                    results.append(torrent)
+        show = self.tv_repository.get_show_by_id(show_id=show_id)
 
-            return evaluate_indexer_query_results(
-                is_tv=True, query_results=results, media=show
-            )
+        torrents = self.indexer_service.search_season(
+            show=show, season_number=season_number
+        )
+
+        results = [torrent for torrent in torrents if season_number in torrent.season]
+
+        return evaluate_indexer_query_results(
+            is_tv=True, query_results=results, media=show
+        )
 
     def get_all_shows(self) -> list[Show]:
         """
@@ -305,16 +314,15 @@ class TvService:
         :param metadata_provider: The metadata provider to use.
         :return: A list of metadata provider show search results.
         """
-        results: list[MetaDataProviderSearchResult] = metadata_provider.search_show()
+        results = metadata_provider.search_show()
 
-        filtered_results = []
-        for result in results:
+        return [
+            result
+            for result in results
             if not self.check_if_show_exists(
                 external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                filtered_results.append(result)
-
-        return filtered_results
+            )
+        ]
 
     def get_public_show_by_id(self, show: Show) -> PublicShow:
         """
@@ -363,16 +371,15 @@ class TvService:
         """
         if season_file.torrent_id is None:
             return True
-        else:
-            try:
-                torrent_file = self.torrent_service.get_torrent_by_id(
-                    torrent_id=season_file.torrent_id
-                )
+        try:
+            torrent_file = self.torrent_service.get_torrent_by_id(
+                torrent_id=season_file.torrent_id
+            )
 
-                if torrent_file.imported:
-                    return True
-            except RuntimeError as e:
-                log.error(f"Error retrieving torrent, error: {e}")
+            if torrent_file.imported:
+                return True
+        except RuntimeError as e:
+            log.error(f"Error retrieving torrent, error: {e}")
         return False
 
     def get_show_by_external_id(
@@ -511,9 +518,8 @@ class TvService:
         :raises ValueError: If the season request is not authorized.
         """
         if not season_request.authorized:
-            raise ValueError(
-                f"Season request {season_request.id} is not authorized for download"
-            )
+            msg = f"Season request {season_request.id} is not authorized for download"
+            raise ValueError(msg)
 
         log.info(f"Downloading approved season request {season_request.id}")
 
@@ -633,9 +639,8 @@ class TvService:
                 import_file(target_file=target_video_file, source_file=file)
                 return True
         else:
-            raise Exception(
-                f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
-            )
+            msg = f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
+            raise Exception(msg)
 
     def import_season(
         self,
@@ -654,7 +659,8 @@ class TvService:
             season_path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
             log.warning(f"Could not create path {season_path}: {e}")
-            raise Exception(f"Could not create path {season_path}") from e
+            msg = f"Could not create path {season_path}"
+            raise Exception(msg) from e
 
         for episode in season.episodes:
             try:
@@ -689,7 +695,7 @@ class TvService:
         :param show: The Show object
         """
 
-        video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
+        video_files, subtitle_files, _all_files = get_files_for_import(torrent=torrent)
 
         success: list[bool] = []
 
@@ -704,7 +710,7 @@ class TvService:
 
         for season_file in season_files:
             season = self.get_season(season_id=season_file.season_id)
-            season_import_success, imported_episodes_count = self.import_season(
+            season_import_success, _imported_episodes_count = self.import_season(
                 show=show,
                 season=season,
                 video_files=video_files,
@@ -758,7 +764,7 @@ class TvService:
 
         # Use stored original_language preference for metadata fetching
         fresh_show_data = metadata_provider.get_show_metadata(
-            id=db_show.external_id, language=db_show.original_language
+            show_id=db_show.external_id, language=db_show.original_language
         )
         if not fresh_show_data:
             log.warning(
@@ -833,16 +839,15 @@ class TvService:
                 log.debug(
                     f"Adding new season {fresh_season_data.number} to show {db_show.name}"
                 )
-                episodes_for_schema = []
-                for ep_data in fresh_season_data.episodes:
-                    episodes_for_schema.append(
-                        EpisodeSchema(
-                            id=EpisodeId(ep_data.id),
-                            number=ep_data.number,
-                            external_id=ep_data.external_id,
-                            title=ep_data.title,
-                        )
+                episodes_for_schema = [
+                    EpisodeSchema(
+                        id=EpisodeId(ep_data.id),
+                        number=ep_data.number,
+                        external_id=ep_data.external_id,
+                        title=ep_data.title,
                     )
+                    for ep_data in fresh_season_data.episodes
+                ]
 
                 season_schema = Season(
                     id=SeasonId(fresh_season_data.id),
@@ -896,9 +901,10 @@ class TvService:
             source_directory.rename(new_source_path)
         except Exception as e:
             log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
-            raise Exception("Failed to rename source directory") from e
+            msg = "Failed to rename source directory"
+            raise Exception(msg) from e
 
-        video_files, subtitle_files, all_files = get_files_for_import(
+        video_files, subtitle_files, _all_files = get_files_for_import(
             directory=new_source_path
         )
         for season in tv_show.seasons:
@@ -1052,7 +1058,7 @@ def update_all_non_ended_shows_metadata() -> None:
                     continue
             except InvalidConfigError as e:
                 log.error(
-                    f"Error initializing metadata provider {show.metadata_provider} for show {show.name}: {str(e)}"
+                    f"Error initializing metadata provider {show.metadata_provider} for show {show.name}: {e}"
                 )
                 continue
             updated_show = tv_service.update_show_metadata(

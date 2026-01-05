@@ -1,10 +1,10 @@
 import logging
 from abc import ABC, abstractmethod
 
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.tv.schemas import Show
-from media_manager.movies.schemas import Movie
 from media_manager.config import MediaManagerConfig
+from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
+from media_manager.movies.schemas import Movie
+from media_manager.tv.schemas import Show
 
 log = logging.getLogger(__name__)
 
@@ -18,11 +18,15 @@ class AbstractMetadataProvider(ABC):
         pass
 
     @abstractmethod
-    def get_show_metadata(self, id: int = None, language: str | None = None) -> Show:
+    def get_show_metadata(
+        self, show_id: int | None = None, language: str | None = None
+    ) -> Show:
         raise NotImplementedError()
 
     @abstractmethod
-    def get_movie_metadata(self, id: int = None, language: str | None = None) -> Movie:
+    def get_movie_metadata(
+        self, movie_id: int | None = None, language: str | None = None
+    ) -> Movie:
         raise NotImplementedError()
 
     @abstractmethod

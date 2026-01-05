@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie
@@ -8,11 +8,8 @@ from media_manager.tv.schemas import Show
 class GenericIndexer(ABC):
     name: str
 
-    def __init__(self, name: str = None):
-        if name:
-            self.name = name
-        else:
-            raise ValueError("indexer name must not be None")
+    def __init__(self, name: str):
+        self.name = name
 
     @abstractmethod
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:

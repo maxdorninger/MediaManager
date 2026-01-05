@@ -2,7 +2,7 @@ import typing
 import uuid
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from media_manager.auth.schemas import UserRead
 from media_manager.torrent.models import Quality
@@ -47,9 +47,8 @@ class MovieRequestBase(BaseModel):
     @model_validator(mode="after")
     def ensure_wanted_quality_is_eq_or_gt_min_quality(self) -> "MovieRequestBase":
         if self.min_quality.value < self.wanted_quality.value:
-            raise ValueError(
-                "wanted_quality must be equal to or lower than minimum_quality."
-            )
+            msg = "wanted_quality must be equal to or lower than minimum_quality."
+            raise ValueError(msg)
         return self
 
 
