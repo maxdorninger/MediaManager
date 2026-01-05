@@ -204,7 +204,6 @@ class MovieService:
         :param metadata_provider: The metadata provider.
         :return: True if the movie exists, False otherwise.
         """
-        ...
 
     @overload
     def check_if_movie_exists(self, *, movie_id: MovieId) -> bool:
@@ -214,7 +213,6 @@ class MovieService:
         :param movie_id: The ID of the movie.
         :return: True if the movie exists, False otherwise.
         """
-        ...
 
     def check_if_movie_exists(
         self,
@@ -232,6 +230,7 @@ class MovieService:
         :return: True if the movie exists, False otherwise.
         :raises ValueError: If neither external ID and metadata provider nor movie ID are provided.
         """
+
         if not (external_id is None or metadata_provider is None):
             try:
                 self.movie_repository.get_movie_by_external_id(

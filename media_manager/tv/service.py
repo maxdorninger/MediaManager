@@ -207,7 +207,6 @@ class TvService:
         :param metadata_provider: The metadata provider.
         :return: True if the show exists, False otherwise.
         """
-        ...
 
     @overload
     def check_if_show_exists(self, *, show_id: ShowId) -> bool:
@@ -217,7 +216,6 @@ class TvService:
         :param show_id: The ID of the show.
         :return: True if the show exists, False otherwise.
         """
-        ...
 
     def check_if_show_exists(
         self, *, external_id=None, metadata_provider=None, show_id=None

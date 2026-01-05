@@ -76,7 +76,6 @@ class SeasonRequestBase(BaseModel):
 
 class CreateSeasonRequest(SeasonRequestBase):
     season_id: SeasonId
-    pass
 
 
 class UpdateSeasonRequest(SeasonRequestBase):

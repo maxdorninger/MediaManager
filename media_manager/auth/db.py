@@ -20,7 +20,6 @@ class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
     refresh_token: Mapped[Optional[str]] = mapped_column(
         String(length=4096), nullable=True
     )
-    pass
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
