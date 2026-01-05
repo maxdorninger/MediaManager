@@ -19,7 +19,7 @@ from media_manager.torrent.schemas import Torrent
 log = logging.getLogger(__name__)
 
 
-def list_files_recursively(path: Path = Path(".")) -> list[Path]:
+def list_files_recursively(path: Path = Path()) -> list[Path]:
     files = list(path.glob("**/*"))
     log.debug(f"Found {len(files)} entries via glob")
     valid_files = []
@@ -158,8 +158,7 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
             raise
 
         # saving the torrent file
-        with open(torrent_filepath, "wb") as file:
-            file.write(torrent_content)
+        torrent_filepath.write_bytes(torrent_content)
 
         # parsing info hash
         log.debug(f"parsing torrent file: {torrent.download_url}")
