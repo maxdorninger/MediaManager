@@ -151,8 +151,7 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
                 session=requests.Session(),
                 timeout=MediaManagerConfig().indexers.prowlarr.timeout_seconds,
             )
-            torrent_hash = str(libtorrent.parse_magnet_uri(final_url).info_hash)
-            return torrent_hash
+            return str(libtorrent.parse_magnet_uri(final_url).info_hash)
         except Exception as e:
             log.error(f"Failed to download torrent file: {e}")
             raise
@@ -184,9 +183,7 @@ def remove_special_characters(filename: str) -> str:
     sanitized = re.sub(r"([<>:\"/\\|?*])", "", filename)
 
     # Remove leading and trailing dots or spaces
-    sanitized = sanitized.strip(" .")
-
-    return sanitized
+    return sanitized.strip(" .")
 
 
 def remove_special_chars_and_parentheses(title: str) -> str:
@@ -210,8 +207,7 @@ def remove_special_chars_and_parentheses(title: str) -> str:
     sanitized = remove_special_characters(sanitized)
 
     # Collapse multiple whitespace characters and trim the result
-    sanitized = re.sub(r"\s+", " ", sanitized).strip()
-    return sanitized
+    return re.sub(r"\s+", " ", sanitized).strip()
 
 
 def get_importable_media_directories(path: Path) -> list[Path]:
@@ -224,14 +220,12 @@ def get_importable_media_directories(path: Path) -> list[Path]:
 
     unfiltered_dirs = [d for d in path.glob("*") if d.is_dir()]
 
-    media_dirs = [
+    return [
         media_dir
         for media_dir in unfiltered_dirs
         if media_dir.absolute() not in library_paths
         and not media_dir.name.startswith(".")
     ]
-
-    return media_dirs
 
 
 def extract_external_id_from_string(input_string: str) -> tuple[str | None, int | None]:

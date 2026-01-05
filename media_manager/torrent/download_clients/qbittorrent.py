@@ -153,19 +153,17 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         if not info:
             log.warning(f"No information found for torrent: {torrent.id}")
             return TorrentStatus.unknown
-        else:
-            state: str = info[0]["state"]
+        state: str = info[0]["state"]
 
-            if state in self.DOWNLOADING_STATE:
-                return TorrentStatus.downloading
-            elif state in self.FINISHED_STATE:
-                return TorrentStatus.finished
-            elif state in self.ERROR_STATE:
-                return TorrentStatus.error
-            elif state in self.UNKNOWN_STATE:
-                return TorrentStatus.unknown
-            else:
-                return TorrentStatus.error
+        if state in self.DOWNLOADING_STATE:
+            return TorrentStatus.downloading
+        if state in self.FINISHED_STATE:
+            return TorrentStatus.finished
+        if state in self.ERROR_STATE:
+            return TorrentStatus.error
+        if state in self.UNKNOWN_STATE:
+            return TorrentStatus.unknown
+        return TorrentStatus.error
 
     def pause_torrent(self, torrent: Torrent) -> None:
         """

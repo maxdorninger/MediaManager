@@ -59,9 +59,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             )
             log.debug("Successfully downloaded poster image for show " + show.name)
             return True
-        else:
-            log.warning(f"image for show {show.name} could not be downloaded")
-            return False
+        log.warning(f"image for show {show.name} could not be downloaded")
+        return False
 
     @override
     def get_show_metadata(
@@ -112,23 +111,17 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                     episodes=episodes,
                 )
             )
-        try:
-            year = series["year"]
-        except KeyError:
-            year = None
 
-        show = Show(
+        return Show(
             name=series["name"],
             overview=series["overview"],
-            year=year,
+            year=series.get("year"),
             external_id=series["id"],
             metadata_provider=self.name,
             seasons=seasons,
             ended=False,
             imdb_id=imdb_id,
         )
-
-        return show
 
     @override
     def search_show(
@@ -160,35 +153,34 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                 except Exception as e:
                     log.warning(f"Error processing search result: {e}")
             return formatted_results
-        else:
-            results = self.__get_trending_tv()
-            formatted_results = []
-            for result in results:
-                try:
-                    if result["type"] == "series":
-                        try:
-                            year = result["year"]
-                        except KeyError:
-                            year = None
+        results = self.__get_trending_tv()
+        formatted_results = []
+        for result in results:
+            try:
+                if result["type"] == "series":
+                    try:
+                        year = result["year"]
+                    except KeyError:
+                        year = None
 
-                        formatted_results.append(
-                            MetaDataProviderSearchResult(
-                                poster_path="https://artworks.thetvdb.com"
-                                + result.get("image")
-                                if result.get("image")
-                                else None,
-                                overview=result.get("overview"),
-                                name=result["name"],
-                                external_id=result["id"],
-                                year=year,
-                                metadata_provider=self.name,
-                                added=False,
-                                vote_average=None,
-                            )
+                    formatted_results.append(
+                        MetaDataProviderSearchResult(
+                            poster_path="https://artworks.thetvdb.com"
+                            + result.get("image")
+                            if result.get("image")
+                            else None,
+                            overview=result.get("overview"),
+                            name=result["name"],
+                            external_id=result["id"],
+                            year=year,
+                            metadata_provider=self.name,
+                            added=False,
+                            vote_average=None,
                         )
-                except Exception as e:
-                    log.warning(f"Error processing search result: {e}")
-            return formatted_results
+                    )
+            except Exception as e:
+                log.warning(f"Error processing search result: {e}")
+        return formatted_results
 
     @override
     def search_movie(
@@ -226,37 +218,35 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                 except Exception as e:
                     log.warning(f"Error processing search result: {e}")
             return formatted_results
-        else:
-            results = self.__get_trending_movies()
-            results = results[0:20]
-            log.debug(f"got {len(results)} results from TVDB search")
-            formatted_results = []
-            for result in results:
-                result = self.__get_movie(result["id"])
+        results = self.__get_trending_movies()
+        results = results[0:20]
+        log.debug(f"got {len(results)} results from TVDB search")
+        formatted_results = []
+        for result in results:
+            result = self.__get_movie(result["id"])
+            try:
                 try:
-                    try:
-                        year = result["year"]
-                    except KeyError:
-                        year = None
+                    year = result["year"]
+                except KeyError:
+                    year = None
 
-                    formatted_results.append(
-                        MetaDataProviderSearchResult(
-                            poster_path="https://artworks.thetvdb.com"
-                            + result.get("image")
-                            if result.get("image")
-                            else None,
-                            overview=result.get("overview"),
-                            name=result["name"],
-                            external_id=result["id"],
-                            year=year,
-                            metadata_provider=self.name,
-                            added=False,
-                            vote_average=None,
-                        )
+                formatted_results.append(
+                    MetaDataProviderSearchResult(
+                        poster_path="https://artworks.thetvdb.com" + result.get("image")
+                        if result.get("image")
+                        else None,
+                        overview=result.get("overview"),
+                        name=result["name"],
+                        external_id=result["id"],
+                        year=year,
+                        metadata_provider=self.name,
+                        added=False,
+                        vote_average=None,
                     )
-                except Exception as e:
-                    log.warning(f"Error processing search result: {e}")
-            return formatted_results
+                )
+            except Exception as e:
+                log.warning(f"Error processing search result: {e}")
+        return formatted_results
 
     @override
     def download_movie_poster_image(self, movie: Movie) -> bool:
@@ -270,9 +260,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             )
             log.info("Successfully downloaded poster image for show " + movie.name)
             return True
-        else:
-            log.warning(f"image for show {movie.name} could not be downloaded")
-            return False
+        log.warning(f"image for show {movie.name} could not be downloaded")
+        return False
 
     @override
     def get_movie_metadata(
@@ -294,7 +283,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                 if remote_id.get("type") == 2:
                     imdb_id = remote_id.get("id")
 
-        movie = Movie(
+        return Movie(
             name=movie["name"],
             overview="Overviews are not supported with TVDB",
             year=movie.get("year"),
@@ -302,5 +291,3 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
             metadata_provider=self.name,
             imdb_id=imdb_id,
         )
-
-        return movie

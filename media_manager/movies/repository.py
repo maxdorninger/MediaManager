@@ -313,8 +313,7 @@ class MovieRepository:
             stmt = delete(MovieFile).where(MovieFile.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
-            deleted_count = result.rowcount
-            return deleted_count
+            return result.rowcount
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(

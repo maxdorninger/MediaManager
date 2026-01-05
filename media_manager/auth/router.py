@@ -30,23 +30,22 @@ def get_openid_router():
             is_verified_by_default=True,
             redirect_url=None,
         )
-    else:
-        # this is there, so that the appropriate routes are created even if OIDC is not configured,
-        # e.g. for generating the frontend's openapi client
-        return get_oauth_router(
-            oauth_client=OAuth2(
-                client_id="mock",
-                client_secret="mock",  # noqa: S106
-                authorize_endpoint="https://example.com/authorize",
-                access_token_endpoint="https://example.com/token",  # noqa: S106
-            ),
-            backend=openid_cookie_auth_backend,
-            get_user_manager=fastapi_users.get_user_manager,
-            state_secret=SECRET,
-            associate_by_email=False,
-            is_verified_by_default=False,
-            redirect_url=None,
-        )
+    # this is there, so that the appropriate routes are created even if OIDC is not configured,
+    # e.g. for generating the frontend's openapi client
+    return get_oauth_router(
+        oauth_client=OAuth2(
+            client_id="mock",
+            client_secret="mock",  # noqa: S106
+            authorize_endpoint="https://example.com/authorize",
+            access_token_endpoint="https://example.com/token",  # noqa: S106
+        ),
+        backend=openid_cookie_auth_backend,
+        get_user_manager=fastapi_users.get_user_manager,
+        state_secret=SECRET,
+        associate_by_email=False,
+        is_verified_by_default=False,
+        redirect_url=None,
+    )
 
 
 openid_config = MediaManagerConfig().auth.openid_connect
@@ -67,5 +66,4 @@ def get_all_users(db: DbSessionDependency) -> list[UserRead]:
 def get_auth_metadata() -> AuthMetadata:
     if openid_config.enabled:
         return AuthMetadata(oauth_providers=[openid_config.name])
-    else:
-        return AuthMetadata(oauth_providers=[])
+    return AuthMetadata(oauth_providers=[])

@@ -165,8 +165,7 @@ def get_shows_with_torrents(tv_service: tv_service_dep) -> list[RichShowTorrent]
     """
     Get all shows that are associated with torrents.
     """
-    result = tv_service.get_all_shows_with_torrents()
-    return result
+    return tv_service.get_all_shows_with_torrents()
 
 
 @router.get(
@@ -369,14 +368,13 @@ def delete_season_request(
         tv_service.delete_season_request(season_request_id=request_id)
         log.info(f"User {user.id} deleted season request {request_id}.")
         return None
-    else:
-        log.warning(
-            f"User {user.id} tried to delete season request {request_id} but is not authorized."
-        )
-        return HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this request",
-        )
+    log.warning(
+        f"User {user.id} tried to delete season request {request_id} but is not authorized."
+    )
+    return HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Not authorized to delete this request",
+    )
 
 
 # -----------------------------------------------------------------------------

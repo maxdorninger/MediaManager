@@ -15,13 +15,12 @@ def get_metadata_provider(
 ) -> AbstractMetadataProvider:
     if metadata_provider == "tmdb":
         return TmdbMetadataProvider()
-    elif metadata_provider == "tvdb":
+    if metadata_provider == "tvdb":
         return TvdbMetadataProvider()
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid metadata provider: {metadata_provider}. Supported providers are 'tmdb' and 'tvdb'.",
-        )
+    raise HTTPException(
+        status_code=400,
+        detail=f"Invalid metadata provider: {metadata_provider}. Supported providers are 'tmdb' and 'tvdb'.",
+    )
 
 
 metadata_provider_dep = Annotated[

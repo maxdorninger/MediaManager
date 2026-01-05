@@ -254,24 +254,19 @@ class TvService:
         """
 
         if search_query_override:
-            torrents = self.indexer_service.search(
-                query=search_query_override, is_tv=True
-            )
-            return torrents
-        else:
-            show = self.tv_repository.get_show_by_id(show_id=show_id)
+            return self.indexer_service.search(query=search_query_override, is_tv=True)
 
-            torrents = self.indexer_service.search_season(
-                show=show, season_number=season_number
-            )
+        show = self.tv_repository.get_show_by_id(show_id=show_id)
 
-            results = [
-                torrent for torrent in torrents if season_number in torrent.season
-            ]
+        torrents = self.indexer_service.search_season(
+            show=show, season_number=season_number
+        )
 
-            return evaluate_indexer_query_results(
-                is_tv=True, query_results=results, media=show
-            )
+        results = [torrent for torrent in torrents if season_number in torrent.season]
+
+        return evaluate_indexer_query_results(
+            is_tv=True, query_results=results, media=show
+        )
 
     def get_all_shows(self) -> list[Show]:
         """
@@ -321,15 +316,13 @@ class TvService:
         """
         results = metadata_provider.search_show()
 
-        filtered_results = [
+        return [
             result
             for result in results
             if not self.check_if_show_exists(
                 external_id=result.external_id, metadata_provider=metadata_provider.name
             )
         ]
-
-        return filtered_results
 
     def get_public_show_by_id(self, show: Show) -> PublicShow:
         """
@@ -378,16 +371,15 @@ class TvService:
         """
         if season_file.torrent_id is None:
             return True
-        else:
-            try:
-                torrent_file = self.torrent_service.get_torrent_by_id(
-                    torrent_id=season_file.torrent_id
-                )
+        try:
+            torrent_file = self.torrent_service.get_torrent_by_id(
+                torrent_id=season_file.torrent_id
+            )
 
-                if torrent_file.imported:
-                    return True
-            except RuntimeError as e:
-                log.error(f"Error retrieving torrent, error: {e}")
+            if torrent_file.imported:
+                return True
+        except RuntimeError as e:
+            log.error(f"Error retrieving torrent, error: {e}")
         return False
 
     def get_show_by_external_id(

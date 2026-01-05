@@ -260,16 +260,13 @@ class MovieService:
         :return: A list of indexer query results.
         """
         if search_query_override:
-            torrents = self.indexer_service.search(
-                query=search_query_override, is_tv=False
-            )
-            return torrents
-        else:
-            torrents = self.indexer_service.search_movie(movie=movie)
+            return self.indexer_service.search(query=search_query_override, is_tv=False)
 
-            return evaluate_indexer_query_results(
-                is_tv=False, query_results=torrents, media=movie
-            )
+        torrents = self.indexer_service.search_movie(movie=movie)
+
+        return evaluate_indexer_query_results(
+            is_tv=False, query_results=torrents, media=movie
+        )
 
     def get_all_movies(self) -> list[Movie]:
         """
@@ -320,15 +317,13 @@ class MovieService:
         """
         results = metadata_provider.search_movie()
 
-        filtered_results = [
+        return [
             result
             for result in results
             if not self.check_if_movie_exists(
                 external_id=result.external_id, metadata_provider=metadata_provider.name
             )
         ]
-
-        return filtered_results
 
     def get_public_movie_by_id(self, movie: Movie) -> PublicMovie:
         """
@@ -376,12 +371,11 @@ class MovieService:
         """
         if movie_file.torrent_id is None:
             return True
-        else:
-            torrent_file = self.torrent_service.get_torrent_by_id(
-                torrent_id=movie_file.torrent_id
-            )
-            if torrent_file.imported:
-                return True
+        torrent_file = self.torrent_service.get_torrent_by_id(
+            torrent_id=movie_file.torrent_id
+        )
+        if torrent_file.imported:
+            return True
         return False
 
     def get_movie_by_external_id(

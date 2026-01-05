@@ -8,8 +8,7 @@ from PIL import Image
 def get_year_from_date(first_air_date: str | None) -> int | None:
     if first_air_date:
         return int(first_air_date.split("-")[0])
-    else:
-        return None
+    return None
 
 
 def download_poster_image(storage_path: Path, poster_url: str, uuid: UUID) -> bool:
@@ -23,5 +22,4 @@ def download_poster_image(storage_path: Path, poster_url: str, uuid: UUID) -> bo
         original_image.save(image_file_path.with_suffix(".avif"), quality=50)
         original_image.save(image_file_path.with_suffix(".webp"), quality=50)
         return True
-    else:
-        return False
+    return False

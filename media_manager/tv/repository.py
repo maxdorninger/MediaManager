@@ -123,8 +123,7 @@ class TvRepository:
             stmt = (
                 select(func.count()).select_from(Episode).join(Season).join(SeasonFile)
             )
-            total_count = self.db.execute(stmt).scalar_one_or_none()
-            return total_count
+            return self.db.execute(stmt).scalar_one_or_none()
         except SQLAlchemyError as e:
             log.error(
                 f"Database error while calculating downloaded episodes count: {e}"
@@ -394,8 +393,7 @@ class TvRepository:
             stmt = delete(SeasonFile).where(SeasonFile.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
-            deleted_count = result.rowcount
-            return deleted_count
+            return result.rowcount
         except SQLAlchemyError as e:
             self.db.rollback()
             log.error(

@@ -82,11 +82,10 @@ class DownloadManager:
                 msg = "No usenet download client configured"
                 raise RuntimeError(msg)
             return self._usenet_client
-        else:
-            if not self._torrent_client:
-                msg = "No torrent download client configured"
-                raise RuntimeError(msg)
-            return self._torrent_client
+        if not self._torrent_client:
+            msg = "No torrent download client configured"
+            raise RuntimeError(msg)
+        return self._torrent_client
 
     def download(self, indexer_result: IndexerQueryResult) -> Torrent:
         """

@@ -23,21 +23,20 @@ def build_db_url(
     host: str,
     port: int | str,
     dbname: str,
-) -> str:
-    db_url = URL.create(
+) -> URL:
+    return URL.create(
         "postgresql+psycopg",
         user,
         password,
         host,
-        port,
+        int(port),
         dbname,
     )
-    return db_url
 
 
 def init_engine(
     db_config: Any | None = None,
-    url: str | None = None,
+    url: str | URL | None = None,
 ) -> Engine:
     """
     Initialize the global SQLAlchemy engine and session factory.

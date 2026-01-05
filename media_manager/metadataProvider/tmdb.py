@@ -301,7 +301,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             show_metadata["first_air_date"]
         )
 
-        show = Show(
+        return Show(
             external_id=show_id,
             name=show_metadata["name"],
             overview=show_metadata["overview"],
@@ -312,8 +312,6 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             original_language=show_metadata.get("original_language"),
             imdb_id=imdb_id,
         )
-
-        return show
 
     @override
     def search_show(
@@ -332,8 +330,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
                 if not result_page["results"]:
                     break
-                else:
-                    results.extend(result_page["results"])
+                results.extend(result_page["results"])
 
         formatted_results = []
         for result in results:
@@ -408,7 +405,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             movie_metadata["release_date"]
         )
 
-        movie = Movie(
+        return Movie(
             external_id=movie_id,
             name=movie_metadata["title"],
             overview=movie_metadata["overview"],
@@ -417,8 +414,6 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             original_language=movie_metadata.get("original_language"),
             imdb_id=imdb_id,
         )
-
-        return movie
 
     @override
     def search_movie(
@@ -437,8 +432,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
                 if not result_page["results"]:
                     break
-                else:
-                    results.extend(result_page["results"])
+                results.extend(result_page["results"])
 
         formatted_results = []
         for result in results:

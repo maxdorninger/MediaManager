@@ -40,11 +40,11 @@ class IndexerQueryResult(BaseModel):
 
         if re.search(high_quality_pattern, self.title, re.IGNORECASE):
             return Quality.uhd
-        elif re.search(medium_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(medium_quality_pattern, self.title, re.IGNORECASE):
             return Quality.fullhd
-        elif re.search(low_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(low_quality_pattern, self.title, re.IGNORECASE):
             return Quality.hd
-        elif re.search(very_low_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(very_low_quality_pattern, self.title, re.IGNORECASE):
             return Quality.sd
 
         return Quality.unknown

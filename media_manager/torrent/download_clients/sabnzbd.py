@@ -139,9 +139,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         """
         if sabnzbd_status in self.DOWNLOADING_STATE:
             return TorrentStatus.downloading
-        elif sabnzbd_status in self.FINISHED_STATE:
+        if sabnzbd_status in self.FINISHED_STATE:
             return TorrentStatus.finished
-        elif sabnzbd_status in self.ERROR_STATE:
+        if sabnzbd_status in self.ERROR_STATE:
             return TorrentStatus.error
-        else:
-            return TorrentStatus.unknown
+        return TorrentStatus.unknown
