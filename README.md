@@ -18,7 +18,7 @@
 </div>
 
 
-MediaManager is modern software to manage your TV and movie library. It is designed to be a replacement for Sonarr,
+MediaManager is a modern software to manage your TV and movie library. It is designed to be a replacement for Sonarr,
 Radarr, Overseer, and Jellyseer.
 It supports TVDB and TMDB for metadata, supports OIDC and OAuth 2.0 for authentication and supports Prowlarr and
 Jackett.
@@ -62,7 +62,6 @@ docker compose up -d
 <a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/DEBBB9/JO.png" width="80px" alt="Josh" /></a>&nbsp;&nbsp;
 <a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/11/2VeQ8sTGPhj4tiLy.jpg" width="80px" alt="PuppiestDoggo" /></a>&nbsp;&nbsp;
 <a href="https://github.com/seferino-fernandez"><img src="https://avatars.githubusercontent.com/u/5546622" width="80px" alt="Seferino" /></a>&nbsp;&nbsp;
-
 
 ## Star History
 
