@@ -18,14 +18,12 @@
 </div>
 
 
-MediaManager is a modern software to manage your TV and movie library. It is designed to be a replacement for Sonarr,
-Radarr, Overseer, and Jellyseer.
-It supports TVDB and TMDB for metadata, supports OIDC and OAuth 2.0 for authentication and supports Prowlarr and
-Jackett.
-MediaManager is built first and foremost for deployment with Docker, making it easy to set up.
+MediaManager is the modern, easy-to-use successor to the fragmented "Arr" stack. Manage, discover, and automate your TV and movie collection in a single, simple interface.
 
-It also provides an API to interact with the software programmatically, allowing for automation and integration with
-other services.
+Key features:
+- support for OAuth/OIDC
+- support for TVDB and TMDB
+- made to be deployed with Docker
 
 ## Quick Start
 
