@@ -52,7 +52,7 @@ class IndexerQueryResult(BaseModel):
     @computed_field
     @property
     def season(self) -> list[int]:
-        pattern = r"\b[sS](\d+)\b"
+        pattern = r"\bS(\d+)\b"
         matches = re.findall(pattern, self.title, re.IGNORECASE)
         if matches.__len__() == 2:
             result = []
