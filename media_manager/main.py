@@ -30,7 +30,7 @@ from media_manager.config import MediaManagerConfig
 from media_manager.exceptions import (
     ConflictError,
     InvalidConfigError,
-    MediaAlreadyExists,
+    MediaAlreadyExistsError,
     NotFoundError,
     conflict_error_handler,
     invalid_config_error_exception_handler,
@@ -169,7 +169,9 @@ async def not_found_handler(request, _exc):
 
 # Register exception handlers for custom exceptions
 app.add_exception_handler(NotFoundError, not_found_error_exception_handler)
-app.add_exception_handler(MediaAlreadyExists, media_already_exists_exception_handler)
+app.add_exception_handler(
+    MediaAlreadyExistsError, media_already_exists_exception_handler
+)
 app.add_exception_handler(InvalidConfigError, invalid_config_error_exception_handler)
 app.add_exception_handler(IntegrityError, sqlalchemy_integrity_error_handler)
 app.add_exception_handler(UniqueViolation, sqlalchemy_integrity_error_handler)

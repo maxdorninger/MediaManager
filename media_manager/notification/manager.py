@@ -7,7 +7,7 @@ from typing import List
 
 from media_manager.config import MediaManagerConfig
 from media_manager.notification.schemas import MessageNotification
-from media_manager.notification.service_providers.abstractNotificationServiceProvider import (
+from media_manager.notification.service_providers.abstract_notification_service_provider import (
     AbstractNotificationServiceProvider,
 )
 from media_manager.notification.service_providers.email import (

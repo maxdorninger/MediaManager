@@ -5,7 +5,7 @@ import transmission_rpc
 
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.torrent.download_clients.abstractDownloadClient import (
+from media_manager.torrent.download_clients.abstract_download_client import (
     AbstractDownloadClient,
 )
 from media_manager.torrent.schemas import Torrent, TorrentStatus

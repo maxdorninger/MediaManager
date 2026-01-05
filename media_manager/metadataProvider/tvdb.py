@@ -5,7 +5,7 @@ import requests
 
 import media_manager.metadataProvider.utils
 from media_manager.config import MediaManagerConfig
-from media_manager.metadataProvider.abstractMetaDataProvider import (
+from media_manager.metadataProvider.abstract_metadata_provider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult

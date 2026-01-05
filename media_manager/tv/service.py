@@ -13,7 +13,7 @@ from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
 from media_manager.indexer.utils import evaluate_indexer_query_results
-from media_manager.metadataProvider.abstractMetaDataProvider import (
+from media_manager.metadataProvider.abstract_metadata_provider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult

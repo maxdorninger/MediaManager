@@ -7,7 +7,7 @@ from media_manager.auth.db import User
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, MediaManagerConfig
-from media_manager.exceptions import MediaAlreadyExists
+from media_manager.exceptions import MediaAlreadyExistsError
 from media_manager.indexer.schemas import (
     IndexerQueryResult,
     IndexerQueryResultId,
@@ -150,7 +150,7 @@ def add_a_show(
             metadata_provider=metadata_provider,
             language=language,
         )
-    except MediaAlreadyExists:
+    except MediaAlreadyExistsError:
         show = tv_service.get_show_by_external_id(
             show_id, metadata_provider=metadata_provider.name
         )

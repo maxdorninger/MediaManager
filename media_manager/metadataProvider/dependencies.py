@@ -3,7 +3,7 @@ from typing import Annotated, Literal
 from fastapi import Depends
 from fastapi.exceptions import HTTPException
 
-from media_manager.metadataProvider.abstractMetaDataProvider import (
+from media_manager.metadataProvider.abstract_metadata_provider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider

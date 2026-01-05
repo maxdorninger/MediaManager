@@ -5,7 +5,7 @@ import requests
 
 import media_manager.metadataProvider.utils
 from media_manager.config import MediaManagerConfig
-from media_manager.metadataProvider.abstractMetaDataProvider import (
+from media_manager.metadataProvider.abstract_metadata_provider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
@@ -144,7 +144,9 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             language = self.default_language
         try:
             response = requests.get(
-                url=f"{self.url}/movies/{movie_id}", params={"language": language}, timeout=60
+                url=f"{self.url}/movies/{movie_id}",
+                params={"language": language},
+                timeout=60,
             )
             response.raise_for_status()
             return response.json()
@@ -165,7 +167,9 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting movie external IDs for ID {movie_id}: {e}")
+            log.error(
+                f"TMDB API error getting movie external IDs for ID {movie_id}: {e}"
+            )
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
