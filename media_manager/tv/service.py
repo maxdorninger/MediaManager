@@ -267,10 +267,9 @@ class TvService:
                 show=show, season_number=season_number
             )
 
-            results: list[IndexerQueryResult] = []
-            for torrent in torrents:
-                if season_number in torrent.season:
-                    results.append(torrent)
+            results = [
+                torrent for torrent in torrents if season_number in torrent.season
+            ]
 
             return evaluate_indexer_query_results(
                 is_tv=True, query_results=results, media=show
@@ -322,14 +321,15 @@ class TvService:
         :param metadata_provider: The metadata provider to use.
         :return: A list of metadata provider show search results.
         """
-        results: list[MetaDataProviderSearchResult] = metadata_provider.search_show()
+        results = metadata_provider.search_show()
 
-        filtered_results = []
-        for result in results:
+        filtered_results = [
+            result
+            for result in results
             if not self.check_if_show_exists(
                 external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                filtered_results.append(result)
+            )
+        ]
 
         return filtered_results
 
@@ -849,16 +849,15 @@ class TvService:
                 log.debug(
                     f"Adding new season {fresh_season_data.number} to show {db_show.name}"
                 )
-                episodes_for_schema = []
-                for ep_data in fresh_season_data.episodes:
-                    episodes_for_schema.append(
-                        EpisodeSchema(
-                            id=EpisodeId(ep_data.id),
-                            number=ep_data.number,
-                            external_id=ep_data.external_id,
-                            title=ep_data.title,
-                        )
+                episodes_for_schema = [
+                    EpisodeSchema(
+                        id=EpisodeId(ep_data.id),
+                        number=ep_data.number,
+                        external_id=ep_data.external_id,
+                        title=ep_data.title,
                     )
+                    for ep_data in fresh_season_data.episodes
+                ]
 
                 season_schema = Season(
                     id=SeasonId(fresh_season_data.id),

@@ -278,16 +278,14 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                 season_number=season["season_number"],
                 language=language,
             )
-            episode_list = []
-
-            for episode in season_metadata["episodes"]:
-                episode_list.append(
-                    Episode(
-                        external_id=int(episode["id"]),
-                        title=episode["name"],
-                        number=EpisodeNumber(episode["episode_number"]),
-                    )
+            episode_list = [
+                Episode(
+                    external_id=int(episode["id"]),
+                    title=episode["name"],
+                    number=EpisodeNumber(episode["episode_number"]),
                 )
+                for episode in season_metadata["episodes"]
+            ]
 
             season_list.append(
                 Season(

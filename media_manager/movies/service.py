@@ -319,14 +319,15 @@ class MovieService:
         :param metadata_provider: The metadata provider to use.
         :return: A list of metadata provider movie search results.
         """
-        results: list[MetaDataProviderSearchResult] = metadata_provider.search_movie()
+        results = metadata_provider.search_movie()
 
-        filtered_results = []
-        for result in results:
+        filtered_results = [
+            result
+            for result in results
             if not self.check_if_movie_exists(
                 external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                filtered_results.append(result)
+            )
+        ]
 
         return filtered_results
 
@@ -613,7 +614,6 @@ class MovieService:
         """
 
         video_files, subtitle_files, _all_files = get_files_for_import(torrent=torrent)
-        success: list[bool] = []
 
         if len(video_files) != 1:
             # Send notification about multiple video files found
@@ -638,15 +638,12 @@ class MovieService:
             f"Found {len(movie_files)} movie files associated with torrent {torrent.title}"
         )
 
-        for movie_file in movie_files:
-            success.append(
-                self.import_movie(
-                    movie=movie,
-                    video_files=video_files,
-                    subtitle_files=subtitle_files,
-                    file_path_suffix=movie_file.file_path_suffix,
-                )
+        success = [
+            self.import_movie(
+                movie, video_files, subtitle_files, movie_file.file_path_suffix
             )
+            for movie_file in movie_files
+        ]
 
         if all(success):
             torrent.imported = True

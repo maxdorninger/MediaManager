@@ -216,20 +216,22 @@ def remove_special_chars_and_parentheses(title: str) -> str:
 
 
 def get_importable_media_directories(path: Path) -> list[Path]:
-    libraries = []
-    libraries.extend(MediaManagerConfig().misc.movie_libraries)
-    libraries.extend(MediaManagerConfig().misc.tv_libraries)
+    libraries = [
+        *MediaManagerConfig().misc.movie_libraries,
+        *MediaManagerConfig().misc.tv_libraries,
+    ]
 
     library_paths = {Path(library.path).absolute() for library in libraries}
 
     unfiltered_dirs = [d for d in path.glob("*") if d.is_dir()]
 
-    media_dirs = []
-    for media_dir in unfiltered_dirs:
-        if media_dir.absolute() not in library_paths and not media_dir.name.startswith(
-            "."
-        ):
-            media_dirs.append(media_dir)
+    media_dirs = [
+        media_dir
+        for media_dir in unfiltered_dirs
+        if media_dir.absolute() not in library_paths
+        and not media_dir.name.startswith(".")
+    ]
+
     return media_dirs
 
 
