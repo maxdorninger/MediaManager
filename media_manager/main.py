@@ -60,7 +60,7 @@ FRONTEND_FILES_DIR = os.getenv("FRONTEND_FILES_DIR")
 DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() == "true"
 FRONTEND_FOLLOW_SYMLINKS = os.getenv("FRONTEND_FOLLOW_SYMLINKS", "").lower() == "true"
 
-
+log.info("Hello World!")
 app = FastAPI(root_path=BASE_PATH)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 origins = config.misc.cors_urls
