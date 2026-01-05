@@ -1316,6 +1316,8 @@ export interface components {
 			external_id: number;
 			/** Title */
 			title: string;
+			/** Overview */
+			overview: string;			
 		};
 		/** ErrorModel */
 		ErrorModel: {
@@ -1719,6 +1721,8 @@ export interface components {
 			file_path_suffix: string;
 			/** Seasons */
 			seasons: number[];
+			/** Episodes */
+			episodes: number[];			
 		};
 		/** RichShowTorrent */
 		RichShowTorrent: {
