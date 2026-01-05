@@ -40,7 +40,7 @@ jobs:
       contents: read
       packages:  write
     env:
-      QUAY_ORG: ${{ secrets.QUAY_ORG }}
+      QUAY_ORG: ${{ secrets.QUAY_ORG || github.repository_owner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -125,7 +125,7 @@ jobs:
       contents: read
       packages: write
     env:
-      QUAY_ORG: ${{ secrets.QUAY_ORG }}
+      QUAY_ORG: ${{ secrets.QUAY_ORG || github.repository_owner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
