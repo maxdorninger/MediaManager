@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
 
 from media_manager.auth.users import current_active_user
-from media_manager.notification.schemas import Notification, NotificationId
 from media_manager.notification.dependencies import notification_service_dep
+from media_manager.notification.schemas import Notification, NotificationId
 
 router = APIRouter()
 

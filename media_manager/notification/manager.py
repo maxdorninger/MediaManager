@@ -4,6 +4,8 @@ Notification Manager - Orchestrates sending notifications through all configured
 
 import logging
 from typing import List
+
+from media_manager.config import MediaManagerConfig
 from media_manager.notification.schemas import MessageNotification
 from media_manager.notification.service_providers.abstractNotificationServiceProvider import (
     AbstractNotificationServiceProvider,
@@ -20,7 +22,6 @@ from media_manager.notification.service_providers.ntfy import (
 from media_manager.notification.service_providers.pushover import (
     PushoverNotificationServiceProvider,
 )
-from media_manager.config import MediaManagerConfig
 
 logger = logging.getLogger(__name__)
 

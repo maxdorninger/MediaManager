@@ -1,12 +1,13 @@
 import logging
 
 import transmission_rpc
+
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.download_clients.abstractDownloadClient import (
     AbstractDownloadClient,
 )
-from media_manager.torrent.schemas import TorrentStatus, Torrent
+from media_manager.torrent.schemas import Torrent, TorrentStatus
 from media_manager.torrent.utils import get_torrent_hash
 
 log = logging.getLogger(__name__)

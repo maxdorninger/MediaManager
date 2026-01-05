@@ -8,10 +8,9 @@ from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.tv.schemas import Episode, Season, Show, SeasonNumber, EpisodeNumber
 from media_manager.movies.schemas import Movie
 from media_manager.notification.manager import notification_manager
-
+from media_manager.tv.schemas import Episode, EpisodeNumber, Season, SeasonNumber, Show
 
 ENDED_STATUS = {"Ended", "Canceled"}
 

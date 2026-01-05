@@ -7,10 +7,10 @@ from media_manager.torrent.download_clients.abstractDownloadClient import (
     AbstractDownloadClient,
 )
 from media_manager.torrent.download_clients.qbittorrent import QbittorrentDownloadClient
+from media_manager.torrent.download_clients.sabnzbd import SabnzbdDownloadClient
 from media_manager.torrent.download_clients.transmission import (
     TransmissionDownloadClient,
 )
-from media_manager.torrent.download_clients.sabnzbd import SabnzbdDownloadClient
 from media_manager.torrent.schemas import Torrent, TorrentStatus
 
 log = logging.getLogger(__name__)

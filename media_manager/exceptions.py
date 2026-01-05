@@ -1,7 +1,7 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from sqlalchemy.exc import IntegrityError
 from psycopg.errors import UniqueViolation
+from sqlalchemy.exc import IntegrityError
 
 
 class MediaManagerException(Exception):

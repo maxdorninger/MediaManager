@@ -1,4 +1,5 @@
 import abc
+
 from media_manager.notification.schemas import MessageNotification
 
 

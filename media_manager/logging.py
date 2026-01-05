@@ -1,10 +1,11 @@
 import logging
 import os
 import sys
-from logging.config import dictConfig
-from pythonjsonlogger.json import JsonFormatter
-from pathlib import Path
 from datetime import datetime, timezone
+from logging.config import dictConfig
+from pathlib import Path
+
+from pythonjsonlogger.json import JsonFormatter
 
 
 class ISOJsonFormatter(JsonFormatter):

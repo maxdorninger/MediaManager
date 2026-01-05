@@ -1,9 +1,10 @@
 import contextlib
 import logging
 import uuid
-from typing import Optional, Any
+from typing import Any, Optional
 
 from fastapi import Depends, Request
+from fastapi.responses import RedirectResponse, Response
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin, models
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -13,13 +14,12 @@ from fastapi_users.authentication import (
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.openid import OpenID
-from fastapi.responses import RedirectResponse, Response
+from sqlalchemy import func, select
 from starlette import status
-from sqlalchemy import select, func
 
 import media_manager.notification.utils
-from media_manager.auth.db import User, get_user_db, get_async_session
-from media_manager.auth.schemas import UserUpdate, UserCreate
+from media_manager.auth.db import User, get_async_session, get_user_db
+from media_manager.auth.schemas import UserCreate, UserUpdate
 from media_manager.config import MediaManagerConfig
 
 log = logging.getLogger(__name__)

@@ -1,19 +1,18 @@
-from fastapi import APIRouter, Depends
-from fastapi import status
+from fastapi import APIRouter, Depends, status
 from fastapi_users.router import get_oauth_router
 from httpx_oauth.oauth2 import OAuth2
 from sqlalchemy import select
 
-from media_manager.config import MediaManagerConfig
 from media_manager.auth.db import User
-from media_manager.auth.schemas import UserRead, AuthMetadata
+from media_manager.auth.schemas import AuthMetadata, UserRead
 from media_manager.auth.users import (
+    SECRET,
     current_superuser,
+    fastapi_users,
     openid_client,
     openid_cookie_auth_backend,
-    SECRET,
-    fastapi_users,
 )
+from media_manager.config import MediaManagerConfig
 from media_manager.database import DbSessionDependency
 
 users_router = APIRouter()

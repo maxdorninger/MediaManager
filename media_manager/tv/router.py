@@ -1,16 +1,16 @@
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from media_manager.auth.db import User
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
-from media_manager.config import MediaManagerConfig, LibraryItem
+from media_manager.config import LibraryItem, MediaManagerConfig
 from media_manager.exceptions import MediaAlreadyExists
 from media_manager.indexer.schemas import (
-    IndexerQueryResultId,
     IndexerQueryResult,
+    IndexerQueryResultId,
 )
 from media_manager.metadataProvider.dependencies import metadata_provider_dep
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
@@ -24,17 +24,17 @@ from media_manager.tv.dependencies import (
     tv_service_dep,
 )
 from media_manager.tv.schemas import (
-    Show,
-    SeasonRequest,
-    ShowId,
-    RichShowTorrent,
-    PublicShow,
-    PublicSeasonFile,
     CreateSeasonRequest,
-    SeasonRequestId,
-    UpdateSeasonRequest,
+    PublicSeasonFile,
+    PublicShow,
     RichSeasonRequest,
+    RichShowTorrent,
     Season,
+    SeasonRequest,
+    SeasonRequestId,
+    Show,
+    ShowId,
+    UpdateSeasonRequest,
 )
 
 router = APIRouter()

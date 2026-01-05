@@ -2,8 +2,8 @@ import logging
 import os
 
 import tmdbsimple
-from tmdbsimple import TV, TV_Seasons, Movies, Trending, Search
 from fastapi import APIRouter
+from tmdbsimple import TV, Movies, Search, Trending, TV_Seasons
 
 log = logging.getLogger(__name__)
 

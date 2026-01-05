@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie

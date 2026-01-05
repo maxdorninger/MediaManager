@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from requests import Session
 
-from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.config import MediaManagerConfig
+from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie

@@ -1,12 +1,13 @@
 import logging
 
+import sabnzbd_api
+
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.download_clients.abstractDownloadClient import (
     AbstractDownloadClient,
 )
 from media_manager.torrent.schemas import Torrent, TorrentStatus
-import sabnzbd_api
 
 log = logging.getLogger(__name__)
 

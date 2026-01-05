@@ -1,16 +1,20 @@
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 
 from media_manager.database import DbSessionDependency
-from media_manager.torrent.models import Torrent
-from media_manager.torrent.schemas import TorrentId, Torrent as TorrentSchema
-from media_manager.tv.models import SeasonFile, Show, Season
-from media_manager.tv.schemas import SeasonFile as SeasonFileSchema, Show as ShowSchema
 from media_manager.exceptions import NotFoundError
 from media_manager.movies.models import Movie, MovieFile
 from media_manager.movies.schemas import (
     Movie as MovieSchema,
+)
+from media_manager.movies.schemas import (
     MovieFile as MovieFileSchema,
 )
+from media_manager.torrent.models import Torrent
+from media_manager.torrent.schemas import Torrent as TorrentSchema
+from media_manager.torrent.schemas import TorrentId
+from media_manager.tv.models import Season, SeasonFile, Show
+from media_manager.tv.schemas import SeasonFile as SeasonFileSchema
+from media_manager.tv.schemas import Show as ShowSchema
 
 
 class TorrentRepository:

@@ -1,5 +1,6 @@
-import requests
 import logging
+
+import requests
 
 import media_manager.metadataProvider.utils
 from media_manager.config import MediaManagerConfig
@@ -7,8 +8,8 @@ from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.tv.schemas import Episode, Season, Show, SeasonNumber
 from media_manager.movies.schemas import Movie
+from media_manager.tv.schemas import Episode, Season, SeasonNumber, Show
 
 log = logging.getLogger(__name__)
 

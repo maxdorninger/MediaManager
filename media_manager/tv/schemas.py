@@ -2,7 +2,7 @@ import typing
 import uuid
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from media_manager.auth.schemas import UserRead
 from media_manager.torrent.models import Quality

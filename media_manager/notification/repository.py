@@ -1,16 +1,19 @@
-from sqlalchemy import select, delete, update
+import logging
+
+from sqlalchemy import delete, select, update
 from sqlalchemy.exc import (
     IntegrityError,
     SQLAlchemyError,
 )
 from sqlalchemy.orm import Session
-import logging
 
-from media_manager.exceptions import NotFoundError, ConflictError
+from media_manager.exceptions import ConflictError, NotFoundError
 from media_manager.notification.models import Notification
 from media_manager.notification.schemas import (
-    NotificationId,
     Notification as NotificationSchema,
+)
+from media_manager.notification.schemas import (
+    NotificationId,
 )
 
 log = logging.getLogger(__name__)

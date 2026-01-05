@@ -1,58 +1,62 @@
+import pprint
 import re
 import shutil
+from pathlib import Path
 
 from sqlalchemy.exc import IntegrityError
 
 from media_manager.config import MediaManagerConfig
 from media_manager.database import get_session
-from media_manager.exceptions import InvalidConfigError
+from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.indexer.repository import IndexerRepository
-from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.indexer.schemas import IndexerQueryResultId
-from media_manager.indexer.utils import evaluate_indexer_query_results
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.notification.service import NotificationService
-from media_manager.torrent.schemas import Torrent, TorrentStatus, Quality
-from media_manager.torrent.service import TorrentService
-from media_manager.tv import log
-from media_manager.tv.schemas import (
-    Show,
-    ShowId,
-    SeasonRequest,
-    SeasonFile,
-    SeasonId,
-    Season,
-    RichShowTorrent,
-    RichSeasonTorrent,
-    PublicSeason,
-    PublicShow,
-    PublicSeasonFile,
-    SeasonRequestId,
-    RichSeasonRequest,
-    EpisodeId,
-    Episode as EpisodeSchema,
-)
-from media_manager.torrent.schemas import QualityStrings
-from media_manager.tv.repository import TvRepository
-from media_manager.exceptions import NotFoundError
-import pprint
-from pathlib import Path
-from media_manager.torrent.repository import TorrentRepository
-from media_manager.torrent.utils import (
-    import_file,
-    get_files_for_import,
-    remove_special_characters,
-    get_importable_media_directories,
-    extract_external_id_from_string,
-    remove_special_chars_and_parentheses,
-)
+from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
+from media_manager.indexer.utils import evaluate_indexer_query_results
 from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
+from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
+from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
+from media_manager.torrent.repository import TorrentRepository
+from media_manager.torrent.schemas import (
+    Quality,
+    QualityStrings,
+    Torrent,
+    TorrentStatus,
+)
+from media_manager.torrent.service import TorrentService
+from media_manager.torrent.utils import (
+    extract_external_id_from_string,
+    get_files_for_import,
+    get_importable_media_directories,
+    import_file,
+    remove_special_characters,
+    remove_special_chars_and_parentheses,
+)
+from media_manager.tv import log
+from media_manager.tv.repository import TvRepository
+from media_manager.tv.schemas import (
+    Episode as EpisodeSchema,
+)
+from media_manager.tv.schemas import (
+    EpisodeId,
+    PublicSeason,
+    PublicSeasonFile,
+    PublicShow,
+    RichSeasonRequest,
+    RichSeasonTorrent,
+    RichShowTorrent,
+    Season,
+    SeasonFile,
+    SeasonId,
+    SeasonRequest,
+    SeasonRequestId,
+    Show,
+    ShowId,
+)
 
 
 class TvService:

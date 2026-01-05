@@ -1,6 +1,6 @@
-from media_manager.notification.repository import NotificationRepository
-from media_manager.notification.schemas import NotificationId, Notification
 from media_manager.notification.manager import notification_manager
+from media_manager.notification.repository import NotificationRepository
+from media_manager.notification.schemas import Notification, NotificationId
 
 
 class NotificationService:

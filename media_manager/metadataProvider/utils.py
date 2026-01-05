@@ -1,8 +1,8 @@
 from pathlib import Path
 from uuid import UUID
 
-from PIL import Image
 import requests
+from PIL import Image
 
 
 def get_year_from_date(first_air_date: str | None) -> int | None:

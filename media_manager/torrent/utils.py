@@ -2,13 +2,13 @@ import hashlib
 import logging
 import mimetypes
 import re
-from pathlib import Path, UnsupportedOperation
 import shutil
+from pathlib import Path, UnsupportedOperation
 
 import bencoder
+import libtorrent
 import patoolib
 import requests
-import libtorrent
 from requests.exceptions import InvalidSchema
 
 from media_manager.config import MediaManagerConfig

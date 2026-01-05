@@ -1,43 +1,47 @@
-from media_manager.logging import setup_logging, LOGGING_CONFIG
-from media_manager.scheduler import setup_scheduler
-from media_manager.filesystem_checks import run_filesystem_checks
-from media_manager.config import MediaManagerConfig
-import uvicorn
+import logging
 import os
-from fastapi import FastAPI, APIRouter
+
+import uvicorn
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import RedirectResponse, FileResponse, Response
-from media_manager.auth.users import (
-    bearer_auth_backend,
-    fastapi_users,
-    cookie_auth_backend,
-)
+from psycopg.errors import UniqueViolation
+from sqlalchemy.exc import IntegrityError
+from starlette.responses import FileResponse, RedirectResponse, Response
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+import media_manager.movies.router as movies_router
+import media_manager.torrent.router as torrent_router
+import media_manager.tv.router as tv_router
 from media_manager.auth.router import (
-    users_router as custom_users_router,
     auth_metadata_router,
     get_openid_router,
 )
-from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate
-from media_manager.exceptions import (
-    NotFoundError,
-    not_found_error_exception_handler,
-    MediaAlreadyExists,
-    media_already_exists_exception_handler,
-    InvalidConfigError,
-    invalid_config_error_exception_handler,
-    sqlalchemy_integrity_error_handler,
-    ConflictError,
-    conflict_error_handler,
+from media_manager.auth.router import (
+    users_router as custom_users_router,
 )
-from sqlalchemy.exc import IntegrityError
-from psycopg.errors import UniqueViolation
-import media_manager.torrent.router as torrent_router
-import media_manager.movies.router as movies_router
-import media_manager.tv.router as tv_router
+from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate
+from media_manager.auth.users import (
+    bearer_auth_backend,
+    cookie_auth_backend,
+    fastapi_users,
+)
+from media_manager.config import MediaManagerConfig
+from media_manager.exceptions import (
+    ConflictError,
+    InvalidConfigError,
+    MediaAlreadyExists,
+    NotFoundError,
+    conflict_error_handler,
+    invalid_config_error_exception_handler,
+    media_already_exists_exception_handler,
+    not_found_error_exception_handler,
+    sqlalchemy_integrity_error_handler,
+)
+from media_manager.filesystem_checks import run_filesystem_checks
+from media_manager.logging import LOGGING_CONFIG, setup_logging
 from media_manager.notification.router import router as notification_router
-import logging
+from media_manager.scheduler import setup_scheduler
 
 setup_logging()
 

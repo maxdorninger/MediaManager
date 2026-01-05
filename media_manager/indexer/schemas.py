@@ -3,7 +3,7 @@ import typing
 from uuid import UUID, uuid4
 
 import pydantic
-from pydantic import BaseModel, computed_field, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
 from media_manager.torrent.models import Quality
 

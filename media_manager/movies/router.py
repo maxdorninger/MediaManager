@@ -1,33 +1,33 @@
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, MediaManagerConfig
 from media_manager.exceptions import ConflictError
 from media_manager.indexer.schemas import (
-    IndexerQueryResultId,
     IndexerQueryResult,
+    IndexerQueryResultId,
 )
 from media_manager.metadataProvider.dependencies import metadata_provider_dep
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.movies import log
 from media_manager.movies.dependencies import (
-    movie_service_dep,
     movie_dep,
+    movie_service_dep,
 )
 from media_manager.movies.schemas import (
+    CreateMovieRequest,
     Movie,
     MovieRequest,
-    RichMovieTorrent,
+    MovieRequestBase,
+    MovieRequestId,
     PublicMovie,
     PublicMovieFile,
-    CreateMovieRequest,
-    MovieRequestId,
     RichMovieRequest,
-    MovieRequestBase,
+    RichMovieTorrent,
 )
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import Torrent

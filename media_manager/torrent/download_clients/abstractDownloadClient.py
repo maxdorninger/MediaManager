@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.torrent.schemas import TorrentStatus, Torrent
+from media_manager.torrent.schemas import Torrent, TorrentStatus
 
 
 class AbstractDownloadClient(ABC):

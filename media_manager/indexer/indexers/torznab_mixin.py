@@ -1,9 +1,9 @@
 import logging
+import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 
 from media_manager.indexer.schemas import IndexerQueryResult
-import xml.etree.ElementTree as ET
-from email.utils import parsedate_to_datetime
-from datetime import datetime, timezone
 
 log = logging.getLogger(__name__)
 

@@ -1,21 +1,32 @@
-from sqlalchemy import select, delete
+import logging
+
+from sqlalchemy import delete, select
 from sqlalchemy.exc import (
     IntegrityError,
     SQLAlchemyError,
 )
 from sqlalchemy.orm import Session, joinedload
-import logging
 
-from media_manager.exceptions import NotFoundError, ConflictError
-from media_manager.movies.models import Movie, MovieRequest, MovieFile
+from media_manager.exceptions import ConflictError, NotFoundError
+from media_manager.movies.models import Movie, MovieFile, MovieRequest
 from media_manager.movies.schemas import (
     Movie as MovieSchema,
-    MovieId,
-    MovieRequest as MovieRequestSchema,
-    MovieRequestId,
+)
+from media_manager.movies.schemas import (
     MovieFile as MovieFileSchema,
-    RichMovieRequest as RichMovieRequestSchema,
+)
+from media_manager.movies.schemas import (
+    MovieId,
+    MovieRequestId,
+)
+from media_manager.movies.schemas import (
+    MovieRequest as MovieRequestSchema,
+)
+from media_manager.movies.schemas import (
     MovieTorrent as MovieTorrentSchema,
+)
+from media_manager.movies.schemas import (
+    RichMovieRequest as RichMovieRequestSchema,
 )
 from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import TorrentId

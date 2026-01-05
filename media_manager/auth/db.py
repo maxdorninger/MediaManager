@@ -3,16 +3,16 @@ from typing import Optional
 
 from fastapi import Depends
 from fastapi_users.db import (
+    SQLAlchemyBaseOAuthAccountTableUUID,
     SQLAlchemyBaseUserTableUUID,
     SQLAlchemyUserDatabase,
-    SQLAlchemyBaseOAuthAccountTableUUID,
 )
 from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import Mapped, relationship, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from media_manager.database import Base, build_db_url
 from media_manager.config import MediaManagerConfig
+from media_manager.database import Base, build_db_url
 
 
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):

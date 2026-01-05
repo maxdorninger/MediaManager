@@ -1,10 +1,10 @@
 import logging
 from abc import ABC, abstractmethod
 
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.tv.schemas import Show
-from media_manager.movies.schemas import Movie
 from media_manager.config import MediaManagerConfig
+from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
+from media_manager.movies.schemas import Movie
+from media_manager.tv.schemas import Show
 
 log = logging.getLogger(__name__)
 

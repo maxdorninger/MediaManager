@@ -6,46 +6,49 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from media_manager.config import MediaManagerConfig
+from media_manager.database import SessionLocal, get_session
 from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.indexer.repository import IndexerRepository
-from media_manager.database import SessionLocal, get_session
-from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.indexer.schemas import IndexerQueryResultId
-from media_manager.indexer.utils import evaluate_indexer_query_results
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.notification.service import NotificationService
-from media_manager.schemas import MediaImportSuggestion
-from media_manager.torrent.schemas import Torrent, TorrentStatus, Quality
-from media_manager.torrent.service import TorrentService
-from media_manager.movies import log
-from media_manager.movies.schemas import (
-    Movie,
-    MovieId,
-    MovieRequest,
-    MovieFile,
-    RichMovieTorrent,
-    PublicMovie,
-    PublicMovieFile,
-    MovieRequestId,
-    RichMovieRequest,
-)
-from media_manager.torrent.schemas import QualityStrings
-from media_manager.movies.repository import MovieRepository
-from media_manager.torrent.repository import TorrentRepository
-from media_manager.torrent.utils import (
-    import_file,
-    get_files_for_import,
-    remove_special_characters,
-    get_importable_media_directories,
-    remove_special_chars_and_parentheses,
-    extract_external_id_from_string,
-)
+from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
+from media_manager.indexer.utils import evaluate_indexer_query_results
 from media_manager.metadataProvider.abstractMetaDataProvider import (
     AbstractMetadataProvider,
 )
+from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
+from media_manager.movies import log
+from media_manager.movies.repository import MovieRepository
+from media_manager.movies.schemas import (
+    Movie,
+    MovieFile,
+    MovieId,
+    MovieRequest,
+    MovieRequestId,
+    PublicMovie,
+    PublicMovieFile,
+    RichMovieRequest,
+    RichMovieTorrent,
+)
+from media_manager.notification.service import NotificationService
+from media_manager.schemas import MediaImportSuggestion
+from media_manager.torrent.repository import TorrentRepository
+from media_manager.torrent.schemas import (
+    Quality,
+    QualityStrings,
+    Torrent,
+    TorrentStatus,
+)
+from media_manager.torrent.service import TorrentService
+from media_manager.torrent.utils import (
+    extract_external_id_from_string,
+    get_files_for_import,
+    get_importable_media_directories,
+    import_file,
+    remove_special_characters,
+    remove_special_chars_and_parentheses,
+)
 
 
 class MovieService:
@@ -158,7 +161,9 @@ class MovieService:
                 )
 
                 for movie_torrent in movie_torrents:
-                    torrent = self.torrent_service.get_torrent_by_id(torrent_id=movie_torrent.torrent_id)
+                    torrent = self.torrent_service.get_torrent_by_id(
+                        torrent_id=movie_torrent.torrent_id
+                    )
                     try:
                         self.torrent_service.cancel_download(
                             torrent=torrent, delete_files=True
@@ -684,7 +689,7 @@ class MovieService:
                     movie_id=movie.id,
                     file_path_suffix="IMPORTED",
                     torrent_id=None,
-                    quality=Quality.unknown
+                    quality=Quality.unknown,
                 )
             )
 
