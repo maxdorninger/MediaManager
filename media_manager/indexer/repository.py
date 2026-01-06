@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class IndexerRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session) -> None:
         self.db = db
 
     def get_result(self, result_id: IndexerQueryResultId) -> IndexerQueryResultSchema:

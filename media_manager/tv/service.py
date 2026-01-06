@@ -67,7 +67,7 @@ class TvService:
         torrent_service: TorrentService,
         indexer_service: IndexerService,
         notification_service: NotificationService = None,
-    ):
+    ) -> None:
         self.tv_repository = tv_repository
         self.torrent_service = torrent_service
         self.indexer_service = indexer_service
@@ -572,7 +572,7 @@ class TvService:
         self.delete_season_request(season_request.id)
         return True
 
-    def get_root_show_directory(self, show: Show):
+    def get_root_show_directory(self, show: Show) -> Path:
         misc_config = MediaManagerConfig().misc
         show_directory_name = f"{remove_special_characters(show.name)} ({show.year}) [{show.metadata_provider}id-{show.external_id}]"
         log.debug(

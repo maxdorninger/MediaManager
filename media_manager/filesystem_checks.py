@@ -1,8 +1,11 @@
 import shutil
+from logging import Logger
 from pathlib import Path
 
+from media_manager.config import MediaManagerConfig
 
-def run_filesystem_checks(config, log):
+
+def run_filesystem_checks(config: MediaManagerConfig, log: Logger) -> None:
     log.info("Creating directories if they don't exist...")
     config.misc.tv_directory.mkdir(parents=True, exist_ok=True)
     config.misc.movie_directory.mkdir(parents=True, exist_ok=True)

@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 class TvdbMetadataProvider(AbstractMetadataProvider):
     name = "tvdb"
 
-    def __init__(self):
+    def __init__(self) -> None:
         config = MediaManagerConfig().metadata.tvdb
         self.url = config.tvdb_relay_url
 

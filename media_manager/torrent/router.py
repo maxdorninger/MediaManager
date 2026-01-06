@@ -36,7 +36,7 @@ def delete_torrent(
     service: torrent_service_dep,
     torrent: torrent_dep,
     delete_files: bool = False,
-):
+) -> None:
     if delete_files:
         try:
             service.cancel_download(torrent=torrent, delete_files=False)
@@ -54,7 +54,7 @@ def delete_torrent(
 def retry_torrent_download(
     service: torrent_service_dep,
     torrent: torrent_dep,
-):
+) -> None:
     service.pause_download(torrent=torrent)
     service.resume_download(torrent=torrent)
 

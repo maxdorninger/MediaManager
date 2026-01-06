@@ -22,5 +22,5 @@ class AuthConfig(BaseSettings):
     openid_connect: OpenIdConfig = OpenIdConfig()
 
     @property
-    def jwt_signing_key(self):
+    def jwt_signing_key(self) -> str:
         return self._jwt_signing_key

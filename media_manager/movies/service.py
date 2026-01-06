@@ -59,7 +59,7 @@ class MovieService:
         torrent_service: TorrentService,
         indexer_service: IndexerService,
         notification_service: NotificationService = None,
-    ):
+    ) -> None:
         self.movie_repository = movie_repository
         self.torrent_service = torrent_service
         self.indexer_service = indexer_service

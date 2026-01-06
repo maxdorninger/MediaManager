@@ -43,7 +43,7 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
     ERROR_STATE = ("missingFiles", "error", "checkingResumeData")
     UNKNOWN_STATE = ("unknown",)
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().torrents.qbittorrent
         self.api_client = qbittorrentapi.Client(
             host=self.config.host,

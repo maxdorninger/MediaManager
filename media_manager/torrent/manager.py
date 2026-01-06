@@ -30,7 +30,7 @@ class DownloadManager:
     Only one torrent client and one usenet client are active at a time.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._torrent_client: AbstractDownloadClient | None = None
         self._usenet_client: AbstractDownloadClient | None = None
         self.config = MediaManagerConfig().torrents

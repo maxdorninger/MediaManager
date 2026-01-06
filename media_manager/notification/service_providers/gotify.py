@@ -12,7 +12,7 @@ class GotifyNotificationServiceProvider(AbstractNotificationServiceProvider):
     Gotify Notification Service Provider
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().notifications.gotify
 
     def send_notification(self, message: MessageNotification) -> bool:

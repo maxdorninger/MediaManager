@@ -44,7 +44,7 @@ class TvRepository:
     Provides methods to retrieve, save, and delete shows and seasons.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session) -> None:
         self.db = db
 
     def get_show_by_id(self, show_id: ShowId) -> ShowSchema:

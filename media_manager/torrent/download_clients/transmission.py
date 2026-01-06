@@ -30,7 +30,7 @@ class TransmissionDownloadClient(AbstractDownloadClient):
         }
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().torrents.transmission
         try:
             self._client = transmission_rpc.Client(

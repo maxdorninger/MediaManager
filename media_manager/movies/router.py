@@ -97,7 +97,7 @@ def get_all_importable_movies(
 )
 def import_detected_movie(
     movie_service: movie_service_dep, movie: movie_dep, directory: str
-):
+) -> None:
     """
     Import a detected movie from the specified directory into the library.
     """
@@ -145,7 +145,7 @@ def add_a_movie(
     metadata_provider: metadata_provider_dep,
     movie_id: int,
     language: str | None = None,
-):
+) -> Movie:
     """
     Add a new movie to the library.
     """
@@ -254,7 +254,7 @@ def authorize_request(
     movie_request_id: MovieRequestId,
     user: Annotated[UserRead, Depends(current_superuser)],
     authorized_status: bool = False,
-):
+) -> None:
     """
     Authorize or de-authorize a movie request.
     """
@@ -276,7 +276,7 @@ def authorize_request(
 )
 def delete_movie_request(
     movie_service: movie_service_dep, movie_request_id: MovieRequestId
-):
+) -> None:
     """
     Delete a movie request.
     """
@@ -309,7 +309,7 @@ def delete_a_movie(
     movie: movie_dep,
     delete_files_on_disk: bool = False,
     delete_torrents: bool = False,
-):
+) -> None:
     """
     Delete a movie from the library.
     """

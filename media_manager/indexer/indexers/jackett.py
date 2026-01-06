@@ -1,4 +1,5 @@
 import concurrent
+import concurrent.futures
 import logging
 from concurrent.futures.thread import ThreadPoolExecutor
 
@@ -15,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class Jackett(GenericIndexer, TorznabMixin):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         A subclass of GenericIndexer for interacting with the Jacket API.
 

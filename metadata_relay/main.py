@@ -15,5 +15,5 @@ app.include_router(tvdb_router)
 
 
 @app.get("/")
-async def root():
+async def root() -> dict:
     return {"message": "Hello World"}

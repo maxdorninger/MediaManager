@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass
 
-from requests import Session
+from requests import Response, Session
 
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.indexers.generic import GenericIndexer
@@ -31,14 +31,14 @@ class IndexerInfo:
 
 
 class Prowlarr(GenericIndexer, TorznabMixin):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         A subclass of GenericIndexer for interacting with the Prowlarr API.
         """
         super().__init__(name="prowlarr")
         self.config = MediaManagerConfig().indexers.prowlarr
 
-    def _call_prowlarr_api(self, path: str, parameters: dict | None = None):
+    def _call_prowlarr_api(self, path: str, parameters: dict | None = None) -> Response:
         url = f"{self.config.url}/api/v1{path}"
         headers = {"X-Api-Key": self.config.api_key}
         with Session() as session:

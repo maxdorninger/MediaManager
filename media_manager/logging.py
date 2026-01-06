@@ -11,7 +11,7 @@ from pythonjsonlogger.json import JsonFormatter
 
 class ISOJsonFormatter(JsonFormatter):
     @override
-    def formatTime(self, record, datefmt=None):
+    def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
         dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
         return dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
@@ -62,7 +62,7 @@ LOGGING_CONFIG = {
 }
 
 
-def setup_logging():
+def setup_logging() -> None:
     dictConfig(LOGGING_CONFIG)
     logging.basicConfig(
         level=LOG_LEVEL,

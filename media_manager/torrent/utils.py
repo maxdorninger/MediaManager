@@ -34,7 +34,7 @@ def list_files_recursively(path: Path = Path()) -> list[Path]:
     return valid_files
 
 
-def extract_archives(files):
+def extract_archives(files: list) -> None:
     archive_types = {
         "application/zip",
         "application/x-zip-compressedapplication/x-compressed",
@@ -61,11 +61,11 @@ def extract_archives(files):
                 log.error(f"Failed to extract archive {file}. Error: {e}")
 
 
-def get_torrent_filepath(torrent: Torrent):
+def get_torrent_filepath(torrent: Torrent) -> Path:
     return MediaManagerConfig().misc.torrent_directory / torrent.title
 
 
-def import_file(target_file: Path, source_file: Path):
+def import_file(target_file: Path, source_file: Path) -> None:
     if target_file.exists():
         target_file.unlink()
 
