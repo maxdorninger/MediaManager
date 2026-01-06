@@ -1,6 +1,4 @@
-# Installation Guide
-
-The recommended way to install and run Media Manager is using Docker and Docker Compose.
+# Docker
 
 ## Prerequisites
 
