@@ -13,7 +13,8 @@
   * [Scoring Rulesets](configuration/scoring-rulesets.md)
   * [Notifications](configuration/notifications.md)
   * [Custom Libraries](configuration/custom-libraries.md)
-  * [Logging](configuration/logging.md)
+  * [Logging](configuration/logging.md)]
+  * [Test add new Page](configuration/test-add-new-page.md)
 * [Advanced Features](advanced-features/README.md)
   * [qBittorrent Category](advanced-features/qbittorrent-category.md)
   * [URL Prefix](advanced-features/url-prefix.md)
