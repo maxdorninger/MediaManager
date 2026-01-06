@@ -67,7 +67,7 @@ class Jackett(GenericIndexer, TorznabMixin):
 
         results = self.process_search_result(response.content)
 
-        log.info(f"Indexer {indexer.name} returned {len(results)} results")
+        log.info(f"Indexer {indexer} returned {len(results)} results")
         return results
 
     def search_season(
