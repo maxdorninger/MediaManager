@@ -18,7 +18,7 @@ Follow these steps to get MediaManager running with Docker Compose:
 Download the `docker-compose.yaml` from the MediaManager repo:
 
 ```bash
-wget -O docker-compose.yaml https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/docker-compose.yaml
+wget -O docker-compose.yaml https://github.com/maxdorninger/MediaManager/releases/latest/download/docker-compose.yaml
 ```
 {% endstep %}
 
@@ -29,7 +29,7 @@ Create a config directory and download the example configuration:
 
 ```bash
 mkdir config
-wget -O ./config/config.toml https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/config.example.toml
+wget -O ./config/config.toml https://github.com/maxdorninger/MediaManager/releases/latest/download/config.example.toml
 ```
 {% endstep %}
 
