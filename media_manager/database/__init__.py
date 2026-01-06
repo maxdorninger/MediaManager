@@ -9,6 +9,8 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
+from media_manager.database.config import DbConfig
+
 log = logging.getLogger(__name__)
 
 Base = declarative_base()
@@ -35,7 +37,7 @@ def build_db_url(
 
 
 def init_engine(
-    db_config: Any | None = None,
+    db_config: DbConfig | None = None,
     url: str | URL | None = None,
 ) -> Engine:
     """

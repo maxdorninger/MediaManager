@@ -13,7 +13,7 @@ IndexerQueryResultId = typing.NewType("IndexerQueryResultId", UUID)
 class IndexerQueryResult(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: IndexerQueryResultId = pydantic.Field(default_factory=uuid4)
+    id: IndexerQueryResultId = pydantic.Field(default_factory=lambda: IndexerQueryResultId(uuid4()))
     title: str
     download_url: str = pydantic.Field(
         exclude=True,
@@ -62,7 +62,7 @@ class IndexerQueryResult(BaseModel):
             result = []
         return result
 
-    def __gt__(self, other) -> bool:
+    def __gt__(self, other: "IndexerQueryResult") -> bool:
         if self.quality.value != other.quality.value:
             return self.quality.value < other.quality.value
         if self.score != other.score:
@@ -76,7 +76,7 @@ class IndexerQueryResult(BaseModel):
 
         return self.size < other.size
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: "IndexerQueryResult") -> bool:
         if self.quality.value != other.quality.value:
             return self.quality.value > other.quality.value
         if self.score != other.score:

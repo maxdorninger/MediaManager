@@ -18,7 +18,7 @@ from media_manager.tv.schemas import Show as ShowSchema
 
 
 class TorrentRepository:
-    def __init__(self, db: DbSessionDependency):
+    def __init__(self, db: DbSessionDependency) -> None:
         self.db = db
 
     def get_seasons_files_of_torrent(
@@ -62,7 +62,7 @@ class TorrentRepository:
 
     def delete_torrent(
         self, torrent_id: TorrentId, delete_associated_media_files: bool = False
-    ):
+    ) -> None:
         if delete_associated_media_files:
             movie_files_stmt = delete(MovieFile).where(
                 MovieFile.torrent_id == torrent_id
@@ -76,7 +76,7 @@ class TorrentRepository:
 
         self.db.delete(self.db.get(Torrent, torrent_id))
 
-    def get_movie_of_torrent(self, torrent_id: TorrentId):
+    def get_movie_of_torrent(self, torrent_id: TorrentId) -> MovieSchema | None:
         stmt = (
             select(Movie)
             .join(MovieFile, Movie.id == MovieFile.movie_id)
@@ -87,7 +87,7 @@ class TorrentRepository:
             return None
         return MovieSchema.model_validate(result)
 
-    def get_movie_files_of_torrent(self, torrent_id: TorrentId):
+    def get_movie_files_of_torrent(self, torrent_id: TorrentId) -> list[MovieFileSchema]:
         stmt = select(MovieFile).where(MovieFile.torrent_id == torrent_id)
         result = self.db.execute(stmt).scalars().all()
         return [MovieFileSchema.model_validate(movie_file) for movie_file in result]

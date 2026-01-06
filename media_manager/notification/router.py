@@ -69,7 +69,7 @@ def get_notification(
 )
 def mark_notification_as_read(
     notification_id: NotificationId, notification_service: notification_service_dep
-):
+) -> None:
     """
     Mark a notification as read.
     """
@@ -86,7 +86,7 @@ def mark_notification_as_read(
 )
 def mark_notification_as_unread(
     notification_id: NotificationId, notification_service: notification_service_dep
-):
+) -> None:
     """
     Mark a notification as unread.
     """
@@ -103,7 +103,7 @@ def mark_notification_as_unread(
 )
 def delete_notification(
     notification_id: NotificationId, notification_service: notification_service_dep
-):
+) -> None:
     """
     Delete a notification.
     """

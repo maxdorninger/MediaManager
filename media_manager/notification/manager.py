@@ -31,7 +31,7 @@ class NotificationManager:
     Manages and orchestrates notifications across all configured service providers.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().notifications
         self.providers: List[AbstractNotificationServiceProvider] = []
         self._initialize_providers()

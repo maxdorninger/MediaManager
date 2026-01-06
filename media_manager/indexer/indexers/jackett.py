@@ -1,4 +1,5 @@
 import concurrent
+import concurrent.futures
 import logging
 from concurrent.futures.thread import ThreadPoolExecutor
 
@@ -15,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class Jackett(GenericIndexer, TorznabMixin):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         A subclass of GenericIndexer for interacting with the Jacket API.
 
@@ -73,7 +74,9 @@ class Jackett(GenericIndexer, TorznabMixin):
     def search_season(
         self, query: str, show: Show, season_number: int
     ) -> list[IndexerQueryResult]:
-        pass
+        log.debug(f"Searching for season {season_number} of show {show.title}")
+        return self.search(query=query, is_tv=True)
 
     def search_movie(self, query: str, movie: Movie) -> list[IndexerQueryResult]:
-        pass
+        log.debug(f"Searching for movie {movie.title}")
+        return self.search(query=query, is_tv=False)

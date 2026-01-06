@@ -3,6 +3,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 import media_manager.database
+from media_manager.config import MediaManagerConfig
 from media_manager.movies.service import (
     auto_download_all_approved_movie_requests,
     import_all_movie_torrents,
@@ -15,7 +16,7 @@ from media_manager.tv.service import (
 )
 
 
-def setup_scheduler(config):
+def setup_scheduler(config: MediaManagerConfig) -> BackgroundScheduler:
     from media_manager.database import init_engine
 
     init_engine(config.database)

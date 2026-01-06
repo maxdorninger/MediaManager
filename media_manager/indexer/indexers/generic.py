@@ -8,7 +8,7 @@ from media_manager.tv.schemas import Show
 class GenericIndexer(ABC):
     name: str
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.name = name
 
     @abstractmethod

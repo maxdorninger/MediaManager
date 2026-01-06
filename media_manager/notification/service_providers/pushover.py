@@ -8,7 +8,7 @@ from media_manager.notification.service_providers.abstract_notification_service_
 
 
 class PushoverNotificationServiceProvider(AbstractNotificationServiceProvider):
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().notifications.pushover
 
     def send_notification(self, message: MessageNotification) -> bool:

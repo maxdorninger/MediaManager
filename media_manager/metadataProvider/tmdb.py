@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 class TmdbMetadataProvider(AbstractMetadataProvider):
     name = "tmdb"
 
-    def __init__(self):
+    def __init__(self) -> None:
         config = MediaManagerConfig().metadata.tmdb
         self.url = config.tmdb_relay_url
         self.primary_languages = config.primary_languages
@@ -244,12 +244,12 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
     @override
     def get_show_metadata(
-        self, show_id: int | None = None, language: str | None = None
+        self, show_id: int, language: str | None = None
     ) -> Show:
         """
 
-        :param id: the external id of the show
-        :type id: int
+        :param show_id: the external id of the show
+        :type show_id: int
         :param language: optional language code (ISO 639-1) to fetch metadata in
         :type language: str | None
         :return: returns a Show object
@@ -374,13 +374,13 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
 
     @override
     def get_movie_metadata(
-        self, movie_id: int | None = None, language: str | None = None
+        self, movie_id: int, language: str | None = None
     ) -> Movie:
         """
         Get movie metadata with language-aware fetching.
 
-        :param id: the external id of the movie
-        :type id: int
+        :param movie_id: the external id of the movie
+        :type movie_id: int
         :param language: optional language code (ISO 639-1) to fetch metadata in
         :type language: str | None
         :return: returns a Movie object

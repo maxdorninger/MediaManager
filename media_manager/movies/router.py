@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, MediaManagerConfig
-from media_manager.exceptions import ConflictError
+from media_manager.exceptions import ConflictError, NotFoundError
 from media_manager.indexer.schemas import (
     IndexerQueryResult,
     IndexerQueryResultId,
@@ -97,7 +97,7 @@ def get_all_importable_movies(
 )
 def import_detected_movie(
     movie_service: movie_service_dep, movie: movie_dep, directory: str
-):
+) -> None:
     """
     Import a detected movie from the specified directory into the library.
     """
@@ -145,7 +145,7 @@ def add_a_movie(
     metadata_provider: metadata_provider_dep,
     movie_id: int,
     language: str | None = None,
-):
+) -> Movie:
     """
     Add a new movie to the library.
     """
@@ -159,6 +159,8 @@ def add_a_movie(
         movie = movie_service.get_movie_by_external_id(
             external_id=movie_id, metadata_provider=metadata_provider.name
         )
+        if not movie:
+            raise NotFoundError from ConflictError
     return movie
 
 
@@ -217,7 +219,7 @@ def create_movie_request(
     log.info(
         f"User {user.email} is creating a movie request for {movie_request.movie_id}"
     )
-    movie_request = MovieRequest.model_validate(movie_request)
+    movie_request: MovieRequest = MovieRequest.model_validate(movie_request)
     movie_request.requested_by = user
     if user.is_superuser:
         movie_request.authorized = True
@@ -254,7 +256,7 @@ def authorize_request(
     movie_request_id: MovieRequestId,
     user: Annotated[UserRead, Depends(current_superuser)],
     authorized_status: bool = False,
-):
+) -> MovieRequest:
     """
     Authorize or de-authorize a movie request.
     """
@@ -276,7 +278,7 @@ def authorize_request(
 )
 def delete_movie_request(
     movie_service: movie_service_dep, movie_request_id: MovieRequestId
-):
+) -> None:
     """
     Delete a movie request.
     """
@@ -309,7 +311,7 @@ def delete_a_movie(
     movie: movie_dep,
     delete_files_on_disk: bool = False,
     delete_torrents: bool = False,
-):
+) -> None:
     """
     Delete a movie from the library.
     """

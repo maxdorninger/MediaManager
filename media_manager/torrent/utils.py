@@ -34,7 +34,7 @@ def list_files_recursively(path: Path = Path()) -> list[Path]:
     return valid_files
 
 
-def extract_archives(files):
+def extract_archives(files: list) -> None:
     archive_types = {
         "application/zip",
         "application/x-zip-compressedapplication/x-compressed",
@@ -61,11 +61,11 @@ def extract_archives(files):
                 log.error(f"Failed to extract archive {file}. Error: {e}")
 
 
-def get_torrent_filepath(torrent: Torrent):
+def get_torrent_filepath(torrent: Torrent) -> Path:
     return MediaManagerConfig().misc.torrent_directory / torrent.title
 
 
-def import_file(target_file: Path, source_file: Path):
+def import_file(target_file: Path, source_file: Path) -> None:
     if target_file.exists():
         target_file.unlink()
 
@@ -87,11 +87,15 @@ def get_files_for_import(
     Extracts all files from the torrent download directory, including extracting archives.
     Returns a tuple containing: seperated video files, subtitle files, and all files found in the torrent directory.
     """
-    search_directory = directory if directory else get_torrent_filepath(torrent=torrent)
     if torrent:
         log.info(f"Importing torrent {torrent}")
-    else:
+        search_directory = get_torrent_filepath(torrent=torrent)
+    elif directory:
         log.info(f"Importing files from directory {directory}")
+        search_directory = directory
+    else:
+        msg = "Either torrent or directory must be provided."
+        raise ValueError(msg)
 
     all_files: list[Path] = list_files_recursively(path=search_directory)
     log.debug(f"Found {len(all_files)} files downloaded by the torrent")

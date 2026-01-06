@@ -2,12 +2,12 @@ import logging
 import os
 
 import uvicorn
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from psycopg.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError
-from starlette.responses import FileResponse, RedirectResponse, Response
+from starlette.responses import FileResponse, RedirectResponse
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 import media_manager.movies.router as movies_router
@@ -143,23 +143,23 @@ else:
 
 
 @app.get("/")
-async def root():
+async def root() -> RedirectResponse:
     return RedirectResponse(url="/web/")
 
 
 @app.get("/dashboard")
-async def dashboard():
+async def dashboard() -> RedirectResponse:
     return RedirectResponse(url="/web/")
 
 
 @app.get("/login")
-async def login():
+async def login() -> RedirectResponse:
     return RedirectResponse(url="/web/")
 
 
 # this will serve the custom 404 page for frontend routes, so SvelteKit can handle routing
 @app.exception_handler(404)
-async def not_found_handler(request, _exc):
+async def not_found_handler(request: Request, _exc: Exception) -> Response:
     if not DISABLE_FRONTEND_MOUNT and any(
         base_path in ["/web", "/dashboard", "/login"] for base_path in request.url.path
     ):

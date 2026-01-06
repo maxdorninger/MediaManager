@@ -7,7 +7,7 @@ class NotificationService:
     def __init__(
         self,
         notification_repository: NotificationRepository,
-    ):
+    ) -> None:
         self.notification_repository = notification_repository
         self.notification_manager = notification_manager
 

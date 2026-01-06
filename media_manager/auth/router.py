@@ -19,7 +19,7 @@ users_router = APIRouter()
 auth_metadata_router = APIRouter()
 
 
-def get_openid_router():
+def get_openid_router() -> APIRouter:
     if openid_client:
         return get_oauth_router(
             oauth_client=openid_client,

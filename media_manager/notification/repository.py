@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 
 class NotificationRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session) -> None:
         self.db = db
 
     def get_notification(self, nid: NotificationId) -> NotificationSchema:
@@ -60,7 +60,7 @@ class NotificationRepository:
             log.error(f"Database error while retrieving notifications: {e}")
             raise
 
-    def save_notification(self, notification: NotificationSchema):
+    def save_notification(self, notification: NotificationSchema) -> None:
         try:
             self.db.add(
                 Notification(

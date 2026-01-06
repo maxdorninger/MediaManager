@@ -16,29 +16,29 @@ else:
     tvdb_client = tvdb_v4_official.TVDB(tvdb_api_key)
 
     @router.get("/tv/trending")
-    async def get_tvdb_trending_tv():
+    async def get_tvdb_trending_tv() -> list:
         return tvdb_client.get_all_series()
 
     @router.get("/tv/search")
-    async def search_tvdb_tv(query: str):
+    async def search_tvdb_tv(query: str) -> list:
         return tvdb_client.search(query)
 
     @router.get("/tv/shows/{show_id}")
-    async def get_tvdb_show(show_id: int):
+    async def get_tvdb_show(show_id: int) -> dict:
         return tvdb_client.get_series_extended(show_id)
 
     @router.get("/tv/seasons/{season_id}")
-    async def get_tvdb_season(season_id: int):
+    async def get_tvdb_season(season_id: int) -> dict:
         return tvdb_client.get_season_extended(season_id)
 
     @router.get("/movies/trending")
-    async def get_tvdb_trending_movies():
+    async def get_tvdb_trending_movies() -> list:
         return tvdb_client.get_all_movies()
 
     @router.get("/movies/search")
-    async def search_tvdb_movies(query: str):
+    async def search_tvdb_movies(query: str) -> list:
         return tvdb_client.search(query)
 
     @router.get("/movies/{movie_id}")
-    async def get_tvdb_movie(movie_id: int):
+    async def get_tvdb_movie(movie_id: int) -> dict:
         return tvdb_client.get_movie_extended(movie_id)

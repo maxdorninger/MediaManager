@@ -12,7 +12,7 @@ class NtfyNotificationServiceProvider(AbstractNotificationServiceProvider):
     Ntfy Notification Service Provider
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().notifications.ntfy
 
     def send_notification(self, message: MessageNotification) -> bool:

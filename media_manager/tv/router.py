@@ -7,7 +7,7 @@ from media_manager.auth.db import User
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, MediaManagerConfig
-from media_manager.exceptions import MediaAlreadyExistsError
+from media_manager.exceptions import MediaAlreadyExistsError, NotFoundError
 from media_manager.indexer.schemas import (
     IndexerQueryResult,
     IndexerQueryResultId,
@@ -94,7 +94,7 @@ def get_all_importable_shows(
     dependencies=[Depends(current_superuser)],
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, directory: str):
+def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, directory: str) -> None:
     """
     Import a detected show from the specified directory into the library.
     """
@@ -140,12 +140,12 @@ def add_a_show(
     metadata_provider: metadata_provider_dep,
     show_id: int,
     language: str | None = None,
-):
+) -> Show:
     """
     Add a new show to the library.
     """
     try:
-        show = tv_service.add_show(
+         show = tv_service.add_show(
             external_id=show_id,
             metadata_provider=metadata_provider,
             language=language,
@@ -154,6 +154,8 @@ def add_a_show(
         show = tv_service.get_show_by_external_id(
             show_id, metadata_provider=metadata_provider.name
         )
+        if not show:
+            raise NotFoundError from MediaAlreadyExistsError
     return show
 
 
@@ -205,7 +207,7 @@ def delete_a_show(
     show: show_dep,
     delete_files_on_disk: bool = False,
     delete_torrents: bool = False,
-):
+) -> None:
     """
     Delete a show from the library.
     """
@@ -296,7 +298,7 @@ def request_a_season(
     user: Annotated[User, Depends(current_active_user)],
     season_request: CreateSeasonRequest,
     tv_service: tv_service_dep,
-):
+) -> None:
     """
     Create a new season request.
     """
@@ -314,7 +316,7 @@ def update_request(
     tv_service: tv_service_dep,
     user: Annotated[User, Depends(current_active_user)],
     season_request: UpdateSeasonRequest,
-):
+) -> None:
     """
     Update an existing season request.
     """
@@ -336,13 +338,15 @@ def authorize_request(
     user: Annotated[User, Depends(current_superuser)],
     season_request_id: SeasonRequestId,
     authorized_status: bool = False,
-):
+) -> None:
     """
     Authorize or de-authorize a season request.
     """
     season_request = tv_service.get_season_request_by_id(
         season_request_id=season_request_id
     )
+    if not season_request:
+        raise NotFoundError
     season_request.authorized_by = UserRead.model_validate(user)
     season_request.authorized = authorized_status
     if not authorized_status:
@@ -359,7 +363,7 @@ def delete_season_request(
     tv_service: tv_service_dep,
     user: Annotated[User, Depends(current_active_user)],
     request_id: SeasonRequestId,
-):
+) -> None:
     """
     Delete a season request.
     """
@@ -367,11 +371,11 @@ def delete_season_request(
     if user.is_superuser or request.requested_by.id == user.id:
         tv_service.delete_season_request(season_request_id=request_id)
         log.info(f"User {user.id} deleted season request {request_id}.")
-        return None
+        return
     log.warning(
         f"User {user.id} tried to delete season request {request_id} but is not authorized."
     )
-    return HTTPException(
+    raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Not authorized to delete this request",
     )

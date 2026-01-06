@@ -40,7 +40,7 @@ class MovieRepository:
     Provides methods to retrieve, save, and delete movies.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session) -> None:
         self.db = db
 
     def get_movie_by_id(self, movie_id: MovieId) -> MovieSchema:

@@ -36,7 +36,10 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["ruff"]
+dev = [
+    "ruff",
+    "ty>=0.0.9",
+]
 
 [tool.setuptools.packages.find]
 include = ["media_manager*"]

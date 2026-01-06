@@ -7,7 +7,7 @@ from media_manager.notification.service_providers.abstract_notification_service_
 
 
 class EmailNotificationServiceProvider(AbstractNotificationServiceProvider):
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().notifications.email_notifications
 
     def send_notification(self, message: MessageNotification) -> bool:
