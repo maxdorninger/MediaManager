@@ -20,7 +20,7 @@ SeasonRequestId = typing.NewType("SeasonRequestId", UUID)
 class Episode(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: EpisodeId = Field(default_factory=uuid.uuid4)
+    id: EpisodeId = Field(default_factory=lambda: EpisodeId(uuid.uuid4()))
     number: EpisodeNumber
     external_id: int
     title: str
@@ -29,7 +29,7 @@ class Episode(BaseModel):
 class Season(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: SeasonId = Field(default_factory=uuid.uuid4)
+    id: SeasonId = Field(default_factory=lambda: SeasonId(uuid.uuid4()))
     number: SeasonNumber
 
     name: str
@@ -43,7 +43,7 @@ class Season(BaseModel):
 class Show(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: ShowId = Field(default_factory=uuid.uuid4)
+    id: ShowId = Field(default_factory=lambda: ShowId(uuid.uuid4()))
 
     name: str
     overview: str
@@ -85,7 +85,7 @@ class UpdateSeasonRequest(SeasonRequestBase):
 class SeasonRequest(SeasonRequestBase):
     model_config = ConfigDict(from_attributes=True)
 
-    id: SeasonRequestId = Field(default_factory=uuid.uuid4)
+    id: SeasonRequestId = Field(default_factory=lambda: SeasonRequestId(uuid.uuid4()))
 
     season_id: SeasonId
     requested_by: UserRead | None = None

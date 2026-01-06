@@ -107,11 +107,11 @@ def run_migrations_online() -> None:
     """
 
     def include_object(
-        _object: object,
-        name: str,
-        type_: str,
-        _reflected: bool,
-        _compare_to: object,
+        _object: object | None,
+        name: str | None,
+        type_: str | None,
+        _reflected: bool | None,
+        _compare_to: object | None,
     ) -> bool:
         if type_ == "table" and name == "apscheduler_jobs":
             return False

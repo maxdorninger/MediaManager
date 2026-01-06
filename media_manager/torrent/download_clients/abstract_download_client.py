@@ -16,11 +16,11 @@ class AbstractDownloadClient(ABC):
         pass
 
     @abstractmethod
-    def download_torrent(self, torrent: IndexerQueryResult) -> Torrent:
+    def download_torrent(self, indexer_result: IndexerQueryResult) -> Torrent:
         """
         Add a torrent to the download client and return the torrent object.
 
-        :param torrent: The indexer query result of the torrent file to download.
+        :param indexer_result: The indexer query result of the torrent file to download.
         :return: The torrent object with calculated hash and initial status.
         """
 

@@ -15,7 +15,7 @@ MovieRequestId = typing.NewType("MovieRequestId", UUID)
 class Movie(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: MovieId = Field(default_factory=uuid.uuid4)
+    id: MovieId = Field(default_factory=lambda: MovieId(uuid.uuid4()))
     name: str
     overview: str
     year: int | None
@@ -59,7 +59,7 @@ class CreateMovieRequest(MovieRequestBase):
 class MovieRequest(MovieRequestBase):
     model_config = ConfigDict(from_attributes=True)
 
-    id: MovieRequestId = Field(default_factory=uuid.uuid4)
+    id: MovieRequestId = Field(default_factory=lambda: MovieRequestId(uuid.uuid4()))
 
     movie_id: MovieId
 

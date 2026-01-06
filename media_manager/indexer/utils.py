@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 def evaluate_indexer_query_result(
     query_result: IndexerQueryResult, ruleset: ScoringRuleSet
-) -> (IndexerQueryResult, bool):
+) -> tuple[IndexerQueryResult, bool]:
     title_rules = MediaManagerConfig().indexers.title_scoring_rules
     indexer_flag_rules = MediaManagerConfig().indexers.indexer_flag_scoring_rules
     for rule_name in ruleset.rule_names:

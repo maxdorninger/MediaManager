@@ -7,7 +7,7 @@ from media_manager.auth.db import User
 from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, MediaManagerConfig
-from media_manager.exceptions import MediaAlreadyExistsError
+from media_manager.exceptions import MediaAlreadyExistsError, NotFoundError
 from media_manager.indexer.schemas import (
     IndexerQueryResult,
     IndexerQueryResultId,
@@ -145,7 +145,7 @@ def add_a_show(
     Add a new show to the library.
     """
     try:
-        show = tv_service.add_show(
+         show = tv_service.add_show(
             external_id=show_id,
             metadata_provider=metadata_provider,
             language=language,
@@ -154,6 +154,8 @@ def add_a_show(
         show = tv_service.get_show_by_external_id(
             show_id, metadata_provider=metadata_provider.name
         )
+        if not show:
+            raise NotFoundError
     return show
 
 
@@ -343,6 +345,8 @@ def authorize_request(
     season_request = tv_service.get_season_request_by_id(
         season_request_id=season_request_id
     )
+    if not season_request:
+        raise NotFoundError
     season_request.authorized_by = UserRead.model_validate(user)
     season_request.authorized = authorized_status
     if not authorized_status:

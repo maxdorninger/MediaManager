@@ -19,6 +19,7 @@ from media_manager.metadataProvider.abstract_metadata_provider import (
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
+from media_manager.notification.repository import NotificationRepository
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.repository import TorrentRepository
@@ -66,7 +67,7 @@ class TvService:
         tv_repository: TvRepository,
         torrent_service: TorrentService,
         indexer_service: IndexerService,
-        notification_service: NotificationService = None,
+        notification_service: NotificationService,
     ) -> None:
         self.tv_repository = tv_repository
         self.torrent_service = torrent_service
@@ -78,7 +79,7 @@ class TvService:
         external_id: int,
         metadata_provider: AbstractMetadataProvider,
         language: str | None = None,
-    ) -> Show | None:
+    ) -> Show:
         """
         Add a new show to the database.
 
@@ -966,10 +967,12 @@ def auto_download_all_approved_season_requests() -> None:
         tv_repository = TvRepository(db=db)
         torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
         indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
+        notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
         tv_service = TvService(
             tv_repository=tv_repository,
             torrent_service=torrent_service,
             indexer_service=indexer_service,
+            notification_service=notification_service
         )
 
         log.info("Auto downloading all approved season requests")
@@ -1001,10 +1004,12 @@ def import_all_show_torrents() -> None:
         tv_repository = TvRepository(db=db)
         torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
         indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
+        notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
         tv_service = TvService(
             tv_repository=tv_repository,
             torrent_service=torrent_service,
             indexer_service=indexer_service,
+            notification_service=notification_service
         )
         log.info("Importing all torrents")
         torrents = torrent_service.get_all_torrents()
@@ -1037,6 +1042,7 @@ def update_all_non_ended_shows_metadata() -> None:
             tv_repository=tv_repository,
             torrent_service=TorrentService(torrent_repository=TorrentRepository(db=db)),
             indexer_service=IndexerService(indexer_repository=IndexerRepository(db=db)),
+            notification_service=NotificationService(notification_repository=NotificationRepository(db=db))
         )
 
         log.info("Updating metadata for all non-ended shows")

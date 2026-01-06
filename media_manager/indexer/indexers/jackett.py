@@ -68,13 +68,13 @@ class Jackett(GenericIndexer, TorznabMixin):
 
         results = self.process_search_result(response.content)
 
-        log.info(f"Indexer {indexer.name} returned {len(results)} results")
+        log.info(f"Indexer {indexer} returned {len(results)} results")
         return results
 
     def search_season(
         self, query: str, show: Show, season_number: int
     ) -> list[IndexerQueryResult]:
-        pass
+        return self.search(query=query, is_tv=True)
 
     def search_movie(self, query: str, movie: Movie) -> list[IndexerQueryResult]:
-        pass
+        return self.search(query=query, is_tv=False)

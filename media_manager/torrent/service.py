@@ -14,7 +14,7 @@ class TorrentService:
     def __init__(
         self,
         torrent_repository: TorrentRepository,
-        download_manager: DownloadManager = None,
+        download_manager: DownloadManager | None = None,
     ) -> None:
         self.torrent_repository = torrent_repository
         self.download_manager = download_manager or DownloadManager()

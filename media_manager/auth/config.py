@@ -20,7 +20,3 @@ class AuthConfig(BaseSettings):
     admin_emails: list[str] = []
     email_password_resets: bool = False
     openid_connect: OpenIdConfig = OpenIdConfig()
-
-    @property
-    def jwt_signing_key(self) -> str:
-        return self._jwt_signing_key

@@ -87,11 +87,14 @@ def get_files_for_import(
     Extracts all files from the torrent download directory, including extracting archives.
     Returns a tuple containing: seperated video files, subtitle files, and all files found in the torrent directory.
     """
-    search_directory = directory if directory else get_torrent_filepath(torrent=torrent)
     if torrent:
         log.info(f"Importing torrent {torrent}")
-    else:
+        search_directory = get_torrent_filepath(torrent=torrent)
+    elif directory:
         log.info(f"Importing files from directory {directory}")
+        search_directory = directory
+    else:
+        raise ValueError("Either torrent or directory must be provided.")
 
     all_files: list[Path] = list_files_recursively(path=search_directory)
     log.debug(f"Found {len(all_files)} files downloaded by the torrent")

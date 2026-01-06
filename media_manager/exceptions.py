@@ -72,21 +72,21 @@ class UnprocessableEntityError(MediaManagerError):
 
 # Exception handlers
 async def media_already_exists_exception_handler(
-    _request: Request, exc: MediaAlreadyExistsError
+    _request: Request, _exc: Exception
 ) -> JSONResponse:
-    return JSONResponse(status_code=409, content={"detail": exc.message})
+    return JSONResponse(status_code=409, content={"detail": str(_exc)})
 
 
 async def not_found_error_exception_handler(
-    _request: Request, exc: NotFoundError
+    _request: Request, _exc: Exception
 ) -> JSONResponse:
-    return JSONResponse(status_code=404, content={"detail": exc.message})
+    return JSONResponse(status_code=404, content={"detail": str(_exc)})
 
 
 async def invalid_config_error_exception_handler(
-    _request: Request, exc: InvalidConfigError
+    _request: Request, _exc: Exception
 ) -> JSONResponse:
-    return JSONResponse(status_code=500, content={"detail": exc.message})
+    return JSONResponse(status_code=500, content={"detail": str(_exc)})
 
 
 async def bad_request_error_handler(
@@ -107,8 +107,8 @@ async def forbidden_error_handler(
     return JSONResponse(status_code=403, content={"detail": exc.message})
 
 
-async def conflict_error_handler(_request: Request, exc: ConflictError) -> JSONResponse:
-    return JSONResponse(status_code=409, content={"detail": exc.message})
+async def conflict_error_handler(_request: Request, _exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=409, content={"detail": str(_exc)})
 
 
 async def unprocessable_entity_error_handler(

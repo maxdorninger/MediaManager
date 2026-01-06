@@ -33,7 +33,7 @@ class TorrentStatus(Enum):
 class Torrent(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: TorrentId = Field(default_factory=uuid.uuid4)
+    id: TorrentId = Field(default_factory=lambda: TorrentId(uuid.uuid4()))
     status: TorrentStatus
     title: str
     quality: Quality

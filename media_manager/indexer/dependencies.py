@@ -21,4 +21,4 @@ def get_indexer_service(
     return IndexerService(indexer_repository)
 
 
-indexer_service_dep = Annotated[TvService, Depends(get_indexer_service)]
+indexer_service_dep = Annotated[IndexerService, Depends(get_indexer_service)]

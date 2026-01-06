@@ -32,6 +32,7 @@ from media_manager.movies.schemas import (
     RichMovieRequest,
     RichMovieTorrent,
 )
+from media_manager.notification.repository import NotificationRepository
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.repository import TorrentRepository
@@ -58,7 +59,7 @@ class MovieService:
         movie_repository: MovieRepository,
         torrent_service: TorrentService,
         indexer_service: IndexerService,
-        notification_service: NotificationService = None,
+        notification_service: NotificationService,
     ) -> None:
         self.movie_repository = movie_repository
         self.torrent_service = torrent_service
@@ -70,7 +71,7 @@ class MovieService:
         external_id: int,
         metadata_provider: AbstractMetadataProvider,
         language: str | None = None,
-    ) -> Movie | None:
+    ) -> Movie:
         """
         Add a new movie to the database.
 
@@ -82,7 +83,7 @@ class MovieService:
             movie_id=external_id, language=language
         )
         if not movie_with_metadata:
-            return None
+            raise NotFoundError
 
         saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
         metadata_provider.download_movie_poster_image(movie=saved_movie)
@@ -99,7 +100,7 @@ class MovieService:
 
     def get_movie_request_by_id(
         self, movie_request_id: MovieRequestId
-    ) -> MovieRequest | None:
+    ) -> MovieRequest:
         """
         Get a movie request by its ID.
 
@@ -781,14 +782,16 @@ def auto_download_all_approved_movie_requests() -> None:
     Auto download all approved movie requests.
     This is a standalone function as it creates its own DB session.
     """
-    db: Session = SessionLocal()
+    db: Session = SessionLocal() if SessionLocal else next(get_session())
     movie_repository = MovieRepository(db=db)
     torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
     indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
+    notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
     movie_service = MovieService(
         movie_repository=movie_repository,
         torrent_service=torrent_service,
         indexer_service=indexer_service,
+        notification_service=notification_service
     )
 
     log.info("Auto downloading all approved movie requests")
@@ -818,10 +821,12 @@ def import_all_movie_torrents() -> None:
         movie_repository = MovieRepository(db=db)
         torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
         indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
+        notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
         movie_service = MovieService(
             movie_repository=movie_repository,
             torrent_service=torrent_service,
             indexer_service=indexer_service,
+            notification_service=notification_service,
         )
         log.info("Importing all torrents")
         torrents = torrent_service.get_all_torrents()
@@ -855,6 +860,7 @@ def update_all_movies_metadata() -> None:
             movie_repository=movie_repository,
             torrent_service=TorrentService(torrent_repository=TorrentRepository(db=db)),
             indexer_service=IndexerService(indexer_repository=IndexerRepository(db=db)),
+            notification_service=NotificationService(notification_repository=NotificationRepository(db=db))
         )
 
         log.info("Updating metadata for all movies")

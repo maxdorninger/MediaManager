@@ -64,11 +64,11 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
     @override
     def get_show_metadata(
-        self, show_id: int | None = None, language: str | None = None
+        self, show_id: int, language: str | None = None
     ) -> Show:
         """
 
-        :param id: the external id of the show
+        :param show_id: The external id of the show
         :param language: does nothing, TVDB does not support multiple languages
         """
         series = self.__get_show(show_id)
@@ -230,9 +230,14 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                 except KeyError:
                     year = None
 
+                if result.get("image"):
+                    poster_path = "https://artworks.thetvdb.com" + str(result.get("image"))
+                else:
+                    poster_path = None
+
                 formatted_results.append(
                     MetaDataProviderSearchResult(
-                        poster_path="https://artworks.thetvdb.com" + result.get("image")
+                        poster_path= poster_path
                         if result.get("image")
                         else None,
                         overview=result.get("overview"),
@@ -265,7 +270,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
     @override
     def get_movie_metadata(
-        self, movie_id: int | None = None, language: str | None = None
+        self, movie_id: int, language: str | None = None
     ) -> Movie:
         """
 
@@ -273,7 +278,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         :param language: does nothing, TVDB does not support multiple languages
         :return: returns a Movie object
         """
-        movie = self.__get_movie(movie_id)
+        movie = self.__get_movie(movie_id=movie_id)
 
         # get imdb id from remote ids
         imdb_id = None
