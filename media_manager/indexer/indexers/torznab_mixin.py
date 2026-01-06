@@ -66,8 +66,7 @@ class TorznabMixin:
                         f"Torznab item {item.find('title').text} has no size, skipping."
                     )
                     continue
-                else:
-                    size = int(item.find("size").text or "0")
+                size = int(item.find("size").text or "0")
 
                 result = IndexerQueryResult(
                     title=item.find("title").text or "unknown",

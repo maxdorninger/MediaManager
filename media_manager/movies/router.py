@@ -160,7 +160,7 @@ def add_a_movie(
             external_id=movie_id, metadata_provider=metadata_provider.name
         )
         if not movie:
-            raise NotFoundError
+            raise NotFoundError from ConflictError
     return movie
 
 

@@ -155,7 +155,7 @@ def add_a_show(
             show_id, metadata_provider=metadata_provider.name
         )
         if not show:
-            raise NotFoundError
+            raise NotFoundError from MediaAlreadyExistsError
     return show
 
 

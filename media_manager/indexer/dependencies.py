@@ -5,7 +5,6 @@ from fastapi import Depends
 from media_manager.database import DbSessionDependency
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.service import IndexerService
-from media_manager.tv.service import TvService
 
 
 def get_indexer_repository(db_session: DbSessionDependency) -> IndexerRepository:

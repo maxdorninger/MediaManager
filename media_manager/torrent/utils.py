@@ -94,7 +94,8 @@ def get_files_for_import(
         log.info(f"Importing files from directory {directory}")
         search_directory = directory
     else:
-        raise ValueError("Either torrent or directory must be provided.")
+        msg = "Either torrent or directory must be provided."
+        raise ValueError(msg)
 
     all_files: list[Path] = list_files_recursively(path=search_directory)
     log.debug(f"Found {len(all_files)} files downloaded by the torrent")
