@@ -28,9 +28,9 @@ Key features:
 ## Quick Start
 
 ```sh
-wget -O docker-compose.yaml https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/docker-compose.yaml   
+wget -O docker-compose.yaml https://github.com/maxdorninger/MediaManager/releases/latest/download/docker-compose.yaml
 mkdir config
-wget -O ./config/config.toml https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/config.example.toml   
+wget -O ./config/config.toml https://github.com/maxdorninger/MediaManager/releases/latest/download/config.example.toml
 # you probably need to edit the config.toml file in the ./config directory, for more help see the documentation
 docker compose up -d
 ```
