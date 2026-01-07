@@ -1,6 +1,10 @@
-# Developer Guide
+---
+description: >-
+  This section is for those who want to contribute to Media Manager or
+  understand its internals.
+---
 
-This section is for those who want to contribute to Media Manager or understand its internals.
+# Developer Guide
 
 ## Source Code directory structure﻿
 

@@ -60,7 +60,7 @@ Switch to advanced tabTry switching to the advanced tab when searching for torre
 #### Possible Fixes:
 
 * [Unable to pull image from GitHub Container Registry (Stack Overflow)](https://stackoverflow.com/questions/74656167/unable-to-pull-image-from-github-container-registry-ghcr)
-* [Try pulling the image from Quay.io](installation-guide.md#mediamanager-and-metadatarelay-docker-images)
+* [Try pulling the image from Quay.io](/broken/pages/09241b2fcda5d337e8878e4052f4634fe2902d10#mediamanager-and-metadatarelay-docker-images)
 
 </details>
 

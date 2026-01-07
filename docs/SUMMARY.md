@@ -23,6 +23,10 @@
   * [Custom port](advanced-features/custom-port.md)
   * [Follow symlinks in frontend files](advanced-features/follow-symlinks-in-frontend-files.md)
 * [Troubleshooting](troubleshooting.md)
-* [Developer Guide](developer-guide.md)
 * [API Reference](api-reference.md)
 * [Screenshots](screenshots.md)
+
+## Contributing to MediaManager
+
+* [Developer Guide](contributing-to-mediamanager/developer-guide.md)
+* [Documentation](contributing-to-mediamanager/documentation.md)
