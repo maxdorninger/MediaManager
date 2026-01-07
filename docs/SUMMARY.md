@@ -1,7 +1,9 @@
 # Table of contents
 
 * [MediaManager](README.md)
-* [Installation Guide](installation-guide.md)
+* [Installation Guide](installation/README.md)
+  * [Docker (recommended)](installation/docker.md)
+  * [Nix Flakes \[Community\]](installation/flakes.md)
 * [Importing existing media](importing-existing-media.md)
 * [Usage](usage.md)
 * [Configuration](configuration/README.md)
