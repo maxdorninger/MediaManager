@@ -6,7 +6,7 @@ This section is for those who want to contribute to Media Manager or understand 
 
 * `media_manager/`: Backend FastAPI application
 * `web/`: Frontend SvelteKit application
-* `Writerside/`: Documentation
+* `docs/`: Documentation (GitBook)
 * `metadata_relay/`: Metadata relay service, also FastAPI
 
 ## Special Dev Configuration﻿
@@ -69,7 +69,6 @@ I use IntellijIdea with the Pycharm and Webstorm plugins to develop this, but th
 * Pydantic
 * Ruff
 * VirtualKit
-* Writerside (for writing documentation)
 
 ### Recommended Development Workflow﻿
 
@@ -203,13 +202,13 @@ uv run fastapi run media_manager/main.py --reload --port 8000
 * Format code:
 
 ```bash
-uv run ruff format .
+ruff format .
 ```
 
 * Lint code:
 
 ```bash
-uv run ruff check .
+ruff check .
 ```
 
 ## Setting up the frontend development environment (Local, Optional)

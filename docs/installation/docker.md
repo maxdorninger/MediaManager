@@ -1,4 +1,4 @@
-# Docker
+# Docker Compose
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ Follow these steps to get MediaManager running with Docker Compose:
 
 {% stepper %}
 {% step %}
-### Get the docker-compose file
+#### Get the docker-compose file
 
 Download the `docker-compose.yaml` from the MediaManager repo:
 
@@ -21,7 +21,7 @@ wget -O docker-compose.yaml https://github.com/maxdorninger/MediaManager/release
 {% endstep %}
 
 {% step %}
-### Prepare configuration directory and example config
+#### Prepare configuration directory and example config
 
 Create a config directory and download the example configuration:
 
@@ -32,13 +32,13 @@ wget -O ./config/config.toml https://github.com/maxdorninger/MediaManager/releas
 {% endstep %}
 
 {% step %}
-### Edit configuration
+#### Edit configuration
 
 You probably need to edit the `config.toml` file in the `./config` directory to suit your environment and preferences. [How to configure MediaManager.](configuration/)
 {% endstep %}
 
 {% step %}
-### Start MediaManager
+#### Start MediaManager
 
 Bring up the stack:
 
@@ -56,7 +56,7 @@ docker compose up -d
 When setting up MediaManager for the first time, you should add your email to `admin_emails` in the `[auth]` config section. MediaManager will then use this email instead of the default admin email. Your account will automatically be created as an admin account, allowing you to manage other users, media, and settings.
 {% endhint %}
 
-## MediaManager and MetadataRelay Docker Images
+## Docker Images
 
 MediaManager is available as a Docker image on both Red Hat Quay.io and GitHub Container Registry (GHCR):
 
@@ -68,7 +68,7 @@ MetadataRelay images are also available on both registries:
 * quay.io/maxdorninger/metadata\_relay
 * ghcr.io/maxdorninger/mediamanager/metadata\_relay
 
-From v1.12.1 onwards, both MediaManager and MetadataRelay images are available on both Quay.io and GHCR. The reason for the switch to Quay.io as the primary image registry is due to GHCR's continued slow performance: https://github.com/orgs/community/discussions/173607
+From v1.12.1 onwards, both MediaManager and MetadataRelay images are available on both Quay.io and GHCR. The reason for the switch to Quay.io as the primary image registry is due to [GHCR's continued slow performance.](https://github.com/orgs/community/discussions/173607)
 
 {% hint style="info" %}
 You can use either the Quay.io or GHCR images interchangeably, as they are built from the same source and the tags are the same across both registries.
@@ -83,4 +83,4 @@ Both registries support the following tags:
 * X.Y.Z: Specific version tags (e.g., `1.12.0`).
 * X.Y: Points to the latest release in the X.Y series (e.g., `1.12`).
 * X: Points to the latest release in the X series (e.g., `1`).
-* pr-: Points to the latest commit in the specified pull request (e.g., `pr-67`).
+* pr-\<number>: Points to the latest commit in the specified pull request (e.g., `pr-67`).
