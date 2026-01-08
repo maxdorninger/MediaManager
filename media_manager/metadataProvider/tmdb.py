@@ -329,8 +329,8 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         """
         Get movie metadata with language-aware fetching.
 
-        :param id: the external id of the movie
-        :type id: int
+        :param movie_id: the external id of the movie
+        :type movie_id: int
         :param original_language: optional original language code (ISO 639-1) to fetch metadata in
         :type original_language: str | None
         :return: returns a Movie object
