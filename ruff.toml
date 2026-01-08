@@ -1,3 +1,4 @@
+exclude = ["alembic/versions"]
 namespace-packages = ["alembic", "metadata_relay"]
 
 [format]
