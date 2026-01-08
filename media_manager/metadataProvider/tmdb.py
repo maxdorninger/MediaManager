@@ -243,9 +243,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         return True
 
     @override
-    def get_show_metadata(
-        self, show_id: int, language: str | None = None
-    ) -> Show:
+    def get_show_metadata(self, show_id: int, language: str | None = None) -> Show:
         """
 
         :param show_id: the external id of the show
@@ -373,9 +371,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         return formatted_results
 
     @override
-    def get_movie_metadata(
-        self, movie_id: int, language: str | None = None
-    ) -> Movie:
+    def get_movie_metadata(self, movie_id: int, language: str | None = None) -> Movie:
         """
         Get movie metadata with language-aware fetching.
 

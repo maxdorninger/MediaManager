@@ -3,7 +3,6 @@ Notification Manager - Orchestrates sending notifications through all configured
 """
 
 import logging
-from typing import List
 
 from media_manager.config import MediaManagerConfig
 from media_manager.notification.schemas import MessageNotification
@@ -33,7 +32,7 @@ class NotificationManager:
 
     def __init__(self) -> None:
         self.config = MediaManagerConfig().notifications
-        self.providers: List[AbstractNotificationServiceProvider] = []
+        self.providers: list[AbstractNotificationServiceProvider] = []
         self._initialize_providers()
 
     def _initialize_providers(self) -> None:
@@ -89,7 +88,7 @@ class NotificationManager:
             except Exception as e:
                 logger.error(f"Error sending notification via {provider_name}: {e}")
 
-    def get_configured_providers(self) -> List[str]:
+    def get_configured_providers(self) -> list[str]:
         return [provider.__class__.__name__ for provider in self.providers]
 
     def is_configured(self) -> bool:

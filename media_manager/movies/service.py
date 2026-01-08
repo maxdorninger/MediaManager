@@ -98,9 +98,7 @@ class MovieService:
         """
         return self.movie_repository.add_movie_request(movie_request=movie_request)
 
-    def get_movie_request_by_id(
-        self, movie_request_id: MovieRequestId
-    ) -> MovieRequest:
+    def get_movie_request_by_id(self, movie_request_id: MovieRequestId) -> MovieRequest:
         """
         Get a movie request by its ID.
 
@@ -786,12 +784,14 @@ def auto_download_all_approved_movie_requests() -> None:
     movie_repository = MovieRepository(db=db)
     torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
     indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-    notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
+    notification_service = NotificationService(
+        notification_repository=NotificationRepository(db=db)
+    )
     movie_service = MovieService(
         movie_repository=movie_repository,
         torrent_service=torrent_service,
         indexer_service=indexer_service,
-        notification_service=notification_service
+        notification_service=notification_service,
     )
 
     log.info("Auto downloading all approved movie requests")
@@ -821,7 +821,9 @@ def import_all_movie_torrents() -> None:
         movie_repository = MovieRepository(db=db)
         torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
         indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-        notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
+        notification_service = NotificationService(
+            notification_repository=NotificationRepository(db=db)
+        )
         movie_service = MovieService(
             movie_repository=movie_repository,
             torrent_service=torrent_service,
@@ -860,7 +862,9 @@ def update_all_movies_metadata() -> None:
             movie_repository=movie_repository,
             torrent_service=TorrentService(torrent_repository=TorrentRepository(db=db)),
             indexer_service=IndexerService(indexer_repository=IndexerRepository(db=db)),
-            notification_service=NotificationService(notification_repository=NotificationRepository(db=db))
+            notification_service=NotificationService(
+                notification_repository=NotificationRepository(db=db)
+            ),
         )
 
         log.info("Updating metadata for all movies")

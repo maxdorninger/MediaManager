@@ -1,7 +1,6 @@
 import logging
 import os
 from pathlib import Path
-from typing import Tuple, Type
 
 from pydantic import AnyHttpUrl
 from pydantic_settings import (
@@ -71,12 +70,12 @@ class MediaManagerConfig(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: Type[BaseSettings],
+        settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
-    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
         return (
             init_settings,
             env_settings,

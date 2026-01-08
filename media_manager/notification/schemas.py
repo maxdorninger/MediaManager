@@ -12,7 +12,8 @@ class Notification(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: NotificationId = Field(
-        default_factory=lambda: NotificationId(uuid.uuid4()), description="Unique identifier for the notification"
+        default_factory=lambda: NotificationId(uuid.uuid4()),
+        description="Unique identifier for the notification",
     )
     read: bool = Field(False, description="Whether the notification has been read")
     message: str = Field(description="The content of the notification")

@@ -967,12 +967,14 @@ def auto_download_all_approved_season_requests() -> None:
         tv_repository = TvRepository(db=db)
         torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
         indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-        notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
+        notification_service = NotificationService(
+            notification_repository=NotificationRepository(db=db)
+        )
         tv_service = TvService(
             tv_repository=tv_repository,
             torrent_service=torrent_service,
             indexer_service=indexer_service,
-            notification_service=notification_service
+            notification_service=notification_service,
         )
 
         log.info("Auto downloading all approved season requests")
@@ -1004,12 +1006,14 @@ def import_all_show_torrents() -> None:
         tv_repository = TvRepository(db=db)
         torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
         indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-        notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
+        notification_service = NotificationService(
+            notification_repository=NotificationRepository(db=db)
+        )
         tv_service = TvService(
             tv_repository=tv_repository,
             torrent_service=torrent_service,
             indexer_service=indexer_service,
-            notification_service=notification_service
+            notification_service=notification_service,
         )
         log.info("Importing all torrents")
         torrents = torrent_service.get_all_torrents()
@@ -1042,7 +1046,9 @@ def update_all_non_ended_shows_metadata() -> None:
             tv_repository=tv_repository,
             torrent_service=TorrentService(torrent_repository=TorrentRepository(db=db)),
             indexer_service=IndexerService(indexer_repository=IndexerRepository(db=db)),
-            notification_service=NotificationService(notification_repository=NotificationRepository(db=db))
+            notification_service=NotificationService(
+                notification_repository=NotificationRepository(db=db)
+            ),
         )
 
         log.info("Updating metadata for all non-ended shows")

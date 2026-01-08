@@ -1,7 +1,8 @@
 import logging
 import os
+from collections.abc import Generator
 from contextvars import ContextVar
-from typing import Annotated, Any, Generator, Optional
+from typing import Annotated, Any
 
 from fastapi import Depends
 from sqlalchemy import create_engine
@@ -15,8 +16,8 @@ log = logging.getLogger(__name__)
 
 Base = declarative_base()
 
-engine: Optional[Engine] = None
-SessionLocal: Optional[sessionmaker] = None
+engine: Engine | None = None
+SessionLocal: sessionmaker | None = None
 
 
 def build_db_url(
@@ -83,7 +84,7 @@ def get_engine() -> Engine:
     return engine
 
 
-def get_session() -> Generator[Session, Any, None]:
+def get_session() -> Generator[Session]:
     if SessionLocal is None:
         msg = "Session factory not initialized. Call init_engine(...) first."
         raise RuntimeError(msg)

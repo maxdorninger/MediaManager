@@ -1,7 +1,8 @@
 import contextlib
 import logging
 import uuid
-from typing import Any, AsyncGenerator, Optional, override
+from collections.abc import AsyncGenerator
+from typing import Any, override
 
 from fastapi import Depends, Request
 from fastapi.responses import RedirectResponse, Response
@@ -49,7 +50,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         self,
         user: models.UP,
         update_dict: dict[str, Any],
-        request: Optional[Request] = None,
+        request: Request | None = None,
     ) -> None:
         log.info(f"User {user.id} has been updated.")
         if update_dict.get("is_superuser"):
@@ -60,7 +61,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     @override
     async def on_after_register(
-        self, user: User, request: Optional[Request] = None
+        self, user: User, request: Request | None = None
     ) -> None:
         log.info(f"User {user.id} has registered.")
         if user.email in config.admin_emails:
@@ -69,7 +70,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     @override
     async def on_after_forgot_password(
-        self, user: User, token: str, request: Optional[Request] = None
+        self, user: User, token: str, request: Request | None = None
     ) -> None:
         link = f"{MediaManagerConfig().misc.frontend_url}web/login/reset-password?token={token}"
         log.info(f"User {user.id} has forgot their password. Reset Link: {link}")
@@ -100,28 +101,26 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     @override
     async def on_after_reset_password(
-        self, user: User, request: Optional[Request] = None
+        self, user: User, request: Request | None = None
     ) -> None:
         log.info(f"User {user.id} has reset their password.")
 
     @override
     async def on_after_request_verify(
-        self, user: User, token: str, request: Optional[Request] = None
+        self, user: User, token: str, request: Request | None = None
     ) -> None:
         log.info(
             f"Verification requested for user {user.id}. Verification token: {token}"
         )
 
     @override
-    async def on_after_verify(
-        self, user: User, request: Optional[Request] = None
-    ) -> None:
+    async def on_after_verify(self, user: User, request: Request | None = None) -> None:
         log.info(f"User {user.id} has been verified")
 
 
 async def get_user_manager(
     user_db: SQLAlchemyUserDatabase = Depends(get_user_db),
-) -> AsyncGenerator[UserManager, None]:
+) -> AsyncGenerator[UserManager]:
     yield UserManager(user_db)
 
 
