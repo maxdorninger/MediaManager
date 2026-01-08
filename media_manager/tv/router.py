@@ -139,7 +139,7 @@ def add_a_show(
     tv_service: tv_service_dep,
     metadata_provider: metadata_provider_dep,
     show_id: int,
-    language: str | None = None,
+    original_language: str | None = None,
 ) -> Show:
     """
     Add a new show to the library.
@@ -148,7 +148,7 @@ def add_a_show(
          show = tv_service.add_show(
             external_id=show_id,
             metadata_provider=metadata_provider,
-            language=language,
+            original_language=original_language,
         )
     except MediaAlreadyExistsError:
         show = tv_service.get_show_by_external_id(

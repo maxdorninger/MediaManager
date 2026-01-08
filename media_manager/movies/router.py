@@ -144,7 +144,7 @@ def add_a_movie(
     movie_service: movie_service_dep,
     metadata_provider: metadata_provider_dep,
     movie_id: int,
-    language: str | None = None,
+    original_language: str | None = None,
 ) -> Movie:
     """
     Add a new movie to the library.
@@ -153,7 +153,7 @@ def add_a_movie(
         movie = movie_service.add_movie(
             external_id=movie_id,
             metadata_provider=metadata_provider,
-            language=language,
+            original_language=original_language,
         )
     except ConflictError:
         movie = movie_service.get_movie_by_external_id(
@@ -256,7 +256,7 @@ def authorize_request(
     movie_request_id: MovieRequestId,
     user: Annotated[UserRead, Depends(current_superuser)],
     authorized_status: bool = False,
-) -> MovieRequest:
+) -> None:
     """
     Authorize or de-authorize a movie request.
     """

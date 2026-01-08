@@ -78,17 +78,17 @@ class TvService:
         self,
         external_id: int,
         metadata_provider: AbstractMetadataProvider,
-        language: str | None = None,
+        original_language: str | None = None,
     ) -> Show:
         """
         Add a new show to the database.
 
         :param external_id: The ID of the show in the metadata provider\'s system.
         :param metadata_provider: The name of the metadata provider.
-        :param language: Optional language code (ISO 639-1) to fetch metadata in.
+        :param original_language: Optional original language code (ISO 639-1) to fetch metadata in.
         """
         show_with_metadata = metadata_provider.get_show_metadata(
-            show_id=external_id, language=language
+            show_id=external_id, original_language=original_language
         )
         saved_show = self.tv_repository.save_show(show=show_with_metadata)
         metadata_provider.download_show_poster_image(show=saved_show)
@@ -765,7 +765,7 @@ class TvService:
 
         # Use stored original_language preference for metadata fetching
         fresh_show_data = metadata_provider.get_show_metadata(
-            show_id=db_show.external_id, language=db_show.original_language
+            show_id=db_show.external_id, original_language=db_show.original_language
         )
         if not fresh_show_data:
             log.warning(

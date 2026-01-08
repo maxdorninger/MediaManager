@@ -64,12 +64,16 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
     @override
     def get_show_metadata(
-        self, show_id: int, language: str | None = None
+        self, show_id: int | None = None, original_language: str | None = None
     ) -> Show:
         """
 
         :param show_id: The external id of the show
-        :param language: does nothing, TVDB does not support multiple languages
+        :type show_id: int
+        :param original_language: does nothing, support for multiple languages has not been added to this class.
+        :type original_language: str | None
+        :return: returns a ShowMetadata object
+        :rtype: ShowMetadata
         """
         series = self.__get_show(show_id)
         seasons = []
@@ -270,12 +274,14 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
 
     @override
     def get_movie_metadata(
-        self, movie_id: int, language: str | None = None
+        self, movie_id: int | None = None, original_language: str | None = None
     ) -> Movie:
         """
 
         :param movie_id: the external id of the movie
-        :param language: does nothing, TVDB does not support multiple languages
+        :type movie_id: int
+        :param original_language: does nothing, support for multiple languages has not been added to this class.
+        :type original_language: str | None
         :return: returns a Movie object
         """
         movie = self.__get_movie(movie_id=movie_id)

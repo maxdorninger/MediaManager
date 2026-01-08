@@ -23,7 +23,7 @@
 					query: {
 						show_id: result.external_id,
 						metadata_provider: result.metadata_provider as 'tmdb' | 'tvdb',
-						language: result.original_language ?? undefined
+						original_language: result.original_language ?? undefined
 					}
 				}
 			});
@@ -34,7 +34,7 @@
 					query: {
 						movie_id: result.external_id,
 						metadata_provider: result.metadata_provider as 'tmdb' | 'tvdb',
-						language: result.original_language ?? undefined
+						original_language: result.original_language ?? undefined
 					}
 				}
 			});
