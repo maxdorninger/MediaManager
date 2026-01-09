@@ -22,6 +22,7 @@
   * [Metadata Provider Configuration](advanced-features/metadata-provider-configuration.md)
   * [Custom port](advanced-features/custom-port.md)
   * [Follow symlinks in frontend files](advanced-features/follow-symlinks-in-frontend-files.md)
+  * [Disable startup ascii art](advanced-featured/disable-startup-ascii-art.md)
 * [Troubleshooting](troubleshooting.md)
 * [API Reference](api-reference.md)
 * [Screenshots](screenshots.md)
