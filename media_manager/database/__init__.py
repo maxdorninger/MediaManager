@@ -9,6 +9,8 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
+from media_manager.database.config import DbConfig
+
 log = logging.getLogger(__name__)
 
 Base = declarative_base()
@@ -23,21 +25,20 @@ def build_db_url(
     host: str,
     port: int | str,
     dbname: str,
-) -> str:
-    db_url = URL.create(
+) -> URL:
+    return URL.create(
         "postgresql+psycopg",
         user,
         password,
         host,
-        port,
+        int(port),
         dbname,
     )
-    return db_url
 
 
 def init_engine(
-    db_config: Any | None = None,
-    url: str | None = None,
+    db_config: DbConfig | None = None,
+    url: str | URL | None = None,
 ) -> Engine:
     """
     Initialize the global SQLAlchemy engine and session factory.
@@ -51,7 +52,8 @@ def init_engine(
         if db_config is None:
             url = os.getenv("DATABASE_URL")
             if not url:
-                raise RuntimeError("DB config or `DATABASE_URL` must be provided")
+                msg = "DB config or `DATABASE_URL` must be provided"
+                raise RuntimeError(msg)
         else:
             url = build_db_url(
                 db_config.user,
@@ -76,15 +78,15 @@ def init_engine(
 
 def get_engine() -> Engine:
     if engine is None:
-        raise RuntimeError("Engine not initialized. Call init_engine(...) first.")
+        msg = "Engine not initialized. Call init_engine(...) first."
+        raise RuntimeError(msg)
     return engine
 
 
 def get_session() -> Generator[Session, Any, None]:
     if SessionLocal is None:
-        raise RuntimeError(
-            "Session factory not initialized. Call init_engine(...) first."
-        )
+        msg = "Session factory not initialized. Call init_engine(...) first."
+        raise RuntimeError(msg)
     db = SessionLocal()
     try:
         yield db

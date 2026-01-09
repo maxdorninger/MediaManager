@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 def evaluate_indexer_query_result(
     query_result: IndexerQueryResult, ruleset: ScoringRuleSet
-) -> (IndexerQueryResult, bool):
+) -> tuple[IndexerQueryResult, bool]:
     title_rules = MediaManagerConfig().indexers.title_scoring_rules
     indexer_flag_rules = MediaManagerConfig().indexers.indexer_flag_scoring_rules
     for rule_name in ruleset.rule_names:
@@ -132,7 +132,8 @@ def follow_redirects_to_final_torrent_url(
             if 300 <= response.status_code < 400:
                 redirect_url = response.headers.get("Location")
                 if not redirect_url:
-                    raise RuntimeError("Redirect response without Location header")
+                    msg = "Redirect response without Location header"
+                    raise RuntimeError(msg)
 
                 # Resolve relative redirects against the last URL
                 current_url = urljoin(current_url, redirect_url)
@@ -144,10 +145,12 @@ def follow_redirects_to_final_torrent_url(
                 response.raise_for_status()  # Raise an exception for bad status codes
                 return current_url
         else:
-            raise RuntimeError("Exceeded maximum number of redirects")
+            msg = "Exceeded maximum number of redirects"
+            raise RuntimeError(msg)
 
     except requests.exceptions.RequestException as e:
         log.debug(f"An error occurred during the request for {initial_url}: {e}")
-        raise RuntimeError(f"An error occurred during the request: {e}") from e
+        msg = f"An error occurred during the request: {e}"
+        raise RuntimeError(msg) from e
 
     return current_url

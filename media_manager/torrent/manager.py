@@ -3,14 +3,14 @@ from enum import Enum
 
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.torrent.download_clients.abstractDownloadClient import (
+from media_manager.torrent.download_clients.abstract_download_client import (
     AbstractDownloadClient,
 )
 from media_manager.torrent.download_clients.qbittorrent import QbittorrentDownloadClient
+from media_manager.torrent.download_clients.sabnzbd import SabnzbdDownloadClient
 from media_manager.torrent.download_clients.transmission import (
     TransmissionDownloadClient,
 )
-from media_manager.torrent.download_clients.sabnzbd import SabnzbdDownloadClient
 from media_manager.torrent.schemas import Torrent, TorrentStatus
 
 log = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class DownloadManager:
     Only one torrent client and one usenet client are active at a time.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._torrent_client: AbstractDownloadClient | None = None
         self._usenet_client: AbstractDownloadClient | None = None
         self.config = MediaManagerConfig().torrents
@@ -79,12 +79,13 @@ class DownloadManager:
         # Use the usenet flag from the indexer result to determine the client type
         if indexer_result.usenet:
             if not self._usenet_client:
-                raise RuntimeError("No usenet download client configured")
+                msg = "No usenet download client configured"
+                raise RuntimeError(msg)
             return self._usenet_client
-        else:
-            if not self._torrent_client:
-                raise RuntimeError("No torrent download client configured")
-            return self._torrent_client
+        if not self._torrent_client:
+            msg = "No torrent download client configured"
+            raise RuntimeError(msg)
+        return self._torrent_client
 
     def download(self, indexer_result: IndexerQueryResult) -> Torrent:
         """

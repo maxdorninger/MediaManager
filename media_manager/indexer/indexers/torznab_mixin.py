@@ -1,10 +1,9 @@
 import logging
+import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 
 from media_manager.indexer.schemas import IndexerQueryResult
-import xml.etree.ElementTree as ET
-from xml.etree.ElementTree import Element
-from email.utils import parsedate_to_datetime
-from datetime import datetime, timezone
 
 log = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ log = logging.getLogger(__name__)
 class TorznabMixin:
     def process_search_result(self, xml: str) -> list[IndexerQueryResult]:
         result_list: list[IndexerQueryResult] = []
-        xml_tree = ET.fromstring(xml)
+        xml_tree = ET.fromstring(xml)  # noqa: S314  # trusted source, since it is user controlled
         xmlns = {
             "torznab": "http://torznab.com/schemas/2015/feed",
             "atom": "http://www.w3.org/2005/Atom",
@@ -33,9 +32,7 @@ class TorznabMixin:
                     item.find("enclosure").attrib["type"] != "application/x-bittorrent"
                 )
 
-                attributes: list[Element] = [
-                    x for x in item.findall("torznab:attr", xmlns)
-                ]
+                attributes = list(item.findall("torznab:attr", xmlns))
                 for attribute in attributes:
                     if is_usenet:
                         if attribute.attrib["name"] == "usenetdate":
@@ -64,12 +61,19 @@ class TorznabMixin:
                             if upload_volume_factor == 2:
                                 flags.append("doubleupload")
 
+                if not item.find("size") or item.find("size").text is None:
+                    log.warning(
+                        f"Torznab item {item.find('title').text} has no size, skipping."
+                    )
+                    continue
+                size = int(item.find("size").text or "0")
+
                 result = IndexerQueryResult(
-                    title=item.find("title").text,
+                    title=item.find("title").text or "unknown",
                     download_url=str(item.find("enclosure").attrib["url"]),
                     seeders=seeders,
                     flags=flags,
-                    size=int(item.find("size").text),
+                    size=size,
                     usenet=is_usenet,
                     age=age,
                     indexer=indexer_name,

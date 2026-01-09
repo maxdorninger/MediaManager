@@ -1,13 +1,16 @@
 import sys
 
-sys.path = ["", ".."] + sys.path[1:]
+sys.path = ["", "..", *sys.path[1:]]
 
 
 from logging.config import fileConfig  # noqa: E402
 
+from sqlalchemy import (  # noqa: E402
+    engine_from_config,
+    pool,
+)
+
 from alembic import context  # noqa: E402
-from sqlalchemy import engine_from_config  # noqa: E402
-from sqlalchemy import pool  # noqa: E402
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,34 +26,40 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-from media_manager.auth.db import User, OAuthAccount  # noqa: E402
+from media_manager.auth.db import OAuthAccount, User  # noqa: E402
+from media_manager.config import MediaManagerConfig  # noqa: E402
+from media_manager.database import Base  # noqa: E402
 from media_manager.indexer.models import IndexerQueryResult  # noqa: E402
-from media_manager.torrent.models import Torrent  # noqa: E402
-from media_manager.tv.models import Show, Season, Episode, SeasonFile, SeasonRequest  # noqa: E402
 from media_manager.movies.models import Movie, MovieFile, MovieRequest  # noqa: E402
 from media_manager.notification.models import Notification  # noqa: E402
-from media_manager.database import Base  # noqa: E402
-from media_manager.config import MediaManagerConfig  # noqa: E402
+from media_manager.torrent.models import Torrent  # noqa: E402
+from media_manager.tv.models import (  # noqa: E402
+    Episode,
+    Season,
+    SeasonFile,
+    SeasonRequest,
+    Show,
+)
 
 target_metadata = Base.metadata
 
 # this is to keep pycharm from complaining about/optimizing unused imports
 # noinspection PyStatementEffect
-(
-    User,
-    OAuthAccount,
-    IndexerQueryResult,
-    Torrent,
-    Show,
-    Season,
-    Episode,
-    SeasonFile,
-    SeasonRequest,
-    Movie,
-    MovieFile,
-    MovieRequest,
-    Notification,
-)
+__all__ = [
+    "Episode",
+    "IndexerQueryResult",
+    "Movie",
+    "MovieFile",
+    "MovieRequest",
+    "Notification",
+    "OAuthAccount",
+    "Season",
+    "SeasonFile",
+    "SeasonRequest",
+    "Show",
+    "Torrent",
+    "User",
+]
 
 
 # other values from the config, defined by the needs of env.py,
@@ -60,19 +69,7 @@ target_metadata = Base.metadata
 
 
 db_config = MediaManagerConfig().database
-db_url = (
-    "postgresql+psycopg"
-    + "://"
-    + db_config.user
-    + ":"
-    + db_config.password
-    + "@"
-    + db_config.host
-    + ":"
-    + str(db_config.port)
-    + "/"
-    + db_config.dbname
-)
+db_url = f"postgresql+psycopg://{db_config.user}:{db_config.password}@{db_config.host}:{db_config.port}/{db_config.dbname}"
 
 config.set_main_option("sqlalchemy.url", db_url)
 
@@ -109,7 +106,13 @@ def run_migrations_online() -> None:
 
     """
 
-    def include_object(object, name, type_, reflected, compare_to):
+    def include_object(
+        _object: object | None,
+        name: str | None,
+        type_: str | None,
+        _reflected: bool | None,
+        _compare_to: object | None,
+    ) -> bool:
         if type_ == "table" and name == "apscheduler_jobs":
             return False
         return True

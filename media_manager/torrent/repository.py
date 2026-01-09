@@ -1,20 +1,24 @@
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 
 from media_manager.database import DbSessionDependency
-from media_manager.torrent.models import Torrent
-from media_manager.torrent.schemas import TorrentId, Torrent as TorrentSchema
-from media_manager.tv.models import SeasonFile, Show, Season
-from media_manager.tv.schemas import SeasonFile as SeasonFileSchema, Show as ShowSchema
 from media_manager.exceptions import NotFoundError
 from media_manager.movies.models import Movie, MovieFile
 from media_manager.movies.schemas import (
     Movie as MovieSchema,
+)
+from media_manager.movies.schemas import (
     MovieFile as MovieFileSchema,
 )
+from media_manager.torrent.models import Torrent
+from media_manager.torrent.schemas import Torrent as TorrentSchema
+from media_manager.torrent.schemas import TorrentId
+from media_manager.tv.models import Season, SeasonFile, Show
+from media_manager.tv.schemas import SeasonFile as SeasonFileSchema
+from media_manager.tv.schemas import Show as ShowSchema
 
 
 class TorrentRepository:
-    def __init__(self, db: DbSessionDependency):
+    def __init__(self, db: DbSessionDependency) -> None:
         self.db = db
 
     def get_seasons_files_of_torrent(
@@ -52,12 +56,13 @@ class TorrentRepository:
     def get_torrent_by_id(self, torrent_id: TorrentId) -> TorrentSchema:
         result = self.db.get(Torrent, torrent_id)
         if result is None:
-            raise NotFoundError(f"Torrent with ID {torrent_id} not found.")
+            msg = f"Torrent with ID {torrent_id} not found."
+            raise NotFoundError(msg)
         return TorrentSchema.model_validate(result)
 
     def delete_torrent(
         self, torrent_id: TorrentId, delete_associated_media_files: bool = False
-    ):
+    ) -> None:
         if delete_associated_media_files:
             movie_files_stmt = delete(MovieFile).where(
                 MovieFile.torrent_id == torrent_id
@@ -71,7 +76,7 @@ class TorrentRepository:
 
         self.db.delete(self.db.get(Torrent, torrent_id))
 
-    def get_movie_of_torrent(self, torrent_id: TorrentId):
+    def get_movie_of_torrent(self, torrent_id: TorrentId) -> MovieSchema | None:
         stmt = (
             select(Movie)
             .join(MovieFile, Movie.id == MovieFile.movie_id)
@@ -82,7 +87,7 @@ class TorrentRepository:
             return None
         return MovieSchema.model_validate(result)
 
-    def get_movie_files_of_torrent(self, torrent_id: TorrentId):
+    def get_movie_files_of_torrent(self, torrent_id: TorrentId) -> list[MovieFileSchema]:
         stmt = select(MovieFile).where(MovieFile.torrent_id == torrent_id)
         result = self.db.execute(stmt).scalars().all()
         return [MovieFileSchema.model_validate(movie_file) for movie_file in result]

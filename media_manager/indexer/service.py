@@ -4,8 +4,8 @@ from media_manager.config import MediaManagerConfig
 from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.jackett import Jackett
 from media_manager.indexer.indexers.prowlarr import Prowlarr
-from media_manager.indexer.schemas import IndexerQueryResultId, IndexerQueryResult
 from media_manager.indexer.repository import IndexerRepository
+from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.movies.schemas import Movie
 from media_manager.torrent.utils import remove_special_chars_and_parentheses
 from media_manager.tv.schemas import Show
@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class IndexerService:
-    def __init__(self, indexer_repository: IndexerRepository):
+    def __init__(self, indexer_repository: IndexerRepository) -> None:
         config = MediaManagerConfig()
         self.repository = indexer_repository
         self.indexers: list[GenericIndexer] = []
@@ -55,7 +55,7 @@ class IndexerService:
 
         return results
 
-    def search_movie(self, movie: Movie):
+    def search_movie(self, movie: Movie) -> list[IndexerQueryResult]:
         query = f"{movie.name} {movie.year}"
         query = remove_special_chars_and_parentheses(query)
 
@@ -75,7 +75,7 @@ class IndexerService:
 
         return results
 
-    def search_season(self, show: Show, season_number: int):
+    def search_season(self, show: Show, season_number: int) -> list[IndexerQueryResult]:
         query = f"{show.name} {show.year} S{season_number:02d}"
         query = remove_special_chars_and_parentheses(query)
 

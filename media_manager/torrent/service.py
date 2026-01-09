@@ -1,11 +1,11 @@
 import logging
 
 from media_manager.indexer.schemas import IndexerQueryResult
+from media_manager.movies.schemas import Movie, MovieFile
 from media_manager.torrent.manager import DownloadManager
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.schemas import Torrent, TorrentId
 from media_manager.tv.schemas import SeasonFile, Show
-from media_manager.movies.schemas import Movie
 
 log = logging.getLogger(__name__)
 
@@ -14,8 +14,8 @@ class TorrentService:
     def __init__(
         self,
         torrent_repository: TorrentRepository,
-        download_manager: DownloadManager = None,
-    ):
+        download_manager: DownloadManager | None = None,
+    ) -> None:
         self.torrent_repository = torrent_repository
         self.download_manager = download_manager or DownloadManager()
 
@@ -101,7 +101,7 @@ class TorrentService:
             self.torrent_repository.get_torrent_by_id(torrent_id=torrent_id)
         )
 
-    def delete_torrent(self, torrent_id: TorrentId):
+    def delete_torrent(self, torrent_id: TorrentId) -> None:
         log.info(f"Deleting torrent with ID: {torrent_id}")
         t = self.torrent_repository.get_torrent_by_id(torrent_id=torrent_id)
         delete_media_files = not t.imported
@@ -109,5 +109,5 @@ class TorrentService:
             torrent_id=torrent_id, delete_associated_media_files=delete_media_files
         )
 
-    def get_movie_files_of_torrent(self, torrent: Torrent):
+    def get_movie_files_of_torrent(self, torrent: Torrent) -> list[MovieFile]:
         return self.torrent_repository.get_movie_files_of_torrent(torrent_id=torrent.id)

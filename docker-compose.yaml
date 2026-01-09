@@ -1,7 +1,7 @@
 services:
   mediamanager:
     container_name: mediamanager_server
-    image: ghcr.io/maxdorninger/mediamanager/mediamanager:latest
+    image: quay.io/maxdorninger/mediamanager:latest
     ports:
       - "8000:8000"
     environment:

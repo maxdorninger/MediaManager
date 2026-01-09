@@ -1,6 +1,7 @@
-from pydantic_settings import BaseSettings
-from pydantic import Field
 import secrets
+
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 class OpenIdConfig(BaseSettings):
@@ -19,7 +20,3 @@ class AuthConfig(BaseSettings):
     admin_emails: list[str] = []
     email_password_resets: bool = False
     openid_connect: OpenIdConfig = OpenIdConfig()
-
-    @property
-    def jwt_signing_key(self):
-        return self._jwt_signing_key

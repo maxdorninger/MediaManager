@@ -1,13 +1,13 @@
 import logging
 import os
 from pathlib import Path
-from typing import Type, Tuple
+from typing import Tuple, Type
 
 from pydantic import AnyHttpUrl
 from pydantic_settings import (
     BaseSettings,
-    SettingsConfigDict,
     PydanticBaseSettingsSource,
+    SettingsConfigDict,
     TomlConfigSettingsSource,
 )
 
@@ -41,7 +41,7 @@ class BasicConfig(BaseSettings):
     movie_directory: Path = Path(__file__).parent.parent / "data" / "movies"
     torrent_directory: Path = Path(__file__).parent.parent / "data" / "torrents"
 
-    frontend_url: AnyHttpUrl = "http://localhost:8000"
+    frontend_url: AnyHttpUrl = AnyHttpUrl("http://localhost:8000")
     cors_urls: list[str] = []
     development: bool = False
 

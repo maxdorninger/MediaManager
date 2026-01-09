@@ -1,13 +1,13 @@
 import media_manager.notification.utils
+from media_manager.config import MediaManagerConfig
 from media_manager.notification.schemas import MessageNotification
-from media_manager.notification.service_providers.abstractNotificationServiceProvider import (
+from media_manager.notification.service_providers.abstract_notification_service_provider import (
     AbstractNotificationServiceProvider,
 )
-from media_manager.config import MediaManagerConfig
 
 
 class EmailNotificationServiceProvider(AbstractNotificationServiceProvider):
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().notifications.email_notifications
 
     def send_notification(self, message: MessageNotification) -> bool:
