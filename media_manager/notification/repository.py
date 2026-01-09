@@ -6,6 +6,7 @@ from sqlalchemy.exc import (
     SQLAlchemyError,
 )
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import false
 
 from media_manager.exceptions import ConflictError, NotFoundError
 from media_manager.notification.models import Notification
@@ -36,7 +37,7 @@ class NotificationRepository:
         try:
             stmt = (
                 select(Notification)
-                .where(Notification.read == False)  # noqa: E712
+                .where(Notification.read == false())
                 .order_by(Notification.timestamp.desc())
             )
             results = self.db.execute(stmt).scalars().all()
