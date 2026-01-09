@@ -127,13 +127,27 @@
 				<Table.Row>
 					<Table.Cell>
 						{#if isShow}
-							{getFullyQualifiedMediaName(
-								(request as components['schemas']['RichSeasonRequest']).show
-							)}
+							<a
+								href={resolve('/dashboard/tv/[showId]', {
+									showId: (request as components['schemas']['RichSeasonRequest']).show.id!
+								})}
+								class="text-primary hover:underline"
+							>
+								{getFullyQualifiedMediaName(
+									(request as components['schemas']['RichSeasonRequest']).show
+								)}
+							</a>
 						{:else}
-							{getFullyQualifiedMediaName(
-								(request as components['schemas']['RichMovieRequest']).movie
-							)}
+							<a
+								href={resolve('/dashboard/movies/[movieId]', {
+									movieId: (request as components['schemas']['RichMovieRequest']).movie.id!
+								})}
+								class="text-primary hover:underline"
+							>
+								{getFullyQualifiedMediaName(
+									(request as components['schemas']['RichMovieRequest']).movie
+								)}
+							</a>
 						{/if}
 					</Table.Cell>
 					{#if isShow}

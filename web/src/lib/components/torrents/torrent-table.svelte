@@ -14,14 +14,19 @@
 	import DeleteTorrentDialog from '$lib/components/torrents/delete-torrent-dialog.svelte';
 	import EditTorrentDialog from '$lib/components/torrents/edit-torrent-dialog.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	let {
 		torrents,
-		isShow = true
+		isShow = true,
+		showId,
+		movieId
 	}: {
 		torrents:
 			| components['schemas']['MovieTorrent'][]
 			| components['schemas']['RichSeasonTorrent'][];
 		isShow: boolean;
+		showId?: string;
+		movieId?: string;
 	} = $props();
 
 	let user: () => components['schemas']['UserRead'] = getContext('user');
@@ -68,7 +73,23 @@
 		{#each torrents as torrent (torrent.torrent_id)}
 			<Table.Row>
 				<Table.Cell class="font-medium">
-					{torrent.torrent_title}
+					{#if isShow && showId}
+						<a
+							href={resolve('/dashboard/tv/[showId]', { showId })}
+							class="text-primary hover:underline"
+						>
+							{torrent.torrent_title}
+						</a>
+					{:else if !isShow && movieId}
+						<a
+							href={resolve('/dashboard/movies/[movieId]', { movieId })}
+							class="text-primary hover:underline"
+						>
+							{torrent.torrent_title}
+						</a>
+					{:else}
+						{torrent.torrent_title}
+					{/if}
 				</Table.Cell>
 				{#if isShow}
 					<Table.Cell>
