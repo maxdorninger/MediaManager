@@ -44,8 +44,8 @@ class NotificationRepository:
                 NotificationSchema.model_validate(notification)
                 for notification in results
             ]
-        except SQLAlchemyError as e:
-            log.error(f"Database error while retrieving unread notifications: {e}")
+        except SQLAlchemyError:
+            log.exception("Database error while retrieving unread notifications")
             raise
 
     def get_all_notifications(self) -> list[NotificationSchema]:
@@ -56,8 +56,8 @@ class NotificationRepository:
                 NotificationSchema.model_validate(notification)
                 for notification in results
             ]
-        except SQLAlchemyError as e:
-            log.error(f"Database error while retrieving notifications: {e}")
+        except SQLAlchemyError:
+            log.exception("Database error while retrieving notifications")
             raise
 
     def save_notification(self, notification: NotificationSchema) -> None:
@@ -71,8 +71,8 @@ class NotificationRepository:
                 )
             )
             self.db.commit()
-        except IntegrityError as e:
-            log.error(f"Could not save notification, Error: {e}")
+        except IntegrityError:
+            log.exception("Could not save notification")
             msg = f"Notification with id {notification.id} already exists."
             raise ConflictError(msg) from None
         return

@@ -148,8 +148,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                                 vote_average=None,
                             )
                         )
-                except Exception as e:
-                    log.warning(f"Error processing search result: {e}")
+                except Exception:
+                    log.warning("Error processing search result", exc_info=True)
             return formatted_results
         results = self.__get_trending_tv()
         formatted_results = []
@@ -176,8 +176,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                             vote_average=None,
                         )
                     )
-            except Exception as e:
-                log.warning(f"Error processing search result: {e}")
+            except Exception:
+                log.warning("Error processing search result", exc_info=True)
         return formatted_results
 
     @override
@@ -213,8 +213,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                             vote_average=None,
                         )
                     )
-                except Exception as e:
-                    log.warning(f"Error processing search result: {e}")
+                except Exception:
+                    log.warning("Error processing search result", exc_info=True)
             return formatted_results
         results = self.__get_trending_movies()
         results = results[0:20]
@@ -247,8 +247,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                         vote_average=None,
                     )
                 )
-            except Exception as e:
-                log.warning(f"Error processing search result: {e}")
+            except Exception:
+                log.warning("Error processing search result", exc_info=True)
         return formatted_results
 
     @override

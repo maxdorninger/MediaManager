@@ -45,9 +45,9 @@ class IndexerService:
                 log.debug(
                     f"Indexer {indexer.__class__.__name__} returned {len(indexer_results)} results for query: {query}"
                 )
-            except Exception as e:
-                log.error(
-                    f"Indexer {indexer.__class__.__name__} failed for query '{query}': {e}"
+            except Exception:
+                log.exception(
+                    f"Indexer {indexer.__class__.__name__} failed for query '{query}'"
                 )
 
         for result in results:
@@ -65,9 +65,9 @@ class IndexerService:
                 indexer_results = indexer.search_movie(query=query, movie=movie)
                 if indexer_results:
                     results.extend(indexer_results)
-            except Exception as e:
-                log.error(
-                    f"Indexer {indexer.__class__.__name__} failed for movie search '{query}': {e}"
+            except Exception:
+                log.exception(
+                    f"Indexer {indexer.__class__.__name__} failed for movie search '{query}'"
                 )
 
         for result in results:
@@ -87,9 +87,9 @@ class IndexerService:
                 )
                 if indexer_results:
                     results.extend(indexer_results)
-            except Exception as e:
-                log.error(
-                    f"Indexer {indexer.__class__.__name__} failed for season search '{query}': {e}"
+            except Exception:
+                log.exception(
+                    f"Indexer {indexer.__class__.__name__} failed for season search '{query}'"
                 )
 
         for result in results:

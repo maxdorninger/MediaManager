@@ -21,7 +21,7 @@ extend-select = [
     "Q",
     "RET", "RUF",
     "S", "SLOT",
-    "T10", "T20", "TD", "TID",
+    "T10", "T20", "TD", "TID", "TRY",
     "UP",
     "W",
     "YTT"
@@ -34,6 +34,10 @@ ignore = [
     "E501",
     # currently a bug?! with providers and depends
     "FAST003",
+    # I'm not sure if we want to lint them
+    "FIX002",
+    # let's decide if we want this
+    "TD002", "TD003",
 ]
 
 [lint.flake8-bugbear]

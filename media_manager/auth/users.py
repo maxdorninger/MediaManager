@@ -175,8 +175,8 @@ async def create_default_admin_user() -> None:
                         log.info(
                             f"Found {user_count} existing users. Skipping default user creation."
                         )
-    except Exception as e:
-        log.error(f"Failed to create default admin user: {e}")
+    except Exception:
+        log.exception("Failed to create default admin user")
         log.info(
             "You can create an admin user manually by registering with an email from the admin_emails list in your config."
         )

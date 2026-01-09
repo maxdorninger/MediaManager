@@ -57,8 +57,8 @@ def extract_archives(files: list) -> None:
             )
             try:
                 patoolib.extract_archive(str(file), outdir=str(file.parent))
-            except patoolib.util.PatoolError as e:
-                log.error(f"Failed to extract archive {file}. Error: {e}")
+            except patoolib.util.PatoolError:
+                log.exception(f"Failed to extract archive {file}")
 
 
 def get_torrent_filepath(torrent: Torrent) -> Path:
@@ -72,10 +72,10 @@ def import_file(target_file: Path, source_file: Path) -> None:
     try:
         target_file.hardlink_to(source_file)
     except FileExistsError:
-        log.error(f"File already exists at {target_file}.")
-    except (OSError, UnsupportedOperation, NotImplementedError) as e:
-        log.error(
-            f"Failed to create hardlink from {source_file} to {target_file}: {e}. Falling back to copying the file."
+        log.exception(f"File already exists at {target_file}.")
+    except (OSError, UnsupportedOperation, NotImplementedError):
+        log.exception(
+            f"Failed to create hardlink from {source_file} to {target_file}. Falling back to copying the file."
         )
         shutil.copy(src=source_file, dst=target_file)
 
@@ -148,16 +148,16 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
             response = requests.get(str(torrent.download_url), timeout=30)
             response.raise_for_status()
             torrent_content = response.content
-        except InvalidSchema as e:
-            log.debug(f"Invalid schema for URL {torrent.download_url}: {e}")
+        except InvalidSchema:
+            log.debug(f"Invalid schema for URL {torrent.download_url}", exc_info=True)
             final_url = follow_redirects_to_final_torrent_url(
                 initial_url=torrent.download_url,
                 session=requests.Session(),
                 timeout=MediaManagerConfig().indexers.prowlarr.timeout_seconds,
             )
             return str(libtorrent.parse_magnet_uri(final_url).info_hash)
-        except Exception as e:
-            log.error(f"Failed to download torrent file: {e}")
+        except Exception:
+            log.exception("Failed to download torrent file")
             raise
 
         # saving the torrent file
@@ -170,9 +170,10 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
             torrent_hash = hashlib.sha1(  # noqa: S324
                 bencoder.encode(decoded_content[b"info"])
             ).hexdigest()
-        except Exception as e:
-            log.error(f"Failed to decode torrent file: {e}")
+        except Exception:
+            log.exception("Failed to decode torrent file")
             raise
+
     return torrent_hash
 
 

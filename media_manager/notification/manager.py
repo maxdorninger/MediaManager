@@ -41,32 +41,32 @@ class NotificationManager:
             try:
                 self.providers.append(EmailNotificationServiceProvider())
                 logger.info("Email notification provider initialized")
-            except Exception as e:
-                logger.error(f"Failed to initialize Email provider: {e}")
+            except Exception:
+                logger.exception("Failed to initialize Email provider")
 
         # Gotify provider
         if self.config.gotify.enabled:
             try:
                 self.providers.append(GotifyNotificationServiceProvider())
                 logger.info("Gotify notification provider initialized")
-            except Exception as e:
-                logger.error(f"Failed to initialize Gotify provider: {e}")
+            except Exception:
+                logger.exception("Failed to initialize Gotify provider")
 
         # Ntfy provider
         if self.config.ntfy.enabled:
             try:
                 self.providers.append(NtfyNotificationServiceProvider())
                 logger.info("Ntfy notification provider initialized")
-            except Exception as e:
-                logger.error(f"Failed to initialize Ntfy provider: {e}")
+            except Exception:
+                logger.exception("Failed to initialize Ntfy provider")
 
         # Pushover provider
         if self.config.pushover.enabled:
             try:
                 self.providers.append(PushoverNotificationServiceProvider())
                 logger.info("Pushover notification provider initialized")
-            except Exception as e:
-                logger.error(f"Failed to initialize Pushover provider: {e}")
+            except Exception:
+                logger.exception("Failed to initialize Pushover provider")
 
         logger.info(f"Initialized {len(self.providers)} notification providers")
 
@@ -85,8 +85,8 @@ class NotificationManager:
                 else:
                     logger.warning(f"Failed to send notification via {provider_name}")
 
-            except Exception as e:
-                logger.error(f"Error sending notification via {provider_name}: {e}")
+            except Exception:
+                logger.exception(f"Error sending notification via {provider_name}")
 
     def get_configured_providers(self) -> list[str]:
         return [provider.__class__.__name__ for provider in self.providers]

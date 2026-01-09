@@ -43,22 +43,22 @@ class DownloadManager:
         if self.config.qbittorrent.enabled:
             try:
                 self._torrent_client = QbittorrentDownloadClient()
-            except Exception as e:
-                log.error(f"Failed to initialize qBittorrent client: {e}")
+            except Exception:
+                log.exception("Failed to initialize qBittorrent client")
 
         # If qBittorrent is not available or failed, try Transmission
         if self._torrent_client is None and self.config.transmission.enabled:
             try:
                 self._torrent_client = TransmissionDownloadClient()
-            except Exception as e:
-                log.error(f"Failed to initialize Transmission client: {e}")
+            except Exception:
+                log.exception("Failed to initialize Transmission client")
 
         # Initialize SABnzbd client for usenet
         if self.config.sabnzbd.enabled:
             try:
                 self._usenet_client = SabnzbdDownloadClient()
-            except Exception as e:
-                log.error(f"Failed to initialize SABnzbd client: {e}")
+            except Exception:
+                log.exception("Failed to initialize SABnzbd client")
 
         active_clients = []
         if self._torrent_client:

@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from media_manager.config import MediaManagerConfig
 from media_manager.database import get_session
-from media_manager.exceptions import InvalidConfigError, NotFoundError
+from media_manager.exceptions import InvalidConfigError, NotFoundError, RenameError
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
@@ -174,8 +174,10 @@ class TvService:
                     try:
                         self.torrent_service.cancel_download(torrent, delete_files=True)
                         log.info(f"Deleted torrent: {torrent.hash}")
-                    except Exception as e:
-                        log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
+                    except Exception:
+                        log.warning(
+                            f"Failed to delete torrent {torrent.hash}", exc_info=True
+                        )
 
         self.tv_repository.delete_show(show_id=show.id)
 
@@ -226,18 +228,18 @@ class TvService:
                 self.tv_repository.get_show_by_external_id(
                     external_id=external_id, metadata_provider=metadata_provider
                 )
-                return True
             except NotFoundError:
                 return False
         elif show_id is not None:
             try:
                 self.tv_repository.get_show_by_id(show_id=show_id)
-                return True
             except NotFoundError:
                 return False
         else:
             msg = "Use one of the provided overloads for this function!"
             raise ValueError(msg)
+
+        return True
 
     def get_all_available_torrents_for_a_season(
         self,
@@ -379,8 +381,9 @@ class TvService:
 
             if torrent_file.imported:
                 return True
-        except RuntimeError as e:
-            log.error(f"Error retrieving torrent, error: {e}")
+        except RuntimeError:
+            log.exception("Error retrieving torrent")
+
         return False
 
     def get_show_by_external_id(
@@ -641,7 +644,7 @@ class TvService:
                 return True
         else:
             msg = f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
-            raise Exception(msg)
+            raise Exception(msg)  # noqa: TRY002 # TODO: resolve this
 
     def import_season(
         self,
@@ -659,9 +662,9 @@ class TvService:
         try:
             season_path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            log.warning(f"Could not create path {season_path}: {e}")
+            log.exception(f"Could not create path {season_path}")
             msg = f"Could not create path {season_path}"
-            raise Exception(msg) from e
+            raise Exception(msg) from e  # noqa: TRY002 # TODO: resolve this
 
         for episode in season.episodes:
             try:
@@ -901,9 +904,8 @@ class TvService:
         try:
             source_directory.rename(new_source_path)
         except Exception as e:
-            log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
-            msg = "Failed to rename source directory"
-            raise Exception(msg) from e
+            log.exception(f"Failed to rename {source_directory} to {new_source_path}")
+            raise RenameError from e
 
         video_files, subtitle_files, _all_files = get_files_for_import(
             directory=new_source_path
@@ -1028,10 +1030,8 @@ def import_all_show_torrents() -> None:
                         )
                         continue
                     tv_service.import_torrent_files(torrent=t, show=show)
-            except RuntimeError as e:
-                log.error(
-                    f"Error importing torrent {t.title} for show {show.name}: {e}"
-                )
+            except RuntimeError:
+                log.exception(f"Error importing torrent {t.title} for show {show.name}")
         log.info("Finished importing all torrents")
         db.commit()
 
@@ -1068,9 +1068,9 @@ def update_all_non_ended_shows_metadata() -> None:
                         f"Unsupported metadata provider {show.metadata_provider} for show {show.name}, skipping update."
                     )
                     continue
-            except InvalidConfigError as e:
-                log.error(
-                    f"Error initializing metadata provider {show.metadata_provider} for show {show.name}: {e}"
+            except InvalidConfigError:
+                log.exception(
+                    f"Error initializing metadata provider {show.metadata_provider} for show {show.name}"
                 )
                 continue
             updated_show = tv_service.update_show_metadata(

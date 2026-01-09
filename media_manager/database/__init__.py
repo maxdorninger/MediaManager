@@ -2,7 +2,7 @@ import logging
 import os
 from collections.abc import Generator
 from contextvars import ContextVar
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy import create_engine
@@ -92,9 +92,9 @@ def get_session() -> Generator[Session]:
     try:
         yield db
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
-        log.critical(f"error occurred: {e}")
+        log.critical("", exc_info=True)
         raise
     finally:
         db.close()

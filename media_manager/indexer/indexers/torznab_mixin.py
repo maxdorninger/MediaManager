@@ -79,6 +79,6 @@ class TorznabMixin:
                     indexer=indexer_name,
                 )
                 result_list.append(result)
-            except Exception as e:
-                log.error(f"1 Torznab search result errored with error: {e}")
+            except Exception:
+                log.exception("1 Torznab search result failed")
         return result_list
