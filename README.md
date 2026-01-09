@@ -93,5 +93,9 @@ Distributed under the AGPL 3.0. See `LICENSE.txt` for more information.
 
 ## Acknowledgments
 
+Thanks to DigitalOcean for sponsoring the project!
+
+[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=4edf05429dca&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
+
 * [Thanks to Pawel Czerwinski for the image on the login screen](https://unsplash.com/@pawel_czerwinski)
 
