@@ -70,17 +70,17 @@ class MovieService:
         self,
         external_id: int,
         metadata_provider: AbstractMetadataProvider,
-        language: str | None = None,
+        original_language: str | None = None,
     ) -> Movie:
         """
         Add a new movie to the database.
 
         :param external_id: The ID of the movie in the metadata provider's system.
         :param metadata_provider: The name of the metadata provider.
-        :param language: Optional language code (ISO 639-1) to fetch metadata in.
+        :param original_language: Optional original language code (ISO 639-1) to fetch metadata in.
         """
         movie_with_metadata = metadata_provider.get_movie_metadata(
-            movie_id=external_id, language=language
+            movie_id=external_id, original_language=original_language
         )
         if not movie_with_metadata:
             raise NotFoundError
@@ -722,7 +722,7 @@ class MovieService:
 
         # Use stored original_language preference for metadata fetching
         fresh_movie_data = metadata_provider.get_movie_metadata(
-            movie_id=db_movie.external_id, language=db_movie.original_language
+            movie_id=db_movie.external_id, original_language=db_movie.original_language
         )
         if not fresh_movie_data:
             log.warning(
