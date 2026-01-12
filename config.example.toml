@@ -170,3 +170,4 @@ default_language = "en"
 
 [metadata.tvdb]
 tvdb_relay_url = "https://metadata-relay.dorninger.co/tvdb"
+primary_languages = [""]

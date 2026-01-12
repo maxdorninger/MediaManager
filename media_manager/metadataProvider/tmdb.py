@@ -354,7 +354,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             overview=movie_metadata["overview"],
             year=year,
             metadata_provider=self.name,
-            original_language=movie_metadata.get("original_language"),
+            original_language=original_language,
             imdb_id=imdb_id,
         )
 
