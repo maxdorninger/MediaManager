@@ -15,7 +15,7 @@ Other software like Jellyfin use TMDB as well, so there won't be any metadata di
 * `tmdb_relay_url`\
   URL of the TMDB relay (MetadataRelay). Default is `https://metadata-relay.dorninger.co/tmdb`. Example: `https://your-own-relay.example.com/tmdb`.
 * `primary_languages`\
-  If the original language of a show/movie is in this list, metadata is fetched in that language. Otherwise, `default_language` is used. Default is `[]`. Example: `["no", "de", "es"]`. Format: ISO 639-1 (2 letters). Full list: https://en.wikipedia.org/wiki/List\_of\_ISO\_639\_language\_codes
+  If the original language of a show/movie is in this list, metadata is displayed and fetched in that language. Otherwise, `default_language` is used. Default is `[]`. Example: `["no", "de", "es"]`. Format: ISO 639-1 (2 letters). Full list: https://en.wikipedia.org/wiki/List\_of\_ISO\_639\_language\_codes
 * `default_language`\
   TMDB language parameter used when searching and adding. Default is `en`. Format: ISO 639-1 (2 letters).
 
@@ -26,11 +26,13 @@ Other software like Jellyfin use TMDB as well, so there won't be any metadata di
 ### TVDB Settings (`[metadata.tvdb]`)
 
 {% hint style="warning" %}
-The TVDB might provide false metadata and doesn't support some features of MediaManager like showing overviews. Therefore, TMDB is the preferred metadata provider.
+The TVDB might provide false metadata. Therefore, TMDB is the preferred metadata provider.
 {% endhint %}
 
 * `tvdb_relay_url`\
   URL of the TVDB relay (MetadataRelay). Default is `https://metadata-relay.dorninger.co/tvdb`. Example: `https://your-own-relay.example.com/tvdb`.
+* `primary_languages`\
+  If the original language of a show/movie is in this list, metadata is displayed and fetched in that language. Default is `[]`. Example: `["eng", "deu", "spa"]`. Format: ISO 639-3 (3 letters). Full list: https://en.wikipedia.org/wiki/List\_of\_ISO\_639\_language\_codes
 
 ### MetadataRelay
 
@@ -61,10 +63,13 @@ Here's a complete example of the metadata section in your `config.toml`:
     # TMDB configuration
     [metadata.tmdb]
     tmdb_relay_url = "https://metadata-relay.dorninger.co/tmdb"
+    primary_languages = ["no", "de"]
+    default_language = "en"
 
     # TVDB configuration
     [metadata.tvdb]
     tvdb_relay_url = "https://metadata-relay.dorninger.co/tvdb"
+    primary_languages = ["nor", "deu"]
 ```
 {% endcode %}
 
