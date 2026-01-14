@@ -69,6 +69,9 @@ class Episode(Base):
     overview: Mapped[str]
 
     season: Mapped["Season"] = relationship(back_populates="episodes")
+    episode_files = relationship(
+        "EpisodeFile", back_populates="episode", cascade="all, delete"
+    )
 
 
 class SeasonFile(Base):
@@ -86,6 +89,21 @@ class SeasonFile(Base):
     torrent = relationship("Torrent", back_populates="season_files", uselist=False)
     season = relationship("Season", back_populates="season_files", uselist=False)
 
+
+class EpisodeFile(Base):
+    __tablename__ = "episode_file"
+    __table_args__ = (PrimaryKeyConstraint("episode_id", "file_path_suffix"),)
+    episode_id: Mapped[UUID] = mapped_column(
+        ForeignKey(column="episode.id", ondelete="CASCADE"),
+    )
+    torrent_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey(column="torrent.id", ondelete="SET NULL"),
+    )
+    file_path_suffix: Mapped[str]
+    quality: Mapped[Quality]
+
+    torrent = relationship("Torrent", back_populates="episode_files", uselist=False)
+    episode = relationship("Episode", back_populates="episode_files", uselist=False)
 
 class SeasonRequest(Base):
     __tablename__ = "season_request"
