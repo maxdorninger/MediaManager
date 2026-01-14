@@ -4,7 +4,7 @@ from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.manager import DownloadManager
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.schemas import Torrent, TorrentId
-from media_manager.tv.schemas import SeasonFile, Show
+from media_manager.tv.schemas import SeasonFile, Show, EpisodeFile
 from media_manager.movies.schemas import Movie
 
 log = logging.getLogger(__name__)
@@ -26,6 +26,16 @@ class TorrentService:
         :return: list of season files
         """
         return self.torrent_repository.get_seasons_files_of_torrent(
+            torrent_id=torrent.id
+        )
+
+    def get_episode_files_of_torrent(self, torrent: Torrent) -> list[EpisodeFile]:
+        """
+        Returns all episode files of a torrent
+        :param torrent: the torrent to get the episode files of
+        :return: list of episode files
+        """
+        return self.torrent_repository.get_episode_files_of_torrent(
             torrent_id=torrent.id
         )
 

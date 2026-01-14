@@ -3,8 +3,8 @@ from sqlalchemy import select, delete
 from media_manager.database import DbSessionDependency
 from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import TorrentId, Torrent as TorrentSchema
-from media_manager.tv.models import SeasonFile, Show, Season
-from media_manager.tv.schemas import SeasonFile as SeasonFileSchema, Show as ShowSchema
+from media_manager.tv.models import SeasonFile, Show, Season, EpisodeFile, Episode
+from media_manager.tv.schemas import SeasonFile as SeasonFileSchema, Show as ShowSchema, EpisodeFile as EpisodeFileSchema
 from media_manager.exceptions import NotFoundError
 from media_manager.movies.models import Movie, MovieFile
 from media_manager.movies.schemas import (
@@ -24,12 +24,20 @@ class TorrentRepository:
         result = self.db.execute(stmt).scalars().all()
         return [SeasonFileSchema.model_validate(season_file) for season_file in result]
 
+    def get_episode_files_of_torrent(
+        self, torrent_id: TorrentId
+    ) -> list[EpisodeFileSchema]:
+        stmt = select(EpisodeFile).where(EpisodeFile.torrent_id == torrent_id)
+        result = self.db.execute(stmt).scalars().all()
+        return [EpisodeFileSchema.model_validate(episode_file) for episode_file in result]
+
     def get_show_of_torrent(self, torrent_id: TorrentId) -> ShowSchema | None:
         stmt = (
             select(Show)
-            .join(SeasonFile.season)
-            .join(Season.show)
-            .where(SeasonFile.torrent_id == torrent_id)
+            .join(Show.seasons)
+            .join(Season.episodes)
+            .join(Episode.episode_files)
+            .where(EpisodeFile.torrent_id == torrent_id)
         )
         result = self.db.execute(stmt).unique().scalar_one_or_none()
         if result is None:
@@ -64,10 +72,10 @@ class TorrentRepository:
             )
             self.db.execute(movie_files_stmt)
 
-            season_files_stmt = delete(SeasonFile).where(
-                SeasonFile.torrent_id == torrent_id
+            episode_files_stmt = delete(EpisodeFile).where(
+                EpisodeFile.torrent_id == torrent_id
             )
-            self.db.execute(season_files_stmt)
+            self.db.execute(episode_files_stmt)
 
         self.db.delete(self.db.get(Torrent, torrent_id))
 
