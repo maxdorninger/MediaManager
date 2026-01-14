@@ -1,13 +1,14 @@
 import concurrent
+import concurrent.futures
 import logging
 from concurrent.futures.thread import ThreadPoolExecutor
 
 import requests
 
+from media_manager.config import MediaManagerConfig
 from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.config import MediaManagerConfig
 from media_manager.movies.schemas import Movie
 from media_manager.tv.schemas import Show
 
@@ -15,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class Jackett(GenericIndexer, TorznabMixin):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         A subclass of GenericIndexer for interacting with the Jacket API.
 
@@ -67,13 +68,15 @@ class Jackett(GenericIndexer, TorznabMixin):
 
         results = self.process_search_result(response.content)
 
-        log.info(f"Indexer {indexer.name} returned {len(results)} results")
+        log.info(f"Indexer {indexer} returned {len(results)} results")
         return results
 
     def search_season(
         self, query: str, show: Show, season_number: int
     ) -> list[IndexerQueryResult]:
-        pass
+        log.debug(f"Searching for season {season_number} of show {show.title}")
+        return self.search(query=query, is_tv=True)
 
     def search_movie(self, query: str, movie: Movie) -> list[IndexerQueryResult]:
-        pass
+        log.debug(f"Searching for movie {movie.title}")
+        return self.search(query=query, is_tv=False)

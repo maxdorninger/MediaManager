@@ -2,13 +2,13 @@ import hashlib
 import logging
 import mimetypes
 import re
-from pathlib import Path, UnsupportedOperation
 import shutil
+from pathlib import Path, UnsupportedOperation
 
 import bencoder
+import libtorrent
 import patoolib
 import requests
-import libtorrent
 from requests.exceptions import InvalidSchema
 
 from media_manager.config import MediaManagerConfig
@@ -19,7 +19,7 @@ from media_manager.torrent.schemas import Torrent
 log = logging.getLogger(__name__)
 
 
-def list_files_recursively(path: Path = Path(".")) -> list[Path]:
+def list_files_recursively(path: Path = Path()) -> list[Path]:
     files = list(path.glob("**/*"))
     log.debug(f"Found {len(files)} entries via glob")
     valid_files = []
@@ -34,7 +34,7 @@ def list_files_recursively(path: Path = Path(".")) -> list[Path]:
     return valid_files
 
 
-def extract_archives(files):
+def extract_archives(files: list) -> None:
     archive_types = {
         "application/zip",
         "application/x-zip-compressedapplication/x-compressed",
@@ -61,11 +61,11 @@ def extract_archives(files):
                 log.error(f"Failed to extract archive {file}. Error: {e}")
 
 
-def get_torrent_filepath(torrent: Torrent):
+def get_torrent_filepath(torrent: Torrent) -> Path:
     return MediaManagerConfig().misc.torrent_directory / torrent.title
 
 
-def import_file(target_file: Path, source_file: Path):
+def import_file(target_file: Path, source_file: Path) -> None:
     if target_file.exists():
         target_file.unlink()
 
@@ -87,11 +87,15 @@ def get_files_for_import(
     Extracts all files from the torrent download directory, including extracting archives.
     Returns a tuple containing: seperated video files, subtitle files, and all files found in the torrent directory.
     """
-    search_directory = directory if directory else get_torrent_filepath(torrent=torrent)
     if torrent:
         log.info(f"Importing torrent {torrent}")
-    else:
+        search_directory = get_torrent_filepath(torrent=torrent)
+    elif directory:
         log.info(f"Importing files from directory {directory}")
+        search_directory = directory
+    else:
+        msg = "Either torrent or directory must be provided."
+        raise ValueError(msg)
 
     all_files: list[Path] = list_files_recursively(path=search_directory)
     log.debug(f"Found {len(all_files)} files downloaded by the torrent")
@@ -151,21 +155,19 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
                 session=requests.Session(),
                 timeout=MediaManagerConfig().indexers.prowlarr.timeout_seconds,
             )
-            torrent_hash = str(libtorrent.parse_magnet_uri(final_url).info_hash)
-            return torrent_hash
+            return str(libtorrent.parse_magnet_uri(final_url).info_hash)
         except Exception as e:
             log.error(f"Failed to download torrent file: {e}")
             raise
 
         # saving the torrent file
-        with open(torrent_filepath, "wb") as file:
-            file.write(torrent_content)
+        torrent_filepath.write_bytes(torrent_content)
 
         # parsing info hash
         log.debug(f"parsing torrent file: {torrent.download_url}")
         try:
             decoded_content = bencoder.decode(torrent_content)
-            torrent_hash = hashlib.sha1(
+            torrent_hash = hashlib.sha1(  # noqa: S324
                 bencoder.encode(decoded_content[b"info"])
             ).hexdigest()
         except Exception as e:
@@ -185,9 +187,7 @@ def remove_special_characters(filename: str) -> str:
     sanitized = re.sub(r"([<>:\"/\\|?*])", "", filename)
 
     # Remove leading and trailing dots or spaces
-    sanitized = sanitized.strip(" .")
-
-    return sanitized
+    return sanitized.strip(" .")
 
 
 def remove_special_chars_and_parentheses(title: str) -> str:
@@ -211,26 +211,25 @@ def remove_special_chars_and_parentheses(title: str) -> str:
     sanitized = remove_special_characters(sanitized)
 
     # Collapse multiple whitespace characters and trim the result
-    sanitized = re.sub(r"\s+", " ", sanitized).strip()
-    return sanitized
+    return re.sub(r"\s+", " ", sanitized).strip()
 
 
 def get_importable_media_directories(path: Path) -> list[Path]:
-    libraries = []
-    libraries.extend(MediaManagerConfig().misc.movie_libraries)
-    libraries.extend(MediaManagerConfig().misc.tv_libraries)
+    libraries = [
+        *MediaManagerConfig().misc.movie_libraries,
+        *MediaManagerConfig().misc.tv_libraries,
+    ]
 
     library_paths = {Path(library.path).absolute() for library in libraries}
 
     unfiltered_dirs = [d for d in path.glob("*") if d.is_dir()]
 
-    media_dirs = []
-    for media_dir in unfiltered_dirs:
-        if media_dir.absolute() not in library_paths and not media_dir.name.startswith(
-            "."
-        ):
-            media_dirs.append(media_dir)
-    return media_dirs
+    return [
+        media_dir
+        for media_dir in unfiltered_dirs
+        if media_dir.absolute() not in library_paths
+        and not media_dir.name.startswith(".")
+    ]
 
 
 def extract_external_id_from_string(input_string: str) -> tuple[str | None, int | None]:

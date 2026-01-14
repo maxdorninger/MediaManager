@@ -1,30 +1,34 @@
-from sqlalchemy import select, delete, update
+import logging
+
+from sqlalchemy import delete, select, update
 from sqlalchemy.exc import (
     IntegrityError,
     SQLAlchemyError,
 )
 from sqlalchemy.orm import Session
-import logging
 
-from media_manager.exceptions import NotFoundError, ConflictError
+from media_manager.exceptions import ConflictError, NotFoundError
 from media_manager.notification.models import Notification
 from media_manager.notification.schemas import (
-    NotificationId,
     Notification as NotificationSchema,
+)
+from media_manager.notification.schemas import (
+    NotificationId,
 )
 
 log = logging.getLogger(__name__)
 
 
 class NotificationRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_notification(self, id: NotificationId) -> NotificationSchema:
-        result = self.db.get(Notification, id)
+    def get_notification(self, nid: NotificationId) -> NotificationSchema:
+        result = self.db.get(Notification, nid)
 
         if not result:
-            raise NotFoundError(f"Notification with id {id} not found.")
+            msg = f"Notification with id {nid} not found."
+            raise NotFoundError(msg)
 
         return NotificationSchema.model_validate(result)
 
@@ -56,7 +60,7 @@ class NotificationRepository:
             log.error(f"Database error while retrieving notifications: {e}")
             raise
 
-    def save_notification(self, notification: NotificationSchema):
+    def save_notification(self, notification: NotificationSchema) -> None:
         try:
             self.db.add(
                 Notification(
@@ -69,25 +73,25 @@ class NotificationRepository:
             self.db.commit()
         except IntegrityError as e:
             log.error(f"Could not save notification, Error: {e}")
-            raise ConflictError(
-                f"Notification with id {notification.id} already exists."
-            )
+            msg = f"Notification with id {notification.id} already exists."
+            raise ConflictError(msg) from None
         return
 
-    def mark_notification_as_read(self, id: NotificationId) -> None:
-        stmt = update(Notification).where(Notification.id == id).values(read=True)
+    def mark_notification_as_read(self, nid: NotificationId) -> None:
+        stmt = update(Notification).where(Notification.id == nid).values(read=True)
         self.db.execute(stmt)
         return
 
-    def mark_notification_as_unread(self, id: NotificationId) -> None:
-        stmt = update(Notification).where(Notification.id == id).values(read=False)
+    def mark_notification_as_unread(self, nid: NotificationId) -> None:
+        stmt = update(Notification).where(Notification.id == nid).values(read=False)
         self.db.execute(stmt)
         return
 
-    def delete_notification(self, id: NotificationId) -> None:
-        stmt = delete(Notification).where(Notification.id == id)
+    def delete_notification(self, nid: NotificationId) -> None:
+        stmt = delete(Notification).where(Notification.id == nid)
         result = self.db.execute(stmt)
         if result.rowcount == 0:
-            raise NotFoundError(f"Notification with id {id} not found.")
+            msg = f"Notification with id {nid} not found."
+            raise NotFoundError(msg)
         self.db.commit()
         return

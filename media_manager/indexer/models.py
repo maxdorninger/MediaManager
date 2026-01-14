@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import String, Integer
+from sqlalchemy import Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.sqltypes import BigInteger

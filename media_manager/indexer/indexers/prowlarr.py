@@ -1,10 +1,10 @@
 import logging
 from dataclasses import dataclass
 
-from requests import Session
+from requests import Response, Session
 
-from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.config import MediaManagerConfig
+from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie
@@ -31,14 +31,14 @@ class IndexerInfo:
 
 
 class Prowlarr(GenericIndexer, TorznabMixin):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         A subclass of GenericIndexer for interacting with the Prowlarr API.
         """
         super().__init__(name="prowlarr")
         self.config = MediaManagerConfig().indexers.prowlarr
 
-    def _call_prowlarr_api(self, path: str, parameters: dict = None):
+    def _call_prowlarr_api(self, path: str, parameters: dict | None = None) -> Response:
         url = f"{self.config.url}/api/v1{path}"
         headers = {"X-Api-Key": self.config.api_key}
         with Session() as session:
@@ -50,7 +50,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
             )
 
     def _newznab_search(
-        self, indexer: IndexerInfo, parameters: dict = None
+        self, indexer: IndexerInfo, parameters: dict | None = None
     ) -> list[IndexerQueryResult]:
         if parameters is None:
             parameters = {}

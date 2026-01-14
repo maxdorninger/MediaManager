@@ -1,51 +1,56 @@
 import re
 import shutil
 from pathlib import Path
+from typing import overload
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from media_manager.config import MediaManagerConfig
+from media_manager.database import SessionLocal, get_session
 from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.indexer.repository import IndexerRepository
-from media_manager.database import SessionLocal, get_session
-from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.indexer.schemas import IndexerQueryResultId
-from media_manager.indexer.utils import evaluate_indexer_query_results
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.notification.service import NotificationService
-from media_manager.schemas import MediaImportSuggestion
-from media_manager.torrent.schemas import Torrent, TorrentStatus
-from media_manager.torrent.service import TorrentService
-from media_manager.movies import log
-from media_manager.movies.schemas import (
-    Movie,
-    MovieId,
-    MovieRequest,
-    MovieFile,
-    RichMovieTorrent,
-    PublicMovie,
-    PublicMovieFile,
-    MovieRequestId,
-    RichMovieRequest,
-)
-from media_manager.torrent.schemas import QualityStrings
-from media_manager.movies.repository import MovieRepository
-from media_manager.torrent.repository import TorrentRepository
-from media_manager.torrent.utils import (
-    import_file,
-    get_files_for_import,
-    remove_special_characters,
-    get_importable_media_directories,
-    remove_special_chars_and_parentheses,
-    extract_external_id_from_string,
-)
+from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
-from media_manager.metadataProvider.abstractMetaDataProvider import (
+from media_manager.indexer.utils import evaluate_indexer_query_results
+from media_manager.metadataProvider.abstract_metadata_provider import (
     AbstractMetadataProvider,
 )
+from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
+from media_manager.movies import log
+from media_manager.movies.repository import MovieRepository
+from media_manager.movies.schemas import (
+    Movie,
+    MovieFile,
+    MovieId,
+    MovieRequest,
+    MovieRequestId,
+    PublicMovie,
+    PublicMovieFile,
+    RichMovieRequest,
+    RichMovieTorrent,
+)
+from media_manager.notification.repository import NotificationRepository
+from media_manager.notification.service import NotificationService
+from media_manager.schemas import MediaImportSuggestion
+from media_manager.torrent.repository import TorrentRepository
+from media_manager.torrent.schemas import (
+    Quality,
+    QualityStrings,
+    Torrent,
+    TorrentStatus,
+)
+from media_manager.torrent.service import TorrentService
+from media_manager.torrent.utils import (
+    extract_external_id_from_string,
+    get_files_for_import,
+    get_importable_media_directories,
+    import_file,
+    remove_special_characters,
+    remove_special_chars_and_parentheses,
+)
 
 
 class MovieService:
@@ -54,8 +59,8 @@ class MovieService:
         movie_repository: MovieRepository,
         torrent_service: TorrentService,
         indexer_service: IndexerService,
-        notification_service: NotificationService = None,
-    ):
+        notification_service: NotificationService,
+    ) -> None:
         self.movie_repository = movie_repository
         self.torrent_service = torrent_service
         self.indexer_service = indexer_service
@@ -66,7 +71,7 @@ class MovieService:
         external_id: int,
         metadata_provider: AbstractMetadataProvider,
         language: str | None = None,
-    ) -> Movie | None:
+    ) -> Movie:
         """
         Add a new movie to the database.
 
@@ -75,10 +80,10 @@ class MovieService:
         :param language: Optional language code (ISO 639-1) to fetch metadata in.
         """
         movie_with_metadata = metadata_provider.get_movie_metadata(
-            id=external_id, language=language
+            movie_id=external_id, language=language
         )
         if not movie_with_metadata:
-            return None
+            raise NotFoundError
 
         saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
         metadata_provider.download_movie_poster_image(movie=saved_movie)
@@ -95,7 +100,7 @@ class MovieService:
 
     def get_movie_request_by_id(
         self, movie_request_id: MovieRequestId
-    ) -> MovieRequest | None:
+    ) -> MovieRequest:
         """
         Get a movie request by its ID.
 
@@ -153,10 +158,14 @@ class MovieService:
 
             if delete_torrents:
                 # Get all torrents associated with this movie
-                torrents = self.movie_repository.get_torrents_by_movie_id(
+                movie_torrents = self.movie_repository.get_torrents_by_movie_id(
                     movie_id=movie.id
                 )
-                for torrent in torrents:
+
+                for movie_torrent in movie_torrents:
+                    torrent = self.torrent_service.get_torrent_by_id(
+                        torrent_id=movie_torrent.torrent_id
+                    )
                     try:
                         self.torrent_service.cancel_download(
                             torrent=torrent, delete_files=True
@@ -185,11 +194,33 @@ class MovieService:
             result.append(movie_file)
         return result
 
+    @overload
+    def check_if_movie_exists(
+        self, *, external_id: int, metadata_provider: str
+    ) -> bool:
+        """
+        Check if a movie exists in the database.
+
+        :param external_id: The external ID of the movie.
+        :param metadata_provider: The metadata provider.
+        :return: True if the movie exists, False otherwise.
+        """
+
+    @overload
+    def check_if_movie_exists(self, *, movie_id: MovieId) -> bool:
+        """
+        Check if a movie exists in the database.
+
+        :param movie_id: The ID of the movie.
+        :return: True if the movie exists, False otherwise.
+        """
+
     def check_if_movie_exists(
         self,
-        external_id: int = None,
-        metadata_provider: str = None,
-        movie_id: MovieId = None,
+        *,
+        external_id=None,
+        metadata_provider=None,
+        movie_id=None,
     ) -> bool:
         """
         Check if a movie exists in the database.
@@ -200,7 +231,8 @@ class MovieService:
         :return: True if the movie exists, False otherwise.
         :raises ValueError: If neither external ID and metadata provider nor movie ID are provided.
         """
-        if external_id and metadata_provider:
+
+        if not (external_id is None or metadata_provider is None):
             try:
                 self.movie_repository.get_movie_by_external_id(
                     external_id=external_id, metadata_provider=metadata_provider
@@ -208,19 +240,18 @@ class MovieService:
                 return True
             except NotFoundError:
                 return False
-        elif movie_id:
+        elif movie_id is not None:
             try:
                 self.movie_repository.get_movie_by_id(movie_id=movie_id)
+                return True
             except NotFoundError:
                 return False
-
         else:
-            raise ValueError(
-                "Either external_id and metadata_provider or movie_id must be provided"
-            )
+            msg = "Use one of the provided overloads for this function!"
+            raise ValueError(msg)
 
     def get_all_available_torrents_for_movie(
-        self, movie: Movie, search_query_override: str = None
+        self, movie: Movie, search_query_override: str | None = None
     ) -> list[IndexerQueryResult]:
         """
         Get all available torrents for a given movie.
@@ -230,16 +261,13 @@ class MovieService:
         :return: A list of indexer query results.
         """
         if search_query_override:
-            torrents = self.indexer_service.search(
-                query=search_query_override, is_tv=False
-            )
-            return torrents
-        else:
-            torrents = self.indexer_service.search_movie(movie=movie)
+            return self.indexer_service.search(query=search_query_override, is_tv=False)
 
-            return evaluate_indexer_query_results(
-                is_tv=False, query_results=torrents, media=movie
-            )
+        torrents = self.indexer_service.search_movie(movie=movie)
+
+        return evaluate_indexer_query_results(
+            is_tv=False, query_results=torrents, media=movie
+        )
 
     def get_all_movies(self) -> list[Movie]:
         """
@@ -288,16 +316,15 @@ class MovieService:
         :param metadata_provider: The metadata provider to use.
         :return: A list of metadata provider movie search results.
         """
-        results: list[MetaDataProviderSearchResult] = metadata_provider.search_movie()
+        results = metadata_provider.search_movie()
 
-        filtered_results = []
-        for result in results:
+        return [
+            result
+            for result in results
             if not self.check_if_movie_exists(
                 external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                filtered_results.append(result)
-
-        return filtered_results
+            )
+        ]
 
     def get_public_movie_by_id(self, movie: Movie) -> PublicMovie:
         """
@@ -345,12 +372,11 @@ class MovieService:
         """
         if movie_file.torrent_id is None:
             return True
-        else:
-            torrent_file = self.torrent_service.get_torrent_by_id(
-                torrent_id=movie_file.torrent_id
-            )
-            if torrent_file.imported:
-                return True
+        torrent_file = self.torrent_service.get_torrent_by_id(
+            torrent_id=movie_file.torrent_id
+        )
+        if torrent_file.imported:
+            return True
         return False
 
     def get_movie_by_external_id(
@@ -420,7 +446,7 @@ class MovieService:
         :return: The downloaded torrent.
         """
         indexer_result = self.indexer_service.get_result(
-            indexer_query_result_id=public_indexer_result_id
+            result_id=public_indexer_result_id
         )
         movie_torrent = self.torrent_service.download(indexer_result=indexer_result)
         self.torrent_service.pause_download(torrent=movie_torrent)
@@ -459,7 +485,8 @@ class MovieService:
         :raises ValueError: If the movie request is not authorized.
         """
         if not movie_request.authorized:
-            raise ValueError("Movie request is not authorized")
+            msg = "Movie request is not authorized"
+            raise ValueError(msg)
 
         log.info(f"Downloading approved movie request {movie_request.id}")
 
@@ -483,7 +510,7 @@ class MovieService:
 
         if len(available_torrents) == 0:
             log.warning(
-                f"No torrents found for movie request {movie_request.id} with quality between {QualityStrings[movie_request.min_quality]} and {QualityStrings[movie_request.wanted_quality]}"
+                f"No torrents found for movie request {movie_request.id} with quality between {QualityStrings[movie_request.min_quality.name]} and {QualityStrings[movie_request.wanted_quality.name]}"
             )
             return False
 
@@ -580,15 +607,14 @@ class MovieService:
         :param movie: The Movie object
         """
 
-        video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
-        success: list[bool] = []
+        video_files, subtitle_files, _all_files = get_files_for_import(torrent=torrent)
 
         if len(video_files) != 1:
             # Send notification about multiple video files found
             if self.notification_service:
-                self.notification_service.send_notification(
+                self.notification_service.send_notification_to_all_providers(
                     title="Manual Import Required",
-                    body=f"Multiple video files found for movie {movie.name}. Please import manually.",
+                    message=f"Multiple video files found for movie {movie.name}. Please import manually.",
                 )
             log.error(
                 f"Found {len(video_files)} video files for movie {movie.name}, expected 1. Skipping auto import."
@@ -606,24 +632,21 @@ class MovieService:
             f"Found {len(movie_files)} movie files associated with torrent {torrent.title}"
         )
 
-        for movie_file in movie_files:
-            success.append(
-                self.import_movie(
-                    movie=movie,
-                    video_files=video_files,
-                    subtitle_files=subtitle_files,
-                    file_path_suffix=movie_file.file_path_suffix,
-                )
+        success = [
+            self.import_movie(
+                movie, video_files, subtitle_files, movie_file.file_path_suffix
             )
+            for movie_file in movie_files
+        ]
 
         if all(success):
             torrent.imported = True
             self.torrent_service.torrent_repository.save_torrent(torrent=torrent)
 
             if self.notification_service:
-                self.notification_service.send_notification(
+                self.notification_service.send_notification_to_all_providers(
                     title="Movie Downloaded",
-                    body=f"Movie {movie.name} has been successfully downloaded and imported.",
+                    message=f"Movie {movie.name} has been successfully downloaded and imported.",
                 )
         else:
             log.error(
@@ -631,9 +654,9 @@ class MovieService:
             )
 
             if self.notification_service:
-                self.notification_service.send_notification(
+                self.notification_service.send_notification_to_all_providers(
                     title="Import Failed",
-                    body=f"Failed to import files for movie {movie.name}. Please check logs.",
+                    message=f"Failed to import files for movie {movie.name}. Please check logs.",
                 )
 
         log.info(f"Finished importing files for torrent {torrent.title}")
@@ -660,9 +683,10 @@ class MovieService:
             source_directory.rename(new_source_path)
         except Exception as e:
             log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
-            raise Exception("Failed to rename directory") from e
+            msg = "Failed to rename directory"
+            raise Exception(msg) from e
 
-        video_files, subtitle_files, all_files = get_files_for_import(
+        video_files, subtitle_files, _all_files = get_files_for_import(
             directory=new_source_path
         )
 
@@ -678,6 +702,7 @@ class MovieService:
                     movie_id=movie.id,
                     file_path_suffix="IMPORTED",
                     torrent_id=None,
+                    quality=Quality.unknown,
                 )
             )
 
@@ -697,7 +722,7 @@ class MovieService:
 
         # Use stored original_language preference for metadata fetching
         fresh_movie_data = metadata_provider.get_movie_metadata(
-            id=db_movie.external_id, language=db_movie.original_language
+            movie_id=db_movie.external_id, language=db_movie.original_language
         )
         if not fresh_movie_data:
             log.warning(
@@ -757,14 +782,16 @@ def auto_download_all_approved_movie_requests() -> None:
     Auto download all approved movie requests.
     This is a standalone function as it creates its own DB session.
     """
-    db: Session = SessionLocal()
+    db: Session = SessionLocal() if SessionLocal else next(get_session())
     movie_repository = MovieRepository(db=db)
     torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
     indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
+    notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
     movie_service = MovieService(
         movie_repository=movie_repository,
         torrent_service=torrent_service,
         indexer_service=indexer_service,
+        notification_service=notification_service
     )
 
     log.info("Auto downloading all approved movie requests")
@@ -794,10 +821,12 @@ def import_all_movie_torrents() -> None:
         movie_repository = MovieRepository(db=db)
         torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
         indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
+        notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
         movie_service = MovieService(
             movie_repository=movie_repository,
             torrent_service=torrent_service,
             indexer_service=indexer_service,
+            notification_service=notification_service,
         )
         log.info("Importing all torrents")
         torrents = torrent_service.get_all_torrents()
@@ -831,6 +860,7 @@ def update_all_movies_metadata() -> None:
             movie_repository=movie_repository,
             torrent_service=TorrentService(torrent_repository=TorrentRepository(db=db)),
             indexer_service=IndexerService(indexer_repository=IndexerRepository(db=db)),
+            notification_service=NotificationService(notification_repository=NotificationRepository(db=db))
         )
 
         log.info("Updating metadata for all movies")
@@ -852,7 +882,7 @@ def update_all_movies_metadata() -> None:
                     continue
             except InvalidConfigError as e:
                 log.error(
-                    f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}: {str(e)}"
+                    f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}: {e}"
                 )
                 continue
             movie_service.update_movie_metadata(

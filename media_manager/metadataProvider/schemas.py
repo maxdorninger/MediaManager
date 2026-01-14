@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from media_manager.movies.schemas import MovieId
 from media_manager.tv.schemas import ShowId
 

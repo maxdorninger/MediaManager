@@ -46,7 +46,7 @@
 		explore trending content—all in one place.
 	</p>
 	<p class="mb-2 text-sm text-muted-foreground">
-		Version: v{PUBLIC_VERSION}
+		Version: {PUBLIC_VERSION}
 	</p>
 	<h2
 		class="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0"
@@ -88,6 +88,9 @@
 		<a href="https://github.com/LITUATUI"
 			><img alt="LITUATUI" src="https://github.com/LITUATUI.png" width="80px" /></a
 		>&nbsp;&nbsp;
+		<a href="https://github.com/seferino-fernandez"
+			><img alt="Seferino" src="https://avatars.githubusercontent.com/u/5546622" width="80px" /></a
+		>&nbsp;&nbsp;
 		<a href="https://buymeacoffee.com/maxdorninger"
 			><img
 				alt="Nicolas"
@@ -110,6 +113,16 @@
 			/></a
 		>&nbsp;&nbsp;
 	</div>
+
+	<p>
+		<a href="https://www.digitalocean.com/">
+			<img
+				src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/PoweredByDO/DO_Powered_by_Badge_blue.svg"
+				width="201px"
+				alt="Powered by DigitalOcean"
+			/>
+		</a>
+	</p>
 
 	<h2
 		class="mt-24 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0"

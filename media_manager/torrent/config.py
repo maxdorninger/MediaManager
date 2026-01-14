@@ -6,7 +6,7 @@ class QbittorrentConfig(BaseSettings):
     host: str = "localhost"
     port: int = 8080
     username: str = "admin"
-    password: str = "admin"
+    password: str = "admin"  # noqa: S105
     enabled: bool = False
 
     category_name: str = "MediaManager"

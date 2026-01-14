@@ -1,7 +1,7 @@
 <br />
 <div align="center">
-  <a href="https://maxdorninger.github.io/MediaManager">
-    <img src="https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/Writerside/images/logo.svg" alt="Logo" width="260" height="260">
+  <a href="https://maximilian-dorninger.gitbook.io/mediamanager">
+    <img src="https://github.com/maxdorninger/MediaManager/blob/master/web/static/logo.svg" alt="Logo" width="260" height="260">
   </a>
 
 <h3 align="center">MediaManager</h3>
@@ -9,7 +9,7 @@
   <p align="center">
     Modern management system for your media library
     <br />
-    <a href="https://maxdorninger.github.io/MediaManager/introduction.html"><strong>Explore the docs »</strong></a>
+    <a href="https://maximilian-dorninger.gitbook.io/mediamanager"><strong>Explore the docs »</strong></a>
     <br />
     <a href="https://github.com/maxdorninger/MediaManager/issues/new?labels=bug&template=bug_report.md">Report Bug</a>
     &middot;
@@ -18,26 +18,24 @@
 </div>
 
 
-MediaManager is modern software to manage your TV and movie library. It is designed to be a replacement for Sonarr,
-Radarr, Overseer, and Jellyseer.
-It supports TVDB and TMDB for metadata, supports OIDC and OAuth 2.0 for authentication and supports Prowlarr and
-Jackett.
-MediaManager is built first and foremost for deployment with Docker, making it easy to set up.
+MediaManager is the modern, easy-to-use successor to the fragmented "Arr" stack. Manage, discover, and automate your TV and movie collection in a single, simple interface.
 
-It also provides an API to interact with the software programmatically, allowing for automation and integration with
-other services.
+Key features:
+- support for OAuth/OIDC
+- support for TVDB and TMDB
+- made to be deployed with Docker
 
 ## Quick Start
 
 ```sh
-wget -O docker-compose.yaml https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/docker-compose.yaml   
+wget -O docker-compose.yaml https://github.com/maxdorninger/MediaManager/releases/latest/download/docker-compose.yaml
 mkdir config
-wget -O ./config/config.toml https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/config.example.toml   
+wget -O ./config/config.toml https://github.com/maxdorninger/MediaManager/releases/latest/download/config.example.toml
 # you probably need to edit the config.toml file in the ./config directory, for more help see the documentation
 docker compose up -d
 ```
 
-### [View the docs for installation instructions and more](https://maxdorninger.github.io/MediaManager/configuration-overview.html#configuration-overview)
+### [View the docs for installation instructions and more](https://maximilian-dorninger.gitbook.io/mediamanager)
 
 ## Support MediaManager
 
@@ -61,7 +59,7 @@ docker compose up -d
 <a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/B6CDBD/NI.png" width="80px" alt="Nicolas" /></a>&nbsp;&nbsp;
 <a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/DEBBB9/JO.png" width="80px" alt="Josh" /></a>&nbsp;&nbsp;
 <a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/11/2VeQ8sTGPhj4tiLy.jpg" width="80px" alt="PuppiestDoggo" /></a>&nbsp;&nbsp;
-
+<a href="https://github.com/seferino-fernandez"><img src="https://avatars.githubusercontent.com/u/5546622" width="80px" alt="Seferino" /></a>&nbsp;&nbsp;
 
 ## Star History
 
@@ -82,7 +80,7 @@ docker compose up -d
 
 ## Developer Quick Start
 
-For the developer guide see the [Developer Guide](https://maxdorninger.github.io/MediaManager/developer-guide.html).
+For the developer guide see the [Developer Guide](https://maximilian-dorninger.gitbook.io/mediamanager).
 
 <!-- LICENSE -->
 
@@ -94,6 +92,10 @@ Distributed under the AGPL 3.0. See `LICENSE.txt` for more information.
 <!-- ACKNOWLEDGMENTS -->
 
 ## Acknowledgments
+
+Thanks to DigitalOcean for sponsoring the project!
+
+[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=4edf05429dca&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
 
 * [Thanks to Pawel Czerwinski for the image on the login screen](https://unsplash.com/@pawel_czerwinski)
 

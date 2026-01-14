@@ -2,10 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from media_manager.database import DbSessionDependency
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.service import IndexerService
-from media_manager.database import DbSessionDependency
-from media_manager.tv.service import TvService
 
 
 def get_indexer_repository(db_session: DbSessionDependency) -> IndexerRepository:
@@ -21,4 +20,4 @@ def get_indexer_service(
     return IndexerService(indexer_repository)
 
 
-indexer_service_dep = Annotated[TvService, Depends(get_indexer_service)]
+indexer_service_dep = Annotated[IndexerService, Depends(get_indexer_service)]

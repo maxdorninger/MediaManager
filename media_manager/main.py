@@ -1,43 +1,47 @@
-from media_manager.logging import setup_logging, LOGGING_CONFIG
-from media_manager.scheduler import setup_scheduler
-from media_manager.filesystem_checks import run_filesystem_checks
-from media_manager.config import MediaManagerConfig
-import uvicorn
+import logging
 import os
-from fastapi import FastAPI, APIRouter
+
+import uvicorn
+from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import RedirectResponse, FileResponse, Response
-from media_manager.auth.users import (
-    bearer_auth_backend,
-    fastapi_users,
-    cookie_auth_backend,
-)
+from psycopg.errors import UniqueViolation
+from sqlalchemy.exc import IntegrityError
+from starlette.responses import FileResponse, RedirectResponse
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+import media_manager.movies.router as movies_router
+import media_manager.torrent.router as torrent_router
+import media_manager.tv.router as tv_router
 from media_manager.auth.router import (
-    users_router as custom_users_router,
     auth_metadata_router,
     get_openid_router,
 )
-from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate
-from media_manager.exceptions import (
-    NotFoundError,
-    not_found_error_exception_handler,
-    MediaAlreadyExists,
-    media_already_exists_exception_handler,
-    InvalidConfigError,
-    invalid_config_error_exception_handler,
-    sqlalchemy_integrity_error_handler,
-    ConflictError,
-    conflict_error_handler,
+from media_manager.auth.router import (
+    users_router as custom_users_router,
 )
-from sqlalchemy.exc import IntegrityError
-from psycopg.errors import UniqueViolation
-import media_manager.torrent.router as torrent_router
-import media_manager.movies.router as movies_router
-import media_manager.tv.router as tv_router
+from media_manager.auth.schemas import UserCreate, UserRead, UserUpdate
+from media_manager.auth.users import (
+    bearer_auth_backend,
+    cookie_auth_backend,
+    fastapi_users,
+)
+from media_manager.config import MediaManagerConfig
+from media_manager.exceptions import (
+    ConflictError,
+    InvalidConfigError,
+    MediaAlreadyExistsError,
+    NotFoundError,
+    conflict_error_handler,
+    invalid_config_error_exception_handler,
+    media_already_exists_exception_handler,
+    not_found_error_exception_handler,
+    sqlalchemy_integrity_error_handler,
+)
+from media_manager.filesystem_checks import run_filesystem_checks
+from media_manager.logging import LOGGING_CONFIG, setup_logging
 from media_manager.notification.router import router as notification_router
-import logging
+from media_manager.scheduler import setup_scheduler
 
 setup_logging()
 
@@ -47,7 +51,7 @@ log = logging.getLogger(__name__)
 if config.misc.development:
     log.warning("Development Mode activated!")
 
-scheduler = setup_scheduler(config, log)
+scheduler = setup_scheduler(config)
 
 run_filesystem_checks(config, log)
 
@@ -56,7 +60,7 @@ FRONTEND_FILES_DIR = os.getenv("FRONTEND_FILES_DIR")
 DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() == "true"
 FRONTEND_FOLLOW_SYMLINKS = os.getenv("FRONTEND_FOLLOW_SYMLINKS", "").lower() == "true"
 
-
+log.info("Hello World!")
 app = FastAPI(root_path=BASE_PATH)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 origins = config.misc.cors_urls
@@ -139,23 +143,23 @@ else:
 
 
 @app.get("/")
-async def root():
+async def root() -> RedirectResponse:
     return RedirectResponse(url="/web/")
 
 
 @app.get("/dashboard")
-async def dashboard():
+async def dashboard() -> RedirectResponse:
     return RedirectResponse(url="/web/")
 
 
 @app.get("/login")
-async def login():
+async def login() -> RedirectResponse:
     return RedirectResponse(url="/web/")
 
 
 # this will serve the custom 404 page for frontend routes, so SvelteKit can handle routing
 @app.exception_handler(404)
-async def not_found_handler(request, exc):
+async def not_found_handler(request: Request, _exc: Exception) -> Response:
     if not DISABLE_FRONTEND_MOUNT and any(
         base_path in ["/web", "/dashboard", "/login"] for base_path in request.url.path
     ):
@@ -165,7 +169,9 @@ async def not_found_handler(request, exc):
 
 # Register exception handlers for custom exceptions
 app.add_exception_handler(NotFoundError, not_found_error_exception_handler)
-app.add_exception_handler(MediaAlreadyExists, media_already_exists_exception_handler)
+app.add_exception_handler(
+    MediaAlreadyExistsError, media_already_exists_exception_handler
+)
 app.add_exception_handler(InvalidConfigError, invalid_config_error_exception_handler)
 app.add_exception_handler(IntegrityError, sqlalchemy_integrity_error_handler)
 app.add_exception_handler(UniqueViolation, sqlalchemy_integrity_error_handler)

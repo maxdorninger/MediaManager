@@ -1,12 +1,13 @@
 import logging
 
+import sabnzbd_api
+
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult
-from media_manager.torrent.download_clients.abstractDownloadClient import (
+from media_manager.torrent.download_clients.abstract_download_client import (
     AbstractDownloadClient,
 )
 from media_manager.torrent.schemas import Torrent, TorrentStatus
-import sabnzbd_api
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
     ERROR_STATE = ("Failed",)
     UNKNOWN_STATE = ("Unknown",)
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = MediaManagerConfig().torrents.sabnzbd
         self.client = sabnzbd_api.SabnzbdClient(
             host=self.config.host,
@@ -56,7 +57,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
             if not response["status"]:
                 error_msg = response
                 log.error(f"Failed to add NZB to SABnzbd: {error_msg}")
-                raise RuntimeError(f"Failed to add NZB to SABnzbd: {error_msg}")
+                msg = f"Failed to add NZB to SABnzbd: {error_msg}"
+                raise RuntimeError(msg)
 
             # Generate a hash for the NZB (using title and download URL)
             nzo_id = response["nzo_ids"][0]
@@ -137,9 +139,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         """
         if sabnzbd_status in self.DOWNLOADING_STATE:
             return TorrentStatus.downloading
-        elif sabnzbd_status in self.FINISHED_STATE:
+        if sabnzbd_status in self.FINISHED_STATE:
             return TorrentStatus.finished
-        elif sabnzbd_status in self.ERROR_STATE:
+        if sabnzbd_status in self.ERROR_STATE:
             return TorrentStatus.error
-        else:
-            return TorrentStatus.unknown
+        return TorrentStatus.unknown

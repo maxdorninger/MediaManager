@@ -30,10 +30,15 @@ dependencies = [
     "alembic>=1.16.1",
     "pytest>=8.4.0",
     "pillow>=11.3.0",
-    "pillow-avif-plugin>=1.5.2",
     "sabnzbd-api>=0.1.2",
     "transmission-rpc>=7.0.11",
     "libtorrent>=2.0.11",
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "ty>=0.0.9",
 ]
 
 [tool.setuptools.packages.find]

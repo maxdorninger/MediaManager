@@ -3,7 +3,7 @@ import typing
 from uuid import UUID, uuid4
 
 import pydantic
-from pydantic import BaseModel, computed_field, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
 from media_manager.torrent.models import Quality
 
@@ -13,7 +13,7 @@ IndexerQueryResultId = typing.NewType("IndexerQueryResultId", UUID)
 class IndexerQueryResult(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: IndexerQueryResultId = pydantic.Field(default_factory=uuid4)
+    id: IndexerQueryResultId = pydantic.Field(default_factory=lambda: IndexerQueryResultId(uuid4()))
     title: str
     download_url: str = pydantic.Field(
         exclude=True,
@@ -30,7 +30,7 @@ class IndexerQueryResult(BaseModel):
 
     indexer: str | None
 
-    @computed_field(return_type=Quality)
+    @computed_field
     @property
     def quality(self) -> Quality:
         high_quality_pattern = r"\b(4k)\b"
@@ -40,16 +40,16 @@ class IndexerQueryResult(BaseModel):
 
         if re.search(high_quality_pattern, self.title, re.IGNORECASE):
             return Quality.uhd
-        elif re.search(medium_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(medium_quality_pattern, self.title, re.IGNORECASE):
             return Quality.fullhd
-        elif re.search(low_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(low_quality_pattern, self.title, re.IGNORECASE):
             return Quality.hd
-        elif re.search(very_low_quality_pattern, self.title, re.IGNORECASE):
+        if re.search(very_low_quality_pattern, self.title, re.IGNORECASE):
             return Quality.sd
 
         return Quality.unknown
 
-    @computed_field(return_type=list[int])
+    @computed_field
     @property
     def season(self) -> list[int]:
         title = self.title.lower()
@@ -107,7 +107,7 @@ class IndexerQueryResult(BaseModel):
 
         return result
 
-    def __gt__(self, other) -> bool:
+    def __gt__(self, other: "IndexerQueryResult") -> bool:
         if self.quality.value != other.quality.value:
             return self.quality.value < other.quality.value
         if self.score != other.score:
@@ -121,7 +121,7 @@ class IndexerQueryResult(BaseModel):
 
         return self.size < other.size
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: "IndexerQueryResult") -> bool:
         if self.quality.value != other.quality.value:
             return self.quality.value > other.quality.value
         if self.score != other.score:

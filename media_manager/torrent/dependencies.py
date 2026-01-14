@@ -1,13 +1,13 @@
 from typing import Annotated
 
 from fastapi import Depends
-
-from media_manager.exceptions import NotFoundError
-from media_manager.database import DbSessionDependency
-from media_manager.torrent.service import TorrentService
-from media_manager.torrent.repository import TorrentRepository
-from media_manager.torrent.schemas import TorrentId, Torrent
 from fastapi.exceptions import HTTPException
+
+from media_manager.database import DbSessionDependency
+from media_manager.exceptions import NotFoundError
+from media_manager.torrent.repository import TorrentRepository
+from media_manager.torrent.schemas import Torrent, TorrentId
+from media_manager.torrent.service import TorrentService
 
 
 def get_torrent_repository(db: DbSessionDependency) -> TorrentRepository:
@@ -39,7 +39,7 @@ def get_torrent_by_id(
     except NotFoundError:
         raise HTTPException(
             status_code=404, detail=f"Torrent with ID {torrent_id} not found"
-        )
+        ) from None
     return torrent
 
 

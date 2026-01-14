@@ -2,7 +2,7 @@ import typing
 import uuid
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from media_manager.auth.schemas import UserRead
 from media_manager.torrent.models import Quality
@@ -20,7 +20,7 @@ SeasonRequestId = typing.NewType("SeasonRequestId", UUID)
 class Episode(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: EpisodeId = Field(default_factory=uuid.uuid4)
+    id: EpisodeId = Field(default_factory=lambda: EpisodeId(uuid.uuid4()))
     number: EpisodeNumber
     external_id: int
     title: str
@@ -30,7 +30,7 @@ class Episode(BaseModel):
 class Season(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: SeasonId = Field(default_factory=uuid.uuid4)
+    id: SeasonId = Field(default_factory=lambda: SeasonId(uuid.uuid4()))
     number: SeasonNumber
 
     name: str
@@ -44,7 +44,7 @@ class Season(BaseModel):
 class Show(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: ShowId = Field(default_factory=uuid.uuid4)
+    id: ShowId = Field(default_factory=lambda: ShowId(uuid.uuid4()))
 
     name: str
     overview: str
@@ -70,15 +70,13 @@ class SeasonRequestBase(BaseModel):
     @model_validator(mode="after")
     def ensure_wanted_quality_is_eq_or_gt_min_quality(self) -> "SeasonRequestBase":
         if self.min_quality.value < self.wanted_quality.value:
-            raise ValueError(
-                "wanted_quality must be equal to or lower than minimum_quality."
-            )
+            msg = "wanted_quality must be equal to or lower than minimum_quality."
+            raise ValueError(msg)
         return self
 
 
 class CreateSeasonRequest(SeasonRequestBase):
     season_id: SeasonId
-    pass
 
 
 class UpdateSeasonRequest(SeasonRequestBase):
@@ -88,7 +86,7 @@ class UpdateSeasonRequest(SeasonRequestBase):
 class SeasonRequest(SeasonRequestBase):
     model_config = ConfigDict(from_attributes=True)
 
-    id: SeasonRequestId = Field(default_factory=uuid.uuid4)
+    id: SeasonRequestId = Field(default_factory=lambda: SeasonRequestId(uuid.uuid4()))
 
     season_id: SeasonId
     requested_by: UserRead | None = None
