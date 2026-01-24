@@ -33,6 +33,7 @@ dependencies = [
     "sabnzbd-api>=0.1.2",
     "transmission-rpc>=7.0.11",
     "libtorrent>=2.0.11",
+    "pathvalidate>=3.3.1",
 ]
 
 [dependency-groups]
