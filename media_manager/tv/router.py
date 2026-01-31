@@ -352,7 +352,6 @@ def authorize_request(
     if not authorized_status:
         season_request.authorized_by = None
     tv_service.update_season_request(season_request=season_request)
-    return
 
 
 @router.delete(
