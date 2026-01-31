@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, status
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
+from fastapi import APIRouter, Depends, FastAPI, status
 from fastapi_users.router import get_oauth_router
 from httpx_oauth.oauth2 import OAuth2
 from sqlalchemy import select
@@ -7,6 +10,7 @@ from media_manager.auth.db import User
 from media_manager.auth.schemas import AuthMetadata, UserRead
 from media_manager.auth.users import (
     SECRET,
+    create_default_admin_user,
     current_superuser,
     fastapi_users,
     openid_client,
@@ -15,7 +19,14 @@ from media_manager.auth.users import (
 from media_manager.config import MediaManagerConfig
 from media_manager.database import DbSessionDependency
 
-users_router = APIRouter()
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncGenerator:
+    await create_default_admin_user()
+    yield
+
+
+users_router = APIRouter(lifespan=lifespan)
 auth_metadata_router = APIRouter()
 
 
