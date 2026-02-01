@@ -63,9 +63,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         return False
 
     @override
-    def get_show_metadata(
-        self, show_id: int, language: str | None = None
-    ) -> Show:
+    def get_show_metadata(self, show_id: int, language: str | None = None) -> Show:
         """
 
         :param show_id: The external id of the show
@@ -150,8 +148,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                                 vote_average=None,
                             )
                         )
-                except Exception as e:
-                    log.warning(f"Error processing search result: {e}")
+                except Exception:
+                    log.warning("Error processing search result", exc_info=True)
             return formatted_results
         results = self.__get_trending_tv()
         formatted_results = []
@@ -178,8 +176,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                             vote_average=None,
                         )
                     )
-            except Exception as e:
-                log.warning(f"Error processing search result: {e}")
+            except Exception:
+                log.warning("Error processing search result", exc_info=True)
         return formatted_results
 
     @override
@@ -215,8 +213,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                             vote_average=None,
                         )
                     )
-                except Exception as e:
-                    log.warning(f"Error processing search result: {e}")
+                except Exception:
+                    log.warning("Error processing search result", exc_info=True)
             return formatted_results
         results = self.__get_trending_movies()
         results = results[0:20]
@@ -231,15 +229,15 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                     year = None
 
                 if result.get("image"):
-                    poster_path = "https://artworks.thetvdb.com" + str(result.get("image"))
+                    poster_path = "https://artworks.thetvdb.com" + str(
+                        result.get("image")
+                    )
                 else:
                     poster_path = None
 
                 formatted_results.append(
                     MetaDataProviderSearchResult(
-                        poster_path= poster_path
-                        if result.get("image")
-                        else None,
+                        poster_path=poster_path if result.get("image") else None,
                         overview=result.get("overview"),
                         name=result["name"],
                         external_id=result["id"],
@@ -249,8 +247,8 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
                         vote_average=None,
                     )
                 )
-            except Exception as e:
-                log.warning(f"Error processing search result: {e}")
+            except Exception:
+                log.warning("Error processing search result", exc_info=True)
         return formatted_results
 
     @override
@@ -269,9 +267,7 @@ class TvdbMetadataProvider(AbstractMetadataProvider):
         return False
 
     @override
-    def get_movie_metadata(
-        self, movie_id: int, language: str | None = None
-    ) -> Movie:
+    def get_movie_metadata(self, movie_id: int, language: str | None = None) -> Movie:
         """
 
         :param movie_id: the external id of the movie

@@ -59,8 +59,8 @@ class MovieRepository:
                 msg = f"Movie with id {movie_id} not found."
                 raise NotFoundError(msg)
             return MovieSchema.model_validate(result)
-        except SQLAlchemyError as e:
-            log.error(f"Database error while retrieving movie {movie_id}: {e}")
+        except SQLAlchemyError:
+            log.exception(f"Database error while retrieving movie {movie_id}")
             raise
 
     def get_movie_by_external_id(
@@ -86,9 +86,9 @@ class MovieRepository:
                 msg = f"Movie with external_id {external_id} and provider {metadata_provider} not found."
                 raise NotFoundError(msg)
             return MovieSchema.model_validate(result)
-        except SQLAlchemyError as e:
-            log.error(
-                f"Database error while retrieving movie by external_id {external_id}: {e}"
+        except SQLAlchemyError:
+            log.exception(
+                f"Database error while retrieving movie by external_id {external_id}"
             )
             raise
 
@@ -103,8 +103,8 @@ class MovieRepository:
             stmt = select(Movie)
             results = self.db.execute(stmt).scalars().unique().all()
             return [MovieSchema.model_validate(movie) for movie in results]
-        except SQLAlchemyError as e:
-            log.error(f"Database error while retrieving all movies: {e}")
+        except SQLAlchemyError:
+            log.exception("Database error while retrieving all movies")
             raise
 
     def save_movie(self, movie: MovieSchema) -> MovieSchema:
@@ -140,14 +140,14 @@ class MovieRepository:
             return MovieSchema.model_validate(db_movie)
         except IntegrityError as e:
             self.db.rollback()
-            log.error(f"Integrity error while saving movie {movie.name}: {e}")
+            log.exception(f"Integrity error while saving movie {movie.name}")
             msg = (
                 f"Movie with this primary key or unique constraint violation: {e.orig}"
             )
             raise ConflictError(msg) from e
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self.db.rollback()
-            log.error(f"Database error while saving movie {movie.name}: {e}")
+            log.exception(f"Database error while saving movie {movie.name}")
             raise
 
     def delete_movie(self, movie_id: MovieId) -> None:
@@ -168,9 +168,9 @@ class MovieRepository:
             self.db.delete(movie)
             self.db.commit()
             log.info(f"Successfully deleted movie with id: {movie_id}")
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self.db.rollback()
-            log.error(f"Database error while deleting movie {movie_id}: {e}")
+            log.exception(f"Database error while deleting movie {movie_id}")
             raise
 
     def add_movie_request(
@@ -204,13 +204,13 @@ class MovieRepository:
             self.db.refresh(db_model)
             log.info(f"Successfully added movie request with id: {db_model.id}")
             return MovieRequestSchema.model_validate(db_model)
-        except IntegrityError as e:
+        except IntegrityError:
             self.db.rollback()
-            log.error(f"Integrity error while adding movie request: {e}")
+            log.exception("Integrity error while adding movie request")
             raise
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self.db.rollback()
-            log.error(f"Database error while adding movie request: {e}")
+            log.exception("Database error while adding movie request")
             raise
 
     def set_movie_library(self, movie_id: MovieId, library: str) -> None:
@@ -229,9 +229,9 @@ class MovieRepository:
                 raise NotFoundError(msg)
             movie.library = library
             self.db.commit()
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self.db.rollback()
-            log.error(f"Database error setting library for movie {movie_id}: {e}")
+            log.exception(f"Database error setting library for movie {movie_id}")
             raise
 
     def delete_movie_request(self, movie_request_id: MovieRequestId) -> None:
@@ -251,10 +251,10 @@ class MovieRepository:
                 raise NotFoundError(msg)
             self.db.commit()
             # Successfully deleted movie request with id: {movie_request_id}
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self.db.rollback()
-            log.error(
-                f"Database error while deleting movie request {movie_request_id}: {e}"
+            log.exception(
+                f"Database error while deleting movie request {movie_request_id}"
             )
             raise
 
@@ -273,8 +273,8 @@ class MovieRepository:
             )
             results = self.db.execute(stmt).scalars().unique().all()
             return [RichMovieRequestSchema.model_validate(x) for x in results]
-        except SQLAlchemyError as e:
-            log.error(f"Database error while retrieving movie requests: {e}")
+        except SQLAlchemyError:
+            log.exception("Database error while retrieving movie requests")
             raise
 
     def add_movie_file(self, movie_file: MovieFileSchema) -> MovieFileSchema:
@@ -292,13 +292,13 @@ class MovieRepository:
             self.db.commit()
             self.db.refresh(db_model)
             return MovieFileSchema.model_validate(db_model)
-        except IntegrityError as e:
+        except IntegrityError:
             self.db.rollback()
-            log.error(f"Integrity error while adding movie file: {e}")
+            log.exception("Integrity error while adding movie file")
             raise
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self.db.rollback()
-            log.error(f"Database error while adding movie file: {e}")
+            log.exception("Database error while adding movie file")
             raise
 
     def remove_movie_files_by_torrent_id(self, torrent_id: TorrentId) -> int:
@@ -313,13 +313,14 @@ class MovieRepository:
             stmt = delete(MovieFile).where(MovieFile.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
-            return result.rowcount
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self.db.rollback()
-            log.error(
-                f"Database error removing movie files for torrent_id {torrent_id}: {e}"
+            log.exception(
+                f"Database error removing movie files for torrent_id {torrent_id}"
             )
             raise
+
+        return result.rowcount
 
     def get_movie_files_by_movie_id(self, movie_id: MovieId) -> list[MovieFileSchema]:
         """
@@ -333,9 +334,9 @@ class MovieRepository:
             stmt = select(MovieFile).where(MovieFile.movie_id == movie_id)
             results = self.db.execute(stmt).scalars().all()
             return [MovieFileSchema.model_validate(sf) for sf in results]
-        except SQLAlchemyError as e:
-            log.error(
-                f"Database error retrieving movie files for movie_id {movie_id}: {e}"
+        except SQLAlchemyError:
+            log.exception(
+                f"Database error retrieving movie files for movie_id {movie_id}"
             )
             raise
 
@@ -367,12 +368,12 @@ class MovieRepository:
                     usenet=torrent.usenet,
                 )
                 formatted_results.append(movie_torrent)
-            return formatted_results
-        except SQLAlchemyError as e:
-            log.error(
-                f"Database error retrieving torrents for movie_id {movie_id}: {e}"
-            )
+
+        except SQLAlchemyError:
+            log.exception(f"Database error retrieving torrents for movie_id {movie_id}")
             raise
+
+        return formatted_results
 
     def get_all_movies_with_torrents(self) -> list[MovieSchema]:
         """
@@ -391,8 +392,8 @@ class MovieRepository:
             )
             results = self.db.execute(stmt).scalars().unique().all()
             return [MovieSchema.model_validate(movie) for movie in results]
-        except SQLAlchemyError as e:
-            log.error(f"Database error retrieving all movies with torrents: {e}")
+        except SQLAlchemyError:
+            log.exception("Database error retrieving all movies with torrents")
             raise
 
     def get_movie_request(self, movie_request_id: MovieRequestId) -> MovieRequestSchema:
@@ -410,10 +411,8 @@ class MovieRepository:
                 msg = f"Movie request with id {movie_request_id} not found."
                 raise NotFoundError(msg)
             return MovieRequestSchema.model_validate(request)
-        except SQLAlchemyError as e:
-            log.error(
-                f"Database error retrieving movie request {movie_request_id}: {e}"
-            )
+        except SQLAlchemyError:
+            log.exception(f"Database error retrieving movie request {movie_request_id}")
             raise
 
     def get_movie_by_torrent_id(self, torrent_id: TorrentId) -> MovieSchema:
@@ -436,10 +435,8 @@ class MovieRepository:
                 msg = f"Movie for torrent_id {torrent_id} not found."
                 raise NotFoundError(msg)
             return MovieSchema.model_validate(result)
-        except SQLAlchemyError as e:
-            log.error(
-                f"Database error retrieving movie by torrent_id {torrent_id}: {e}"
-            )
+        except SQLAlchemyError:
+            log.exception(f"Database error retrieving movie by torrent_id {torrent_id}")
             raise
 
     def update_movie_attributes(

@@ -36,10 +36,8 @@ def run_filesystem_checks(config: MediaManagerConfig, log: Logger) -> None:
         if not test_hardlink.samefile(test_torrent_file):
             log.critical("Hardlink creation failed!")
         log.info("Successfully created test hardlink in TV directory")
-    except OSError as e:
-        log.error(
-            f"Hardlink creation failed, falling back to copying files. Error: {e}"
-        )
+    except OSError:
+        log.exception("Hardlink creation failed, falling back to copying files")
         shutil.copy(src=test_torrent_file, dst=test_hardlink)
     finally:
         test_hardlink.unlink()

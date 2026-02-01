@@ -46,8 +46,8 @@ class Jackett(GenericIndexer, TorznabMixin):
                     result = future.result()
                     if result is not None:
                         responses.extend(result)
-                except Exception as e:
-                    log.error(f"search result failed with: {e}")
+                except Exception:
+                    log.exception("Searching failed")
 
         return responses
 

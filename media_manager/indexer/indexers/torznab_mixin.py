@@ -1,6 +1,6 @@
 import logging
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime
 from email.utils import parsedate_to_datetime
 
 from media_manager.indexer.schemas import IndexerQueryResult
@@ -39,7 +39,7 @@ class TorznabMixin:
                             posted_date = parsedate_to_datetime(
                                 attribute.attrib["value"]
                             )
-                            now = datetime.now(timezone.utc)
+                            now = datetime.now(datetime.UTC)
                             age = int((now - posted_date).total_seconds())
                     else:
                         if attribute.attrib["name"] == "seeders":
@@ -79,6 +79,6 @@ class TorznabMixin:
                     indexer=indexer_name,
                 )
                 result_list.append(result)
-            except Exception as e:
-                log.error(f"1 Torznab search result errored with error: {e}")
+            except Exception:
+                log.exception("1 Torznab search result failed")
         return result_list

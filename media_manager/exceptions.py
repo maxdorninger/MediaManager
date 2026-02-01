@@ -4,6 +4,13 @@ from psycopg.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError
 
 
+class RenameError(Exception):
+    """Error when renaming something"""
+
+    def __init__(self, message: str = "Failed to rename source directory") -> None:
+        super().__init__(message)
+
+
 class MediaManagerError(Exception):
     """Base exception for MediaManager errors."""
 

@@ -43,8 +43,8 @@ class TransmissionDownloadClient(AbstractDownloadClient):
             )
             # Test connection
             self._client.session_stats()
-        except Exception as e:
-            log.error(f"Failed to connect to Transmission: {e}")
+        except Exception:
+            log.exception("Failed to connect to Transmission")
             raise
 
     def download_torrent(self, indexer_result: IndexerQueryResult) -> Torrent:
@@ -68,8 +68,8 @@ class TransmissionDownloadClient(AbstractDownloadClient):
                 f"Successfully added torrent to Transmission: {indexer_result.title}"
             )
 
-        except Exception as e:
-            log.error(f"Failed to add torrent to Transmission: {e}")
+        except Exception:
+            log.exception("Failed to add torrent to Transmission")
             raise
 
         torrent = Torrent(
@@ -95,8 +95,8 @@ class TransmissionDownloadClient(AbstractDownloadClient):
 
         try:
             self._client.remove_torrent(torrent.hash, delete_data=delete_data)
-        except Exception as e:
-            log.error(f"Failed to remove torrent: {e}")
+        except Exception:
+            log.exception("Failed to remove torrent")
             raise
 
     def get_torrent_status(self, torrent: Torrent) -> TorrentStatus:
@@ -123,12 +123,11 @@ class TransmissionDownloadClient(AbstractDownloadClient):
                 log.warning(
                     f"Torrent {torrent.title} has error status: {transmission_torrent.error_string}"
                 )
-
-            return status
-
-        except Exception as e:
-            log.error(f"Failed to get torrent status: {e}")
+        except Exception:
+            log.exception("Failed to get torrent status")
             return TorrentStatus.error
+
+        return status
 
     def pause_torrent(self, torrent: Torrent) -> None:
         """
@@ -140,8 +139,8 @@ class TransmissionDownloadClient(AbstractDownloadClient):
             self._client.stop_torrent(torrent.hash)
             log.debug(f"Successfully paused torrent: {torrent.title}")
 
-        except Exception as e:
-            log.error(f"Failed to pause torrent: {e}")
+        except Exception:
+            log.exception("Failed to pause torrent")
             raise
 
     def resume_torrent(self, torrent: Torrent) -> None:
@@ -154,6 +153,6 @@ class TransmissionDownloadClient(AbstractDownloadClient):
             self._client.start_torrent(torrent.hash)
             log.debug(f"Successfully resumed torrent: {torrent.title}")
 
-        except Exception as e:
-            log.error(f"Failed to resume torrent: {e}")
+        except Exception:
+            log.exception("Failed to resume torrent")
             raise
