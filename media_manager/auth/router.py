@@ -1,5 +1,5 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import APIRouter, Depends, FastAPI, status
 from fastapi_users.router import get_oauth_router
