@@ -3269,7 +3269,7 @@ export interface operations {
 			query: {
 				show_id: string;
 				season_number?: number;
-				search_query_override?: string;
+				search_query_override?: string | null;
 			};
 			header?: never;
 			path?: never;
@@ -3636,7 +3636,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['PublicMovie'][];
+					'application/json': components['schemas']['Movie'][];
 				};
 			};
 		};

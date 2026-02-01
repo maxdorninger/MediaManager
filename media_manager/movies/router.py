@@ -256,7 +256,7 @@ def authorize_request(
     movie_request_id: MovieRequestId,
     user: Annotated[UserRead, Depends(current_superuser)],
     authorized_status: bool = False,
-) -> MovieRequest:
+) -> None:
     """
     Authorize or de-authorize a movie request.
     """
@@ -268,7 +268,7 @@ def authorize_request(
         movie_request.authorized_by = user
     else:
         movie_request.authorized_by = None
-    return movie_service.update_movie_request(movie_request=movie_request)
+    movie_service.update_movie_request(movie_request=movie_request)
 
 
 @router.delete(
