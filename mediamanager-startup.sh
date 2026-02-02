@@ -104,7 +104,16 @@ ASCII_ART='
                                                 ░░░░░░
 
 '
-display_cool_text "$ASCII_ART"
+if [[ -v MEDIAMANAGER_NO_STARTUP_ART ]]; then
+  echo
+  echo "   +================+"
+  echo "   |  MediaManager  |"
+  echo "   +================+"
+  echo
+else
+  display_cool_text "$ASCII_ART"
+fi
+
 echo "Buy me a coffee at https://buymeacoffee.com/maxdorninger"
 
 # Initialize config if it doesn't exist
