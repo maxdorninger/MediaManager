@@ -55,7 +55,7 @@
 						</Card.Title>
 					</Card.Header>
 					<Card.Content>
-						<TorrentTable isShow={false} torrents={movie.torrents} />
+						<TorrentTable isShow={false} torrents={movie.torrents} movieId={movie.movie_id} />
 					</Card.Content>
 				</Card.Root>
 			</div>
