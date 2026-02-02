@@ -61,15 +61,23 @@ class TorznabMixin:
                             if upload_volume_factor == 2:
                                 flags.append("doubleupload")
 
-                if not item.find("size") or item.find("size").text is None:
+                title = item.find("title").text
+                size_str = item.find("size")
+                if size_str is None or size_str.text is None:
                     log.warning(
-                        f"Torznab item {item.find('title').text} has no size, skipping."
+                        f"Torznab item {title} has no size, skipping."
                     )
                     continue
-                size = int(item.find("size").text or "0")
+                try:
+                    size = int(size_str.text or "0")
+                except ValueError:
+                    log.warning(
+                        f"Torznab item {title} has invalid size, skipping."
+                    )
+                    continue
 
                 result = IndexerQueryResult(
-                    title=item.find("title").text or "unknown",
+                    title=title or "unknown",
                     download_url=str(item.find("enclosure").attrib["url"]),
                     seeders=seeders,
                     flags=flags,
