@@ -145,8 +145,21 @@ else
     echo "Config file found at: $CONFIG_FILE"
 fi
 
+# permission fix
+echo "Ensuring file permissions for mediamanager user..."
+
+chown -R mediamanager:mediamanager "$CONFIG_DIR"
+
+if [ -d "/data" ]; then
+    if [ "$(stat -c '%U' /data)" != "mediamanager" ]; then
+        echo "Fixing ownership of /data (this may take a while for large libraries)..."
+        chown -R mediamanager:mediamanager /data
+    fi
+fi
+
+
 echo "Running DB migrations..."
-uv run alembic upgrade head
+gosu mediamanager uv run alembic upgrade head
 
 echo "Starting MediaManager backend service..."
 echo ""
@@ -161,7 +174,7 @@ DEVELOPMENT_MODE=${MEDIAMANAGER_MISC__DEVELOPMENT:-FALSE}
 PORT=${PORT:-8000}
 if [ "$DEVELOPMENT_MODE" == "TRUE" ]; then
     echo "Development mode is enabled, enabling auto-reload..."
-    uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers --reload
+    exec gosu mediamanager uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers --reload
 else
-  uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers
+    exec gosu mediamanager uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers
 fi
