@@ -4,12 +4,12 @@ import mimetypes
 import re
 import shutil
 from pathlib import Path, UnsupportedOperation
-from pathvalidate import sanitize_filename
 
 import bencoder
 import libtorrent
 import patoolib
 import requests
+from pathvalidate import sanitize_filename
 from requests.exceptions import InvalidSchema
 
 from media_manager.config import MediaManagerConfig
