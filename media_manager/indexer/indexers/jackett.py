@@ -78,5 +78,5 @@ class Jackett(GenericIndexer, TorznabMixin):
         return self.search(query=query, is_tv=True)
 
     def search_movie(self, query: str, movie: Movie) -> list[IndexerQueryResult]:
-        log.debug(f"Searching for movie {movie.title}")
+        log.debug(f"Searching for movie {movie.name}")
         return self.search(query=query, is_tv=False)
