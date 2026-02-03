@@ -9,6 +9,7 @@ import bencoder
 import libtorrent
 import patoolib
 import requests
+from pathvalidate import sanitize_filename
 from requests.exceptions import InvalidSchema
 
 from media_manager.config import MediaManagerConfig
@@ -132,7 +133,7 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
     :return: The hash of the torrent.
     """
     torrent_filepath = (
-        MediaManagerConfig().misc.torrent_directory / f"{torrent.title}.torrent"
+        MediaManagerConfig().misc.torrent_directory / f"{sanitize_filename(torrent.title)}.torrent"
     )
     if torrent_filepath.exists():
         log.warning(f"Torrent file already exists at: {torrent_filepath}")
