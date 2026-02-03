@@ -12,6 +12,7 @@ RUN groupadd -g 1000 mediamanager && \
     useradd -m -u 1000 -g mediamanager mediamanager
 
 WORKDIR /app
+RUN chown -R mediamanager:mediamanager /app
 
 ENV UV_CACHE_DIR=/home/mediamanager/.cache/uv \
     UV_LINK_MODE=copy \
