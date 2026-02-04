@@ -133,7 +133,8 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
     :return: The hash of the torrent.
     """
     torrent_filepath = (
-        MediaManagerConfig().misc.torrent_directory / f"{sanitize_filename(torrent.title)}.torrent"
+        MediaManagerConfig().misc.torrent_directory
+        / f"{sanitize_filename(torrent.title)}.torrent"
     )
     if torrent_filepath.exists():
         log.warning(f"Torrent file already exists at: {torrent_filepath}")
