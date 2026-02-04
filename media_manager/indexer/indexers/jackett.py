@@ -116,7 +116,7 @@ class Jackett(GenericIndexer, TorznabMixin):
             supports_tv_search_tmdb="tmdbid" in tv_search_capabilities,
             supports_tv_search_tvdb="tvdbid" in tv_search_capabilities,
             supports_tv_search_season="season" in tv_search_capabilities,
-            supports_tv_search_episode="e" in tv_search_capabilities,
+            supports_tv_search_episode="ep" in tv_search_capabilities,
             supports_movie_search=movie_search_available,
             supports_movie_search_imdb="imdbid" in movie_search_capabilities,
             supports_movie_search_tmdb="tmdbid" in movie_search_capabilities,
@@ -137,8 +137,8 @@ class Jackett(GenericIndexer, TorznabMixin):
                 raise RuntimeError(msg)
             if search_capabilities.supports_tv_search_season and "season" in params:
                 query_params["season"] = params["season"]
-            if search_capabilities.supports_tv_search_episode and "e" in params:
-                query_params["e"] = params["e"]
+            if search_capabilities.supports_tv_search_episode and "ep" in params:
+                query_params["ep"] = params["ep"]
             if search_capabilities.supports_tv_search_imdb and "imdbid" in params:
                 query_params["imdbid"] = params["imdbid"]
             elif search_capabilities.supports_tv_search_tvdb and "tvdbid" in params:
