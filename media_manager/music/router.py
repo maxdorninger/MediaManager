@@ -21,6 +21,7 @@ from media_manager.music.dependencies import (
     music_service_dep,
 )
 from media_manager.music.schemas import (
+    Album,
     AlbumId,
     AlbumRequest,
     AlbumRequestBase,
@@ -331,12 +332,10 @@ def get_torrents_for_artist(
     "/albums/{album_id}",
     dependencies=[Depends(current_active_user)],
 )
-def get_album_by_id(album: album_dep) -> "Album":
+def get_album_by_id(album: album_dep) -> Album:
     """
     Get details for a specific album.
     """
-    from media_manager.music.schemas import Album
-
     return Album.model_validate(album)
 
 
