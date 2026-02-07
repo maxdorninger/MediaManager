@@ -12,6 +12,7 @@ from starlette.responses import FileResponse, RedirectResponse
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 import media_manager.movies.router as movies_router
+import media_manager.music.router as music_router
 import media_manager.torrent.router as torrent_router
 import media_manager.tv.router as tv_router
 from media_manager.auth.router import (
@@ -116,6 +117,7 @@ if get_openid_router():
 api_app.include_router(tv_router.router, prefix="/tv", tags=["tv"])
 api_app.include_router(torrent_router.router, prefix="/torrent", tags=["torrent"])
 api_app.include_router(movies_router.router, prefix="/movies", tags=["movie"])
+api_app.include_router(music_router.router, prefix="/music", tags=["music"])
 api_app.include_router(
     notification_router, prefix="/notification", tags=["notification"]
 )

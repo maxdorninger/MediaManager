@@ -13,6 +13,7 @@ cors_urls = ["http://localhost:8000"] # note the lack of a trailing slash
 image_directory = "/data/images"
 tv_directory = "/data/tv"
 movie_directory = "/data/movies"
+music_directory = "/data/music"
 torrent_directory = "/data/torrents" # this is where MediaManager will search for the downloaded torrents and usenet files
 
 # you probaly don't need to change this
@@ -28,6 +29,10 @@ path = "/data/tv/live-action"  # Change this to match your actual TV shows locat
 [[misc.movie_libraries]]
 name = "Documentary"
 path = "/data/movies/documentary"  # Change this to match your actual movies location
+
+[[misc.music_libraries]]
+name = "FLAC"
+path = "/data/music/flac"  # Change this to match your actual music location
 
 [database]
 host = "db"
@@ -170,3 +175,6 @@ default_language = "en"
 
 [metadata.tvdb]
 tvdb_relay_url = "https://metadata-relay.dorninger.co/tvdb"
+
+[metadata.musicbrainz]
+enabled = true

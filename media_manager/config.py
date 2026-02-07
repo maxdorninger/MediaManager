@@ -38,6 +38,7 @@ class BasicConfig(BaseSettings):
     image_directory: Path = Path(__file__).parent.parent / "data" / "images"
     tv_directory: Path = Path(__file__).parent.parent / "data" / "tv"
     movie_directory: Path = Path(__file__).parent.parent / "data" / "movies"
+    music_directory: Path = Path(__file__).parent.parent / "data" / "music"
     torrent_directory: Path = Path(__file__).parent.parent / "data" / "torrents"
 
     frontend_url: AnyHttpUrl = AnyHttpUrl("http://localhost:8000")
@@ -46,6 +47,7 @@ class BasicConfig(BaseSettings):
 
     tv_libraries: list[LibraryItem] = []
     movie_libraries: list[LibraryItem] = []
+    music_libraries: list[LibraryItem] = []
 
 
 class MediaManagerConfig(BaseSettings):

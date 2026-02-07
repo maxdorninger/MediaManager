@@ -9,6 +9,7 @@ def run_filesystem_checks(config: MediaManagerConfig, log: Logger) -> None:
     log.info("Creating directories if they don't exist...")
     config.misc.tv_directory.mkdir(parents=True, exist_ok=True)
     config.misc.movie_directory.mkdir(parents=True, exist_ok=True)
+    config.misc.music_directory.mkdir(parents=True, exist_ok=True)
     config.misc.torrent_directory.mkdir(parents=True, exist_ok=True)
     config.misc.image_directory.mkdir(parents=True, exist_ok=True)
     log.info("Conducting filesystem tests...")

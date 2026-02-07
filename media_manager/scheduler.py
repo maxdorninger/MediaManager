@@ -9,6 +9,11 @@ from media_manager.movies.service import (
     import_all_movie_torrents,
     update_all_movies_metadata,
 )
+from media_manager.music.service import (
+    auto_download_all_approved_album_requests,
+    import_all_music_torrents,
+    update_all_artists_metadata,
+)
 from media_manager.tv.service import (
     auto_download_all_approved_season_requests,
     import_all_show_torrents,
@@ -61,6 +66,24 @@ def setup_scheduler(config: MediaManagerConfig) -> BackgroundScheduler:
         update_all_non_ended_shows_metadata,
         weekly_trigger,
         id="update_all_non_ended_shows_metadata",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        import_all_music_torrents,
+        every_15_minutes_trigger,
+        id="import_all_music_torrents",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        auto_download_all_approved_album_requests,
+        daily_trigger,
+        id="auto_download_all_approved_album_requests",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        update_all_artists_metadata,
+        weekly_trigger,
+        id="update_all_artists_metadata",
         replace_existing=True,
     )
     scheduler.start()
