@@ -5,9 +5,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
-	import { ChevronDown, LoaderCircle } from 'lucide-svelte';
-	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
-	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
+	import { LoaderCircle } from 'lucide-svelte';
 	import AddMediaCard from '$lib/components/add-media-card.svelte';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
@@ -16,7 +14,6 @@
 	import { handleQueryNotificationToast } from '$lib/utils.ts';
 
 	let searchTerm: string = $state('');
-	let metadataProvider: 'tmdb' | 'tvdb' = $state('tmdb');
 	let results: components['schemas']['MetaDataProviderSearchResult'][] | null = $state(null);
 	let isSearching: boolean = $state(false);
 
@@ -29,15 +26,14 @@
 		try {
 			const { data } =
 				query.length > 0
-					? await client.GET('/api/v1/movies/search', {
+					? await client.GET('/api/v1/music/search', {
 							params: {
 								query: {
-									query: query,
-									metadata_provider: metadataProvider
+									query: query
 								}
 							}
 						})
-					: await client.GET('/api/v1/movies/recommended');
+					: await client.GET('/api/v1/music/recommended');
 			if (data && data.length > 0) {
 				results = data as components['schemas']['MetaDataProviderSearchResult'][];
 			} else {
@@ -51,8 +47,8 @@
 </script>
 
 <svelte:head>
-	<title>Add Movie - MediaManager</title>
-	<meta content="Add a new movie to your MediaManager collection" name="description" />
+	<title>Add Artist - MediaManager</title>
+	<meta content="Add a new artist to your MediaManager music collection" name="description" />
 </svelte:head>
 
 <header class="flex h-16 shrink-0 items-center gap-2">
@@ -70,11 +66,11 @@
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href={resolve('/dashboard/movies', {})}>Movies</Breadcrumb.Link>
+					<Breadcrumb.Link href={resolve('/dashboard/music', {})}>Music</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator class="hidden md:block" />
 				<Breadcrumb.Item>
-					<Breadcrumb.Page>Add a Movie</Breadcrumb.Page>
+					<Breadcrumb.Page>Add an Artist</Breadcrumb.Page>
 				</Breadcrumb.Item>
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
@@ -84,14 +80,14 @@
 <main class="flex w-full max-w-[90vw] flex-1 flex-col items-center gap-4 p-4 pt-0">
 	<div class="grid w-full max-w-sm items-center gap-12">
 		<h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
-			Add a Movie
+			Add an Artist
 		</h1>
 		<section>
-			<Label for="search-box">Movie Name</Label>
+			<Label for="search-box">Artist Name</Label>
 			<Input
 				bind:value={searchTerm}
 				id="search-box"
-				placeholder="Movie Name"
+				placeholder="Artist Name"
 				type="text"
 				onkeydown={(e) => {
 					if (e.key === 'Enter' && !isSearching) {
@@ -99,33 +95,7 @@
 					}
 				}}
 			/>
-			<p class="text-sm text-muted-foreground">Search for a Movie to add.</p>
-		</section>
-		<section>
-			<Collapsible.Root class="w-full space-y-1">
-				<Collapsible.Trigger>
-					<div class="flex items-center justify-between space-x-4 px-4">
-						<h4 class="text-sm font-semibold">Advanced Settings</h4>
-						<Button class="w-9 p-0" size="sm" variant="ghost">
-							<ChevronDown />
-							<span class="sr-only">Toggle</span>
-						</Button>
-					</div>
-				</Collapsible.Trigger>
-				<Collapsible.Content class="space-y-1">
-					<Label for="metadata-provider-selector">Choose which Metadata Provider to query.</Label>
-					<RadioGroup.Root bind:value={metadataProvider} id="metadata-provider-selector">
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item id="option-one" value="tmdb" />
-							<Label for="option-one">TMDB (Recommended)</Label>
-						</div>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item id="option-two" value="tvdb" />
-							<Label for="option-two">TVDB</Label>
-						</div>
-					</RadioGroup.Root>
-				</Collapsible.Content>
-			</Collapsible.Root>
+			<p class="text-sm text-muted-foreground">Search MusicBrainz for an artist to add.</p>
 		</section>
 		<section>
 			<Button onclick={() => search(searchTerm)} type="submit" disabled={isSearching}>
@@ -142,14 +112,14 @@
 	<Separator class="my-8" />
 
 	{#if results && results.length === 0}
-		<h3 class="mx-auto">No Movie found.</h3>
+		<h3 class="mx-auto">No artists found.</h3>
 	{:else if results}
 		<div
 			class="grid w-full auto-rows-min gap-4 sm:grid-cols-1
 		 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each results as result (result.external_id)}
-				<AddMediaCard {result} mediaType="movie" />
+				<AddMediaCard {result} mediaType="music" />
 			{/each}
 		</div>
 	{/if}
