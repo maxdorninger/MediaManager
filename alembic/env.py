@@ -31,6 +31,7 @@ from media_manager.config import MediaManagerConfig  # noqa: E402
 from media_manager.database import Base  # noqa: E402
 from media_manager.indexer.models import IndexerQueryResult  # noqa: E402
 from media_manager.movies.models import Movie, MovieFile, MovieRequest  # noqa: E402
+from media_manager.music.models import Album, AlbumFile, AlbumRequest, Artist, Track  # noqa: E402
 from media_manager.notification.models import Notification  # noqa: E402
 from media_manager.torrent.models import Torrent  # noqa: E402
 from media_manager.tv.models import (  # noqa: E402
@@ -46,6 +47,10 @@ target_metadata = Base.metadata
 # this is to keep pycharm from complaining about/optimizing unused imports
 # noinspection PyStatementEffect
 __all__ = [
+    "Album",
+    "AlbumFile",
+    "AlbumRequest",
+    "Artist",
     "Episode",
     "IndexerQueryResult",
     "Movie",
@@ -58,6 +63,7 @@ __all__ = [
     "SeasonRequest",
     "Show",
     "Torrent",
+    "Track",
     "User",
 ]
 

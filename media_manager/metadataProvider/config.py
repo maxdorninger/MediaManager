@@ -11,6 +11,11 @@ class TvdbConfig(BaseSettings):
     tvdb_relay_url: str = "https://metadata-relay.dorninger.co/tvdb"
 
 
+class MusicBrainzConfig(BaseSettings):
+    enabled: bool = True
+
+
 class MetadataProviderConfig(BaseSettings):
     tvdb: TvdbConfig = TvdbConfig()
     tmdb: TmdbConfig = TmdbConfig()
+    musicbrainz: MusicBrainzConfig = MusicBrainzConfig()
