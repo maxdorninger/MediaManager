@@ -12,6 +12,7 @@ from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie
+from media_manager.music.schemas import Artist
 from media_manager.tv.schemas import Show
 
 log = logging.getLogger(__name__)
@@ -30,6 +31,8 @@ class IndexerInfo:
     supports_movie_search_tmdb: bool
     supports_movie_search_imdb: bool
     supports_movie_search_tvdb: bool
+
+    supports_music_search: bool
 
 
 class Jackett(GenericIndexer, TorznabMixin):
@@ -90,8 +93,9 @@ class Jackett(GenericIndexer, TorznabMixin):
         xml_tree = ET.fromstring(xml)  # noqa: S314  # trusted source, since it is user controlled
         tv_search = xml_tree.find("./*/tv-search")
         movie_search = xml_tree.find("./*/movie-search")
-        log.debug(tv_search.attrib)
-        log.debug(movie_search.attrib)
+        music_search = xml_tree.find("./*/music-search")
+        log.debug(tv_search.attrib if tv_search is not None else "no tv-search")
+        log.debug(movie_search.attrib if movie_search is not None else "no movie-search")
 
         tv_search_capabilities = []
         movie_search_capabilities = []
@@ -100,6 +104,9 @@ class Jackett(GenericIndexer, TorznabMixin):
         )
         movie_search_available = (movie_search is not None) and (
             movie_search.attrib["available"] == "yes"
+        )
+        music_search_available = (music_search is not None) and (
+            music_search.attrib.get("available") == "yes"
         )
 
         if tv_search_available:
@@ -121,6 +128,7 @@ class Jackett(GenericIndexer, TorznabMixin):
             supports_movie_search_imdb="imdbid" in movie_search_capabilities,
             supports_movie_search_tmdb="tmdbid" in movie_search_capabilities,
             supports_movie_search_tvdb="tvdbid" in movie_search_capabilities,
+            supports_music_search=music_search_available,
         )
 
     def __get_optimal_query_parameters(
@@ -159,6 +167,12 @@ class Jackett(GenericIndexer, TorznabMixin):
                 query_params["tmdbid"] = params["tmdbid"]
             else:
                 query_params["q"] = params["q"]
+        if params["t"] == "music":
+            if not search_capabilities.supports_music_search:
+                msg = f"Indexer {indexer} does not support Music search"
+                raise RuntimeError(msg)
+            query_params["q"] = params["q"]
+            query_params["cat"] = "3000"
         return query_params
 
     def get_torrents_by_indexer(
@@ -205,4 +219,12 @@ class Jackett(GenericIndexer, TorznabMixin):
         if movie.imdb_id:
             params["imdbid"] = movie.imdb_id
         params[movie.metadata_provider + "id"] = movie.external_id
+        return self.__search_jackett(params=params)
+
+    def search_music(self, query: str, artist: Artist) -> list[IndexerQueryResult]:
+        log.debug(f"Searching for music: {query}")
+        params = {
+            "t": "music",
+            "q": query,
+        }
         return self.__search_jackett(params=params)

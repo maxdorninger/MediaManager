@@ -8,6 +8,7 @@ from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie
+from media_manager.music.schemas import Artist
 from media_manager.tv.schemas import Show
 
 log = logging.getLogger(__name__)
@@ -28,6 +29,8 @@ class IndexerInfo:
     supports_movie_search_tmdb: bool
     supports_movie_search_imdb: bool
     supports_movie_search_tvdb: bool
+
+    supports_music_search: bool
 
 
 class Prowlarr(GenericIndexer, TorznabMixin):
@@ -87,6 +90,10 @@ class Prowlarr(GenericIndexer, TorznabMixin):
                 supports_movie_search = True
                 movie_search_params = indexer["capabilities"]["movieSearchParams"]
 
+            supports_music_search = bool(
+                indexer["capabilities"].get("musicSearchParams")
+            )
+
             indexer_info = IndexerInfo(
                 id=indexer["id"],
                 name=indexer.get("name", "unknown"),
@@ -99,6 +106,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
                 supports_movie_search_tmdb="tmdbId" in movie_search_params,
                 supports_movie_search_imdb="imdbId" in movie_search_params,
                 supports_movie_search_tvdb="tvdbId" in movie_search_params,
+                supports_music_search=supports_music_search,
             )
             indexer_info_list.append(indexer_info)
         return indexer_info_list
@@ -108,6 +116,9 @@ class Prowlarr(GenericIndexer, TorznabMixin):
 
     def _get_movie_indexers(self) -> list[IndexerInfo]:
         return [x for x in self._get_indexers() if x.supports_movie_search]
+
+    def _get_music_indexers(self) -> list[IndexerInfo]:
+        return [x for x in self._get_indexers() if x.supports_music_search]
 
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
         log.info(f"Searching for: {query}")
@@ -173,6 +184,26 @@ class Prowlarr(GenericIndexer, TorznabMixin):
                 search_params["tvdbid"] = movie.external_id
             if indexer.supports_movie_search_imdb:
                 search_params["imdbid"] = movie.imdb_id
+
+            raw_results.extend(
+                self._newznab_search(parameters=search_params, indexer=indexer)
+            )
+
+        return raw_results
+
+    def search_music(self, query: str, artist: Artist) -> list[IndexerQueryResult]:
+        indexers = self._get_music_indexers()
+
+        raw_results = []
+
+        for indexer in indexers:
+            log.debug("Preparing music search for indexer: " + indexer.name)
+
+            search_params = {
+                "cat": "3000",
+                "q": query,
+                "t": "music",
+            }
 
             raw_results.extend(
                 self._newznab_search(parameters=search_params, indexer=indexer)

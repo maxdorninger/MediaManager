@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie
+from media_manager.music.schemas import Artist
 from media_manager.tv.schemas import Show
 
 
@@ -43,6 +44,17 @@ class GenericIndexer(ABC):
 
         :param movie: The movie to search for.
         :param query: A string representing the search query, used as a fallback for indexers that don't support TMDB/IMDB ID-based search.
+        :return: A list of IndexerQueryResult objects representing the search results.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def search_music(self, query: str, artist: Artist) -> list[IndexerQueryResult]:
+        """
+        Sends a search request to the Indexer for music and returns the results.
+
+        :param query: A string representing the search query (typically "artist album").
+        :param artist: The artist to search for.
         :return: A list of IndexerQueryResult objects representing the search results.
         """
         raise NotImplementedError()
