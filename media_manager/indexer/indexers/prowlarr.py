@@ -90,9 +90,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
                 supports_movie_search = True
                 movie_search_params = indexer["capabilities"]["movieSearchParams"]
 
-            supports_music_search = bool(
-                indexer["capabilities"].get("musicSearchParams")
-            )
+            supports_music_search = indexer["capabilities"].get("musicSearchParams") is not None
 
             indexer_info = IndexerInfo(
                 id=indexer["id"],
