@@ -1,11 +1,14 @@
 # Documentation
 
-MediaManager currently uses GitBook for documentation.
+MediaManager uses [MkDocs](https://www.mkdocs.org/) with
+the [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) theme for documentation.
 
-The files for the documentation are in the \`/docs\` directory. They are \_mostly\_ standard markdown.
+The files for the documentation are in the `/docs` directory.
 
-Unfortunately GitBook doesn't provide a way to locally preview the documentation. Instead you can submit a PR with your proposed changes and a GitBook workflow will run which will provide a link to the preview.
+To preview the documentation locally, you need to have mkdocs or Docker installed.
 
-To access the preview just open the \`Details\` link.
+## How to preview the documentation locally with docker
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+1. Run the mkdocs container in `docker-compose.dev.yaml`
+
+2. Open `http://127.0.0.1:9000/` in your browser.

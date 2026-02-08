@@ -57,8 +57,7 @@ Controls which emails receive notifications.
 
 Here's a complete example of the notifications section in your `config.toml`:
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [notifications]
     # SMTP settings for email notifications and password resets
     [notifications.smtp_config]
@@ -91,8 +90,7 @@ Here's a complete example of the notifications section in your `config.toml`:
     api_key = "your_pushover_api_key"
     user = "your_pushover_user_key"
 ```
-{% endcode %}
 
-{% hint style="info" %}
-You can enable multiple notification methods simultaneously. For example, you could have both email and Gotify notifications enabled at the same time.
-{% endhint %}
+
+!!! info
+    You can enable multiple notification methods simultaneously. For example, you could have both email and Gotify notifications enabled at the same time.

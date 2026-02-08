@@ -1,7 +1,6 @@
 # Screenshots
 
-{% hint style="info" %}
-MediaManager also supports darkmode!
-{% endhint %}
+!!! info
+    MediaManager also supports darkmode!
 
-![screenshot-dashboard.png](<.gitbook/assets/screenshot dashboard.png>) ![screenshot-tv-dashboard.png](<.gitbook/assets/screenshot tv dashboard.png>) ![screenshot-download-season.png](<.gitbook/assets/screenshot download season.png>) ![screenshot-request-season.png](<.gitbook/assets/screenshot request season.png>) ![screenshot-tv-torrents.png](<.gitbook/assets/screenshot tv torrents.png>) ![screenshot-settings.png](<.gitbook/assets/screenshot settings.png>) ![screenshot-login.png](<.gitbook/assets/screenshot login.png>)
+![screenshot-dashboard.png](<assets/assets/screenshot dashboard.png>) ![screenshot-tv-dashboard.png](<assets/assets/screenshot tv dashboard.png>) ![screenshot-download-season.png](<assets/assets/screenshot download season.png>) ![screenshot-request-season.png](<assets/assets/screenshot request season.png>) ![screenshot-tv-torrents.png](<assets/assets/screenshot tv torrents.png>) ![screenshot-settings.png](<assets/assets/screenshot settings.png>) ![screenshot-login.png](<assets/assets/screenshot login.png>)

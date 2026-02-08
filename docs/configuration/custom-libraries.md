@@ -6,9 +6,8 @@ MediaManager supports custom libraries, allowing you to add multiple folders for
 
 Custom libraries are configured in the `misc` section in the `config.toml` file. You can add as many libraries as you need.
 
-{% hint style="info" %}
-You are not limited to `/data/tv` or `/data/movies`, you can choose the entire path freely!
-{% endhint %}
+!!! info
+    You are not limited to `/data/tv` or `/data/movies`, you can choose the entire path freely!
 
 ### Movie Libraries
 

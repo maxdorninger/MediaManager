@@ -1,11 +1,9 @@
 # Nix Flakes
 
-{% hint style="note" %}
-This is a community contribution and not officially supported by the MediaManager team, but included here for convenience. 
-{% endhint %}
+!!! note
+    This is a community contribution and not officially supported by the MediaManager team, but included here for convenience. 
 
-*Please report issues with this method at the [corresponding GitHub repository](https://github.com/strangeglyph/mediamanager-nix).*
-</note>
+    *Please report issues with this method at the [corresponding GitHub repository](https://github.com/strangeglyph/mediamanager-nix).*
 
 ## Prerequisites
 
@@ -64,12 +62,11 @@ The host and port that MediaManager listens on can be set using `services.media-
 To configure MediaManager, use `services.media-manager.settings`, which follows the same structure as the MediaManager 
 `config.toml`. To provision secrets, set `services.media-manager.environmentFile` to a protected file, for example one
 provided by [agenix](https://github.com/ryantm/agenix) or [sops-nix](https://github.com/Mic92/sops-nix). 
-See [Configuration](Configuration.md#configuring-secrets) for guidance on using environment variables.
+See [Configuration](../configuration/README.md#configuring-secrets) for guidance on using environment variables.
 
 
-{% hint style="warning" %}
-  Do not place secrets in the nix store, as it is world-readable.
-{% endhint %}
+!!! warning
+    Do not place secrets in the nix store, as it is world-readable.
 
 ## Automatic Postgres Setup
 

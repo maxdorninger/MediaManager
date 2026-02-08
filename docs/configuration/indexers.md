@@ -13,9 +13,8 @@ Indexer settings are configured in the `[indexers]` section of your `config.toml
 * `timeout_seconds`\
   Timeout in seconds for requests to Prowlarr. Default is `60`.
 
-{% hint style="warning" %}
-Symptoms of timeouts are typically no search results ("No torrents found!") in conjunction with logs showing read timeouts.
-{% endhint %}
+!!! warning
+    Symptoms of timeouts are typically no search results ("No torrents found!") in conjunction with logs showing read timeouts.
 
 <details>
 
@@ -50,8 +49,7 @@ DEBUG - media_manager.indexer.utils -
 
 ## Example Configuration
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [indexers]
 [indexers.prowlarr]
 enabled = true
@@ -66,4 +64,4 @@ api_key = "your_jackett_api_key"
 indexers = ["1337x", "rarbg"]
 timeout_seconds = 60
 ```
-{% endcode %}
+

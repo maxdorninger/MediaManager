@@ -23,9 +23,8 @@ Here is an example, using these rules:
 
 If your folder structure is in the correct format, you can start importing. To do this, log in as an administrator and go to the TV/movie dashboard.
 
-{% hint style="info" %}
-After importing, MediaManager will automatically prefix the old root TV show/movie folders with a dot to mark them as "imported".
-{% endhint %}
+!!! info
+    After importing, MediaManager will automatically prefix the old root TV show/movie folders with a dot to mark them as "imported".
 
 So after importing, the directory would look like this (using the above directory structure):
 

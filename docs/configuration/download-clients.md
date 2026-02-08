@@ -19,9 +19,8 @@ qBittorrent is a popular BitTorrent client that MediaManager can integrate with 
 
 ## Transmission Settings (`[torrents.transmission]`)
 
-{% hint style="info" %}
-The downloads path in Transmission and MediaManager must be the same, i.e. the path `/data/torrents` must link to the same volume for both containers.
-{% endhint %}
+!!! info
+    The downloads path in Transmission and MediaManager must be the same, i.e. the path `/data/torrents` must link to the same volume for both containers.
 
 Transmission is a BitTorrent client that MediaManager can integrate with for downloading torrents.
 
@@ -59,8 +58,7 @@ SABnzbd is a Usenet newsreader that MediaManager can integrate with for download
 
 Here's a complete example of the download clients section in your `config.toml`:
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [torrents]
     # qBittorrent configuration
     [torrents.qbittorrent]
@@ -87,14 +85,12 @@ Here's a complete example of the download clients section in your `config.toml`:
     port = 8080
     api_key = "your_sabnzbd_api_key"
 ```
-{% endcode %}
 
 ## Docker Compose Integration
 
 When using Docker Compose, make sure your download clients are accessible from the MediaManager backend:
 
-{% code title="docker-compose.yml" %}
-```yaml
+```yaml title="docker-compose.yml"
 services:
   # MediaManager backend
   backend:
@@ -121,12 +117,9 @@ services:
       - ./data/usenet:/downloads
     # ... other configuration ...
 ```
-{% endcode %}
 
-{% hint style="warning" %}
-You should enable only one BitTorrent and only one Usenet Download Client at any time.
-{% endhint %}
+!!! warning
+    You should enable only one BitTorrent and only one Usenet Download Client at any time.
 
-{% hint style="info" %}
-Make sure the download directories in your download clients are accessible to MediaManager for proper file management and organization.
-{% endhint %}
+!!! info
+    Make sure the download directories in your download clients are accessible to MediaManager for proper file management and organization.
