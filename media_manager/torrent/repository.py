@@ -9,6 +9,11 @@ from media_manager.movies.schemas import (
 from media_manager.movies.schemas import (
     MovieFile as MovieFileSchema,
 )
+from media_manager.music.models import Album as AlbumModel
+from media_manager.music.models import AlbumFile
+from media_manager.music.models import Artist as ArtistModel
+from media_manager.music.schemas import AlbumFile as AlbumFileSchema
+from media_manager.music.schemas import Artist as ArtistSchema
 from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import Torrent as TorrentSchema
 from media_manager.torrent.schemas import TorrentId
@@ -74,6 +79,11 @@ class TorrentRepository:
             )
             self.db.execute(season_files_stmt)
 
+            album_files_stmt = delete(AlbumFile).where(
+                AlbumFile.torrent_id == torrent_id
+            )
+            self.db.execute(album_files_stmt)
+
         self.db.delete(self.db.get(Torrent, torrent_id))
 
     def get_movie_of_torrent(self, torrent_id: TorrentId) -> MovieSchema | None:
@@ -93,3 +103,22 @@ class TorrentRepository:
         stmt = select(MovieFile).where(MovieFile.torrent_id == torrent_id)
         result = self.db.execute(stmt).scalars().all()
         return [MovieFileSchema.model_validate(movie_file) for movie_file in result]
+
+    def get_artist_of_torrent(self, torrent_id: TorrentId) -> ArtistSchema | None:
+        stmt = (
+            select(ArtistModel)
+            .join(AlbumModel, ArtistModel.id == AlbumModel.artist_id)
+            .join(AlbumFile, AlbumModel.id == AlbumFile.album_id)
+            .where(AlbumFile.torrent_id == torrent_id)
+        )
+        result = self.db.execute(stmt).unique().scalar_one_or_none()
+        if result is None:
+            return None
+        return ArtistSchema.model_validate(result)
+
+    def get_album_files_of_torrent(
+        self, torrent_id: TorrentId
+    ) -> list[AlbumFileSchema]:
+        stmt = select(AlbumFile).where(AlbumFile.torrent_id == torrent_id)
+        result = self.db.execute(stmt).scalars().all()
+        return [AlbumFileSchema.model_validate(album_file) for album_file in result]

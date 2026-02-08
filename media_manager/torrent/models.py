@@ -18,3 +18,4 @@ class Torrent(Base):
 
     season_files = relationship("SeasonFile", back_populates="torrent")
     movie_files = relationship("MovieFile", back_populates="torrent")
+    album_files = relationship("AlbumFile", back_populates="torrent")

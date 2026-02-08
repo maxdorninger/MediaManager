@@ -2,6 +2,8 @@ import logging
 
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie, MovieFile
+from media_manager.music.schemas import AlbumFile
+from media_manager.music.schemas import Artist as ArtistSchema
 from media_manager.torrent.manager import DownloadManager
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.schemas import Torrent, TorrentId
@@ -111,3 +113,9 @@ class TorrentService:
 
     def get_movie_files_of_torrent(self, torrent: Torrent) -> list[MovieFile]:
         return self.torrent_repository.get_movie_files_of_torrent(torrent_id=torrent.id)
+
+    def get_artist_of_torrent(self, torrent: Torrent) -> ArtistSchema | None:
+        return self.torrent_repository.get_artist_of_torrent(torrent_id=torrent.id)
+
+    def get_album_files_of_torrent(self, torrent: Torrent) -> list[AlbumFile]:
+        return self.torrent_repository.get_album_files_of_torrent(torrent_id=torrent.id)

@@ -125,6 +125,45 @@ def get_files_for_import(
     return video_files, subtitle_files, all_files
 
 
+AUDIO_EXTENSIONS = {".flac", ".mp3", ".ogg", ".m4a", ".opus", ".wav", ".aac", ".wma", ".alac"}
+
+
+def get_audio_files_for_import(
+    torrent: Torrent | None = None, directory: Path | None = None
+) -> tuple[list[Path], list[Path]]:
+    """
+    Extracts all files from the torrent download directory, including extracting archives.
+    Returns a tuple containing: audio files and all files found in the directory.
+    """
+    if torrent:
+        log.info(f"Importing audio torrent {torrent}")
+        search_directory = get_torrent_filepath(torrent=torrent)
+    elif directory:
+        log.info(f"Importing audio files from directory {directory}")
+        search_directory = directory
+    else:
+        msg = "Either torrent or directory must be provided."
+        raise ValueError(msg)
+
+    all_files: list[Path] = list_files_recursively(path=search_directory)
+    log.debug(f"Found {len(all_files)} files downloaded by the torrent")
+    extract_archives(all_files)
+    all_files = list_files_recursively(path=search_directory)
+
+    audio_files: list[Path] = []
+    for file in all_files:
+        if file.suffix.lower() in AUDIO_EXTENSIONS:
+            audio_files.append(file)
+            log.debug(f"File is audio, it will be imported: {file}")
+        else:
+            log.debug(f"File is not audio, will not be imported: {file}")
+
+    log.info(
+        f"Found {len(all_files)} files ({len(audio_files)} audio files) for further processing."
+    )
+    return audio_files, all_files
+
+
 def get_torrent_hash(torrent: IndexerQueryResult) -> str:
     """
     Helper method to get the torrent hash from the torrent object.
@@ -221,6 +260,7 @@ def get_importable_media_directories(path: Path) -> list[Path]:
     libraries = [
         *MediaManagerConfig().misc.movie_libraries,
         *MediaManagerConfig().misc.tv_libraries,
+        *MediaManagerConfig().misc.music_libraries,
     ]
 
     library_paths = {Path(library.path).absolute() for library in libraries}
