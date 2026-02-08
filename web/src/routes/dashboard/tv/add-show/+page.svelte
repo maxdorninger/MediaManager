@@ -150,7 +150,7 @@
 		 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each data as dataItem (dataItem.external_id)}
-				<AddMediaCard result={dataItem} isShow={true} />
+				<AddMediaCard result={dataItem} mediaType="tv" />
 			{/each}
 		</div>
 	{/if}
