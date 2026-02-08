@@ -5,6 +5,7 @@ on:
       - master
     tags:
       - v*
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -24,7 +25,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.14
+          python-version: 3.x
 
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
 
