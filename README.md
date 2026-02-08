@@ -60,6 +60,7 @@ docker compose up -d
 <a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/DEBBB9/JO.png" width="80px" alt="Josh" /></a>&nbsp;&nbsp;
 <a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/11/2VeQ8sTGPhj4tiLy.jpg" width="80px" alt="PuppiestDoggo" /></a>&nbsp;&nbsp;
 <a href="https://github.com/seferino-fernandez"><img src="https://avatars.githubusercontent.com/u/5546622" width="80px" alt="Seferino" /></a>&nbsp;&nbsp;
+<a href="https://buymeacoffee.com/maxdorninger"><img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/EC9689/SY.png" width="80px" alt="syn" /></a>&nbsp;&nbsp;
 
 ## Star History
 
