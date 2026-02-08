@@ -16,6 +16,9 @@
 	let recommendedMovies: components['schemas']['MetaDataProviderSearchResult'][] = $state([]);
 	let moviesLoading = $state(true);
 
+	let recommendedArtists: components['schemas']['MetaDataProviderSearchResult'][] = $state([]);
+	let artistsLoading = $state(true);
+
 	onMount(async () => {
 		client.GET('/api/v1/tv/recommended').then((res) => {
 			recommendedShows = res.data as components['schemas']['MetaDataProviderSearchResult'][];
@@ -24,6 +27,11 @@
 		client.GET('/api/v1/movies/recommended').then((res) => {
 			recommendedMovies = res.data as components['schemas']['MetaDataProviderSearchResult'][];
 			moviesLoading = false;
+		});
+		client.GET('/api/v1/music/recommended').then((res) => {
+			recommendedArtists =
+				(res.data as components['schemas']['MetaDataProviderSearchResult'][]) ?? [];
+			artistsLoading = false;
 		});
 	});
 </script>
@@ -65,13 +73,20 @@
 		</div>
 		<div class="mx-auto">
 			<h3 class="my-4 text-center text-2xl font-semibold">Trending Shows</h3>
-			<RecommendedMediaCarousel isLoading={showsLoading} isShow={true} media={recommendedShows} />
+			<RecommendedMediaCarousel isLoading={showsLoading} mediaType="tv" media={recommendedShows} />
 
 			<h3 class="my-4 text-center text-2xl font-semibold">Trending Movies</h3>
 			<RecommendedMediaCarousel
 				isLoading={moviesLoading}
-				isShow={false}
+				mediaType="movie"
 				media={recommendedMovies}
+			/>
+
+			<h3 class="my-4 text-center text-2xl font-semibold">Trending Music</h3>
+			<RecommendedMediaCarousel
+				isLoading={artistsLoading}
+				mediaType="music"
+				media={recommendedArtists}
 			/>
 		</div>
 	</main>

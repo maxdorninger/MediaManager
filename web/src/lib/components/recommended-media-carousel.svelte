@@ -8,13 +8,19 @@
 
 	let {
 		media,
-		isShow,
+		mediaType,
 		isLoading
 	}: {
 		media: components['schemas']['MetaDataProviderSearchResult'][];
-		isShow: boolean;
+		mediaType: 'tv' | 'movie' | 'music';
 		isLoading: boolean;
 	} = $props();
+
+	const moreLinks = {
+		tv: '/dashboard/tv/add-show',
+		movie: '/dashboard/movies/add-movie',
+		music: '/dashboard/music/add-artist'
+	};
 </script>
 
 <div
@@ -27,22 +33,15 @@
 		<Skeleton class="h-[70vh] w-full" />
 	{:else}
 		{#each media.slice(0, 3) as mediaItem (mediaItem.external_id)}
-			<AddMediaCard {isShow} result={mediaItem} />
+			<AddMediaCard {mediaType} result={mediaItem} />
 		{/each}
 	{/if}
-	{#if isShow}
-		<Button class="md:col-start-2" variant="secondary" href={resolve('/dashboard/tv/add-show', {})}>
-			More recommendations
-			<ChevronRight />
-		</Button>
-	{:else}
-		<Button
-			class="md:col-start-2"
-			variant="secondary"
-			href={resolve('/dashboard/movies/add-movie', {})}
-		>
-			More recommendations
-			<ChevronRight />
-		</Button>
-	{/if}
+	<Button
+		class="md:col-start-2"
+		variant="secondary"
+		href={resolve(moreLinks[mediaType], {})}
+	>
+		More recommendations
+		<ChevronRight />
+	</Button>
 </div>

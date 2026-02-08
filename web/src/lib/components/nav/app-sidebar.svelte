@@ -6,6 +6,7 @@
 		Home,
 		Info,
 		LifeBuoy,
+		Music2,
 		Settings,
 		TvIcon
 	} from 'lucide-svelte';
@@ -58,6 +59,26 @@
 					{
 						title: 'Requests',
 						url: resolve('/dashboard/movies/requests', {})
+					}
+				]
+			},
+			{
+				title: 'Music',
+				url: resolve('/dashboard/music', {}),
+				icon: Music2,
+				isActive: true,
+				items: [
+					{
+						title: 'Add an artist',
+						url: resolve('/dashboard/music/add-artist', {})
+					},
+					{
+						title: 'Torrents',
+						url: resolve('/dashboard/music/torrents', {})
+					},
+					{
+						title: 'Requests',
+						url: resolve('/dashboard/music/requests', {})
 					}
 				]
 			}

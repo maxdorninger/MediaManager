@@ -28,6 +28,18 @@ export function getTorrentQualityString(value: number): string {
 	return qualityMap[value] || 'unknown';
 }
 
+export const audioQualityMap: { [key: number]: string } = {
+	1: 'Lossless (FLAC/ALAC)',
+	2: 'High (320kbps)',
+	3: 'Standard (192kbps)',
+	4: 'Low (128kbps)',
+	5: 'unknown'
+};
+
+export function getAudioQualityString(value: number): string {
+	return audioQualityMap[value] || 'unknown';
+}
+
 export function getTorrentStatusString(value: number): string {
 	return torrentStatusMap[value] || 'unknown';
 }

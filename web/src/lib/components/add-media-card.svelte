@@ -11,13 +11,16 @@
 	let errorMessage = $state<string | null>(null);
 	let {
 		result,
-		isShow = true
-	}: { result: components['schemas']['MetaDataProviderSearchResult']; isShow: boolean } = $props();
+		mediaType = 'tv'
+	}: {
+		result: components['schemas']['MetaDataProviderSearchResult'];
+		mediaType: 'tv' | 'movie' | 'music';
+	} = $props();
 
 	async function addMedia() {
 		loading = true;
 		let data;
-		if (isShow) {
+		if (mediaType === 'tv') {
 			const response = await client.POST('/api/v1/tv/shows', {
 				params: {
 					query: {
@@ -28,7 +31,7 @@
 				}
 			});
 			data = response.data;
-		} else {
+		} else if (mediaType === 'movie') {
 			const response = await client.POST('/api/v1/movies', {
 				params: {
 					query: {
@@ -39,19 +42,44 @@
 				}
 			});
 			data = response.data;
+		} else {
+			const response = await client.POST('/api/v1/music/artists', {
+				params: {
+					query: {
+						artist_id: String(result.external_id)
+					}
+				}
+			});
+			data = response.data;
 		}
 
-		if (isShow) {
+		if (mediaType === 'tv') {
 			await goto(resolve('/dashboard/tv/[showId]', { showId: data?.id ?? '' }), {
 				invalidateAll: true
 			});
-		} else {
+		} else if (mediaType === 'movie') {
 			await goto(resolve('/dashboard/movies/[movieId]', { movieId: data?.id ?? '' }), {
+				invalidateAll: true
+			});
+		} else {
+			await goto(resolve('/dashboard/music/[artistId]', { artistId: data?.id ?? '' }), {
 				invalidateAll: true
 			});
 		}
 		loading = false;
 	}
+
+	const labels = {
+		tv: { add: 'Add Show', exists: 'Show already exists' },
+		movie: { add: 'Add Movie', exists: 'Movie already exists' },
+		music: { add: 'Add Artist', exists: 'Artist already exists' }
+	};
+
+	const detailPaths = {
+		tv: { path: '/dashboard/tv/[showId]', param: 'showId' },
+		movie: { path: '/dashboard/movies/[movieId]', param: 'movieId' },
+		music: { path: '/dashboard/music/[artistId]', param: 'artistId' }
+	};
 </script>
 
 <Card.Root class="col-span-full flex h-full flex-col overflow-x-hidden sm:col-span-1">
@@ -85,11 +113,11 @@
 				class="w-full font-semibold"
 				variant="secondary"
 				href={resolve(
-					isShow ? '/dashboard/tv/[showId]' : '/dashboard/movies/[movieId]',
-					isShow ? { showId: result.id ?? '' } : { movieId: result.id ?? '' }
+					detailPaths[mediaType].path,
+					{ [detailPaths[mediaType].param]: result.id ?? '' }
 				)}
 			>
-				{isShow ? 'Show already exists' : 'Movie already exists'}
+				{labels[mediaType].exists}
 			</Button>
 		{:else}
 			<Button class="w-full font-semibold" disabled={loading} onclick={() => addMedia()}>
@@ -97,7 +125,7 @@
 					<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 					<span class="animate-pulse">Loading...</span>
 				{:else}
-					{`Add ${isShow ? 'Show' : 'Movie'}`}
+					{labels[mediaType].add}
 				{/if}
 			</Button>
 		{/if}

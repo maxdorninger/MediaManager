@@ -12,10 +12,15 @@
 
 	let {
 		media,
-		isShow
+		isShow,
+		isMusic = false
 	}: {
-		media: components['schemas']['PublicMovie'] | components['schemas']['PublicShow'];
+		media:
+			| components['schemas']['PublicMovie']
+			| components['schemas']['PublicShow']
+			| components['schemas']['PublicArtist'];
 		isShow: boolean;
+		isMusic?: boolean;
 	} = $props();
 	let deleteDialogOpen = $state(false);
 	let deleteFilesOnDisk = $state(false);
@@ -56,18 +61,41 @@
 			await goto(resolve('/dashboard/tv', {}), { invalidateAll: true });
 		}
 	}
+
+	async function delete_artist() {
+		const { error } = await client.DELETE('/api/v1/music/artists/{artist_id}', {
+			params: {
+				path: { artist_id: media.id! },
+				query: { delete_files_on_disk: deleteFilesOnDisk, delete_torrents: deleteTorrents }
+			}
+		});
+		if (error) {
+			toast.error('Failed to delete artist: ' + error.detail);
+		} else {
+			toast.success('Artist deleted successfully.');
+			deleteDialogOpen = false;
+			await goto(resolve('/dashboard/music', {}), { invalidateAll: true });
+		}
+	}
+
+	function getMediaName() {
+		if ('name' in media && 'year' in media) {
+			return getFullyQualifiedMediaName(media);
+		}
+		return media.name;
+	}
 </script>
 
 <AlertDialog.Root bind:open={deleteDialogOpen}>
 	<AlertDialog.Trigger class={buttonVariants({ variant: 'destructive' })}>
-		Delete {isShow ? ' Show' : ' Movie'}
+		Delete {isMusic ? ' Artist' : isShow ? ' Show' : ' Movie'}
 	</AlertDialog.Trigger>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
-			<AlertDialog.Title>Delete - {getFullyQualifiedMediaName(media)}?</AlertDialog.Title>
+			<AlertDialog.Title>Delete - {getMediaName()}?</AlertDialog.Title>
 			<AlertDialog.Description>
 				This action cannot be undone. This will permanently delete
-				<strong>{getFullyQualifiedMediaName(media)}</strong>.
+				<strong>{getMediaName()}</strong>.
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 		<div class="flex flex-col gap-3 py-4">
@@ -94,7 +122,9 @@
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action
 				onclick={() => {
-					if (isShow) {
+					if (isMusic) {
+						delete_artist();
+					} else if (isShow) {
 						delete_show();
 					} else delete_movie();
 				}}

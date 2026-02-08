@@ -15,8 +15,11 @@
 		media,
 		mediaType
 	}: {
-		media: components['schemas']['PublicShow'] | components['schemas']['PublicMovie'];
-		mediaType: 'tv' | 'movie';
+		media:
+			| components['schemas']['PublicShow']
+			| components['schemas']['PublicMovie']
+			| components['schemas']['PublicArtist'];
+		mediaType: 'tv' | 'movie' | 'music';
 	} = $props();
 
 	let open = $state(false);
@@ -29,9 +32,12 @@
 	onMount(async () => {
 		const tvLibraries = await client.GET('/api/v1/tv/shows/libraries');
 		const movieLibraries = await client.GET('/api/v1/movies/libraries');
+		const musicLibraries = await client.GET('/api/v1/music/artists/libraries');
 
 		if (mediaType === 'tv') {
 			libraries = tvLibraries.data as components['schemas']['LibraryItem'][];
+		} else if (mediaType === 'music') {
+			libraries = musicLibraries.data as components['schemas']['LibraryItem'][];
 		} else {
 			libraries = movieLibraries.data as components['schemas']['LibraryItem'][];
 		}
@@ -54,6 +60,13 @@
 			response = await client.POST('/api/v1/tv/shows/{show_id}/library', {
 				params: {
 					path: { show_id: media.id! },
+					query: { library: selectedLabel }
+				}
+			});
+		} else if (mediaType === 'music') {
+			response = await client.POST('/api/v1/music/artists/{artist_id}/library', {
+				params: {
+					path: { artist_id: media.id! },
 					query: { library: selectedLabel }
 				}
 			});
