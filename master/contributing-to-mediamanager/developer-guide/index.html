@@ -1,0 +1,2754 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="This section is for those who want to contribute to Media Manager or understand its internals.">
+      
+      
+      
+      
+        <link rel="prev" href="../../screenshots/">
+      
+      
+        <link rel="next" href="../documentation/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Developer Guide - MediaManager Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#developer-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="MediaManager Documentation" class="md-header__button md-logo" aria-label="MediaManager Documentation" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MediaManager Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Developer Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="black"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MediaManager Documentation" class="md-nav__button md-logo" aria-label="MediaManager Documentation" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    MediaManager Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../installation/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Installation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Compose
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/flakes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nix Flakes [Community]
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../importing-existing-media/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Importing existing media
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../configuration/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Configuration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/download-clients/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download Clients
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/indexers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indexers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/scoring-rulesets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoring Rulesets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/custom-libraries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Libraries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Features
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced Features
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/qbittorrent-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    qBittorrent Category
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/url-prefix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    URL Prefix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/metadata-provider-configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Provider Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/custom-port/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom port
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/follow-symlinks-in-frontend-files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Follow symlinks in frontend files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/disable-startup-ascii-art/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disable startup ascii art
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../screenshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screenshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing to MediaManager
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing to MediaManager
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#source-code-directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source Code directory structure﻿
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#special-dev-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Dev Configuration﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Special Dev Configuration﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend Variables﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend Variables﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-development-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Development Variables﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Files﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contributing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contributing﻿
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-the-development-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the Development Environment﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up the Development Environment﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recommended-vscode-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended VSCode Plugins﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommended-intellijpycharm-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Intellij/Pycharm Plugins﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommended-development-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Development Workflow﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended Development Workflow﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-supports-hot-reloading-and-what-does-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What supports hot reloading and what does not﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-the-frontend-connects-to-the-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the Frontend Connects to the Backend﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-the-full-development-environment-with-docker-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the full development environment with Docker (Recommended)﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepare-config-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prepare config files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#start-all-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start all services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-the-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access the application
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-the-backend-development-environment-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the backend development environment (Local)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up the backend development environment (Local)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clone-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clone &amp; prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-python-with-uv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install Python with uv
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create virtual environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-database-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run database migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-the-backend-development-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the backend (development mode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formatting-linting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formatting &amp; linting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-the-frontend-development-environment-local-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the frontend development environment (Local, Optional)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up the frontend development environment (Local, Optional)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clone-change-dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clone &amp; change dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-nodejs-example-using-nvm-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install Node.js (example using nvm-windows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-env-for-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create .env for frontend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-dependencies-and-run-dev-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install dependencies and run dev server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#format-lint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format &amp; lint
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-docker-development-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Docker Development Issues﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tech-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tech Stack﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tech Stack﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI/CD﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#source-code-directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source Code directory structure﻿
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#special-dev-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Dev Configuration﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Special Dev Configuration﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend Variables﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend Variables﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-development-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Development Variables﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Files﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contributing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contributing﻿
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-the-development-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the Development Environment﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up the Development Environment﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recommended-vscode-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended VSCode Plugins﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommended-intellijpycharm-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Intellij/Pycharm Plugins﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommended-development-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Development Workflow﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended Development Workflow﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-supports-hot-reloading-and-what-does-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What supports hot reloading and what does not﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-the-frontend-connects-to-the-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the Frontend Connects to the Backend﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-the-full-development-environment-with-docker-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the full development environment with Docker (Recommended)﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepare-config-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prepare config files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#start-all-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start all services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-the-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access the application
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-the-backend-development-environment-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the backend development environment (Local)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up the backend development environment (Local)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clone-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clone &amp; prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-python-with-uv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install Python with uv
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create virtual environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-database-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run database migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-the-backend-development-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the backend (development mode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formatting-linting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formatting &amp; linting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-the-frontend-development-environment-local-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up the frontend development environment (Local, Optional)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up the frontend development environment (Local, Optional)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clone-change-dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clone &amp; change dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-nodejs-example-using-nvm-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install Node.js (example using nvm-windows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-env-for-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create .env for frontend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-dependencies-and-run-dev-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install dependencies and run dev server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#format-lint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format &amp; lint
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-docker-development-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Docker Development Issues﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tech-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tech Stack﻿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tech Stack﻿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI/CD﻿
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="developer-guide">Developer Guide</h1>
+<h2 id="source-code-directory-structure">Source Code directory structure﻿</h2>
+<ul>
+<li><code>media_manager/</code>: Backend FastAPI application</li>
+<li><code>web/</code>: Frontend SvelteKit application</li>
+<li><code>docs/</code>: Documentation (MkDocs)</li>
+<li><code>metadata_relay/</code>: Metadata relay service, also FastAPI</li>
+</ul>
+<h2 id="special-dev-configuration">Special Dev Configuration﻿</h2>
+<h3 id="environment-variables">Environment Variables﻿</h3>
+<p>MediaManager uses various environment variables for configuration. In the Docker development setup (<code>docker-compose.dev.yaml</code>), most of these are automatically configured for you.</p>
+<h4 id="backend-variables">Backend Variables﻿</h4>
+<ul>
+<li><code>BASE_PATH</code>\
+  Base path for the app (for subdirectory deployments).</li>
+<li><code>PUBLIC_VERSION</code>\
+  Version string displayed in <code>/api/v1/health</code>.</li>
+<li><code>FRONTEND_FILES_DIR</code>\
+  Directory for built frontend files (e.g. <code>/app/web/build</code> in Docker).</li>
+<li><code>MEDIAMANAGER_MISC__DEVELOPMENT</code>\
+  When set to <code>TRUE</code>, enables FastAPI hot-reloading in Docker.</li>
+</ul>
+<h4 id="frontend-variables">Frontend Variables﻿</h4>
+<ul>
+<li><code>PUBLIC_API_URL</code>\
+  API URL for backend communication (auto-configured via Vite proxy in Docker).</li>
+<li><code>PUBLIC_VERSION</code>\
+  Version string displayed in the frontend UI.</li>
+<li><code>BASE_PATH</code>\
+  Base path for frontend routing (matches backend <code>BASE_PATH</code>).</li>
+</ul>
+<h4 id="docker-development-variables">Docker Development Variables﻿</h4>
+<ul>
+<li><code>DISABLE_FRONTEND_MOUNT</code>\
+  When <code>TRUE</code>, disables mounting built frontend files (allows separate frontend container).</li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>This is automatically set in <code>docker-compose.dev.yaml</code> to enable the separate frontend development container</p>
+</div>
+<h4 id="configuration-files">Configuration Files﻿</h4>
+<ul>
+<li>Backend: <code>res/config/config.toml</code> (created from <code>config.dev.toml</code>)</li>
+<li>Frontend: <code>web/.env</code> (created from <code>.env.example</code>)</li>
+</ul>
+<h2 id="contributing">Contributing﻿</h2>
+<ul>
+<li>Consider opening an issue to discuss changes before starting work</li>
+</ul>
+<h2 id="setting-up-the-development-environment">Setting up the Development Environment﻿</h2>
+<p>I use IntellijIdea with the Pycharm and Webstorm plugins to develop this, but this guide should also work with VSCode. Normally I'd recommend Intellij, but unfortunately only Intellij Ultimate has support for FastAPI and some other features.</p>
+<h3 id="recommended-vscode-plugins">Recommended VSCode Plugins﻿</h3>
+<ul>
+<li>Python</li>
+<li>Svelte for VSCode</li>
+</ul>
+<h3 id="recommended-intellijpycharm-plugins">Recommended Intellij/Pycharm Plugins﻿</h3>
+<ul>
+<li>Python</li>
+<li>Svelte</li>
+<li>Pydantic</li>
+<li>Ruff</li>
+<li>VirtualKit</li>
+</ul>
+<h3 id="recommended-development-workflow">Recommended Development Workflow﻿</h3>
+<p>The recommended way to develop MediaManager is using the fully Dockerized setup with <code>docker-compose.dev.yaml</code>. This ensures you're working in the same environment as production and makes it easy for new contributors to get started without installing Python, Node.js, or other dependencies locally.</p>
+<p>The development environment includes:</p>
+<ul>
+<li>Backend (FastAPI) with automatic hot-reloading for Python code changes</li>
+<li>Frontend (SvelteKit/Vite) with Hot Module Replacement (HMR) for instant updates</li>
+<li>Database (PostgreSQL) pre-configured and ready to use</li>
+</ul>
+<h4 id="what-supports-hot-reloading-and-what-does-not">What supports hot reloading and what does not﻿</h4>
+<ul>
+<li>Python code changes (.py files), Frontend code changes (.svelte, .ts, .css) and configuration changes (config.toml) reload automatically.</li>
+<li>Changing the backend dependencies (pyproject.toml) requires rebuilding: <code>docker compose -f docker-compose.dev.yaml build mediamanager</code></li>
+<li>Changing the frontend dependencies (package.json) requires restarting the frontend container: <code>docker compose -f docker-compose.dev.yaml restart frontend</code></li>
+<li>Database migrations: Automatically run on backend container startup</li>
+</ul>
+<p>This approach eliminates the need for container restarts during normal development and provides the best developer experience with instant feedback for code changes.</p>
+<h4 id="how-the-frontend-connects-to-the-backend">How the Frontend Connects to the Backend﻿</h4>
+<p>In the Docker development setup, the frontend and backend communicate through Vite's proxy configuration:</p>
+<ul>
+<li>Frontend runs on: <code>http://localhost:5173</code> (exposed from Docker)</li>
+<li>Backend runs on: <code>http://mediamanager:8000</code> (Docker internal network)</li>
+<li>Vite proxy: Automatically forwards all <code>/api/*</code> requests from frontend to backend</li>
+</ul>
+<p>This means when your browser makes a request to <code>http://localhost:5173/api/v1/tv/shows</code>, Vite automatically proxies it to <code>http://mediamanager:8000/api/v1/tv/shows</code>. The <code>PUBLIC_API_URL</code> environment variable is set to use this proxy, so you don't need to configure anything manually.</p>
+<h3 id="setting-up-the-full-development-environment-with-docker-recommended">Setting up the full development environment with Docker (Recommended)﻿</h3>
+<h3 id="prepare-config-files">Prepare config files</h3>
+<p>Create config directory (only needed on first run) and copy example config files:</p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>res/config<span class="w"> </span><span class="c1"># Only needed on first run</span>
+cp<span class="w"> </span>config.dev.toml<span class="w"> </span>res/config/config.toml
+cp<span class="w"> </span>web/.env.example<span class="w"> </span>web/.env
+</code></pre></div>
+<h3 id="start-all-services">Start all services</h3>
+<p>Recommended: Use make commands for easy development</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Recommended: Use make commands for easy development</span>
+make<span class="w"> </span>up
+</code></pre></div>
+<p>Alternative: Use docker compose directly (if make is not available)</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yaml<span class="w"> </span>up
+</code></pre></div>
+<h3 id="access-the-application">Access the application</h3>
+<ul>
+<li>Frontend (with HMR): http://localhost:5173</li>
+<li>Backend API: http://localhost:8000</li>
+<li>Database: localhost:5432</li>
+</ul>
+<p>The default user email is <code>admin@example.com</code> and password is <code>admin</code>, these are printed out in the logs accessible with <code>make logs</code>.</p>
+<p>Now you can edit code and see changes instantly:</p>
+<ul>
+<li>Edit Python files → Backend auto-reloads</li>
+<li>Edit Svelte/TypeScript files → Frontend HMR updates in browser</li>
+<li>Edit config.toml → Changes apply immediately</li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>Run <code>make help</code> to see all available development commands including <code>make down</code>, <code>make logs</code>, <code>make app</code> (shell into backend), and more.</p>
+</div>
+<h2 id="setting-up-the-backend-development-environment-local">Setting up the backend development environment (Local)</h2>
+<h3 id="clone-prerequisites">Clone &amp; prerequisites</h3>
+<ol>
+<li>Clone the repository</li>
+<li>cd into repo root</li>
+<li>Install <code>uv</code>: https://docs.astral.sh/uv/getting-started/installation/</li>
+<li>Verify installation:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>--version
+</code></pre></div>
+<h3 id="install-python-with-uv">Install Python with uv</h3>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>python<span class="w"> </span>install<span class="w"> </span><span class="m">3</span>.13
+</code></pre></div>
+<h3 id="create-virtual-environment">Create virtual environment</h3>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>venv<span class="w"> </span>--python<span class="w"> </span><span class="m">3</span>.13
+</code></pre></div>
+<h3 id="install-dependencies">Install dependencies</h3>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync
+</code></pre></div>
+<h3 id="run-database-migrations">Run database migrations</h3>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>alembic<span class="w"> </span>upgrade<span class="w"> </span>head
+</code></pre></div>
+<h3 id="run-the-backend-development-mode">Run the backend (development mode)</h3>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>fastapi<span class="w"> </span>run<span class="w"> </span>media_manager/main.py<span class="w"> </span>--reload<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+</code></pre></div>
+<h3 id="formatting-linting">Formatting &amp; linting</h3>
+<ul>
+<li>Format code:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ruff<span class="w"> </span>format<span class="w"> </span>.
+</code></pre></div>
+<ul>
+<li>Lint code:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ruff<span class="w"> </span>check<span class="w"> </span>.
+</code></pre></div>
+<h2 id="setting-up-the-frontend-development-environment-local-optional">Setting up the frontend development environment (Local, Optional)</h2>
+<h3 id="clone-change-dir">Clone &amp; change dir</h3>
+<ol>
+<li>Clone the repository</li>
+<li>cd into repo root</li>
+<li>cd into <code>web</code> directory</li>
+</ol>
+<h3 id="install-nodejs-example-using-nvm-windows">Install Node.js (example using nvm-windows)</h3>
+<p>I used nvm-windows:</p>
+<div class="highlight"><pre><span></span><code><span class="n">nvm</span> <span class="n">install</span> <span class="n">24</span><span class="p">.</span><span class="n">1</span><span class="p">.</span><span class="n">0</span>
+<span class="n">nvm</span> <span class="n">use</span> <span class="n">24</span><span class="p">.</span><span class="n">1</span><span class="p">.</span><span class="n">0</span>
+</code></pre></div>
+<p>If using PowerShell you may need:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">Set-ExecutionPolicy</span> <span class="n">-ExecutionPolicy</span> <span class="n">RemoteSigned</span> <span class="n">-Scope</span> <span class="n">CurrentUser</span>
+</code></pre></div>
+<h3 id="create-env-for-frontend">Create .env for frontend</h3>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+</code></pre></div>
+<p>Update <code>PUBLIC_API_URL</code> if your backend is not at <code>http://localhost:8000</code></p>
+<h3 id="install-dependencies-and-run-dev-server">Install dependencies and run dev server</h3>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install
+npm<span class="w"> </span>run<span class="w"> </span>dev
+</code></pre></div>
+<h3 id="format-lint">Format &amp; lint</h3>
+<ul>
+<li>Format:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>run<span class="w"> </span>format
+</code></pre></div>
+<ul>
+<li>Lint:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>run<span class="w"> </span>lint
+</code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>If running frontend locally, make sure to add <code>http://localhost:5173</code> to the <code>cors_urls</code> in your backend config file.</p>
+</div>
+<h2 id="troubleshooting">Troubleshooting﻿</h2>
+<h3 id="common-docker-development-issues">Common Docker Development Issues﻿</h3>
+<details>
+
+<summary>Port already in use errors</summary>
+
+* Check if ports 5173, 8000, or 5432 are already in use:
+  * macOS/Linux: `lsof -i :5173`
+  * Windows: `netstat -ano | findstr :5173`
+* Stop conflicting services or change ports in `docker-compose.dev.yaml`
+
+</details>
+
+<details>
+
+<summary>Container not showing code changes</summary>
+
+* Verify volume mounts are correct in `docker-compose.dev.yaml`
+* For backend: Ensure `./media_manager:/app/media_manager` is mounted
+* For frontend: Ensure `./web:/app` is mounted
+* On Windows: Check that file watching is enabled in Docker Desktop settings
+
+</details>
+
+<details>
+
+<summary>Frontend changes not updating</summary>
+
+* Check that the frontend container is running: `make ps` or `docker compose -f docker-compose.dev.yaml ps`
+* Verify Vite's file watching is working (should see HMR updates in browser console)
+* Try restarting the frontend container:
+
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yaml<span class="w"> </span>restart<span class="w"> </span>frontend
+</code></pre></div>
+
+</details>
+
+<details>
+
+<summary>Backend changes not reloading</summary>
+
+* Verify `MEDIAMANAGER_MISC__DEVELOPMENT=TRUE` is set in `docker-compose.dev.yaml`
+* Check backend logs:
+
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>logs<span class="w"> </span><span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;--follow mediamanager&quot;</span>
+<span class="c1"># or</span>
+docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yaml<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>mediamanager
+</code></pre></div>
+
+* If dependencies changed, rebuild:
+
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yaml<span class="w"> </span>build<span class="w"> </span>mediamanager
+</code></pre></div>
+
+</details>
+
+<details>
+
+<summary>Database migration issues</summary>
+
+* Migrations run automatically on container startup
+* To run manually:
+
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>app
+uv<span class="w"> </span>run<span class="w"> </span>alembic<span class="w"> </span>upgrade<span class="w"> </span>head
+</code></pre></div>
+
+* To create new migration:
+
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>app
+uv<span class="w"> </span>run<span class="w"> </span>alembic<span class="w"> </span>revision<span class="w"> </span>--autogenerate<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;description&quot;</span>
+</code></pre></div>
+
+</details>
+
+<details>
+
+<summary>Viewing logs</summary>
+
+* All services: `make logs`
+* Follow logs in real-time: `make logs ARGS="--follow"`
+* Specific service: `make logs ARGS="mediamanager --follow"`
+
+</details>
+
+<details>
+
+<summary>Interactive debugging (shell into containers)</summary>
+
+* Shell into backend:
+
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>app
+<span class="c1"># or</span>
+docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yaml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>mediamanager<span class="w"> </span>bash
+</code></pre></div>
+
+* Shell into frontend:
+
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>frontend
+<span class="c1"># or</span>
+docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yaml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>frontend<span class="w"> </span>sh
+</code></pre></div>
+
+* Once inside, you can run commands like `uv run alembic upgrade head`, `npm install`, etc.
+
+</details>
+
+<details>
+
+<summary>Volume permission issues (Linux)</summary>
+
+* Docker containers may create files as root, causing permission issues, which can make the login page fail to show up.
+
+Solution:
+
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>chown<span class="w"> </span>-R<span class="w"> </span><span class="nv">$USER</span>:<span class="nv">$USER</span><span class="w"> </span>res/
+</code></pre></div>
+
+* Alternatively: Run containers with your user ID or use Docker's `user:` directive (may fail in some setups).
+
+</details>
+
+<details>
+
+<summary>Complete reset</summary>
+
+If all else fails, you can completely reset your development environment:
+
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>down
+docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yaml<span class="w"> </span>down<span class="w"> </span>-v<span class="w">  </span><span class="c1"># Remove volumes</span>
+docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yaml<span class="w"> </span>build<span class="w"> </span>--no-cache<span class="w">  </span><span class="c1"># Rebuild without cache</span>
+make<span class="w"> </span>up
+</code></pre></div>
+
+</details>
+
+<h2 id="tech-stack">Tech Stack﻿</h2>
+<h3 id="backend">Backend﻿</h3>
+<ul>
+<li>Python</li>
+<li>FastAPI</li>
+<li>SQLAlchemy</li>
+<li>Pydantic and Pydantic-Settings</li>
+<li>Alembic</li>
+</ul>
+<h3 id="frontend">Frontend﻿</h3>
+<ul>
+<li>TypeScript</li>
+<li>SvelteKit</li>
+<li>Tailwind CSS</li>
+<li>shadcn-svelte</li>
+<li>openapi-ts</li>
+<li>openapi-fetch</li>
+</ul>
+<h3 id="cicd">CI/CD﻿</h3>
+<ul>
+<li>GitHub Actions</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../screenshots/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Screenshots">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Screenshots
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../documentation/" class="md-footer__link md-footer__link--next" aria-label="Next: Documentation">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Documentation
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "content.code.copy", "navigation.footer"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
