@@ -56,6 +56,15 @@ services:
       - ./web:/app
     depends_on:
       - mediamanager
+  docs:
+    image: squidfunk/mkdocs-material:9
+    container_name: mediamanager-docs
+    volumes:
+      - .:/docs
+    ports:
+      - "9000:9000"
+    command: serve -w /docs -a 0.0.0.0:9000
+
 
 # ----------------------------
 # Additional services can be uncommented and configured as needed
@@ -130,17 +139,17 @@ services:
 #    ports:
 #      - 8081:8080
 #    restart: unless-stopped
-#  jackett:
-#    image: lscr.io/linuxserver/jackett:latest
-#    container_name: jackett
-#    environment:
-#      - PUID=1000
-#      - PGID=1000
-#      - TZ=Etc/UTC
-#      - AUTO_UPDATE=true
-#    volumes:
-#      - ./res/jackett/data:/config
-#      - ./res/jackett/torrents:/downloads
-#    ports:
-#      - 9117:9117
-#    restart: unless-stopped
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - AUTO_UPDATE=true
+    volumes:
+      - ./res/jackett/data:/config
+      - ./res/jackett/torrents:/downloads
+    ports:
+      - 9117:9117
+    restart: unless-stopped

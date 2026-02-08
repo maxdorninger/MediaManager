@@ -6,23 +6,20 @@ In order to run it on a prefixed path, like `maxdorninger.github.io/media`, the 
 
 In short, clone the repository, then run:
 
-{% code title="Build Docker image" %}
-```none
+```none title="Build Docker image"
 docker build \
   --build-arg BASE_PATH=/media \
   --build-arg VERSION=my-custom-version \
   -t MediaManager:my-custom-version \
   -f Dockerfile .
 ```
-{% endcode %}
 
 You also need to set the `BASE_PATH` environment variable at runtime in `docker-compose.yaml`:
 
 * `BASE_PATH`\
   Base path prefix MediaManager is served under. Example: `/media`. This must match the `BASE_PATH` build arg.
 
-{% code title="docker-compose.yaml (excerpt)" %}
-```yaml
+```yaml title="docker-compose.yaml (excerpt)"
 services:
   mediamanager:
     image: MediaManager:my-custom-version
@@ -32,10 +29,8 @@ services:
       BASE_PATH: /media
       ...
 ```
-{% endcode %}
 
-{% hint style="info" %}
-Make sure to include the base path in the `frontend_url` field in the config file. See [Backend](../configuration/backend.md).
-{% endhint %}
+!!! info
+    Make sure to include the base path in the `frontend_url` field in the config file. See [Backend](../configuration/backend.md).
 
 Finally, ensure that whatever reverse proxy you're using leaves the incoming path unchanged; that is, you should not strip the `/media` from `/media/web/`.

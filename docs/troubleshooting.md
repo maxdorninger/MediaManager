@@ -1,8 +1,7 @@
 # Troubleshooting
 
-{% hint style="info" %}
-Always check the container and browser logs for more specific error messages
-{% endhint %}
+!!! info
+    Always check the container and browser logs for more specific error messages
 
 <details>
 
@@ -60,10 +59,9 @@ Switch to advanced tabTry switching to the advanced tab when searching for torre
 #### Possible Fixes:
 
 * [Unable to pull image from GitHub Container Registry (Stack Overflow)](https://stackoverflow.com/questions/74656167/unable-to-pull-image-from-github-container-registry-ghcr)
-* [Try pulling the image from Quay.io](/broken/pages/09241b2fcda5d337e8878e4052f4634fe2902d10#mediamanager-and-metadatarelay-docker-images)
+* [Try pulling the image from Quay.io](installation/docker.md#docker-images)
 
 </details>
 
-{% hint style="info" %}
-If it still doesn't work, [please open an Issue.](https://github.com/maxdorninger/MediaManager/issues) It is possible that a bug is causing the issue.
-{% endhint %}
+!!! info
+    If it still doesn't work, [please open an Issue.](https://github.com/maxdorninger/MediaManager/issues) It is possible that a bug is causing the issue.

@@ -20,13 +20,11 @@ All authentication settings are configured in the `[auth]` section of your `conf
 * `email_password_resets`\
   Enables password resets via email. Default is `false`.
 
-{% hint style="info" %}
-To use email password resets, you must also configure SMTP settings in the `[notifications.smtp_config]` section.
-{% endhint %}
+!!! info
+    To use email password resets, you must also configure SMTP settings in the `[notifications.smtp_config]` section.
 
-{% hint style="info" %}
-When setting up MediaManager for the first time, you should add your email to `admin_emails` in the `[auth]` config section. MediaManager will then use this email instead of the default admin email. Your account will automatically be created as an admin account, allowing you to manage other users, media and settings.
-{% endhint %}
+!!! info
+    When setting up MediaManager for the first time, you should add your email to `admin_emails` in the `[auth]` config section. MediaManager will then use this email instead of the default admin email. Your account will automatically be created as an admin account, allowing you to manage other users, media and settings.
 
 ## OpenID Connect Settings (`[auth.openid_connect]`)
 
@@ -53,22 +51,20 @@ The OpenID server will likely require a redirect URI. This URL will usually look
 {MEDIAMANAGER_URL}/api/v1/auth/oauth/callback
 ```
 
-{% hint style="warning" %}
-It is very important that you set the correct callback URI, otherwise it won't work!
-{% endhint %}
+!!! warning
+    It is very important that you set the correct callback URI, otherwise it won't work!
 
 #### Authentik Example
 
 Here is an example configuration for the OpenID Connect provider for Authentik.
 
-![authentik-redirect-url-example](<../.gitbook/assets/authentik redirect url example.png>)
+![authentik-redirect-url-example](<../assets/assets/authentik redirect url example.png>)
 
 ## Example Configuration
 
 Here's a complete example of the authentication section in your `config.toml`:
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [auth]
 token_secret = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6"
 session_lifetime = 604800  # 1 week
@@ -82,4 +78,4 @@ client_secret = "your-secret-key-here"
 configuration_endpoint = "https://auth.example.com/.well-known/openid-configuration"
 name = "Authentik"
 ```
-{% endcode %}
+

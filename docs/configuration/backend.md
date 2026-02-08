@@ -26,8 +26,7 @@ description: >-
 
 Here's a complete example of the general settings section in your `config.toml`:
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [misc]
 
 # REQUIRED: Change this to match your actual frontend domain.
@@ -38,8 +37,6 @@ cors_urls = ["http://localhost:8000"]
 # Optional: Development mode (set to true for debugging)
 development = false
 ```
-{% endcode %}
 
-{% hint style="info" %}
-The `frontend_url` is the most important setting to configure correctly. Make sure it matches your actual deployment URLs.
-{% endhint %}
+!!! info
+    The `frontend_url` is the most important setting to configure correctly. Make sure it matches your actual deployment URLs.

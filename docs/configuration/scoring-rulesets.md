@@ -17,9 +17,8 @@ Rules define how MediaManager scores releases based on their titles or indexer f
 * Reject releases that do not meet certain criteria (e.g., non-freeleech releases).
 * and more.
 
-{% hint style="info" %}
-The keywords and flags are compared case-insensitively.
-{% endhint %}
+!!! info
+    The keywords and flags are compared case-insensitively.
 
 ### Title Rules
 
@@ -38,8 +37,7 @@ Each title rule consists of:
 
 Examples for Title Rules
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [[indexers.title_scoring_rules]]
 name = "prefer_h265"
 keywords = ["h265", "hevc", "x265"]
@@ -52,7 +50,6 @@ keywords = ["cam", "ts"]
 score_modifier = -10000
 negate = false
 ```
-{% endcode %}
 
 * The first rule increases the score for releases containing "h265", "hevc", or "x265".
 * The second rule heavily penalizes releases containing "cam" or "ts".
@@ -76,8 +73,7 @@ Each indexer flag rule consists of:
 
 Examples for Indexer Flag Rules
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [[indexers.indexer_flag_scoring_rules]]
 name = "reject_non_freeleech"
 flags = ["freeleech", "freeleech75"]
@@ -90,7 +86,6 @@ flags = ["nuked"]
 score_modifier = -10000
 negate = false
 ```
-{% endcode %}
 
 * The first rule penalizes releases that do not have the "freeleech" or "freeleech75" flag.
 * The second rule penalizes releases that are marked as "nuked".
@@ -99,8 +94,7 @@ If `negate` is set to `true`, the `score_modifier` is applied only if none of th
 
 ## Example
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [[indexers.scoring_rule_sets]]
 name = "default"
 libraries = ["ALL_TV", "ALL_MOVIES"]
@@ -111,7 +105,6 @@ name = "strict_quality"
 libraries = ["ALL_MOVIES"]
 rule_names = ["prefer_h265", "avoid_cam", "reject_non_freeleech"]
 ```
-{% endcode %}
 
 ## Libraries
 
@@ -127,9 +120,8 @@ You can use special library names in your rulesets:
 
 This allows you to set global rules for all TV or movie content, or provide fallback rules for uncategorized media.
 
-{% hint style="info" %}
-You don't need to create lots of libraries with different directories, multiple libraries can share the same directory. You can set multiple (unlimited) libraries to the default directory `/data/movies` or `/data/tv` and use different rulesets with them.
-{% endhint %}
+!!! info
+    You don't need to create lots of libraries with different directories, multiple libraries can share the same directory. You can set multiple (unlimited) libraries to the default directory `/data/movies` or `/data/tv` and use different rulesets with them.
 
 ## Relation to Sonarr/Radarr Profiles
 

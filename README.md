@@ -1,7 +1,7 @@
 <br />
 <div align="center">
   <a href="https://maximilian-dorninger.gitbook.io/mediamanager">
-    <img src="https://github.com/maxdorninger/MediaManager/blob/master/web/static/logo.svg" alt="Logo" width="260" height="260">
+    <img src="https://raw.githubusercontent.com/maxdorninger/MediaManager/refs/heads/master/web/static/logo.svg" alt="Logo" width="260" height="260">
   </a>
 
 <h3 align="center">MediaManager</h3>
