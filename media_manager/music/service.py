@@ -161,6 +161,30 @@ class MusicService:
     def get_all_artists(self) -> list[Artist]:
         return self.music_repository.get_artists()
 
+    def get_popular_artists(
+        self, metadata_provider: AbstractMusicMetadataProvider
+    ) -> list[MetaDataProviderSearchResult]:
+        results = metadata_provider.search_artist()
+        return [
+            result
+            for result in results
+            if not self._check_if_artist_exists(
+                external_id=str(result.external_id),
+                metadata_provider=metadata_provider.name,
+            )
+        ]
+
+    def _check_if_artist_exists(
+        self, external_id: str, metadata_provider: str
+    ) -> bool:
+        try:
+            self.music_repository.get_artist_by_external_id(
+                external_id=external_id, metadata_provider=metadata_provider
+            )
+            return True
+        except NotFoundError:
+            return False
+
     def search_for_artist(
         self, query: str, metadata_provider: AbstractMusicMetadataProvider
     ) -> list[MetaDataProviderSearchResult]:

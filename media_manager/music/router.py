@@ -60,6 +60,20 @@ def search_for_artist(
     )
 
 
+@router.get(
+    "/recommended",
+    dependencies=[Depends(current_active_user)],
+)
+def get_popular_artists(
+    music_service: music_service_dep,
+    metadata_provider: music_metadata_provider_dep,
+) -> list[MetaDataProviderSearchResult]:
+    """
+    Get a list of trending/popular artists from ListenBrainz.
+    """
+    return music_service.get_popular_artists(metadata_provider=metadata_provider)
+
+
 # -----------------------------------------------------------------------------
 # ARTISTS
 # -----------------------------------------------------------------------------

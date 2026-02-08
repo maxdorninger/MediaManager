@@ -52,6 +52,7 @@ class MusicRepository:
                 raise NotFoundError(msg)
             return ArtistSchema.model_validate(result)
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception(f"Database error while retrieving artist {artist_id}")
             raise
 
@@ -71,6 +72,7 @@ class MusicRepository:
                 raise NotFoundError(msg)
             return ArtistSchema.model_validate(result)
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception(
                 f"Database error while retrieving artist by external_id {external_id}"
             )
@@ -84,6 +86,7 @@ class MusicRepository:
             results = self.db.execute(stmt).scalars().unique().all()
             return [ArtistSchema.model_validate(artist) for artist in results]
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception("Database error while retrieving all artists")
             raise
 
@@ -210,6 +213,7 @@ class MusicRepository:
                 raise NotFoundError(msg)
             return AlbumSchema.model_validate(result)
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception(f"Database error while retrieving album {album_id}")
             raise
 
@@ -291,6 +295,7 @@ class MusicRepository:
                 )
             return rich_results
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception("Database error while retrieving album requests")
             raise
 
@@ -302,6 +307,7 @@ class MusicRepository:
                 raise NotFoundError(msg)
             return AlbumRequestSchema.model_validate(request)
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception(f"Database error retrieving album request {album_request_id}")
             raise
 
@@ -344,6 +350,7 @@ class MusicRepository:
             results = self.db.execute(stmt).scalars().all()
             return [AlbumFileSchema.model_validate(af) for af in results]
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception(
                 f"Database error retrieving album files for album_id {album_id}"
             )
@@ -378,6 +385,7 @@ class MusicRepository:
                 )
                 formatted_results.append(album_torrent)
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception(
                 f"Database error retrieving torrents for artist_id {artist_id}"
             )
@@ -398,6 +406,7 @@ class MusicRepository:
             results = self.db.execute(stmt).scalars().unique().all()
             return [ArtistSchema.model_validate(artist) for artist in results]
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception("Database error retrieving all artists with torrents")
             raise
 
@@ -415,6 +424,7 @@ class MusicRepository:
                 return None
             return ArtistSchema.model_validate(result)
         except SQLAlchemyError:
+            self.db.rollback()
             log.exception(
                 f"Database error retrieving artist by torrent_id {torrent_id}"
             )
