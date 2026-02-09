@@ -3,6 +3,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 import media_manager.database
+from media_manager.books.service import (
+    auto_download_all_approved_book_requests,
+    import_all_book_torrents,
+    update_all_book_authors_metadata,
+)
 from media_manager.config import MediaManagerConfig
 from media_manager.movies.service import (
     auto_download_all_approved_movie_requests,
@@ -84,6 +89,24 @@ def setup_scheduler(config: MediaManagerConfig) -> BackgroundScheduler:
         update_all_artists_metadata,
         weekly_trigger,
         id="update_all_artists_metadata",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        import_all_book_torrents,
+        every_15_minutes_trigger,
+        id="import_all_book_torrents",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        auto_download_all_approved_book_requests,
+        daily_trigger,
+        id="auto_download_all_approved_book_requests",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        update_all_book_authors_metadata,
+        weekly_trigger,
+        id="update_all_book_authors_metadata",
         replace_existing=True,
     )
     scheduler.start()
