@@ -15,7 +15,12 @@ class MusicBrainzConfig(BaseSettings):
     enabled: bool = True
 
 
+class OpenLibraryConfig(BaseSettings):
+    enabled: bool = True
+
+
 class MetadataProviderConfig(BaseSettings):
     tvdb: TvdbConfig = TvdbConfig()
     tmdb: TmdbConfig = TmdbConfig()
     musicbrainz: MusicBrainzConfig = MusicBrainzConfig()
+    openlibrary: OpenLibraryConfig = OpenLibraryConfig()
