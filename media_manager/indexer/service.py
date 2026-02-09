@@ -6,6 +6,7 @@ from media_manager.indexer.indexers.jackett import Jackett
 from media_manager.indexer.indexers.prowlarr import Prowlarr
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
+from media_manager.books.schemas import Author
 from media_manager.movies.schemas import Movie
 from media_manager.music.schemas import Artist
 from media_manager.torrent.utils import remove_special_chars_and_parentheses
@@ -113,6 +114,28 @@ class IndexerService:
             except Exception:
                 log.exception(
                     f"Indexer {indexer.__class__.__name__} failed for music search '{query}'"
+                )
+
+        for result in results:
+            self.repository.save_result(result=result)
+
+        return results
+
+    def search_book(
+        self, author: Author, book_name: str, search_query_override: str | None = None
+    ) -> list[IndexerQueryResult]:
+        query = search_query_override or f"{author.name} {book_name}"
+        query = remove_special_chars_and_parentheses(query)
+
+        results = []
+        for indexer in self.indexers:
+            try:
+                indexer_results = indexer.search_book(query=query, author=author)
+                if indexer_results:
+                    results.extend(indexer_results)
+            except Exception:
+                log.exception(
+                    f"Indexer {indexer.__class__.__name__} failed for book search '{query}'"
                 )
 
         for result in results:

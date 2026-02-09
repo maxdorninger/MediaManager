@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from requests import Response, Session
 
+from media_manager.books.schemas import Author
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
@@ -31,6 +32,7 @@ class IndexerInfo:
     supports_movie_search_tvdb: bool
 
     supports_music_search: bool
+    supports_book_search: bool
 
 
 class Prowlarr(GenericIndexer, TorznabMixin):
@@ -91,6 +93,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
                 movie_search_params = indexer["capabilities"]["movieSearchParams"]
 
             supports_music_search = indexer["capabilities"].get("musicSearchParams") is not None
+            supports_book_search = indexer["capabilities"].get("bookSearchParams") is not None
 
             indexer_info = IndexerInfo(
                 id=indexer["id"],
@@ -105,6 +108,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
                 supports_movie_search_imdb="imdbId" in movie_search_params,
                 supports_movie_search_tvdb="tvdbId" in movie_search_params,
                 supports_music_search=supports_music_search,
+                supports_book_search=supports_book_search,
             )
             indexer_info_list.append(indexer_info)
         return indexer_info_list
@@ -117,6 +121,9 @@ class Prowlarr(GenericIndexer, TorznabMixin):
 
     def _get_music_indexers(self) -> list[IndexerInfo]:
         return [x for x in self._get_indexers() if x.supports_music_search]
+
+    def _get_book_indexers(self) -> list[IndexerInfo]:
+        return [x for x in self._get_indexers() if x.supports_book_search]
 
     def search(self, query: str, is_tv: bool) -> list[IndexerQueryResult]:
         log.info(f"Searching for: {query}")
@@ -201,6 +208,43 @@ class Prowlarr(GenericIndexer, TorznabMixin):
                 "cat": "3000",
                 "q": query,
                 "t": "music",
+            }
+
+            raw_results.extend(
+                self._newznab_search(parameters=search_params, indexer=indexer)
+            )
+
+        return raw_results
+
+    def search_book(self, query: str, author: Author) -> list[IndexerQueryResult]:
+        raw_results = []
+
+        # Search book-capable indexers with t=book
+        book_indexers = self._get_book_indexers()
+        for indexer in book_indexers:
+            log.debug("Preparing book search for indexer: " + indexer.name)
+
+            search_params = {
+                "q": query,
+                "t": "book",
+            }
+
+            raw_results.extend(
+                self._newznab_search(parameters=search_params, indexer=indexer)
+            )
+
+        # Also do a generic text search across all indexers to catch results
+        # from indexers that don't advertise book search capability
+        book_indexer_ids = {i.id for i in book_indexers}
+        all_indexers = self._get_indexers()
+        for indexer in all_indexers:
+            if indexer.id in book_indexer_ids:
+                continue
+            log.debug("Preparing generic book search for indexer: " + indexer.name)
+
+            search_params = {
+                "q": query,
+                "t": "search",
             }
 
             raw_results.extend(

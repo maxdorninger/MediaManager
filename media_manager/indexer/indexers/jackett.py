@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 import requests
 
+from media_manager.books.schemas import Author
 from media_manager.config import MediaManagerConfig
 from media_manager.indexer.indexers.generic import GenericIndexer
 from media_manager.indexer.indexers.torznab_mixin import TorznabMixin
@@ -33,6 +34,7 @@ class IndexerInfo:
     supports_movie_search_tvdb: bool
 
     supports_music_search: bool
+    supports_book_search: bool
 
 
 class Jackett(GenericIndexer, TorznabMixin):
@@ -94,6 +96,7 @@ class Jackett(GenericIndexer, TorznabMixin):
         tv_search = xml_tree.find("./*/tv-search")
         movie_search = xml_tree.find("./*/movie-search")
         music_search = xml_tree.find("./*/music-search")
+        book_search = xml_tree.find("./*/book-search")
         log.debug(tv_search.attrib if tv_search is not None else "no tv-search")
         log.debug(movie_search.attrib if movie_search is not None else "no movie-search")
 
@@ -107,6 +110,9 @@ class Jackett(GenericIndexer, TorznabMixin):
         )
         music_search_available = (music_search is not None) and (
             music_search.attrib.get("available") == "yes"
+        )
+        book_search_available = (book_search is not None) and (
+            book_search.attrib.get("available") == "yes"
         )
 
         if tv_search_available:
@@ -129,6 +135,7 @@ class Jackett(GenericIndexer, TorznabMixin):
             supports_movie_search_tmdb="tmdbid" in movie_search_capabilities,
             supports_movie_search_tvdb="tvdbid" in movie_search_capabilities,
             supports_music_search=music_search_available,
+            supports_book_search=book_search_available,
         )
 
     def __get_optimal_query_parameters(
@@ -173,6 +180,13 @@ class Jackett(GenericIndexer, TorznabMixin):
                 raise RuntimeError(msg)
             query_params["q"] = params["q"]
             query_params["cat"] = "3000"
+        if params["t"] == "book":
+            if not search_capabilities.supports_book_search:
+                msg = f"Indexer {indexer} does not support Book search"
+                raise RuntimeError(msg)
+            query_params["q"] = params["q"]
+        if params["t"] == "search":
+            query_params["q"] = params["q"]
         return query_params
 
     def get_torrents_by_indexer(
@@ -228,3 +242,20 @@ class Jackett(GenericIndexer, TorznabMixin):
             "q": query,
         }
         return self.__search_jackett(params=params)
+
+    def search_book(self, query: str, author: Author) -> list[IndexerQueryResult]:
+        log.debug(f"Searching for book: {query}")
+        # Search with t=book for book-capable indexers
+        book_params = {
+            "t": "book",
+            "q": query,
+        }
+        results = self.__search_jackett(params=book_params)
+        # Also do a generic text search to catch results from indexers
+        # that don't advertise book search capability
+        generic_params = {
+            "t": "search",
+            "q": query,
+        }
+        results.extend(self.__search_jackett(params=generic_params))
+        return results

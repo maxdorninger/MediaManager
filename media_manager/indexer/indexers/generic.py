@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from media_manager.books.schemas import Author
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie
 from media_manager.music.schemas import Artist
@@ -55,6 +56,17 @@ class GenericIndexer(ABC):
 
         :param query: A string representing the search query (typically "artist album").
         :param artist: The artist to search for.
+        :return: A list of IndexerQueryResult objects representing the search results.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def search_book(self, query: str, author: Author) -> list[IndexerQueryResult]:
+        """
+        Sends a search request to the Indexer for books and returns the results.
+
+        :param query: A string representing the search query (typically "author book").
+        :param author: The author to search for.
         :return: A list of IndexerQueryResult objects representing the search results.
         """
         raise NotImplementedError()
