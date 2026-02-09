@@ -19,7 +19,7 @@
 			| components['schemas']['PublicShow']
 			| components['schemas']['PublicMovie']
 			| components['schemas']['PublicArtist'];
-		mediaType: 'tv' | 'movie' | 'music';
+		mediaType: 'tv' | 'movie' | 'music' | 'books';
 	} = $props();
 
 	let open = $state(false);
@@ -33,11 +33,14 @@
 		const tvLibraries = await client.GET('/api/v1/tv/shows/libraries');
 		const movieLibraries = await client.GET('/api/v1/movies/libraries');
 		const musicLibraries = await client.GET('/api/v1/music/artists/libraries');
+		const booksLibraries = await client.GET('/api/v1/books/authors/libraries');
 
 		if (mediaType === 'tv') {
 			libraries = tvLibraries.data as components['schemas']['LibraryItem'][];
 		} else if (mediaType === 'music') {
 			libraries = musicLibraries.data as components['schemas']['LibraryItem'][];
+		} else if (mediaType === 'books') {
+			libraries = booksLibraries.data as components['schemas']['LibraryItem'][];
 		} else {
 			libraries = movieLibraries.data as components['schemas']['LibraryItem'][];
 		}
@@ -67,6 +70,13 @@
 			response = await client.POST('/api/v1/music/artists/{artist_id}/library', {
 				params: {
 					path: { artist_id: media.id! },
+					query: { library: selectedLabel }
+				}
+			});
+		} else if (mediaType === 'books') {
+			response = await client.POST('/api/v1/books/authors/{author_id}/library', {
+				params: {
+					path: { author_id: media.id! },
 					query: { library: selectedLabel }
 				}
 			});

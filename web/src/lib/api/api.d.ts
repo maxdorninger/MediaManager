@@ -1340,6 +1340,310 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/books/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search For Author
+         * @description Search for an author on the configured book metadata provider.
+         */
+        get: operations["search_for_author_api_v1_books_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/recommended": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Popular Authors
+         * @description Get a list of trending/popular authors from OpenLibrary.
+         */
+        get: operations["get_popular_authors_api_v1_books_recommended_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/authors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get All Authors
+         * @description Get all authors in the library.
+         */
+        get: operations["get_all_authors_api_v1_books_authors_get"];
+        put?: never;
+        /**
+         * Add An Author
+         * @description Add a new author to the library.
+         */
+        post: operations["add_an_author_api_v1_books_authors_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/authors/torrents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get All Authors With Torrents
+         * @description Get all authors that are associated with torrents.
+         */
+        get: operations["get_all_authors_with_torrents_api_v1_books_authors_torrents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/authors/libraries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Available Libraries
+         * @description Get available book libraries from configuration.
+         */
+        get: operations["get_available_libraries_api_v1_books_authors_libraries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/books/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get All Book Requests
+         * @description Get all book requests.
+         */
+        get: operations["get_all_book_requests_api_v1_books_books_requests_get"];
+        put?: never;
+        /**
+         * Create Book Request
+         * @description Create a new book request.
+         */
+        post: operations["create_book_request_api_v1_books_books_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/books/requests/{book_request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Book Request
+         * @description Update an existing book request.
+         */
+        put: operations["update_book_request_api_v1_books_books_requests__book_request_id__put"];
+        post?: never;
+        /**
+         * Delete Book Request
+         * @description Delete a book request.
+         */
+        delete: operations["delete_book_request_api_v1_books_books_requests__book_request_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Authorize Book Request
+         * @description Authorize or de-authorize a book request.
+         */
+        patch: operations["authorize_book_request_api_v1_books_books_requests__book_request_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/books/authors/{author_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Author By Id
+         * @description Get details for a specific author.
+         */
+        get: operations["get_author_by_id_api_v1_books_authors__author_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete An Author
+         * @description Delete an author from the library.
+         */
+        delete: operations["delete_an_author_api_v1_books_authors__author_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/authors/{author_id}/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Update Author Metadata
+         * @description Refresh metadata for an author from the metadata provider.
+         */
+        post: operations["update_author_metadata_api_v1_books_authors__author_id__metadata_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/authors/{author_id}/library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Library
+         * @description Set the library path for an author.
+         */
+        post: operations["set_library_api_v1_books_authors__author_id__library_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/authors/{author_id}/torrents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Torrents For Author
+         * @description Get torrents associated with an author.
+         */
+        get: operations["get_torrents_for_author_api_v1_books_authors__author_id__torrents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/books/{book_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Book By Id
+         * @description Get details for a specific book.
+         */
+        get: operations["get_book_by_id_api_v1_books_books__book_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/books/{book_id}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Book Files
+         * @description Get files associated with a specific book.
+         */
+        get: operations["get_book_files_api_v1_books_books__book_id__files_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/books/torrents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Torrents For Book
+         * @description Search for torrents for a specific book.
+         */
+        get: operations["search_torrents_for_book_api_v1_books_torrents_get"];
+        put?: never;
+        /**
+         * Download A Torrent
+         * @description Download a torrent for a specific book.
+         */
+        post: operations["download_a_torrent_api_v1_books_torrents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notification": {
         parameters: {
             query?: never;
@@ -1579,6 +1883,29 @@ export interface components {
             /** Oauth Providers */
             oauth_providers: string[];
         };
+        /** Author */
+        Author: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /** Name */
+            name: string;
+            /** Overview */
+            overview: string;
+            /** External Id */
+            external_id: string;
+            /** Metadata Provider */
+            metadata_provider: string;
+            /**
+             * Library
+             * @default Default
+             */
+            library: string;
+            /** Books */
+            books: components["schemas"]["Book"][];
+        };
         /** BearerResponse */
         BearerResponse: {
             /** Access Token */
@@ -1662,6 +1989,60 @@ export interface components {
             /** Token */
             token: string;
         };
+        /** Book */
+        Book: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /** External Id */
+            external_id: string;
+            /** Name */
+            name: string;
+            /** Year */
+            year: number | null;
+            /** @default ebook */
+            format: components["schemas"]["BookFormat"];
+            /** Isbn */
+            isbn?: string | null;
+            /** Publisher */
+            publisher?: string | null;
+            /** Page Count */
+            page_count?: number | null;
+        };
+        /**
+         * BookFormat
+         * @enum {string}
+         */
+        BookFormat: "ebook" | "audiobook";
+        /** BookRequest */
+        BookRequest: {
+            min_quality: components["schemas"]["Quality"];
+            wanted_quality: components["schemas"]["Quality"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /**
+             * Book Id
+             * Format: uuid
+             */
+            book_id: string;
+            requested_by?: components["schemas"]["UserRead"] | null;
+            /**
+             * Authorized
+             * @default false
+             */
+            authorized: boolean;
+            authorized_by?: components["schemas"]["UserRead"] | null;
+        };
+        /** BookRequestBase */
+        BookRequestBase: {
+            min_quality: components["schemas"]["Quality"];
+            wanted_quality: components["schemas"]["Quality"];
+        };
         /** CreateAlbumRequest */
         CreateAlbumRequest: {
             min_quality: components["schemas"]["Quality"];
@@ -1671,6 +2052,16 @@ export interface components {
              * Format: uuid
              */
             album_id: string;
+        };
+        /** CreateBookRequest */
+        CreateBookRequest: {
+            min_quality: components["schemas"]["Quality"];
+            wanted_quality: components["schemas"]["Quality"];
+            /**
+             * Book Id
+             * Format: uuid
+             */
+            book_id: string;
         };
         /** CreateMovieRequest */
         CreateMovieRequest: {
@@ -1956,6 +2347,70 @@ export interface components {
             /** Albums */
             albums: components["schemas"]["PublicAlbum"][];
         };
+        /** PublicAuthor */
+        PublicAuthor: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Overview */
+            overview: string;
+            /** External Id */
+            external_id: string;
+            /** Metadata Provider */
+            metadata_provider: string;
+            /** Library */
+            library: string;
+            /** Books */
+            books: components["schemas"]["PublicBook"][];
+        };
+        /** PublicBook */
+        PublicBook: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** External Id */
+            external_id: string;
+            /** Name */
+            name: string;
+            /** Year */
+            year: number | null;
+            format: components["schemas"]["BookFormat"];
+            /** Isbn */
+            isbn?: string | null;
+            /** Publisher */
+            publisher?: string | null;
+            /** Page Count */
+            page_count?: number | null;
+            /**
+             * Downloaded
+             * @default false
+             */
+            downloaded: boolean;
+        };
+        /** PublicBookFile */
+        PublicBookFile: {
+            /**
+             * Book Id
+             * Format: uuid
+             */
+            book_id: string;
+            quality: components["schemas"]["Quality"];
+            /** Torrent Id */
+            torrent_id: string | null;
+            /** File Path Suffix */
+            file_path_suffix: string;
+            /**
+             * Downloaded
+             * @default false
+             */
+            downloaded: boolean;
+        };
         /** PublicMovie */
         PublicMovie: {
             /**
@@ -2144,6 +2599,62 @@ export interface components {
             metadata_provider: string;
             /** Torrents */
             torrents: components["schemas"]["RichAlbumTorrent"][];
+        };
+        /** RichAuthorTorrent */
+        RichAuthorTorrent: {
+            /**
+             * Author Id
+             * Format: uuid
+             */
+            author_id: string;
+            /** Name */
+            name: string;
+            /** Metadata Provider */
+            metadata_provider: string;
+            /** Torrents */
+            torrents: components["schemas"]["RichBookTorrent"][];
+        };
+        /** RichBookRequest */
+        RichBookRequest: {
+            min_quality: components["schemas"]["Quality"];
+            wanted_quality: components["schemas"]["Quality"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /**
+             * Book Id
+             * Format: uuid
+             */
+            book_id: string;
+            requested_by?: components["schemas"]["UserRead"] | null;
+            /**
+             * Authorized
+             * @default false
+             */
+            authorized: boolean;
+            authorized_by?: components["schemas"]["UserRead"] | null;
+            author: components["schemas"]["Author"];
+            book: components["schemas"]["Book"];
+        };
+        /** RichBookTorrent */
+        RichBookTorrent: {
+            /**
+             * Torrent Id
+             * Format: uuid
+             */
+            torrent_id: string;
+            /** Torrent Title */
+            torrent_title: string;
+            status: components["schemas"]["TorrentStatus"];
+            quality: components["schemas"]["Quality"];
+            /** Imported */
+            imported: boolean;
+            /** Usenet */
+            usenet: boolean;
+            /** File Path Suffix */
+            file_path_suffix: string;
         };
         /** RichMovieRequest */
         RichMovieRequest: {
@@ -5153,6 +5664,603 @@ export interface operations {
                 public_indexer_result_id: string;
                 artist_id: string;
                 album_id: string;
+                override_file_path_suffix?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Torrent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_for_author_api_v1_books_search_get: {
+        parameters: {
+            query: {
+                query: string;
+                metadata_provider?: "openlibrary";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetaDataProviderSearchResult"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_popular_authors_api_v1_books_recommended_get: {
+        parameters: {
+            query?: {
+                metadata_provider?: "openlibrary";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetaDataProviderSearchResult"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_all_authors_api_v1_books_authors_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Author"][];
+                };
+            };
+        };
+    };
+    add_an_author_api_v1_books_authors_post: {
+        parameters: {
+            query: {
+                author_id: string;
+                metadata_provider?: "openlibrary";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully created author */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Author"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_all_authors_with_torrents_api_v1_books_authors_torrents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RichAuthorTorrent"][];
+                };
+            };
+        };
+    };
+    get_available_libraries_api_v1_books_authors_libraries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryItem"][];
+                };
+            };
+        };
+    };
+    get_all_book_requests_api_v1_books_books_requests_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RichBookRequest"][];
+                };
+            };
+        };
+    };
+    create_book_request_api_v1_books_books_requests_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBookRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_book_request_api_v1_books_books_requests__book_request_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookRequestBase"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_book_request_api_v1_books_books_requests__book_request_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                book_request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    authorize_book_request_api_v1_books_books_requests__book_request_id__patch: {
+        parameters: {
+            query?: {
+                authorized_status?: boolean;
+            };
+            header?: never;
+            path: {
+                book_request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_author_by_id_api_v1_books_authors__author_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the author */
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicAuthor"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_an_author_api_v1_books_authors__author_id__delete: {
+        parameters: {
+            query?: {
+                delete_files_on_disk?: boolean;
+                delete_torrents?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description The ID of the author */
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_author_metadata_api_v1_books_authors__author_id__metadata_post: {
+        parameters: {
+            query?: {
+                metadata_provider?: "openlibrary";
+            };
+            header?: never;
+            path: {
+                /** @description The ID of the author */
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicAuthor"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_library_api_v1_books_authors__author_id__library_post: {
+        parameters: {
+            query: {
+                library: string;
+            };
+            header?: never;
+            path: {
+                /** @description The ID of the author */
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_torrents_for_author_api_v1_books_authors__author_id__torrents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the author */
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RichAuthorTorrent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_book_by_id_api_v1_books_books__book_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the book */
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Book"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_book_files_api_v1_books_books__book_id__files_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the book */
+                book_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicBookFile"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_torrents_for_book_api_v1_books_torrents_get: {
+        parameters: {
+            query: {
+                author_id: string;
+                book_name: string;
+                search_query_override?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IndexerQueryResult"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_a_torrent_api_v1_books_torrents_post: {
+        parameters: {
+            query: {
+                public_indexer_result_id: string;
+                author_id: string;
+                book_id: string;
                 override_file_path_suffix?: string;
             };
             header?: never;

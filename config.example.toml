@@ -14,6 +14,7 @@ image_directory = "/data/images"
 tv_directory = "/data/tv"
 movie_directory = "/data/movies"
 music_directory = "/data/music"
+books_directory = "/data/books"
 torrent_directory = "/data/torrents" # this is where MediaManager will search for the downloaded torrents and usenet files
 
 # you probaly don't need to change this
@@ -33,6 +34,10 @@ path = "/data/movies/documentary"  # Change this to match your actual movies loc
 [[misc.music_libraries]]
 name = "FLAC"
 path = "/data/music/flac"  # Change this to match your actual music location
+
+[[misc.books_libraries]]
+name = "Ebooks"
+path = "/data/books/ebooks"  # Change this to match your actual books location
 
 [database]
 host = "db"
@@ -177,4 +182,7 @@ default_language = "en"
 tvdb_relay_url = "https://metadata-relay.dorninger.co/tvdb"
 
 [metadata.musicbrainz]
+enabled = true
+
+[metadata.openlibrary]
 enabled = true

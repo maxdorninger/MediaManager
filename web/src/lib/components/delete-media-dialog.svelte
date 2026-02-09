@@ -13,14 +13,17 @@
 	let {
 		media,
 		isShow,
-		isMusic = false
+		isMusic = false,
+		isBooks = false
 	}: {
 		media:
 			| components['schemas']['PublicMovie']
 			| components['schemas']['PublicShow']
-			| components['schemas']['PublicArtist'];
+			| components['schemas']['PublicArtist']
+			| components['schemas']['PublicAuthor'];
 		isShow: boolean;
 		isMusic?: boolean;
+		isBooks?: boolean;
 	} = $props();
 	let deleteDialogOpen = $state(false);
 	let deleteFilesOnDisk = $state(false);
@@ -78,6 +81,22 @@
 		}
 	}
 
+	async function delete_author() {
+		const { error } = await client.DELETE('/api/v1/books/authors/{author_id}', {
+			params: {
+				path: { author_id: media.id! },
+				query: { delete_files_on_disk: deleteFilesOnDisk, delete_torrents: deleteTorrents }
+			}
+		});
+		if (error) {
+			toast.error('Failed to delete author: ' + error.detail);
+		} else {
+			toast.success('Author deleted successfully.');
+			deleteDialogOpen = false;
+			await goto(resolve('/dashboard/books', {}), { invalidateAll: true });
+		}
+	}
+
 	function getMediaName() {
 		if ('name' in media && 'year' in media) {
 			return getFullyQualifiedMediaName(media);
@@ -88,7 +107,7 @@
 
 <AlertDialog.Root bind:open={deleteDialogOpen}>
 	<AlertDialog.Trigger class={buttonVariants({ variant: 'destructive' })}>
-		Delete {isMusic ? ' Artist' : isShow ? ' Show' : ' Movie'}
+		Delete {isBooks ? ' Author' : isMusic ? ' Artist' : isShow ? ' Show' : ' Movie'}
 	</AlertDialog.Trigger>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
@@ -122,7 +141,9 @@
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action
 				onclick={() => {
-					if (isMusic) {
+					if (isBooks) {
+						delete_author();
+					} else if (isMusic) {
 						delete_artist();
 					} else if (isShow) {
 						delete_show();

@@ -14,7 +14,7 @@
 		mediaType = 'tv'
 	}: {
 		result: components['schemas']['MetaDataProviderSearchResult'];
-		mediaType: 'tv' | 'movie' | 'music';
+		mediaType: 'tv' | 'movie' | 'music' | 'books';
 	} = $props();
 
 	async function addMedia() {
@@ -42,6 +42,15 @@
 				}
 			});
 			data = response.data;
+		} else if (mediaType === 'books') {
+			const response = await client.POST('/api/v1/books/authors', {
+				params: {
+					query: {
+						author_id: String(result.external_id)
+					}
+				}
+			});
+			data = response.data;
 		} else {
 			const response = await client.POST('/api/v1/music/artists', {
 				params: {
@@ -61,6 +70,10 @@
 			await goto(resolve('/dashboard/movies/[movieId]', { movieId: data?.id ?? '' }), {
 				invalidateAll: true
 			});
+		} else if (mediaType === 'books') {
+			await goto(resolve('/dashboard/books/[authorId]', { authorId: data?.id ?? '' }), {
+				invalidateAll: true
+			});
 		} else {
 			await goto(resolve('/dashboard/music/[artistId]', { artistId: data?.id ?? '' }), {
 				invalidateAll: true
@@ -72,13 +85,15 @@
 	const labels = {
 		tv: { add: 'Add Show', exists: 'Show already exists' },
 		movie: { add: 'Add Movie', exists: 'Movie already exists' },
-		music: { add: 'Add Artist', exists: 'Artist already exists' }
+		music: { add: 'Add Artist', exists: 'Artist already exists' },
+		books: { add: 'Add Author', exists: 'Author already exists' }
 	};
 
 	const detailPaths = {
 		tv: { path: '/dashboard/tv/[showId]', param: 'showId' },
 		movie: { path: '/dashboard/movies/[movieId]', param: 'movieId' },
-		music: { path: '/dashboard/music/[artistId]', param: 'artistId' }
+		music: { path: '/dashboard/music/[artistId]', param: 'artistId' },
+		books: { path: '/dashboard/books/[authorId]', param: 'authorId' }
 	};
 </script>
 
@@ -112,10 +127,9 @@
 			<Button
 				class="w-full font-semibold"
 				variant="secondary"
-				href={resolve(
-					detailPaths[mediaType].path,
-					{ [detailPaths[mediaType].param]: result.id ?? '' }
-				)}
+				href={resolve(detailPaths[mediaType].path, {
+					[detailPaths[mediaType].param]: result.id ?? ''
+				})}
 			>
 				{labels[mediaType].exists}
 			</Button>

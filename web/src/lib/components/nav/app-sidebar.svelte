@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	import {
 		Bell,
+		BookOpen,
 		CircleDollarSign,
 		Clapperboard,
 		Home,
@@ -79,6 +80,26 @@
 					{
 						title: 'Requests',
 						url: resolve('/dashboard/music/requests', {})
+					}
+				]
+			},
+			{
+				title: 'Books',
+				url: resolve('/dashboard/books', {}),
+				icon: BookOpen,
+				isActive: true,
+				items: [
+					{
+						title: 'Add an author',
+						url: resolve('/dashboard/books/add-author', {})
+					},
+					{
+						title: 'Torrents',
+						url: resolve('/dashboard/books/torrents', {})
+					},
+					{
+						title: 'Requests',
+						url: resolve('/dashboard/books/requests', {})
 					}
 				]
 			}
