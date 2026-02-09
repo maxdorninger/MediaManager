@@ -1,5 +1,7 @@
 import logging
 
+from media_manager.books.schemas import Author as BookAuthorSchema
+from media_manager.books.schemas import BookFile
 from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie, MovieFile
 from media_manager.music.schemas import AlbumFile
@@ -119,3 +121,9 @@ class TorrentService:
 
     def get_album_files_of_torrent(self, torrent: Torrent) -> list[AlbumFile]:
         return self.torrent_repository.get_album_files_of_torrent(torrent_id=torrent.id)
+
+    def get_book_author_of_torrent(self, torrent: Torrent) -> BookAuthorSchema | None:
+        return self.torrent_repository.get_book_author_of_torrent(torrent_id=torrent.id)
+
+    def get_book_files_of_torrent(self, torrent: Torrent) -> list[BookFile]:
+        return self.torrent_repository.get_book_files_of_torrent(torrent_id=torrent.id)

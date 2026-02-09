@@ -1,5 +1,10 @@
 from sqlalchemy import delete, select
 
+from media_manager.books.models import Author as BookAuthorModel
+from media_manager.books.models import Book as BookModel
+from media_manager.books.models import BookFile
+from media_manager.books.schemas import Author as BookAuthorSchema
+from media_manager.books.schemas import BookFile as BookFileSchema
 from media_manager.database import DbSessionDependency
 from media_manager.exceptions import NotFoundError
 from media_manager.movies.models import Movie, MovieFile
@@ -84,6 +89,11 @@ class TorrentRepository:
             )
             self.db.execute(album_files_stmt)
 
+            book_files_stmt = delete(BookFile).where(
+                BookFile.torrent_id == torrent_id
+            )
+            self.db.execute(book_files_stmt)
+
         self.db.delete(self.db.get(Torrent, torrent_id))
 
     def get_movie_of_torrent(self, torrent_id: TorrentId) -> MovieSchema | None:
@@ -122,3 +132,22 @@ class TorrentRepository:
         stmt = select(AlbumFile).where(AlbumFile.torrent_id == torrent_id)
         result = self.db.execute(stmt).scalars().all()
         return [AlbumFileSchema.model_validate(album_file) for album_file in result]
+
+    def get_book_author_of_torrent(self, torrent_id: TorrentId) -> BookAuthorSchema | None:
+        stmt = (
+            select(BookAuthorModel)
+            .join(BookModel, BookAuthorModel.id == BookModel.author_id)
+            .join(BookFile, BookModel.id == BookFile.book_id)
+            .where(BookFile.torrent_id == torrent_id)
+        )
+        result = self.db.execute(stmt).unique().scalar_one_or_none()
+        if result is None:
+            return None
+        return BookAuthorSchema.model_validate(result)
+
+    def get_book_files_of_torrent(
+        self, torrent_id: TorrentId
+    ) -> list[BookFileSchema]:
+        stmt = select(BookFile).where(BookFile.torrent_id == torrent_id)
+        result = self.db.execute(stmt).scalars().all()
+        return [BookFileSchema.model_validate(book_file) for book_file in result]

@@ -127,6 +127,8 @@ def get_files_for_import(
 
 AUDIO_EXTENSIONS = {".flac", ".mp3", ".ogg", ".m4a", ".opus", ".wav", ".aac", ".wma", ".alac"}
 
+BOOK_EXTENSIONS = {".epub", ".mobi", ".pdf", ".azw3", ".fb2", ".cbz", ".cbr", ".m4b"}
+
 
 def get_audio_files_for_import(
     torrent: Torrent | None = None, directory: Path | None = None
@@ -162,6 +164,42 @@ def get_audio_files_for_import(
         f"Found {len(all_files)} files ({len(audio_files)} audio files) for further processing."
     )
     return audio_files, all_files
+
+
+def get_book_files_for_import(
+    torrent: Torrent | None = None, directory: Path | None = None
+) -> tuple[list[Path], list[Path]]:
+    """
+    Extracts all files from the torrent download directory, including extracting archives.
+    Returns a tuple containing: book files and all files found in the directory.
+    """
+    if torrent:
+        log.info(f"Importing book torrent {torrent}")
+        search_directory = get_torrent_filepath(torrent=torrent)
+    elif directory:
+        log.info(f"Importing book files from directory {directory}")
+        search_directory = directory
+    else:
+        msg = "Either torrent or directory must be provided."
+        raise ValueError(msg)
+
+    all_files: list[Path] = list_files_recursively(path=search_directory)
+    log.debug(f"Found {len(all_files)} files downloaded by the torrent")
+    extract_archives(all_files)
+    all_files = list_files_recursively(path=search_directory)
+
+    book_files: list[Path] = []
+    for file in all_files:
+        if file.suffix.lower() in BOOK_EXTENSIONS:
+            book_files.append(file)
+            log.debug(f"File is a book, it will be imported: {file}")
+        else:
+            log.debug(f"File is not a book, will not be imported: {file}")
+
+    log.info(
+        f"Found {len(all_files)} files ({len(book_files)} book files) for further processing."
+    )
+    return book_files, all_files
 
 
 def get_torrent_hash(torrent: IndexerQueryResult) -> str:
@@ -261,6 +299,7 @@ def get_importable_media_directories(path: Path) -> list[Path]:
         *MediaManagerConfig().misc.movie_libraries,
         *MediaManagerConfig().misc.tv_libraries,
         *MediaManagerConfig().misc.music_libraries,
+        *MediaManagerConfig().misc.books_libraries,
     ]
 
     library_paths = {Path(library.path).absolute() for library in libraries}
