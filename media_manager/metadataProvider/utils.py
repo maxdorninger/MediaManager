@@ -15,7 +15,7 @@ def download_poster_image(storage_path: Path, poster_url: str, uuid: UUID) -> bo
     res = requests.get(poster_url, stream=True, timeout=60)
 
     if res.status_code == 200:
-        image_file_path = storage_path.joinpath(str(uuid)).with_suffix("jpg")
+        image_file_path = storage_path.joinpath(str(uuid)).with_suffix(".jpg")
         image_file_path.write_bytes(res.content)
 
         original_image = Image.open(image_file_path)
