@@ -1,3 +1,4 @@
+exclude = ["alembic/versions"]
 namespace-packages = ["alembic", "metadata_relay"]
 
 [format]
@@ -5,7 +6,7 @@ line-ending = "lf"
 quote-style = "double"
 
 [lint]
-# to be enabled: BLE, C90, CPY, D, DOC, DTZ, FBT, G, PL, RSE, SLF, SIM, TC, TRY, UP
+# to be enabled: BLE, C90, CPY, D, DOC, DTZ, FBT, G, PL, RSE, SLF, SIM, TC
 extend-select = [
     "A", "ARG", "ASYNC", "ANN",
     "B",
@@ -20,7 +21,8 @@ extend-select = [
     "Q",
     "RET", "RUF",
     "S", "SLOT",
-    "T10", "T20", "TD", "TID",
+    "T10", "T20", "TD", "TID", "TRY",
+    "UP",
     "W",
     "YTT"
 ]
@@ -32,6 +34,10 @@ ignore = [
     "E501",
     # currently a bug?! with providers and depends
     "FAST003",
+    # I'm not sure if we want to lint them
+    "FIX002",
+    # let's decide if we want this
+    "TD002", "TD003",
 ]
 
 [lint.flake8-bugbear]

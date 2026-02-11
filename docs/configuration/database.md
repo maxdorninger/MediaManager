@@ -19,8 +19,7 @@ Database settings are configured in the `[database]` section of your `config.tom
 
 Here's a complete example of the database section in your `config.toml`:
 
-{% code title="config.toml" %}
-```toml
+```toml title="config.toml"
 [database]
 host = "db"
 port = 5432
@@ -28,8 +27,6 @@ user = "MediaManager"
 password = "your_secure_password"
 dbname = "MediaManager"
 ```
-{% endcode %}
 
-{% hint style="info" %}
-In docker-compose deployments the container name is simultaneously its hostname, so you can use "db" or "postgres" as host.
-{% endhint %}
+!!! info
+    In docker-compose deployments the container name is simultaneously its hostname, so you can use "db" or "postgres" as host.

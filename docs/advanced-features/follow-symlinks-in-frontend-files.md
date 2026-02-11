@@ -7,8 +7,6 @@ MediaManager can be configured to follow symlinks when serving frontend files. T
 * `FRONTEND_FOLLOW_SYMLINKS`\
   Set this environment variable to `true` to follow symlinks when serving frontend files. Default is `false`.
 
-{% code title=".env" %}
-```bash
+```bash title=".env"
 FRONTEND_FOLLOW_SYMLINKS=true
 ```
-{% endcode %}

@@ -18,7 +18,7 @@ Generally, if you have any questions or need help on the implementation side of 
 just ask in the issue, or in a draft PR.
 
 Also, see the contribution guide in the docs for information on how to setup the dev environment:
-https://maximilian-dorninger.gitbook.io/mediamanager
+https://maxdorninger.github.io/MediaManager/
 
 ### For something that is a one or two line fix:
 

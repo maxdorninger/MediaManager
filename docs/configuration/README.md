@@ -6,9 +6,8 @@ Frontend settings are configured through environment variables in your `docker-c
 
 ## Configuration File Location
 
-{% hint style="warning" %}
-Note that MediaManager may need to be restarted for changes in the config file to take effect.
-{% endhint %}
+!!! warning
+    Note that MediaManager may need to be restarted for changes in the config file to take effect.
 
 Your `config.toml` file should be in the directory that's mounted to `/app/config/config.toml` inside the container:
 
@@ -66,6 +65,5 @@ MEDIAMANAGER_AUTH__OPENID_CONNECT__CLIENT_SECRET = "your_client_secret_from_prov
 
 So for every config "level", you basically have to take the name of the value and prepend it with the section names in uppercase with 2 underscores as delimiters and `MEDIAMANAGER_` as the prefix.
 
-{% hint style="warning" %}
-Note that not every env variable starts with `MEDIAMANAGER_`; this prefix only applies to env variables which replace/overwrite values in the config file. Variables like the `CONFIG_DIR` env variable must not be prefixed.
-{% endhint %}
+!!! warning
+    Note that not every env variable starts with `MEDIAMANAGER_`; this prefix only applies to env variables which replace/overwrite values in the config file. Variables like the `CONFIG_DIR` env variable must not be prefixed.

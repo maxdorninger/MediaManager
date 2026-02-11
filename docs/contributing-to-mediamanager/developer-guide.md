@@ -10,7 +10,7 @@ description: >-
 
 * `media_manager/`: Backend FastAPI application
 * `web/`: Frontend SvelteKit application
-* `docs/`: Documentation (GitBook)
+* `docs/`: Documentation (MkDocs)
 * `metadata_relay/`: Metadata relay service, also FastAPI
 
 ## Special Dev Configuration﻿
@@ -44,9 +44,8 @@ MediaManager uses various environment variables for configuration. In the Docker
 * `DISABLE_FRONTEND_MOUNT`\
   When `TRUE`, disables mounting built frontend files (allows separate frontend container).
 
-{% hint style="info" %}
-This is automatically set in `docker-compose.dev.yaml` to enable the separate frontend development container
-{% endhint %}
+!!! info
+    This is automatically set in `docker-compose.dev.yaml` to enable the separate frontend development container
 
 #### Configuration Files﻿
 
@@ -105,10 +104,9 @@ This means when your browser makes a request to `http://localhost:5173/api/v1/tv
 
 ### Setting up the full development environment with Docker (Recommended)﻿
 
-This is the easiest and recommended way to get started. Everything runs in Docker with hot-reloading enabled.
 
-{% stepper %}
-{% step %}
+
+
 ### Prepare config files
 
 Create config directory (only needed on first run) and copy example config files:
@@ -118,9 +116,9 @@ mkdir -p res/config # Only needed on first run
 cp config.dev.toml res/config/config.toml
 cp web/.env.example web/.env
 ```
-{% endstep %}
 
-{% step %}
+
+
 ### Start all services
 
 Recommended: Use make commands for easy development
@@ -135,9 +133,9 @@ Alternative: Use docker compose directly (if make is not available)
 ```bash
 docker compose -f docker-compose.dev.yaml up
 ```
-{% endstep %}
 
-{% step %}
+
+
 ### Access the application
 
 * Frontend (with HMR): http://localhost:5173
@@ -151,12 +149,10 @@ Now you can edit code and see changes instantly:
 * Edit Python files → Backend auto-reloads
 * Edit Svelte/TypeScript files → Frontend HMR updates in browser
 * Edit config.toml → Changes apply immediately
-{% endstep %}
-{% endstepper %}
 
-{% hint style="info" %}
-Run `make help` to see all available development commands including `make down`, `make logs`, `make app` (shell into backend), and more.
-{% endhint %}
+
+!!! info
+    Run `make help` to see all available development commands including `make down`, `make logs`, `make app` (shell into backend), and more.
 
 ## Setting up the backend development environment (Local)
 
@@ -217,18 +213,17 @@ ruff check .
 
 ## Setting up the frontend development environment (Local, Optional)
 
-Using the Docker setup above is recommended. This section is for those who prefer to run the frontend locally outside of Docker.
 
-{% stepper %}
-{% step %}
+
+
 ### Clone & change dir
 
 1. Clone the repository
 2. cd into repo root
 3. cd into `web` directory
-{% endstep %}
 
-{% step %}
+
+
 ### Install Node.js (example using nvm-windows)
 
 I used nvm-windows:
@@ -243,9 +238,9 @@ If using PowerShell you may need:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
-{% endstep %}
 
-{% step %}
+
+
 ### Create .env for frontend
 
 ```bash
@@ -253,18 +248,18 @@ cp .env.example .env
 ```
 
 Update `PUBLIC_API_URL` if your backend is not at `http://localhost:8000`
-{% endstep %}
 
-{% step %}
+
+
 ### Install dependencies and run dev server
 
 ```bash
 npm install
 npm run dev
 ```
-{% endstep %}
 
-{% step %}
+
+
 ### Format & lint
 
 * Format:
@@ -278,12 +273,10 @@ npm run format
 ```bash
 npm run lint
 ```
-{% endstep %}
-{% endstepper %}
 
-{% hint style="info" %}
-If running frontend locally, make sure to add `http://localhost:5173` to the `cors_urls` in your backend config file.
-{% endhint %}
+
+!!! info
+    If running frontend locally, make sure to add `http://localhost:5173` to the `cors_urls` in your backend config file.
 
 ## Troubleshooting﻿
 

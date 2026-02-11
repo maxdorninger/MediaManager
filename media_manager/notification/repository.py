@@ -6,6 +6,7 @@ from sqlalchemy.exc import (
     SQLAlchemyError,
 )
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import false
 
 from media_manager.exceptions import ConflictError, NotFoundError
 from media_manager.notification.models import Notification
@@ -36,7 +37,7 @@ class NotificationRepository:
         try:
             stmt = (
                 select(Notification)
-                .where(Notification.read == False)  # noqa: E712
+                .where(Notification.read == false())
                 .order_by(Notification.timestamp.desc())
             )
             results = self.db.execute(stmt).scalars().all()
@@ -44,8 +45,8 @@ class NotificationRepository:
                 NotificationSchema.model_validate(notification)
                 for notification in results
             ]
-        except SQLAlchemyError as e:
-            log.error(f"Database error while retrieving unread notifications: {e}")
+        except SQLAlchemyError:
+            log.exception("Database error while retrieving unread notifications")
             raise
 
     def get_all_notifications(self) -> list[NotificationSchema]:
@@ -56,8 +57,8 @@ class NotificationRepository:
                 NotificationSchema.model_validate(notification)
                 for notification in results
             ]
-        except SQLAlchemyError as e:
-            log.error(f"Database error while retrieving notifications: {e}")
+        except SQLAlchemyError:
+            log.exception("Database error while retrieving notifications")
             raise
 
     def save_notification(self, notification: NotificationSchema) -> None:
@@ -71,8 +72,8 @@ class NotificationRepository:
                 )
             )
             self.db.commit()
-        except IntegrityError as e:
-            log.error(f"Could not save notification, Error: {e}")
+        except IntegrityError:
+            log.exception("Could not save notification")
             msg = f"Notification with id {notification.id} already exists."
             raise ConflictError(msg) from None
         return

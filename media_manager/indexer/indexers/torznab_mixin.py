@@ -1,6 +1,6 @@
 import logging
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime
 from email.utils import parsedate_to_datetime
 
 from media_manager.indexer.schemas import IndexerQueryResult
@@ -39,7 +39,7 @@ class TorznabMixin:
                             posted_date = parsedate_to_datetime(
                                 attribute.attrib["value"]
                             )
-                            now = datetime.now(timezone.utc)
+                            now = datetime.now(datetime.UTC)
                             age = int((now - posted_date).total_seconds())
                     else:
                         if attribute.attrib["name"] == "seeders":
@@ -61,15 +61,19 @@ class TorznabMixin:
                             if upload_volume_factor == 2:
                                 flags.append("doubleupload")
 
-                if not item.find("size") or item.find("size").text is None:
-                    log.warning(
-                        f"Torznab item {item.find('title').text} has no size, skipping."
-                    )
+                title = item.find("title").text
+                size_str = item.find("size")
+                if size_str is None or size_str.text is None:
+                    log.warning(f"Torznab item {title} has no size, skipping.")
                     continue
-                size = int(item.find("size").text or "0")
+                try:
+                    size = int(size_str.text or "0")
+                except ValueError:
+                    log.warning(f"Torznab item {title} has invalid size, skipping.")
+                    continue
 
                 result = IndexerQueryResult(
-                    title=item.find("title").text or "unknown",
+                    title=title or "unknown",
                     download_url=str(item.find("enclosure").attrib["url"]),
                     seeders=seeders,
                     flags=flags,
@@ -79,6 +83,6 @@ class TorznabMixin:
                     indexer=indexer_name,
                 )
                 result_list.append(result)
-            except Exception as e:
-                log.error(f"1 Torznab search result errored with error: {e}")
+            except Exception:
+                log.exception("1 Torznab search result failed")
         return result_list

@@ -92,7 +92,9 @@ class TorrentRepository:
             return None
         return MovieSchema.model_validate(result)
 
-    def get_movie_files_of_torrent(self, torrent_id: TorrentId) -> list[MovieFileSchema]:
+    def get_movie_files_of_torrent(
+        self, torrent_id: TorrentId
+    ) -> list[MovieFileSchema]:
         stmt = select(MovieFile).where(MovieFile.torrent_id == torrent_id)
         result = self.db.execute(stmt).scalars().all()
         return [MovieFileSchema.model_validate(movie_file) for movie_file in result]

@@ -38,8 +38,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         try:
             # Test connection
             self.client.version()
-        except Exception as e:
-            log.error(f"Failed to connect to SABnzbd: {e}")
+        except Exception:
+            log.exception("Failed to connect to SABnzbd")
             raise
 
     def download_torrent(self, indexer_result: IndexerQueryResult) -> Torrent:
@@ -55,10 +55,7 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
                 url=str(indexer_result.download_url), nzbname=indexer_result.title
             )
             if not response["status"]:
-                error_msg = response
-                log.error(f"Failed to add NZB to SABnzbd: {error_msg}")
-                msg = f"Failed to add NZB to SABnzbd: {error_msg}"
-                raise RuntimeError(msg)
+                raise RuntimeError(f"Failed to add NZB to SABnzbd: {response}")  # noqa: EM102, TRY003, TRY301
 
             # Generate a hash for the NZB (using title and download URL)
             nzo_id = response["nzo_ids"][0]
@@ -75,12 +72,11 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
 
             # Get initial status from SABnzbd
             torrent.status = self.get_torrent_status(torrent)
-
-            return torrent
-
-        except Exception as e:
-            log.error(f"Failed to download NZB {indexer_result.title}: {e}")
+        except Exception:
+            log.exception(f"Failed to download NZB {indexer_result.title}")
             raise
+
+        return torrent
 
     def remove_torrent(self, torrent: Torrent, delete_data: bool = False) -> None:
         """
@@ -91,8 +87,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         """
         try:
             self.client.delete_job(nzo_id=torrent.hash, delete_files=delete_data)
-        except Exception as e:
-            log.error(f"Failed to remove torrent {torrent.title}: {e}")
+        except Exception:
+            log.exception(f"Failed to remove torrent {torrent.title}")
             raise
 
     def pause_torrent(self, torrent: Torrent) -> None:
@@ -103,8 +99,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         """
         try:
             self.client.pause_job(nzo_id=torrent.hash)
-        except Exception as e:
-            log.error(f"Failed to pause torrent {torrent.title}: {e}")
+        except Exception:
+            log.exception(f"Failed to pause torrent {torrent.title}")
             raise
 
     def resume_torrent(self, torrent: Torrent) -> None:
@@ -115,8 +111,8 @@ class SabnzbdDownloadClient(AbstractDownloadClient):
         """
         try:
             self.client.resume_job(nzo_id=torrent.hash)
-        except Exception as e:
-            log.error(f"Failed to resume torrent {torrent.title}: {e}")
+        except Exception:
+            log.exception(f"Failed to resume torrent {torrent.title}")
             raise
 
     def get_torrent_status(self, torrent: Torrent) -> TorrentStatus:

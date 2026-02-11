@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from media_manager.config import MediaManagerConfig
 from media_manager.database import SessionLocal, get_session
-from media_manager.exceptions import InvalidConfigError, NotFoundError
+from media_manager.exceptions import InvalidConfigError, NotFoundError, RenameError
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
@@ -98,9 +98,7 @@ class MovieService:
         """
         return self.movie_repository.add_movie_request(movie_request=movie_request)
 
-    def get_movie_request_by_id(
-        self, movie_request_id: MovieRequestId
-    ) -> MovieRequest:
+    def get_movie_request_by_id(self, movie_request_id: MovieRequestId) -> MovieRequest:
         """
         Get a movie request by its ID.
 
@@ -151,10 +149,8 @@ class MovieService:
                     try:
                         shutil.rmtree(movie_dir)
                         log.info(f"Deleted movie directory: {movie_dir}")
-                    except OSError as e:
-                        log.error(
-                            f"Deleting movie directory: {movie_dir} : {e.strerror}"
-                        )
+                    except OSError:
+                        log.exception(f"Deleting movie directory: {movie_dir}")
 
             if delete_torrents:
                 # Get all torrents associated with this movie
@@ -171,8 +167,10 @@ class MovieService:
                             torrent=torrent, delete_files=True
                         )
                         log.info(f"Deleted torrent: {torrent.torrent_title}")
-                    except Exception as e:
-                        log.warning(f"Failed to delete torrent {torrent.hash}: {e}")
+                    except Exception:
+                        log.warning(
+                            f"Failed to delete torrent {torrent.hash}", exc_info=True
+                        )
 
         # Delete from database
         self.movie_repository.delete_movie(movie_id=movie.id)
@@ -237,18 +235,18 @@ class MovieService:
                 self.movie_repository.get_movie_by_external_id(
                     external_id=external_id, metadata_provider=metadata_provider
                 )
-                return True
             except NotFoundError:
                 return False
         elif movie_id is not None:
             try:
                 self.movie_repository.get_movie_by_id(movie_id=movie_id)
-                return True
             except NotFoundError:
                 return False
         else:
             msg = "Use one of the provided overloads for this function!"
             raise ValueError(msg)
+
+        return True
 
     def get_all_available_torrents_for_movie(
         self, movie: Movie, search_query_override: str | None = None
@@ -570,8 +568,8 @@ class MovieService:
 
         try:
             movie_root_path.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            log.error(f"Failed to create directory {movie_root_path}: {e}")
+        except Exception:
+            log.exception("Failed to create directory {movie_root_path}")
             return False
 
         # import movie video
@@ -682,9 +680,8 @@ class MovieService:
         try:
             source_directory.rename(new_source_path)
         except Exception as e:
-            log.error(f"Failed to rename {source_directory} to {new_source_path}: {e}")
-            msg = "Failed to rename directory"
-            raise Exception(msg) from e
+            log.exception(f"Failed to rename {source_directory} to {new_source_path}")
+            raise RenameError from e
 
         video_files, subtitle_files, _all_files = get_files_for_import(
             directory=new_source_path
@@ -786,12 +783,14 @@ def auto_download_all_approved_movie_requests() -> None:
     movie_repository = MovieRepository(db=db)
     torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
     indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-    notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
+    notification_service = NotificationService(
+        notification_repository=NotificationRepository(db=db)
+    )
     movie_service = MovieService(
         movie_repository=movie_repository,
         torrent_service=torrent_service,
         indexer_service=indexer_service,
-        notification_service=notification_service
+        notification_service=notification_service,
     )
 
     log.info("Auto downloading all approved movie requests")
@@ -821,7 +820,9 @@ def import_all_movie_torrents() -> None:
         movie_repository = MovieRepository(db=db)
         torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
         indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-        notification_service = NotificationService(notification_repository=NotificationRepository(db=db))
+        notification_service = NotificationService(
+            notification_repository=NotificationRepository(db=db)
+        )
         movie_service = MovieService(
             movie_repository=movie_repository,
             torrent_service=torrent_service,
@@ -841,11 +842,8 @@ def import_all_movie_torrents() -> None:
                         )
                         continue
                     movie_service.import_torrent_files(torrent=t, movie=movie)
-            except RuntimeError as e:
-                log.error(
-                    f"Failed to import torrent {t.title}: {e}",
-                    exc_info=True,
-                )
+            except RuntimeError:
+                log.exception(f"Failed to import torrent {t.title}")
         log.info("Finished importing all torrents")
         db.commit()
 
@@ -860,7 +858,9 @@ def update_all_movies_metadata() -> None:
             movie_repository=movie_repository,
             torrent_service=TorrentService(torrent_repository=TorrentRepository(db=db)),
             indexer_service=IndexerService(indexer_repository=IndexerRepository(db=db)),
-            notification_service=NotificationService(notification_repository=NotificationRepository(db=db))
+            notification_service=NotificationService(
+                notification_repository=NotificationRepository(db=db)
+            ),
         )
 
         log.info("Updating metadata for all movies")
@@ -880,9 +880,9 @@ def update_all_movies_metadata() -> None:
                         f"Unsupported metadata provider {movie.metadata_provider} for movie {movie.name}, skipping update."
                     )
                     continue
-            except InvalidConfigError as e:
-                log.error(
-                    f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}: {e}"
+            except InvalidConfigError:
+                log.exception(
+                    f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}",
                 )
                 continue
             movie_service.update_movie_metadata(

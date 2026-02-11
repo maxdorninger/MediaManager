@@ -51,7 +51,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting show metadata for ID {show_id}: {e}")
+            log.exception(f"TMDB API error getting show metadata for ID {show_id}")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
@@ -68,7 +68,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting show external IDs for ID {show_id}: {e}")
+            log.exception(f"TMDB API error getting show external IDs for ID {show_id}")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
@@ -90,8 +90,8 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(
-                f"TMDB API error getting season {season_number} metadata for show ID {show_id}: {e}"
+            log.exception(
+                f"TMDB API error getting season {season_number} metadata for show ID {show_id}"
             )
             if notification_manager.is_configured():
                 notification_manager.send_notification(
@@ -113,7 +113,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error searching TV shows with query '{query}': {e}")
+            log.exception(f"TMDB API error searching TV shows with query '{query}'")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
@@ -131,7 +131,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting trending TV: {e}")
+            log.exception("TMDB API error getting trending TV")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
@@ -151,7 +151,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting movie metadata for ID {movie_id}: {e}")
+            log.exception(f"TMDB API error getting movie metadata for ID {movie_id}")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
@@ -167,8 +167,8 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(
-                f"TMDB API error getting movie external IDs for ID {movie_id}: {e}"
+            log.exception(
+                f"TMDB API error getting movie external IDs for ID {movie_id}"
             )
             if notification_manager.is_configured():
                 notification_manager.send_notification(
@@ -190,7 +190,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error searching movies with query '{query}': {e}")
+            log.exception(f"TMDB API error searching movies with query '{query}'")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
@@ -208,7 +208,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            log.error(f"TMDB API error getting trending movies: {e}")
+            log.exception("TMDB API error getting trending movies")
             if notification_manager.is_configured():
                 notification_manager.send_notification(
                     title="TMDB API Error",
@@ -243,9 +243,7 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
         return True
 
     @override
-    def get_show_metadata(
-        self, show_id: int, language: str | None = None
-    ) -> Show:
+    def get_show_metadata(self, show_id: int, language: str | None = None) -> Show:
         """
 
         :param show_id: the external id of the show
@@ -368,14 +366,12 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                         original_language=original_language,
                     )
                 )
-            except Exception as e:
-                log.warning(f"Error processing search result: {e}")
+            except Exception:
+                log.warning("Error processing search result", exc_info=True)
         return formatted_results
 
     @override
-    def get_movie_metadata(
-        self, movie_id: int, language: str | None = None
-    ) -> Movie:
+    def get_movie_metadata(self, movie_id: int, language: str | None = None) -> Movie:
         """
         Get movie metadata with language-aware fetching.
 
@@ -470,8 +466,8 @@ class TmdbMetadataProvider(AbstractMetadataProvider):
                         original_language=original_language,
                     )
                 )
-            except Exception as e:
-                log.warning(f"Error processing search result: {e}")
+            except Exception:
+                log.warning("Error processing search result", exc_info=True)
         return formatted_results
 
     @override

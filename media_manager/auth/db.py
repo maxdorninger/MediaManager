@@ -1,5 +1,4 @@
 from collections.abc import AsyncGenerator
-from typing import Optional
 
 from fastapi import Depends
 from fastapi_users.db import (
@@ -17,7 +16,7 @@ from media_manager.database import Base, build_db_url
 
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
     access_token: Mapped[str] = mapped_column(String(length=4096), nullable=False)
-    refresh_token: Mapped[Optional[str]] = mapped_column(
+    refresh_token: Mapped[str | None] = mapped_column(
         String(length=4096), nullable=True
     )
 
@@ -34,12 +33,12 @@ engine = create_async_engine(
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
-async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_async_session() -> AsyncGenerator[AsyncSession]:
     async with async_session_maker() as session:
         yield session
 
 
 async def get_user_db(
     session: AsyncSession = Depends(get_async_session),
-) -> AsyncGenerator[SQLAlchemyUserDatabase, None]:
+) -> AsyncGenerator[SQLAlchemyUserDatabase]:
     yield SQLAlchemyUserDatabase(session, User, OAuthAccount)

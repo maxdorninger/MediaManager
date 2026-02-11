@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from logging.config import dictConfig
 from pathlib import Path
 from typing import override
@@ -12,7 +12,7 @@ from pythonjsonlogger.json import JsonFormatter
 class ISOJsonFormatter(JsonFormatter):
     @override
     def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
-        dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
+        dt = datetime.fromtimestamp(record.created, tz=UTC)
         return dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
@@ -21,13 +21,20 @@ LOG_FILE = Path(os.getenv("LOG_FILE", "/app/config/media_manager.log"))
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "correlation_id": {
+            "()": "asgi_correlation_id.CorrelationIdFilter",
+            "uuid_length": 32,
+            "default_value": "-",
+        },
+    },
     "formatters": {
         "default": {
-            "format": "%(asctime)s - %(levelname)s - %(name)s - %(funcName)s(): %(message)s"
+            "format": "%(asctime)s - [%(correlation_id)s] %(levelname)s - %(name)s - %(funcName)s(): %(message)s"
         },
         "json": {
             "()": ISOJsonFormatter,
-            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+            "format": "%(asctime)s %(correlation_id)s %(levelname)s %(name)s %(message)s",
             "rename_fields": {
                 "levelname": "level",
                 "asctime": "timestamp",
@@ -39,11 +46,13 @@ LOGGING_CONFIG = {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "default",
+            "filters": ["correlation_id"],
             "stream": sys.stdout,
         },
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "json",
+            "filters": ["correlation_id"],
             "filename": str(LOG_FILE),
             "maxBytes": 10485760,
             "backupCount": 5,

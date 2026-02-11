@@ -149,8 +149,11 @@ def follow_redirects_to_final_torrent_url(
             raise RuntimeError(msg)
 
     except requests.exceptions.RequestException as e:
-        log.debug(f"An error occurred during the request for {initial_url}: {e}")
-        msg = f"An error occurred during the request: {e}"
+        log.debug(
+            f"An error occurred during the request for {initial_url}",
+            exc_info=True,
+        )
+        msg = "An error occurred during the request"
         raise RuntimeError(msg) from e
 
     return current_url

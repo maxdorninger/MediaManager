@@ -104,7 +104,16 @@ ASCII_ART='
                                                 ░░░░░░
 
 '
-display_cool_text "$ASCII_ART"
+if [[ -v MEDIAMANAGER_NO_STARTUP_ART ]]; then
+  echo
+  echo "   +================+"
+  echo "   |  MediaManager  |"
+  echo "   +================+"
+  echo
+else
+  display_cool_text "$ASCII_ART"
+fi
+
 echo "Buy me a coffee at https://buymeacoffee.com/maxdorninger"
 
 # Initialize config if it doesn't exist
@@ -136,8 +145,30 @@ else
     echo "Config file found at: $CONFIG_FILE"
 fi
 
+# check if running as root, if yes, fix permissions
+if [ "$(id -u)" = '0' ]; then
+    echo "Running as root. Ensuring file permissions for mediamanager user..."
+    chown -R mediamanager:mediamanager "$CONFIG_DIR"
+
+    if [ -d "/data" ]; then
+        if [ "$(stat -c '%U' /data)" != "mediamanager" ]; then
+            echo "Fixing ownership of /data (this may take a while for large media libraries)..."
+            chown -R mediamanager:mediamanager /data
+        else
+            echo "/data ownership is already correct."
+        fi
+    fi
+else
+    echo "Running as non-root user ($(id -u)). Skipping permission fixes."
+    echo "Note: Ensure your host volumes are manually set to the correct permissions."
+fi
+
 echo "Running DB migrations..."
-uv run alembic upgrade head
+if [ "$(id -u)" = '0' ]; then
+   gosu mediamanager uv run alembic upgrade head
+else
+   uv run alembic upgrade head
+fi
 
 echo "Starting MediaManager backend service..."
 echo ""
@@ -150,9 +181,16 @@ echo ""
 
 DEVELOPMENT_MODE=${MEDIAMANAGER_MISC__DEVELOPMENT:-FALSE}
 PORT=${PORT:-8000}
+
 if [ "$DEVELOPMENT_MODE" == "TRUE" ]; then
     echo "Development mode is enabled, enabling auto-reload..."
-    uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers --reload
+    DEV_OPTIONS="--reload"
 else
-  uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers
+    DEV_OPTIONS=""
+fi
+
+if [ "$(id -u)" = '0' ]; then
+    exec gosu mediamanager uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers $DEV_OPTIONS
+else
+    exec uv run fastapi run /app/media_manager/main.py --port "$PORT" --proxy-headers $DEV_OPTIONS
 fi

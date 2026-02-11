@@ -2,6 +2,7 @@ import logging
 import os
 
 import uvicorn
+from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -71,6 +72,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "PUT", "POST", "DELETE", "PATCH", "HEAD", "OPTIONS"],
 )
+app.add_middleware(CorrelationIdMiddleware, header_name="X-Correlation-ID")
 api_app = APIRouter(prefix="/api/v1")
 
 

@@ -112,6 +112,13 @@
 				width="80px"
 			/></a
 		>&nbsp;&nbsp;
+		<a href="https://buymeacoffee.com/maxdorninger"
+			><img
+				src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/EC9689/SY.png"
+				width="80px"
+				alt="syn"
+			/></a
+		>
 	</div>
 
 	<p>

@@ -94,7 +94,9 @@ def get_all_importable_shows(
     dependencies=[Depends(current_superuser)],
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def import_detected_show(tv_service: tv_service_dep, tv_show: show_dep, directory: str) -> None:
+def import_detected_show(
+    tv_service: tv_service_dep, tv_show: show_dep, directory: str
+) -> None:
     """
     Import a detected show from the specified directory into the library.
     """
@@ -145,7 +147,7 @@ def add_a_show(
     Add a new show to the library.
     """
     try:
-         show = tv_service.add_show(
+        show = tv_service.add_show(
             external_id=show_id,
             metadata_provider=metadata_provider,
             language=language,
@@ -352,7 +354,6 @@ def authorize_request(
     if not authorized_status:
         season_request.authorized_by = None
     tv_service.update_season_request(season_request=season_request)
-    return
 
 
 @router.delete(
