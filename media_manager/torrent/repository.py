@@ -11,19 +11,12 @@ from media_manager.movies.schemas import (
 )
 from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import TorrentId, Torrent as TorrentSchema
-from media_manager.tv.models import SeasonFile, Show, Season, EpisodeFile, Episode
-from media_manager.tv.schemas import SeasonFile as SeasonFileSchema, Show as ShowSchema, EpisodeFile as EpisodeFileSchema
+from media_manager.tv.models import Show, Season, EpisodeFile, Episode
+from media_manager.tv.schemas import Show as ShowSchema, EpisodeFile as EpisodeFileSchema
 
 class TorrentRepository:
     def __init__(self, db: DbSessionDependency) -> None:
         self.db = db
-
-    def get_seasons_files_of_torrent(
-        self, torrent_id: TorrentId
-    ) -> list[SeasonFileSchema]:
-        stmt = select(SeasonFile).where(SeasonFile.torrent_id == torrent_id)
-        result = self.db.execute(stmt).scalars().all()
-        return [SeasonFileSchema.model_validate(season_file) for season_file in result]
 
     def get_episode_files_of_torrent(
         self, torrent_id: TorrentId

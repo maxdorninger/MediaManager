@@ -99,14 +99,6 @@ class RichSeasonRequest(SeasonRequest):
     season: Season
 
 
-class SeasonFile(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    season_id: SeasonId
-    quality: Quality
-    torrent_id: TorrentId | None
-    file_path_suffix: str
-
 class EpisodeFile(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -116,7 +108,7 @@ class EpisodeFile(BaseModel):
     file_path_suffix: str
 
 
-class PublicSeasonFile(SeasonFile):
+class PublicEpisodeFile(EpisodeFile):
     downloaded: bool = False
 
 

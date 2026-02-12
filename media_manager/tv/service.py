@@ -45,16 +45,15 @@ from media_manager.tv.schemas import (
 )
 from media_manager.tv.schemas import (
     Episode,
-    EpisodeFile
+    EpisodeFile,
     EpisodeId,
+    PublicEpisodeFile,
     PublicSeason,
-    PublicSeasonFile,
     PublicShow,
     RichSeasonRequest,
     RichSeasonTorrent,
     RichShowTorrent,
     Season,
-    SeasonFile,
     SeasonId,
     SeasonRequest,
     SeasonRequestId,
@@ -184,22 +183,22 @@ class TvService:
 
         self.tv_repository.delete_show(show_id=show.id)
 
-    def get_public_season_files_by_season_id(self, season: Season) -> list[PublicSeasonFile]:
+    def get_public_episode_files_by_season_id(self, season: Season) -> list[PublicEpisodeFile]:
         """
-        Get all public season files for a given season.
+        Get all public episode files for a given season.
 
         :param season: The season object.
-        :return: A list of public season files.
+        :return: A list of public episode files.
         """
-        season_files = self.tv_repository.get_season_files_by_season_id(
+        episode_files = self.tv_repository.get_episode_files_by_season_id(
             season_id=season.id
         )
-        public_season_files = [PublicSeasonFile.model_validate(x) for x in season_files]
+        public_episode_files = [PublicEpisodeFile.model_validate(x) for x in episode_files]
         result = []
-        for season_file in public_season_files:
-            if self.season_file_exists_on_file(season_file=season_file):
-                season_file.downloaded = True
-            result.append(season_file)
+        for episode_file in public_episode_files:
+            if self.episode_file_exists_on_file(episode_file=episode_file):
+                episode_file.downloaded = True
+            result.append(episode_file)
         return result
 
     @overload
@@ -422,18 +421,18 @@ class TvService:
 
         return False
 
-    def season_file_exists_on_file(self, season_file: SeasonFile) -> bool:
+    def episode_file_exists_on_file(self, episode_file: EpisodeFile) -> bool:
         """
-        Check if a season file exists on the filesystem.
+        Check if an episode file exists on the filesystem.
 
-        :param season_file: The season file to check.
+        :param episode_file: The episode file to check.
         :return: True if the file exists, False otherwise.
         """
-        if season_file.torrent_id is None:
+        if episode_file.torrent_id is None:
             return True
         try:
             torrent_file = self.torrent_service.get_torrent_by_id(
-                torrent_id=season_file.torrent_id
+                torrent_id=episode_file.torrent_id
             )
 
             if torrent_file.imported:
@@ -1113,20 +1112,18 @@ class TvService:
                             overview=ep_data.overview,
                         )
                     )
-                    for ep_data in fresh_season_data.episodes
-                ]
-
-                season_schema = Season(
-                    id=SeasonId(fresh_season_data.id),
-                    number=fresh_season_data.number,
-                    name=fresh_season_data.name,
-                    overview=fresh_season_data.overview,
-                    external_id=fresh_season_data.external_id,
-                    episodes=episodes_for_schema,
-                )
-                self.tv_repository.add_season_to_show(
-                    show_id=db_show.id, season_data=season_schema
-                )
+                    for ep_data in fresh_season_data.episodes:
+                        season_schema = Season(
+                            id=SeasonId(fresh_season_data.id),
+                            number=fresh_season_data.number,
+                            name=fresh_season_data.name,
+                            overview=fresh_season_data.overview,
+                            external_id=fresh_season_data.external_id,
+                            episodes=episodes_for_schema,
+                        )
+                        self.tv_repository.add_season_to_show(
+                            show_id=db_show.id, season_data=season_schema
+                        )
 
         updated_show = self.tv_repository.get_show_by_id(show_id=db_show.id)
 

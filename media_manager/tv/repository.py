@@ -10,7 +10,7 @@ from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import Torrent as TorrentSchema
 from media_manager.torrent.schemas import TorrentId
 from media_manager.tv import log
-from media_manager.tv.models import Season, Show, Episode, SeasonRequest, SeasonFile, EpisodeFile
+from media_manager.tv.models import Season, Show, Episode, SeasonRequest, EpisodeFile
 from media_manager.tv.schemas import (
     Episode as EpisodeSchema,
 )
@@ -29,7 +29,6 @@ from media_manager.tv.schemas import (
     Season as SeasonSchema,
 )
 from media_manager.tv.schemas import (
-    SeasonFile as SeasonFileSchema,
     EpisodeFile as EpisodeFileSchema,
 )
 from media_manager.tv.schemas import (
@@ -123,7 +122,9 @@ class TvRepository:
     def get_total_downloaded_episodes_count(self) -> int:
         try:
             stmt = (
-                select(func.count()).select_from(Episode).join(Season).join(SeasonFile)
+                select(func.count(Episode.id))
+                .select_from(Episode)
+                .join(EpisodeFile)
             )
             return self.db.execute(stmt).scalar_one_or_none()
         except SQLAlchemyError:
@@ -401,30 +402,6 @@ class TvRepository:
             log.exception("Database error while retrieving season requests")
             raise
 
-    def add_season_file(self, season_file: SeasonFileSchema) -> SeasonFileSchema:
-        """
-        Adds a season file record to the database.
-
-        :param season_file: The SeasonFile object to add.
-        :return: The added SeasonFile object.
-        :raises IntegrityError: If the record violates constraints.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        db_model = SeasonFile(**season_file.model_dump())
-        try:
-            self.db.add(db_model)
-            self.db.commit()
-            self.db.refresh(db_model)
-            return SeasonFileSchema.model_validate(db_model)
-        except IntegrityError:
-            self.db.rollback()
-            log.exception("Integrity error while adding season file")
-            raise
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception("Database error while adding season file")
-            raise
-
     def add_episode_file(self, episode_file: EpisodeFileSchema) -> EpisodeFileSchema:
         """
         Adds a episode file record to the database.
@@ -449,22 +426,22 @@ class TvRepository:
             log.error(f"Database error while adding season file: {e}")
             raise
 
-    def remove_season_files_by_torrent_id(self, torrent_id: TorrentId) -> int:
+    def remove_episode_files_by_torrent_id(self, torrent_id: TorrentId) -> int:
         """
-        Removes season file records associated with a given torrent ID.
+        Removes episode file records associated with a given torrent ID.
 
-        :param torrent_id: The ID of the torrent whose season files are to be removed.
-        :return: The number of season files removed.
+        :param torrent_id: The ID of the torrent whose episode files are to be removed.
+        :return: The number of episode files removed.
         :raises SQLAlchemyError: If a database error occurs.
         """
         try:
-            stmt = delete(SeasonFile).where(SeasonFile.torrent_id == torrent_id)
+            stmt = delete(EpisodeFile).where(EpisodeFile.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
         except SQLAlchemyError:
             self.db.rollback()
             log.exception(
-                f"Database error removing season files for torrent_id {torrent_id}"
+                f"Database error removing episode files for torrent_id {torrent_id}"
             )
             raise
         return result.rowcount
@@ -490,23 +467,21 @@ class TvRepository:
             log.exception(f"Database error setting library for show {show_id}")
             raise
 
-    def get_season_files_by_season_id(
-        self, season_id: SeasonId
-    ) -> list[SeasonFileSchema]:
+    def get_episode_files_by_season_id(self, season_id: SeasonId) -> list[EpisodeFileSchema]:
         """
-        Retrieve all season files for a given season ID.
+        Retrieve all episode files for a given season ID.
 
         :param season_id: The ID of the season.
-        :return: A list of SeasonFile objects.
+        :return: A list of EpisodeFile objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
         try:
-            stmt = select(SeasonFile).where(SeasonFile.season_id == season_id)
+            stmt = select(EpisodeFile).where(EpisodeFile.season_id == season_id)
             results = self.db.execute(stmt).scalars().all()
-            return [SeasonFileSchema.model_validate(sf) for sf in results]
+            return [EpisodeFileSchema.model_validate(ef) for ef in results]
         except SQLAlchemyError:
             log.exception(
-                f"Database error retrieving season files for season_id {season_id}"
+                f"Database error retrieving episode files for season_id {season_id}"
             )
             raise
 
@@ -563,8 +538,9 @@ class TvRepository:
                 select(Show)
                 .distinct()
                 .join(Season, Show.id == Season.show_id)
-                .join(SeasonFile, Season.id == SeasonFile.season_id)
-                .join(Torrent, SeasonFile.torrent_id == Torrent.id)
+                .join(Episode, Season.id == Episode.season_id)
+                .join(EpisodeFile, Episode.id == EpisodeFile.episode_id)
+                .join(Torrent, EpisodeFile.torrent_id == Torrent.id)
                 .options(joinedload(Show.seasons).joinedload(Season.episodes))
                 .order_by(Show.name)
             )

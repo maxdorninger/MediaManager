@@ -25,7 +25,7 @@ from media_manager.tv.dependencies import (
 )
 from media_manager.tv.schemas import (
     CreateSeasonRequest,
-    PublicSeasonFile,
+    PublicEpisodeFile,
     PublicShow,
     RichSeasonRequest,
     RichShowTorrent,
@@ -404,11 +404,11 @@ def get_season(season: season_dep) -> Season:
 )
 def get_season_files(
     season: season_dep, tv_service: tv_service_dep
-) -> list[PublicSeasonFile]:
+) -> list[PublicEpisodeFile]:
     """
     Get files associated with a specific season.
     """
-    return tv_service.get_public_season_files_by_season_id(season=season)
+    return tv_service.get_public_episode_files_by_season_id(season=season)
 
 
 # -----------------------------------------------------------------------------

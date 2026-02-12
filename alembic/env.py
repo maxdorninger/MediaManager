@@ -35,8 +35,8 @@ from media_manager.notification.models import Notification  # noqa: E402
 from media_manager.torrent.models import Torrent  # noqa: E402
 from media_manager.tv.models import (  # noqa: E402
     Episode,
+    EpisodeFile,
     Season,
-    SeasonFile,
     SeasonRequest,
     Show,
 )
@@ -47,6 +47,7 @@ target_metadata = Base.metadata
 # noinspection PyStatementEffect
 __all__ = [
     "Episode",
+    "EpisodeFile",
     "IndexerQueryResult",
     "Movie",
     "MovieFile",
@@ -54,7 +55,6 @@ __all__ = [
     "Notification",
     "OAuthAccount",
     "Season",
-    "SeasonFile",
     "SeasonRequest",
     "Show",
     "Torrent",

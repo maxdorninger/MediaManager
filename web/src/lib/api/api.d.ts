@@ -1562,6 +1562,27 @@ export interface components {
 			imported: boolean;
 		};
 		/** PublicSeason */
+		PublicEpisode: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id: string;
+			/** Number */
+			number: number;
+			/**
+			 * Downloaded
+			 * @default false
+			 */
+			downloaded: boolean;
+			/** Name */
+			title: string;
+			/** Overview */
+			overview: string;
+			/** External Id */
+			external_id: number;
+		};
+		/** PublicSeason */
 		PublicSeason: {
 			/**
 			 * Id
@@ -1582,15 +1603,15 @@ export interface components {
 			/** External Id */
 			external_id: number;
 			/** Episodes */
-			episodes: components['schemas']['Episode'][];
+			episodes: components['schemas']['PublicEpisode'][];
 		};
-		/** PublicSeasonFile */
-		PublicSeasonFile: {
+		/** PublicEpisodeFile */
+		PublicEpisodeFile: {
 			/**
-			 * Season Id
+			 * Episode Id
 			 * Format: uuid
 			 */
-			season_id: string;
+			episode_id: string;
 			quality: components['schemas']['Quality'];
 			/** Torrent Id */
 			torrent_id: string | null;
@@ -3236,7 +3257,7 @@ export interface operations {
 			};
 		};
 	};
-	get_season_files_api_v1_tv_seasons__season_id__files_get: {
+	get_episode_files_api_v1_tv_seasons__season_id__files_get: {
 		parameters: {
 			query?: never;
 			header?: never;
@@ -3254,7 +3275,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['PublicSeasonFile'][];
+					'application/json': components['schemas']['PublicEpisodeFile'][];
 				};
 			};
 			/** @description Validation Error */
