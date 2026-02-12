@@ -51,6 +51,17 @@ export function convertTorrentSeasonRangeToIntegerRange(seasons: number[]): stri
 	}
 }
 
+export function convertTorrentEpisodeRangeToIntegerRange(episodes: number[]): string {
+	if (episodes.length === 1) return episodes[0]?.toString() || 'unknown';
+	else if (episodes.length > 1) {
+		const lastEpisode = episodes.at(-1);
+		return episodes[0]?.toString() + '-' + (lastEpisode?.toString() || 'unknown');
+	} else {
+		console.log('Error parsing episode range: ' + episodes);
+		return 'Error parsing episode range: ' + episodes;
+	}
+}
+
 export async function handleLogout() {
 	await client.POST('/api/v1/auth/cookie/logout');
 	await goto(resolve('/login', {}));

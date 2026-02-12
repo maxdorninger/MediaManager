@@ -9,7 +9,9 @@
 	import { getContext } from 'svelte';
 	import type { components } from '$lib/api/api';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
-	import DownloadSeasonDialog from '$lib/components/download-dialogs/download-season-dialog.svelte';
+	import DownloadSelectedSeasonsDialog from '$lib/components/download-dialogs/download-selected-seasons-dialog.svelte';
+	import DownloadSelectedEpisodesDialog from '$lib/components/download-dialogs/download-selected-episodes-dialog.svelte';
+	import DownloadCustomDialog from '$lib/components/download-dialogs/download-custom-dialog.svelte';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import { page } from '$app/state';
 	import TorrentTable from '$lib/components/torrents/torrent-table.svelte';
@@ -23,6 +25,7 @@
 	import DeleteMediaDialog from '$lib/components/delete-media-dialog.svelte';
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 
 	let show: components['schemas']['PublicShow'] = $derived(page.data.showData);
 	let torrents: components['schemas']['RichShowTorrent'] = $derived(page.data.torrentsData);
@@ -38,6 +41,69 @@
 		}
 		expandedSeasons = new Set(expandedSeasons);
 	}
+
+	let selectedSeasons = $state<Set<string>>(new Set());
+
+	function toggleSeasonSelection(seasonId: string) {
+		if (selectedSeasons.has(seasonId)) {
+			selectedSeasons.delete(seasonId);
+		} else {
+			selectedSeasons.add(seasonId);
+		}
+		selectedSeasons = new Set(selectedSeasons);
+	}
+
+	let selectedSeasonNumbers = $derived(
+		show.seasons
+			.filter((s) => selectedSeasons.has(s.id))
+			.map((s) => s.number)
+	);
+
+	let downloadButtonLabel = $derived(
+		selectedSeasonNumbers.length === 0
+			? 'Download Seasons'
+			: `Download Season(s) ${selectedSeasonNumbers
+					.slice()
+					.sort((a, b) => a - b)
+					.map((n) => `S${String(n).padStart(2, '0')}`)
+					.join(', ')}`
+	);
+
+	let selectedEpisodes = $state<Set<string>>(new Set());
+	
+	function toggleEpisodeSelection(episodeId: string) {
+		if (selectedEpisodes.has(episodeId)) {
+			selectedEpisodes.delete(episodeId);
+		} else {
+			selectedEpisodes.add(episodeId);
+		}
+		selectedEpisodes = new Set(selectedEpisodes);
+	}
+
+	let selectedEpisodeNumbers = $derived(
+		show.seasons
+			.flatMap((season) =>
+				season.episodes
+					.filter((ep) => selectedEpisodes.has(ep.id))
+					.map((ep) => ({
+						seasonNumber: season.number,
+						episodeNumber: ep.number
+					}))
+			)
+	);
+
+	let episodeDownloadLabel = $derived(
+		selectedEpisodeNumbers.length === 0
+			? 'Download Episodes'
+			: `Download Episode(s) ${selectedEpisodeNumbers
+					.map(
+						(e) =>
+							`S${String(e.seasonNumber).padStart(2, '0')}E${String(
+								e.episodeNumber
+							).padStart(2, '0')}`
+					)
+					.join(', ')}`
+	);
 
 	let continuousDownloadEnabled = $derived(show.continuous_download);
 
@@ -158,7 +224,21 @@
 				</Card.Header>
 				<Card.Content class="flex flex-col items-center gap-4">
 					{#if user().is_superuser}
-						<DownloadSeasonDialog {show} />
+						{#if selectedSeasonNumbers.length > 0}
+							<DownloadSelectedSeasonsDialog {show}
+								selectedSeasonNumbers={selectedSeasonNumbers}
+								triggerText={downloadButtonLabel}
+							/>
+						{/if}
+						{#if selectedEpisodeNumbers.length > 0}
+							<DownloadSelectedEpisodesDialog {show}
+								selectedEpisodeNumbers={selectedEpisodeNumbers}
+								triggerText={episodeDownloadLabel}
+							/>
+						{/if}
+						{#if selectedSeasonNumbers.length === 0 && selectedEpisodeNumbers.length === 0}
+							<DownloadCustomDialog {show} />
+						{/if}
 					{/if}
 					<RequestSeasonDialog {show} />
 				</Card.Content>
@@ -178,6 +258,7 @@
 					<Table.Caption>A list of all seasons.</Table.Caption>
 					<Table.Header>
 						<Table.Row>
+							<Table.Head class="w-[40px]"></Table.Head>
 							<Table.Head class="w-[80px]">Number</Table.Head>
 							<Table.Head class="w-[100px]">Exists on file</Table.Head>
 							<Table.Head class="w-[240px]">Title</Table.Head>
@@ -194,6 +275,13 @@
 									}`}
 									onclick={() => toggleSeason(season.id)}
 								>
+									<Table.Cell class="w-[40px]">
+										<Checkbox
+											checked={selectedSeasons.has(season.id)}
+											onCheckedChange={() => toggleSeasonSelection(season.id)}
+											onclick={(e) => e.stopPropagation()}
+										/>
+									</Table.Cell>
 									<Table.Cell class="min-w-[10px] font-medium">
 										S{String(season.number).padStart(2, '0')}
 									</Table.Cell>
@@ -229,17 +317,24 @@
 									{#if expandedSeasons.has(season.id)}
 										{#each season.episodes as episode (episode.id)}
 											<Table.Row class="bg-muted/20">
+												<Table.Cell class="w-[40px]">
+													<Checkbox
+														checked={selectedEpisodes.has(episode.id)}
+														onCheckedChange={() => toggleEpisodeSelection(episode.id)}
+														onclick={(e) => e.stopPropagation()}
+													/>
+												</Table.Cell>
 												<Table.Cell class="min-w-[10px] font-medium">
 													E{String(episode.number).padStart(2, '0')}
 												</Table.Cell>
-												<Table.Cell class="min-w-[10px] font-medium"></Table.Cell>
+												<Table.Cell class="min-w-[10px] font-medium">
+													<CheckmarkX state={episode.downloaded} />
+												</Table.Cell>
 												<Table.Cell class="min-w-[50px]">{episode.title}</Table.Cell>
 												<Table.Cell colspan={2} class="truncate">{episode.overview}</Table.Cell>
 											</Table.Row>
 										{/each}
 									{/if}
-								
-
 							{/each}
 						{:else}
 							<Table.Row>

@@ -11,9 +11,18 @@
 	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	let seasonFiles: components['schemas']['PublicSeasonFile'][] = $derived(page.data.files);
+	let episodeFiles: components['schemas']['PublicEpisodeFile'][] = $derived(page.data.files);
 	let season: components['schemas']['Season'] = $derived(page.data.season);
 	let show: components['schemas']['Show'] = $derived(page.data.showData);
+
+	let episodeById = $derived(
+		Object.fromEntries(
+			season.episodes.map((ep) => [
+				ep.id,
+				`E${String(ep.number).padStart(2, '0')}`
+			])
+		)
+	);
 </script>
 
 <svelte:head>
@@ -59,7 +68,7 @@
 	</div>
 </header>
 <h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
-	{getFullyQualifiedMediaName(show)} Season {season.number}
+	{getFullyQualifiedMediaName(show)} - Season {season.number}
 </h1>
 <main class="mx-auto flex w-full flex-1 flex-col gap-4 p-4 md:max-w-[80em]">
 	<div class="flex flex-col gap-4 md:flex-row md:items-stretch">
@@ -107,14 +116,18 @@
 						>
 						<Table.Header>
 							<Table.Row>
+								<Table.Head>Episode</Table.Head>
 								<Table.Head>Quality</Table.Head>
 								<Table.Head>File Path Suffix</Table.Head>
 								<Table.Head>Imported</Table.Head>
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each seasonFiles as file (file)}
+							{#each episodeFiles as file (file)}
 								<Table.Row>
+									<Table.Cell class="w-[50px]">
+										{episodeById[file.episode_id] ?? 'E??'}
+									</Table.Cell>
 									<Table.Cell class="w-[50px]">
 										{getTorrentQualityString(file.quality)}
 									</Table.Cell>
