@@ -476,7 +476,11 @@ class TvRepository:
         :raises SQLAlchemyError: If a database error occurs.
         """
         try:
-            stmt = select(EpisodeFile).where(EpisodeFile.season_id == season_id)
+            stmt = (
+                select(EpisodeFile)
+                .join(Episode)
+                .where(Episode.season_id == season_id)
+            )
             results = self.db.execute(stmt).scalars().all()
             return [EpisodeFileSchema.model_validate(ef) for ef in results]
         except SQLAlchemyError:
