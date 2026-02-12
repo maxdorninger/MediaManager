@@ -139,7 +139,11 @@
 									</Table.Cell>
 								</Table.Row>
 							{:else}
-								<span class="font-semibold">You haven't downloaded this season yet.</span>
+								<Table.Row>
+									<Table.Cell colspan={4} class="text-center py-6 font-semibold">
+										You haven't downloaded episodes of this season yet.
+									</Table.Cell>
+								</Table.Row>
 							{/each}
 						</Table.Body>
 					</Table.Root>
