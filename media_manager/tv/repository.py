@@ -404,7 +404,7 @@ class TvRepository:
 
     def add_episode_file(self, episode_file: EpisodeFileSchema) -> EpisodeFileSchema:
         """
-        Adds a episode file record to the database.
+        Adds an episode file record to the database.
 
         :param episode_file: The EpisodeFile object to add.
         :return: The added EpisodeFile object.
@@ -419,11 +419,11 @@ class TvRepository:
             return EpisodeFileSchema.model_validate(db_model)
         except IntegrityError as e:
             self.db.rollback()
-            log.error(f"Integrity error while adding season file: {e}")
+            log.error(f"Integrity error while adding episode file: {e}")
             raise
         except SQLAlchemyError as e:
             self.db.rollback()
-            log.error(f"Database error while adding season file: {e}")
+            log.error(f"Database error while adding episode file: {e}")
             raise
 
     def remove_episode_files_by_torrent_id(self, torrent_id: TorrentId) -> int:

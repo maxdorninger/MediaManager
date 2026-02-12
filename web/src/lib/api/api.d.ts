@@ -626,10 +626,10 @@ export interface paths {
 			cookie?: never;
 		};
 		/**
-		 * Get Season Files
-		 * @description Get files associated with a specific season.
+		 * Get Episode Files
+		 * @description Get episodes files associated with a specific season.
 		 */
-		get: operations['get_season_files_api_v1_tv_seasons__season_id__files_get'];
+		get: operations['get_episode_files_api_v1_tv_seasons__season_id__files_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
