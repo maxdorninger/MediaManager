@@ -28,7 +28,7 @@
 		"@sveltejs/kit": "^2.27.3",
 		"@sveltejs/vite-plugin-svelte": "^6.1.1",
 		"@tailwindcss/container-queries": "^0.1.1",
-		"@tailwindcss/forms": "^0.5.10",
+		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/typography": "^0.5.16",
 		"@tailwindcss/vite": "^4.1.11",
 		"@tanstack/table-core": "^8.21.3",
