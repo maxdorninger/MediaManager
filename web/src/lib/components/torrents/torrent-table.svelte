@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		convertTorrentSeasonRangeToIntegerRange,
+		convertTorrentEpisodeRangeToIntegerRange,
 		getTorrentQualityString,
 		getTorrentStatusString
 	} from '$lib/utils.js';
@@ -59,6 +60,7 @@
 			<Table.Head>Name</Table.Head>
 			{#if isShow}
 				<Table.Head>Seasons</Table.Head>
+				<Table.Head>Episodes</Table.Head>
 			{/if}
 			<Table.Head>Download Status</Table.Head>
 			<Table.Head>Quality</Table.Head>
@@ -95,6 +97,11 @@
 					<Table.Cell>
 						{convertTorrentSeasonRangeToIntegerRange(
 							(torrent as components['schemas']['RichSeasonTorrent']).seasons!
+						)}
+					</Table.Cell>
+					<Table.Cell>
+						{convertTorrentEpisodeRangeToIntegerRange(
+							(torrent as components['schemas']['RichSeasonTorrent']).episodes!
 						)}
 					</Table.Cell>
 				{/if}
