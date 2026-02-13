@@ -34,7 +34,7 @@
 		"@tanstack/table-core": "^8.21.3",
 		"@typeschema/class-validator": "^0.2.0",
 		"@vinejs/vine": "^1.8.0",
-		"arktype": "^2.1.20",
+		"arktype": "^2.1.29",
 		"autoprefixer": "^10.4.20",
 		"bits-ui": "^1.8.0",
 		"class-validator": "^0.14.2",
