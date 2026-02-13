@@ -37,7 +37,7 @@ jobs:
     name: Lint Python Code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: astral-sh/ruff-action@v3
         with:
           src: "./media_manager"
@@ -46,7 +46,7 @@ jobs:
     name: Lint Frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -78,7 +78,7 @@ jobs:
       QUAY_ORG: ${{ secrets.QUAY_ORG || github.repository_owner }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set repository name to lowercase
         id: repo_name
@@ -164,7 +164,7 @@ jobs:
       QUAY_ORG: ${{ secrets.QUAY_ORG }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set repository name to lowercase
         id: repo_name
