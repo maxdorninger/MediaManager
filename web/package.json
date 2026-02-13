@@ -32,7 +32,7 @@
 		"@tailwindcss/typography": "^0.5.16",
 		"@tailwindcss/vite": "^4.1.11",
 		"@tanstack/table-core": "^8.21.3",
-		"@typeschema/class-validator": "^0.2.0",
+		"@typeschema/class-validator": "^0.3.0",
 		"@vinejs/vine": "^1.8.0",
 		"arktype": "^2.1.20",
 		"autoprefixer": "^10.4.20",
