@@ -71,7 +71,7 @@
 	},
 	"dependencies": {
 		"animejs": "^4.2.2",
-		"lucide-svelte": "^0.544.0",
+		"lucide-svelte": "^0.564.0",
 		"openapi-fetch": "^0.14.0",
 		"uuid": "^11.1.0"
 	}
