@@ -974,11 +974,11 @@ wheels = [
 
 [[package]]
 name = "patool"
-version = "4.0.3"
+version = "4.0.4"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/84/6a/d8cc4ee61e6cc066a0c8d4ef2118c5fbf4d8e3ad8ee94192cc097749ae8a/patool-4.0.3.tar.gz", hash = "sha256:d7e3d3b69857edd4441061e27254ff1761c9e7a0627562be9eb1fc90cc08770f", size = 2009846, upload-time = "2025-12-11T18:17:33.53Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/c5/2cf8bdb47680b76a7ef9097b2f8335826b1d4a9ae752e355652673905033/patool-4.0.4.tar.gz", hash = "sha256:2f23e2d6513193c28061425d6ddf1f56561ae4003cbe2007fc6d051df273e09a", size = 2010127, upload-time = "2026-01-19T10:59:51.043Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/89/9db065f71e53910dc1de6694b817b226d113be33089e65bba6641939bc1b/patool-4.0.3-py2.py3-none-any.whl", hash = "sha256:b688801314a1deea00d60853418ab5892084a053a8cbf3a5730e1200a8ad65f7", size = 88393, upload-time = "2025-12-11T18:17:29.574Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/dc/078d7990af0c1fde222e80a520d3e96c14cc30f21af13b06769c85826821/patool-4.0.4-py2.py3-none-any.whl", hash = "sha256:15505e518a3cc1d2f845361e54082f7d382728e93a656ba1e683eaf8f68731ad", size = 88595, upload-time = "2026-01-19T10:58:33.831Z" },
 ]
 
 [[package]]
