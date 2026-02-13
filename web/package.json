@@ -24,7 +24,7 @@
 		"@sinclair/typebox": "^0.34.38",
 		"@sveltejs/adapter-auto": "^6.0.2",
 		"@sveltejs/adapter-static": "^3.0.8",
-		"@sveltejs/enhanced-img": "^0.6.1",
+		"@sveltejs/enhanced-img": "^0.10.2",
 		"@sveltejs/kit": "^2.27.3",
 		"@sveltejs/vite-plugin-svelte": "^6.1.1",
 		"@tailwindcss/container-queries": "^0.1.1",
