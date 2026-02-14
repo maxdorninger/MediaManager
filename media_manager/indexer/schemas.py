@@ -54,15 +54,27 @@ class IndexerQueryResult(BaseModel):
     @computed_field
     @property
     def season(self) -> list[int]:
+        # Try explicit range: S01-S08
+        range_match = re.search(r"\bS(\d+)\s*-\s*S(\d+)\b", self.title, re.IGNORECASE)
+        if range_match:
+            return list(range(int(range_match.group(1)), int(range_match.group(2)) + 1))
+
+        # Try shorthand range: S01-8 (S prefix only on first)
+        shorthand_match = re.search(
+            r"\bS(\d+)\s*-\s*(\d+)\b", self.title, re.IGNORECASE
+        )
+        if shorthand_match:
+            start, end = int(shorthand_match.group(1)), int(shorthand_match.group(2))
+            if end > start:
+                return list(range(start, end + 1))
+
+        # Fall back to individual S## matches, deduplicated
         pattern = r"\bS(\d+)\b"
         matches = re.findall(pattern, self.title, re.IGNORECASE)
-        if matches.__len__() == 2:
-            result = list(range(int(matches[0]), int(matches[1]) + 1))
-        elif matches.__len__() == 1:
-            result = [int(matches[0])]
-        else:
-            result = []
-        return result
+        if matches:
+            return sorted(set(int(m) for m in matches))
+
+        return []
 
     def __gt__(self, other: "IndexerQueryResult") -> bool:
         if self.quality.value != other.quality.value:
