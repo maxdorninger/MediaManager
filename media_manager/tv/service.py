@@ -479,6 +479,11 @@ class TvService:
         indexer_result = self.indexer_service.get_result(
             result_id=public_indexer_result_id
         )
+
+        if not indexer_result.season:
+            msg = f"Could not determine season number(s) from torrent title: {indexer_result.title}"
+            raise ValueError(msg)
+
         show_torrent = self.torrent_service.download(indexer_result=indexer_result)
         self.torrent_service.pause_download(torrent=show_torrent)
 
@@ -612,7 +617,7 @@ class TvService:
         if file_path_suffix != "":
             episode_file_name += f" - {file_path_suffix}"
         pattern = (
-            r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode_number) + r"[. ].*"
+            r".*[. ]S0?" + str(season.number) + r"E(?:\d+-?E)?0?" + str(episode_number) + r"[. -].*"
         )
         subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
         target_file_name = (
