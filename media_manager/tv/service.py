@@ -480,10 +480,6 @@ class TvService:
             result_id=public_indexer_result_id
         )
 
-        if not indexer_result.season:
-            msg = f"Could not determine season number(s) from torrent title: {indexer_result.title}"
-            raise ValueError(msg)
-
         show_torrent = self.torrent_service.download(indexer_result=indexer_result)
         self.torrent_service.pause_download(torrent=show_torrent)
 
