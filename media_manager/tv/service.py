@@ -613,7 +613,11 @@ class TvService:
         if file_path_suffix != "":
             episode_file_name += f" - {file_path_suffix}"
         pattern = (
-            r".*[. ]S0?" + str(season.number) + r"E(?:\d+-?E)?0?" + str(episode_number) + r"[. -].*"
+            r".*[. ]S0?"
+            + str(season.number)
+            + r"E(?:\d+-?E)?0?"
+            + str(episode_number)
+            + r"[. -].*"
         )
         subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
         target_file_name = (

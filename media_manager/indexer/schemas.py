@@ -60,7 +60,9 @@ class IndexerQueryResult(BaseModel):
             return list(range(int(range_match.group(1)), int(range_match.group(2)) + 1))
 
         # Try shorthand range: S01-8 (S prefix only on first)
-        shorthand_match = re.search(r"\bS(\d+)\s*-\s*(\d+)\b", self.title, re.IGNORECASE)
+        shorthand_match = re.search(
+            r"\bS(\d+)\s*-\s*(\d+)\b", self.title, re.IGNORECASE
+        )
         if shorthand_match:
             start, end = int(shorthand_match.group(1)), int(shorthand_match.group(2))
             if end > start:
