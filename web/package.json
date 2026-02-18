@@ -21,7 +21,7 @@
 		"@fontsource/fira-mono": "^5.0.0",
 		"@lucide/svelte": "^0.482.0",
 		"@neoconfetti/svelte": "^2.0.0",
-		"@sinclair/typebox": "^0.34.38",
+		"@sinclair/typebox": "^0.34.48",
 		"@sveltejs/adapter-auto": "^6.0.2",
 		"@sveltejs/adapter-static": "^3.0.8",
 		"@sveltejs/enhanced-img": "^0.6.1",
