@@ -56,7 +56,7 @@
 		"svelte": "^5.51.0",
 		"svelte-check": "^4.3.1",
 		"svelte-sonner": "^1.0.7",
-		"sveltekit-superforms": "^2.27.1",
+		"sveltekit-superforms": "^2.29.1",
 		"tailwind-merge": "^3.3.1",
 		"tailwind-variants": "^0.2.1",
 		"tailwindcss": "^4.1.11",
