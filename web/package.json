@@ -40,7 +40,7 @@
 		"class-validator": "^0.14.2",
 		"clsx": "^2.1.1",
 		"embla-carousel-svelte": "^8.6.0",
-		"eslint": "^9.18.0",
+		"eslint": "^10.0.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.11.0",
 		"formsnap": "^2.0.0-next.1",
