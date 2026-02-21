@@ -1,0 +1,22 @@
+/*.md-header__button.md-logo {*/
+/*    margin-top: 0;*/
+/*    margin-bottom: 0;*/
+/*    padding-top: 0;*/
+/*    padding-bottom: 0;*/
+/*}*/
+
+/*.md-header__button.md-logo img,*/
+/*.md-header__button.md-logo svg {*/
+/*    height: 70%;*/
+/*    width: 70%;*/
+/*}*/
+/* Increase logo size */
+.md-header__button.md-logo svg, .md-header__button.md-logo img {
+    height: 2.5rem; /* Increase height (default is usually ~1.2rem to 1.5rem) */
+    width: auto;
+}
+
+/* Adjust header height if necessary to fit the larger logo */
+.md-header {
+    height: 4rem; /* Match or exceed your new logo height */
+}
