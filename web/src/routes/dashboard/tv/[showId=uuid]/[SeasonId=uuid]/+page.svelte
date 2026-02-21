@@ -17,10 +17,7 @@
 
 	let episodeById = $derived(
 		Object.fromEntries(
-			season.episodes.map((ep) => [
-				ep.id,
-				`E${String(ep.number).padStart(2, '0')}`
-			])
+			season.episodes.map((ep) => [ep.id, `E${String(ep.number).padStart(2, '0')}`])
 		)
 	);
 </script>
@@ -79,23 +76,18 @@
 			<Card.Root class="h-full w-full">
 				<Card.Content class="flex flex-col gap-6">
 					<div>
-						<Card.Title class="text-base mb-2">
-							Series Overview
-						</Card.Title>
-						<p class="text-sm leading-6 text-muted-foreground text-justify hyphens-auto">
+						<Card.Title class="mb-2 text-base">Series Overview</Card.Title>
+						<p class="text-justify text-sm leading-6 hyphens-auto text-muted-foreground">
 							{show.overview}
 						</p>
 					</div>
 					<div class="border-t border-border"></div>
 					<div>
-						<Card.Title class="text-base mb-2">
-							Season Overview
-						</Card.Title>
-						<p class="text-sm leading-6 text-muted-foreground text-justify hyphens-auto">
+						<Card.Title class="mb-2 text-base">Season Overview</Card.Title>
+						<p class="text-justify text-sm leading-6 hyphens-auto text-muted-foreground">
 							{season.overview}
 						</p>
 					</div>
-
 				</Card.Content>
 			</Card.Root>
 		</div>
@@ -173,7 +165,9 @@
 					<Table.Body>
 						{#each season.episodes as episode (episode.id)}
 							<Table.Row>
-								<Table.Cell class="w-[100px] font-medium">E{String(episode.number).padStart(2, '0')}</Table.Cell>
+								<Table.Cell class="w-[100px] font-medium"
+									>E{String(episode.number).padStart(2, '0')}</Table.Cell
+								>
 								<Table.Cell class="min-w-[50px]">{episode.title}</Table.Cell>
 								<Table.Cell colspan={2} class="truncate">{episode.overview}</Table.Cell>
 							</Table.Row>

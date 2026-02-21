@@ -13,7 +13,7 @@
 	import TorrentTable from '$lib/components/download-dialogs/torrent-table.svelte';
 	import DownloadDialogWrapper from '$lib/components/download-dialogs/download-dialog-wrapper.svelte';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
-	
+
 	let { show }: { show: components['schemas']['Show'] } = $props();
 
 	let dialogueState = $state(false);
@@ -44,8 +44,7 @@
 				query: {
 					show_id: show.id!,
 					public_indexer_result_id: result_id,
-					override_file_path_suffix:
-						filePathSuffix === '' ? undefined : filePathSuffix
+					override_file_path_suffix: filePathSuffix === '' ? undefined : filePathSuffix
 				}
 			}
 		});
@@ -117,14 +116,12 @@
 				type="text"
 				placeholder={`e.g. ${getFullyQualifiedMediaName(show)} S01 1080p BluRay`}
 			/>
-			<Button disabled={isLoading} class="w-fit" onclick={search}>
-				Search
-			</Button>
+			<Button disabled={isLoading} class="w-fit" onclick={search}>Search</Button>
 		</div>
 
 		<p class="text-sm text-muted-foreground">
-			The custom query completely overrides the default search logic.
-			Make sure the torrent title matches the episodes you want imported.
+			The custom query completely overrides the default search logic. Make sure the torrent title
+			matches the episodes you want imported.
 		</p>
 	</div>
 
@@ -141,11 +138,7 @@
 			<Table.Cell>{torrent.usenet}</Table.Cell>
 			<Table.Cell>{torrent.usenet ? 'N/A' : torrent.seeders}</Table.Cell>
 			<Table.Cell>
-				{torrent.age
-					? formatSecondsToOptimalUnit(torrent.age)
-					: torrent.usenet
-						? 'N/A'
-						: ''}
+				{torrent.age ? formatSecondsToOptimalUnit(torrent.age) : torrent.usenet ? 'N/A' : ''}
 			</Table.Cell>
 			<Table.Cell>{torrent.score}</Table.Cell>
 			<Table.Cell>{torrent.indexer ?? 'unknown'}</Table.Cell>

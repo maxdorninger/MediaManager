@@ -1317,7 +1317,7 @@ export interface components {
 			/** Title */
 			title: string;
 			/** Overview */
-			overview: string;			
+			overview: string;
 		};
 		/** ErrorModel */
 		ErrorModel: {
@@ -1743,7 +1743,7 @@ export interface components {
 			/** Seasons */
 			seasons: number[];
 			/** Episodes */
-			episodes: number[];			
+			episodes: number[];
 		};
 		/** RichShowTorrent */
 		RichShowTorrent: {

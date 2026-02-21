@@ -26,7 +26,7 @@
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { SvelteSet } from "svelte/reactivity";
+	import { SvelteSet } from 'svelte/reactivity';
 
 	let show: components['schemas']['PublicShow'] = $derived(page.data.showData);
 	let torrents: components['schemas']['RichShowTorrent'] = $derived(page.data.torrentsData);
@@ -55,9 +55,7 @@
 	}
 
 	let selectedSeasonNumbers = $derived(
-		show.seasons
-			.filter((s) => selectedSeasons.has(s.id))
-			.map((s) => s.number)
+		show.seasons.filter((s) => selectedSeasons.has(s.id)).map((s) => s.number)
 	);
 
 	let downloadButtonLabel = $derived(
@@ -71,7 +69,7 @@
 	);
 
 	let selectedEpisodes = $state<Set<string>>(new Set());
-	
+
 	function toggleEpisodeSelection(episodeId: string) {
 		if (selectedEpisodes.has(episodeId)) {
 			selectedEpisodes.delete(episodeId);
@@ -82,15 +80,14 @@
 	}
 
 	let selectedEpisodeNumbers = $derived(
-		show.seasons
-			.flatMap((season) =>
-				season.episodes
-					.filter((ep) => selectedEpisodes.has(ep.id))
-					.map((ep) => ({
-						seasonNumber: season.number,
-						episodeNumber: ep.number
-					}))
-			)
+		show.seasons.flatMap((season) =>
+			season.episodes
+				.filter((ep) => selectedEpisodes.has(ep.id))
+				.map((ep) => ({
+					seasonNumber: season.number,
+					episodeNumber: ep.number
+				}))
+		)
 	);
 
 	let episodeDownloadLabel = $derived(
@@ -99,9 +96,10 @@
 			: `Download Episode(s) ${selectedEpisodeNumbers
 					.map(
 						(e) =>
-							`S${String(e.seasonNumber).padStart(2, '0')}E${String(
-								e.episodeNumber
-							).padStart(2, '0')}`
+							`S${String(e.seasonNumber).padStart(2, '0')}E${String(e.episodeNumber).padStart(
+								2,
+								'0'
+							)}`
 					)
 					.join(', ')}`
 	);
@@ -188,7 +186,7 @@
 					<Card.Title>Overview</Card.Title>
 				</Card.Header>
 				<Card.Content>
-					<p class="text-sm leading-6 text-muted-foreground text-justify hyphens-auto">
+					<p class="text-justify text-sm leading-6 hyphens-auto text-muted-foreground">
 						{show.overview}
 					</p>
 				</Card.Content>
@@ -226,14 +224,16 @@
 				<Card.Content class="flex flex-col items-center gap-4">
 					{#if user().is_superuser}
 						{#if selectedSeasonNumbers.length > 0}
-							<DownloadSelectedSeasonsDialog {show}
-								selectedSeasonNumbers={selectedSeasonNumbers}
+							<DownloadSelectedSeasonsDialog
+								{show}
+								{selectedSeasonNumbers}
 								triggerText={downloadButtonLabel}
 							/>
 						{/if}
 						{#if selectedEpisodeNumbers.length > 0}
-							<DownloadSelectedEpisodesDialog {show}
-								selectedEpisodeNumbers={selectedEpisodeNumbers}
+							<DownloadSelectedEpisodesDialog
+								{show}
+								{selectedEpisodeNumbers}
 								triggerText={episodeDownloadLabel}
 							/>
 						{/if}
@@ -264,7 +264,7 @@
 							<Table.Head class="w-[100px]">Exists on file</Table.Head>
 							<Table.Head class="w-[240px]">Title</Table.Head>
 							<Table.Head>Overview</Table.Head>
-							<Table.Head class="text-center w-[64px]">Details</Table.Head>
+							<Table.Head class="w-[64px] text-center">Details</Table.Head>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
@@ -293,13 +293,13 @@
 									<Table.Cell class="max-w-[300px] truncate">{season.overview}</Table.Cell>
 									<Table.Cell class="w-[64px] text-center">
 										<button
-											class="inline-flex items-center justify-center
-												cursor-pointer
+											class="inline-flex cursor-pointer items-center
+												justify-center
 												rounded-md p-1
 												transition-colors
 												hover:bg-muted/95
-												focus-visible:outline-none
-												focus-visible:ring-2 focus-visible:ring-ring"
+												focus-visible:ring-2
+												focus-visible:ring-ring focus-visible:outline-none"
 											onclick={(e) => {
 												e.stopPropagation();
 												goto(
@@ -314,28 +314,28 @@
 											<Ellipsis size={16} class="text-muted-foreground" />
 										</button>
 									</Table.Cell>
-								</Table.Row>									
-									{#if expandedSeasons.has(season.id)}
-										{#each season.episodes as episode (episode.id)}
-											<Table.Row class="bg-muted/20">
-												<Table.Cell class="w-[40px]">
-													<Checkbox
-														checked={selectedEpisodes.has(episode.id)}
-														onCheckedChange={() => toggleEpisodeSelection(episode.id)}
-														onclick={(e) => e.stopPropagation()}
-													/>
-												</Table.Cell>
-												<Table.Cell class="min-w-[10px] font-medium">
-													E{String(episode.number).padStart(2, '0')}
-												</Table.Cell>
-												<Table.Cell class="min-w-[10px] font-medium">
-													<CheckmarkX state={episode.downloaded} />
-												</Table.Cell>
-												<Table.Cell class="min-w-[50px]">{episode.title}</Table.Cell>
-												<Table.Cell colspan={2} class="truncate">{episode.overview}</Table.Cell>
-											</Table.Row>
-										{/each}
-									{/if}
+								</Table.Row>
+								{#if expandedSeasons.has(season.id)}
+									{#each season.episodes as episode (episode.id)}
+										<Table.Row class="bg-muted/20">
+											<Table.Cell class="w-[40px]">
+												<Checkbox
+													checked={selectedEpisodes.has(episode.id)}
+													onCheckedChange={() => toggleEpisodeSelection(episode.id)}
+													onclick={(e) => e.stopPropagation()}
+												/>
+											</Table.Cell>
+											<Table.Cell class="min-w-[10px] font-medium">
+												E{String(episode.number).padStart(2, '0')}
+											</Table.Cell>
+											<Table.Cell class="min-w-[10px] font-medium">
+												<CheckmarkX state={episode.downloaded} />
+											</Table.Cell>
+											<Table.Cell class="min-w-[50px]">{episode.title}</Table.Cell>
+											<Table.Cell colspan={2} class="truncate">{episode.overview}</Table.Cell>
+										</Table.Row>
+									{/each}
+								{/if}
 							{/each}
 						{:else}
 							<Table.Row>

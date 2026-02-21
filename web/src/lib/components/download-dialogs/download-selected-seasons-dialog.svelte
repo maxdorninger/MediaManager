@@ -14,11 +14,11 @@
 	let {
 		show,
 		selectedSeasonNumbers,
-        triggerText = 'Download Selected Seasons'
+		triggerText = 'Download Selected Seasons'
 	}: {
 		show: components['schemas']['Show'];
 		selectedSeasonNumbers: number[];
-        triggerText?: string;
+		triggerText?: string;
 	} = $props();
 
 	let dialogueState = $state(false);
@@ -46,8 +46,7 @@
 				query: {
 					show_id: show.id!,
 					public_indexer_result_id: result_id,
-					override_file_path_suffix:
-						filePathSuffix === '' ? undefined : filePathSuffix
+					override_file_path_suffix: filePathSuffix === '' ? undefined : filePathSuffix
 				}
 			}
 		});
@@ -81,7 +80,6 @@
 		return episodePatterns.some((regex) => regex.test(lower));
 	}
 
-
 	async function search() {
 		if (!selectedSeasonNumbers || selectedSeasonNumbers.length === 0) {
 			toast.error('No seasons selected.');
@@ -91,9 +89,7 @@
 		isLoading = true;
 		torrentsError = null;
 
-		toast.info(
-			`Searching torrents for seasons: ${selectedSeasonNumbers.join(', ')}`
-		);
+		toast.info(`Searching torrents for seasons: ${selectedSeasonNumbers.join(', ')}`);
 
 		torrentsPromise = Promise.all(
 			selectedSeasonNumbers.map((seasonNumber) =>
@@ -110,9 +106,7 @@
 			)
 		)
 			.then((results) => results.flat())
-			.then((allTorrents) =>
-				allTorrents.filter((torrent) => !isEpisodeRelease(torrent.title))
-			)
+			.then((allTorrents) => allTorrents.filter((torrent) => !isEpisodeRelease(torrent.title)))
 			.finally(() => (isLoading = false));
 
 		await torrentsPromise;
@@ -121,7 +115,7 @@
 
 <DownloadDialogWrapper
 	bind:open={dialogueState}
-    triggerText={triggerText}
+	{triggerText}
 	title="Download Selected Seasons"
 	description="Search and download torrents for the selected seasons."
 >
@@ -129,13 +123,13 @@
 		<p class="text-sm text-muted-foreground">
 			Selected seasons:
 			<strong>
-					{selectedSeasonNumbers.length > 0
-                        ? selectedSeasonNumbers
-                                .slice()
-                                .sort((a, b) => a - b)
-                                .map((n) => `S${String(n).padStart(2, '0')}`)
-                                .join(', ')
-                        : 'None'}
+				{selectedSeasonNumbers.length > 0
+					? selectedSeasonNumbers
+							.slice()
+							.sort((a, b) => a - b)
+							.map((n) => `S${String(n).padStart(2, '0')}`)
+							.join(', ')
+					: 'None'}
 			</strong>
 		</p>
 
@@ -163,11 +157,7 @@
 			<Table.Cell>{torrent.usenet}</Table.Cell>
 			<Table.Cell>{torrent.usenet ? 'N/A' : torrent.seeders}</Table.Cell>
 			<Table.Cell>
-				{torrent.age
-					? formatSecondsToOptimalUnit(torrent.age)
-					: torrent.usenet
-						? 'N/A'
-						: ''}
+				{torrent.age ? formatSecondsToOptimalUnit(torrent.age) : torrent.usenet ? 'N/A' : ''}
 			</Table.Cell>
 			<Table.Cell>{torrent.score}</Table.Cell>
 			<Table.Cell>{torrent.indexer ?? 'unknown'}</Table.Cell>

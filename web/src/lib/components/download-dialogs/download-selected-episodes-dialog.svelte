@@ -36,64 +36,59 @@
 		{ name: 'Indexer Flags', id: 'flags' }
 	];
 
-    function torrentMatchesSelectedEpisodes(
-        torrentTitle: string,
-        selectedEpisodes: { seasonNumber: number; episodeNumber: number }[]
-    ) {
-        const normalizedTitle = torrentTitle.toLowerCase();
+	function torrentMatchesSelectedEpisodes(
+		torrentTitle: string,
+		selectedEpisodes: { seasonNumber: number; episodeNumber: number }[]
+	) {
+		const normalizedTitle = torrentTitle.toLowerCase();
 
-        return selectedEpisodes.some((ep) => {
-            const s = String(ep.seasonNumber).padStart(2, '0');
-            const e = String(ep.episodeNumber).padStart(2, '0');
+		return selectedEpisodes.some((ep) => {
+			const s = String(ep.seasonNumber).padStart(2, '0');
+			const e = String(ep.episodeNumber).padStart(2, '0');
 
-            const patterns = [
-                `s${s}e${e}`,
-                `${s}x${e}`,
-                `season ${ep.seasonNumber} episode ${ep.episodeNumber}`
-            ];
+			const patterns = [
+				`s${s}e${e}`,
+				`${s}x${e}`,
+				`season ${ep.seasonNumber} episode ${ep.episodeNumber}`
+			];
 
-            return patterns.some((pattern) =>
-                normalizedTitle.includes(pattern)
-            );
-        });
-    }
+			return patterns.some((pattern) => normalizedTitle.includes(pattern));
+		});
+	}
 
 	async function search() {
-        if (!selectedEpisodeNumbers || selectedEpisodeNumbers.length === 0) {
-            toast.error('No episodes selected.');
-            return;
-        }
+		if (!selectedEpisodeNumbers || selectedEpisodeNumbers.length === 0) {
+			toast.error('No episodes selected.');
+			return;
+		}
 
-        isLoading = true;
+		isLoading = true;
 
-        torrentsPromise = Promise.all(
-            selectedEpisodeNumbers.map((ep) =>
-                client
-                    .GET('/api/v1/tv/torrents', {
-                        params: {
-                            query: {
-                                show_id: show.id!,
-                                season_number: ep.seasonNumber,
-                                episode_number: ep.episodeNumber
-                            }
-                        }
-                    })
-                    .then((r) => r?.data ?? [])
-            )
-        )
-            .then((results) => results.flat())
-            .then((allTorrents) =>
-                allTorrents.filter((torrent) =>
-                    torrentMatchesSelectedEpisodes(
-                        torrent.title,
-                        selectedEpisodeNumbers
-                    )
-                )
-            )
-            .finally(() => (isLoading = false));
+		torrentsPromise = Promise.all(
+			selectedEpisodeNumbers.map((ep) =>
+				client
+					.GET('/api/v1/tv/torrents', {
+						params: {
+							query: {
+								show_id: show.id!,
+								season_number: ep.seasonNumber,
+								episode_number: ep.episodeNumber
+							}
+						}
+					})
+					.then((r) => r?.data ?? [])
+			)
+		)
+			.then((results) => results.flat())
+			.then((allTorrents) =>
+				allTorrents.filter((torrent) =>
+					torrentMatchesSelectedEpisodes(torrent.title, selectedEpisodeNumbers)
+				)
+			)
+			.finally(() => (isLoading = false));
 
-        await torrentsPromise;
-    }
+		await torrentsPromise;
+	}
 
 	async function downloadTorrent(result_id: string) {
 		const { response } = await client.POST('/api/v1/tv/torrents', {
@@ -101,8 +96,7 @@
 				query: {
 					show_id: show.id!,
 					public_indexer_result_id: result_id,
-					override_file_path_suffix:
-						filePathSuffix === '' ? undefined : filePathSuffix
+					override_file_path_suffix: filePathSuffix === '' ? undefined : filePathSuffix
 				}
 			}
 		});
@@ -119,7 +113,7 @@
 
 <DownloadDialogWrapper
 	bind:open={dialogueState}
-	triggerText={triggerText}
+	{triggerText}
 	title="Download Selected Episodes"
 	description="Search and download torrents for selected episodes."
 >
@@ -128,19 +122,24 @@
 			Selected episodes:
 			<strong>
 				{selectedEpisodeNumbers.length > 0
-					? selectedEpisodeNumbers.map(e => `S${String(e.seasonNumber).padStart(2, '0')}E${String(e.episodeNumber).padStart(2, '0')}`).join(', ')
+					? selectedEpisodeNumbers
+							.map(
+								(e) =>
+									`S${String(e.seasonNumber).padStart(2, '0')}E${String(e.episodeNumber).padStart(2, '0')}`
+							)
+							.join(', ')
 					: 'None'}
 			</strong>
 		</p>
 
-        <Button
-            class="w-fit"
-            disabled={isLoading || selectedEpisodeNumbers.length === 0}
-            onclick={search}
-        >
-            Search Torrents
-        </Button>
-    </div>
+		<Button
+			class="w-fit"
+			disabled={isLoading || selectedEpisodeNumbers.length === 0}
+			onclick={search}
+		>
+			Search Torrents
+		</Button>
+	</div>
 
 	<TorrentTable {torrentsPromise} columns={tableColumnHeadings}>
 		{#snippet rowSnippet(torrent)}
@@ -151,11 +150,7 @@
 			<Table.Cell>{torrent.usenet}</Table.Cell>
 			<Table.Cell>{torrent.usenet ? 'N/A' : torrent.seeders}</Table.Cell>
 			<Table.Cell>
-				{torrent.age
-					? formatSecondsToOptimalUnit(torrent.age)
-					: torrent.usenet
-						? 'N/A'
-						: ''}
+				{torrent.age ? formatSecondsToOptimalUnit(torrent.age) : torrent.usenet ? 'N/A' : ''}
 			</Table.Cell>
 			<Table.Cell>{torrent.score}</Table.Cell>
 			<Table.Cell>{torrent.indexer ?? 'unknown'}</Table.Cell>
