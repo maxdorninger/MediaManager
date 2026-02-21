@@ -2,7 +2,7 @@ site_name: "MediaManager Documentation"
 theme:
   name: "material"
   logo: "assets/logo.svg"
-  favicon: "assets/logo.svg"
+  favicon: "assets/favicon.ico"
   features:
     - navigation.sections
     - navigation.expand
@@ -68,3 +68,5 @@ nav:
 extra:
   version:
     provider: mike
+extra_css:
+  - custom.css
