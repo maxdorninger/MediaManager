@@ -626,10 +626,10 @@ export interface paths {
 			cookie?: never;
 		};
 		/**
-		 * Get Season Files
-		 * @description Get files associated with a specific season.
+		 * Get Episode Files
+		 * @description Get episodes files associated with a specific season.
 		 */
-		get: operations['get_season_files_api_v1_tv_seasons__season_id__files_get'];
+		get: operations['get_episode_files_api_v1_tv_seasons__season_id__files_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
@@ -1316,6 +1316,8 @@ export interface components {
 			external_id: number;
 			/** Title */
 			title: string;
+			/** Overview */
+			overview: string;
 		};
 		/** ErrorModel */
 		ErrorModel: {
@@ -1560,6 +1562,27 @@ export interface components {
 			imported: boolean;
 		};
 		/** PublicSeason */
+		PublicEpisode: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id: string;
+			/** Number */
+			number: number;
+			/**
+			 * Downloaded
+			 * @default false
+			 */
+			downloaded: boolean;
+			/** Name */
+			title: string;
+			/** Overview */
+			overview: string;
+			/** External Id */
+			external_id: number;
+		};
+		/** PublicSeason */
 		PublicSeason: {
 			/**
 			 * Id
@@ -1580,15 +1603,15 @@ export interface components {
 			/** External Id */
 			external_id: number;
 			/** Episodes */
-			episodes: components['schemas']['Episode'][];
+			episodes: components['schemas']['PublicEpisode'][];
 		};
-		/** PublicSeasonFile */
-		PublicSeasonFile: {
+		/** PublicEpisodeFile */
+		PublicEpisodeFile: {
 			/**
-			 * Season Id
+			 * Episode Id
 			 * Format: uuid
 			 */
-			season_id: string;
+			episode_id: string;
 			quality: components['schemas']['Quality'];
 			/** Torrent Id */
 			torrent_id: string | null;
@@ -1719,6 +1742,8 @@ export interface components {
 			file_path_suffix: string;
 			/** Seasons */
 			seasons: number[];
+			/** Episodes */
+			episodes: number[];
 		};
 		/** RichShowTorrent */
 		RichShowTorrent: {
@@ -3232,7 +3257,7 @@ export interface operations {
 			};
 		};
 	};
-	get_season_files_api_v1_tv_seasons__season_id__files_get: {
+	get_episode_files_api_v1_tv_seasons__season_id__files_get: {
 		parameters: {
 			query?: never;
 			header?: never;
@@ -3250,7 +3275,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['PublicSeasonFile'][];
+					'application/json': components['schemas']['PublicEpisodeFile'][];
 				};
 			};
 			/** @description Validation Error */

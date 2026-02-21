@@ -18,6 +18,7 @@ class IndexerQueryResult(Base):
     flags = mapped_column(ARRAY(String))
     quality: Mapped[Quality]
     season = mapped_column(ARRAY(Integer))
+    episode = mapped_column(ARRAY(Integer))
     size = mapped_column(BigInteger)
     usenet: Mapped[bool]
     age: Mapped[int]
