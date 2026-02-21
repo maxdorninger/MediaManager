@@ -67,6 +67,21 @@
 		await invalidateAll();
 	}
 
+	function isEpisodeRelease(title: string) {
+		const lower = title.toLowerCase();
+
+		const episodePatterns = [
+			/s\d{1,2}e\d{1,2}/i,
+			/\d{1,2}x\d{1,2}/i,
+			/\be\d{1,2}\b/i,
+			/e\d{1,2}-e?\d{1,2}/i,
+			/vol\.?\s?\d+/i
+		];
+
+		return episodePatterns.some((regex) => regex.test(lower));
+	}
+
+
 	async function search() {
 		if (!selectedSeasonNumbers || selectedSeasonNumbers.length === 0) {
 			toast.error('No seasons selected.');
@@ -95,6 +110,9 @@
 			)
 		)
 			.then((results) => results.flat())
+			.then((allTorrents) =>
+				allTorrents.filter((torrent) => !isEpisodeRelease(torrent.title))
+			)
 			.finally(() => (isLoading = false));
 
 		await torrentsPromise;
