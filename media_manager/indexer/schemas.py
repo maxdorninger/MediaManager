@@ -55,42 +55,38 @@ class IndexerQueryResult(BaseModel):
     @property
     def season(self) -> list[int]:
         title = self.title.lower()
-        result: list[int] = []
 
         # 1) S01E01 / S1E2
         m = re.search(r"s(\d{1,2})e\d{1,3}", title)
         if m:
-            result = [int(m.group(1))]
-            return result
+            return [int(m.group(1))]
 
         # 2) Range S01-S03 / S1-S3
         m = re.search(r"s(\d{1,2})\s*[-–]\s*s?(\d{1,2})", title)
         if m:
             start, end = int(m.group(1)), int(m.group(2))
             if start <= end:
-                result = list(range(start, end + 1))
-            return result
+                return list(range(start, end + 1))
+            return []
             
         # 3) Pack S01 / S1
         m = re.search(r"\bs(\d{1,2})\b", title)
         if m:
-            result = [int(m.group(1))]
-            return result
+            return [int(m.group(1))]
 
         # 4) Season 01 / Season 1
         m = re.search(r"\bseason\s*(\d{1,2})\b", title)
         if m:
-            result = [int(m.group(1))]
-            return result
+            return [int(m.group(1))]
 
-        return result
+        return []
 
     @computed_field(return_type=list[int])
     @property
     def episode(self) -> list[int]:
         title = self.title.lower()
         result: list[int] = []
-        
+
         pattern = r"s\d{1,2}e(\d{1,3})(?:\s*-\s*(?:s?\d{1,2}e)?(\d{1,3}))?"
         match = re.search(pattern, title)
 

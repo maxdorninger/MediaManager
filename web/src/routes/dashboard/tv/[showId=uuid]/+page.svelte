@@ -26,6 +26,7 @@
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
 	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { SvelteSet } from "svelte/reactivity";
 
 	let show: components['schemas']['PublicShow'] = $derived(page.data.showData);
 	let torrents: components['schemas']['RichShowTorrent'] = $derived(page.data.torrentsData);
@@ -39,7 +40,7 @@
 		} else {
 			expandedSeasons.add(seasonId);
 		}
-		expandedSeasons = new Set(expandedSeasons);
+		expandedSeasons = new SvelteSet(expandedSeasons);
 	}
 
 	let selectedSeasons = $state<Set<string>>(new Set());
@@ -50,7 +51,7 @@
 		} else {
 			selectedSeasons.add(seasonId);
 		}
-		selectedSeasons = new Set(selectedSeasons);
+		selectedSeasons = new SvelteSet(selectedSeasons);
 	}
 
 	let selectedSeasonNumbers = $derived(
@@ -77,7 +78,7 @@
 		} else {
 			selectedEpisodes.add(episodeId);
 		}
-		selectedEpisodes = new Set(selectedEpisodes);
+		selectedEpisodes = new SvelteSet(selectedEpisodes);
 	}
 
 	let selectedEpisodeNumbers = $derived(

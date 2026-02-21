@@ -25,7 +25,6 @@
 	let torrentsPromise: any = $state();
 	let isLoading: boolean = $state(false);
 	let filePathSuffix: string = $state('');
-	let torrentsError: string | null = $state(null);
 
 	const tableColumnHeadings = [
 		{ name: 'Size', id: 'size' },

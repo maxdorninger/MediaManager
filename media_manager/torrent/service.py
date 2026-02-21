@@ -6,7 +6,6 @@ from media_manager.torrent.manager import DownloadManager
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.schemas import Torrent, TorrentId
 from media_manager.tv.schemas import Show, EpisodeFile
-from media_manager.movies.schemas import Movie
 
 log = logging.getLogger(__name__)
 

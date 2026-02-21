@@ -12,7 +12,12 @@ from media_manager.movies.schemas import (
 from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import TorrentId, Torrent as TorrentSchema
 from media_manager.tv.models import Show, Season, EpisodeFile, Episode
-from media_manager.tv.schemas import Show as ShowSchema, EpisodeFile as EpisodeFileSchema
+from media_manager.tv.schemas import (
+    EpisodeFile as EpisodeFileSchema,
+)
+from media_manager.tv.schemas import (
+    Show as ShowSchema,
+)
 
 class TorrentRepository:
     def __init__(self, db: DbSessionDependency) -> None:
