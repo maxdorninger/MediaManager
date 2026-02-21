@@ -41,9 +41,6 @@ from media_manager.torrent.utils import (
 from media_manager.tv import log
 from media_manager.tv.repository import TvRepository
 from media_manager.tv.schemas import (
-    Episode as EpisodeSchema,
-)
-from media_manager.tv.schemas import (
     Episode,
     EpisodeFile,
     EpisodeId,
@@ -60,6 +57,7 @@ from media_manager.tv.schemas import (
     Show,
     ShowId,
 )
+from media_manager.tv.schemas import Episode as EpisodeSchema
 
 
 class TvService:
@@ -345,7 +343,7 @@ class TvService:
                 episode.downloaded = self.is_episode_downloaded(episode=episode, season=season, show=show)
 
             public_seasons.append(public_season)
-        
+
         public_show.seasons = public_seasons
         return public_show
 
@@ -400,17 +398,17 @@ class TvService:
 
         if not season_dir.exists():
             return False
-        
+
         episode_token = f"S{season.number:02d}E{episode.number:02d}"
 
-        VIDEO_EXTENSIONS = {".mkv", ".mp4", ".avi", ".mov"}
+        video_extensions = {".mkv", ".mp4", ".avi", ".mov"}
 
         try:
             for file in season_dir.iterdir():
                 if (
                     file.is_file()
                     and episode_token in file.name
-                    and file.suffix.lower() in VIDEO_EXTENSIONS
+                    and file.suffix.lower() in video_extensions
                 ):
                     return True
 
@@ -522,15 +520,14 @@ class TvService:
                 usenet=show_torrent.usenet,
             )
             rich_season_torrents.append(season_torrent)
-        
-        richshowtorrent = RichShowTorrent(
+
+        return RichShowTorrent(
             show_id=show.id,
             name=show.name,
             year=show.year,
             metadata_provider=show.metadata_provider,
             torrents=rich_season_torrents,
         )
-        return richshowtorrent
 
     def get_all_shows_with_torrents(self) -> list[RichShowTorrent]:
         """
@@ -581,10 +578,10 @@ class TvService:
                         file_path_suffix=override_show_file_path_suffix,
                     )
                     self.tv_repository.add_episode_file(episode_file=episode_file)
-                
+
         except IntegrityError:
             log.error(
-                f"Episode file for episode {current_episode_id} of season {season.id} and quality {indexer_result.quality} already exists, skipping."
+                f"Episode file for episode {episode_id} of season {season.id} and quality {indexer_result.quality} already exists, skipping."
             )
             self.torrent_service.cancel_download(
                 torrent=show_torrent, delete_files=True
@@ -649,7 +646,7 @@ class TvService:
         available_torrents.sort()
 
         torrent = self.torrent_service.download(indexer_result=available_torrents[0])
-        season_file = SeasonFile(
+        season_file = SeasonFile(  # noqa: F821
             season_id=season.id,
             quality=torrent.quality,
             torrent_id=torrent.id,
@@ -744,7 +741,7 @@ class TvService:
     ) -> tuple[bool, list[Episode]]:
         season_path = self.get_root_season_directory(
             show=show, season_number=season.number
-        )   
+        )
         success = True
         imported_episodes = []
         try:
@@ -816,7 +813,7 @@ class TvService:
                 log.debug(
                     f"Didn't find any pattern {subtitle_pattern} in subtitle file: {subtitle_file.name}"
                 )
-        
+
         found_video = False
 
         # import episode videos
@@ -826,7 +823,7 @@ class TvService:
                 import_file(target_file=target_video_file, source_file=file)
                 found_video = True
                 break
-        
+
         if not found_video:
             # Send notification about missing episode file
             if self.notification_service:
@@ -838,7 +835,7 @@ class TvService:
                 f"File for S{season.number}E{episode.number} not found when trying to import episode for show {show.name}."
             )
             return False
-        
+
         return True
 
     def import_episode_files_from_torrent(self, torrent: Torrent, show: Show) -> None:
@@ -848,7 +845,7 @@ class TvService:
         :param show: The Show object
         """
 
-        video_files, subtitle_files, all_files = get_files_for_import(torrent=torrent)
+        video_files, subtitle_files, _all_files = get_files_for_import(torrent=torrent)
 
         success: list[bool] = []
 
@@ -881,7 +878,8 @@ class TvService:
                     season_path.mkdir(parents=True)
                 except Exception as e:
                     log.warning(f"Could not create path {season_path}: {e}")
-                    raise Exception(f"Could not create path {season_path}") from e
+                    msg = f"Could not create path {season_path}"
+                    raise Exception(msg) from e  # noqa: TRY002
 
             episoded_import_success = self.import_episode_files(
                 show=show,
@@ -892,10 +890,10 @@ class TvService:
                 file_path_suffix=episode_file.file_path_suffix,
             )
             success.append(episoded_import_success)
-            
+
             if episoded_import_success:
                 imported_episodes_by_season.setdefault(season.number, []).append(episode.number)
-                
+
                 log.info(
                     f"Episode {episode.number} from Season {season.number} successfully imported from torrent {torrent.title}"
                 )
@@ -1043,7 +1041,7 @@ class TvService:
                             overview=ep_data.overview,
                         )
                     )
-                    for ep_data in fresh_season_data.episodes:
+                    for _ep_data in fresh_season_data.episodes:
                         season_schema = Season(
                             id=SeasonId(fresh_season_data.id),
                             number=fresh_season_data.number,
@@ -1102,7 +1100,7 @@ class TvService:
             directory=new_source_path
         )
         for season in tv_show.seasons:
-            success, imported_episodes = self.import_season(
+            _success, imported_episodes = self.import_season(
                 show=tv_show,
                 season=season,
                 video_files=video_files,

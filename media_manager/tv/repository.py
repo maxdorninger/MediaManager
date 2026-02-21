@@ -1,8 +1,5 @@
 from sqlalchemy import delete, func, select
-from sqlalchemy.exc import (
-    IntegrityError,
-    SQLAlchemyError,
-)
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 
 from media_manager.exceptions import ConflictError, NotFoundError
@@ -10,10 +7,9 @@ from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import Torrent as TorrentSchema
 from media_manager.torrent.schemas import TorrentId
 from media_manager.tv import log
-from media_manager.tv.models import Season, Show, Episode, SeasonRequest, EpisodeFile
-from media_manager.tv.schemas import (
-    Episode as EpisodeSchema,
-)
+from media_manager.tv.models import Episode, EpisodeFile, Season, SeasonRequest, Show
+from media_manager.tv.schemas import Episode as EpisodeSchema
+from media_manager.tv.schemas import EpisodeFile as EpisodeFileSchema
 from media_manager.tv.schemas import (
     EpisodeId,
     EpisodeNumber,
@@ -22,21 +18,10 @@ from media_manager.tv.schemas import (
     SeasonRequestId,
     ShowId,
 )
-from media_manager.tv.schemas import (
-    RichSeasonRequest as RichSeasonRequestSchema,
-)
-from media_manager.tv.schemas import (
-    Season as SeasonSchema,
-)
-from media_manager.tv.schemas import (
-    EpisodeFile as EpisodeFileSchema,
-)
-from media_manager.tv.schemas import (
-    SeasonRequest as SeasonRequestSchema,
-)
-from media_manager.tv.schemas import (
-    Show as ShowSchema,
-)
+from media_manager.tv.schemas import RichSeasonRequest as RichSeasonRequestSchema
+from media_manager.tv.schemas import Season as SeasonSchema
+from media_manager.tv.schemas import SeasonRequest as SeasonRequestSchema
+from media_manager.tv.schemas import Show as ShowSchema
 
 
 class TvRepository:
@@ -250,7 +235,8 @@ class TvRepository:
         try:
             episode = self.db.get(Episode, episode_id)
             if not episode:
-                raise NotFoundError(f"Episode with id {episode_id} not found.")
+                msg = f"Episode with id {episode_id} not found."
+                raise NotFoundError(msg)
             return EpisodeSchema.model_validate(episode)
         except SQLAlchemyError as e:
             log.error(f"Database error while retrieving episode {episode_id}: {e}")
@@ -267,9 +253,8 @@ class TvRepository:
             season = self.db.scalar(stmt)
 
             if not season:
-                raise NotFoundError(
-                    f"Season not found for episode {episode_id}"
-                )
+                msg = f"Season not found for episode {episode_id}"
+                raise NotFoundError(msg)
 
             return SeasonSchema.model_validate(season)
 

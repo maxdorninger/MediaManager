@@ -62,13 +62,13 @@ class IndexerQueryResult(BaseModel):
             return [int(m.group(1))]
 
         # 2) Range S01-S03 / S1-S3
-        m = re.search(r"s(\d{1,2})\s*[-–]\s*s?(\d{1,2})", title)
+        m = re.search(r"s(\d{1,2})\s*(?:-|\u2013)\s*s?(\d{1,2})", title)
         if m:
             start, end = int(m.group(1)), int(m.group(2))
             if start <= end:
                 return list(range(start, end + 1))
             return []
-            
+
         # 3) Pack S01 / S1
         m = re.search(r"\bs(\d{1,2})\b", title)
         if m:
