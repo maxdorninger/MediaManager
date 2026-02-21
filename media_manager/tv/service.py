@@ -507,7 +507,6 @@ class TvService:
             episodes = self.tv_repository.get_episodes_by_torrent_id(
                 torrent_id=show_torrent.id
             )
-            log.debug(f"episodes:{episodes}")
             episode_files = self.torrent_service.get_episode_files_of_torrent(torrent=show_torrent)
 
             file_path_suffix = episode_files[0].file_path_suffix if episode_files else ""
@@ -559,7 +558,6 @@ class TvService:
         indexer_result = self.indexer_service.get_result(
             result_id=public_indexer_result_id
         )
-        log.debug(f"indexer_result:{indexer_result}")
         show_torrent = self.torrent_service.download(indexer_result=indexer_result)
         self.torrent_service.pause_download(torrent=show_torrent)
 
@@ -571,25 +569,18 @@ class TvService:
                 episodes = {episode.number: episode.id for episode in season.episodes}
 
                 if indexer_result.episode:
-                    for episode_number in indexer_result.episode:
-                        current_episode_id = episodes.get(episode_number)
-                        episode_file = EpisodeFile(
-                            episode_id=current_episode_id,
-                            quality=indexer_result.quality,
-                            torrent_id=show_torrent.id,
-                            file_path_suffix=override_show_file_path_suffix,
-                        )
-                        self.tv_repository.add_episode_file(episode_file=episode_file)
+                    episode_ids = [episodes.get(ep_number) for ep_number in indexer_result.episode]
                 else:
-                    for episode in season.episodes:
-                        current_episode_id = episode.id
-                        episode_file = EpisodeFile(
-                            episode_id=current_episode_id,
-                            quality=indexer_result.quality,
-                            torrent_id=show_torrent.id,
-                            file_path_suffix=override_show_file_path_suffix,
-                        )
-                        self.tv_repository.add_episode_file(episode_file=episode_file)
+                    episode_ids = [episode.id for episode in season.episodes]
+
+                for episode_id in episode_ids:
+                    episode_file = EpisodeFile(
+                        episode_id=episode_id,
+                        quality=indexer_result.quality,
+                        torrent_id=show_torrent.id,
+                        file_path_suffix=override_show_file_path_suffix,
+                    )
+                    self.tv_repository.add_episode_file(episode_file=episode_file)
                 
         except IntegrityError:
             log.error(
@@ -1119,14 +1110,6 @@ class TvService:
                 file_path_suffix="IMPORTED",
             )
         for episode in imported_episodes:
-
-            # 🛑 Prevent duplicates (important if import runs twice)
-            existing = self.tv_repository.get_episode_files_by_episode_id(
-                episode_id=episode.id
-            )
-
-            if existing:
-                continue
 
             episode_file = EpisodeFile(
                 episode_id=episode.id,

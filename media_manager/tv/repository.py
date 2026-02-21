@@ -261,8 +261,7 @@ class TvRepository:
             stmt = (
                 select(Season)
                 .join(Season.episodes)
-                .join(Episode.episode_files)
-                .where(EpisodeFile.episode_id == episode_id)
+                .where(Episode.id == episode_id)
             )
 
             season = self.db.scalar(stmt)
