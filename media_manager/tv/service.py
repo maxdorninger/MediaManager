@@ -1146,15 +1146,15 @@ class TvService:
                 subtitle_files=subtitle_files,
                 file_path_suffix="IMPORTED",
             )
-        for episode in imported_episodes:
-            episode_file = EpisodeFile(
-                episode_id=episode.id,
-                quality=Quality.unknown,
-                file_path_suffix="IMPORTED",
-                torrent_id=None,
-            )
+            for episode in imported_episodes:
+                episode_file = EpisodeFile(
+                    episode_id=episode.id,
+                    quality=Quality.unknown,
+                    file_path_suffix="IMPORTED",
+                    torrent_id=None,
+                )
 
-            self.tv_repository.add_episode_file(episode_file=episode_file)
+                self.tv_repository.add_episode_file(episode_file=episode_file)
 
     def get_importable_tv_shows(
         self, metadata_provider: AbstractMetadataProvider
