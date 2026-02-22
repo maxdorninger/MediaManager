@@ -415,7 +415,7 @@ class TvService:
             for file in season_dir.iterdir():
                 if (
                     file.is_file()
-                    and episode_token in file.name
+                    and episode_token.lower() in file.name.lower()
                     and file.suffix.lower() in video_extensions
                 ):
                     return True
