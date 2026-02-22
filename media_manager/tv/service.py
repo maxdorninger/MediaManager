@@ -337,11 +337,19 @@ class TvService:
 
         for season in show.seasons:
             public_season = PublicSeason.model_validate(season)
-            public_season.downloaded = self.is_season_downloaded(season=season, show=show)
 
             for episode in public_season.episodes:
-                episode.downloaded = self.is_episode_downloaded(episode=episode, season=season, show=show)
+                episode.downloaded = self.is_episode_downloaded(
+                    episode=episode,
+                    season=season,
+                    show=show,
+                )
 
+            # A season is considered downloaded if it has episodes and all of them are downloaded,
+            # matching the behavior of is_season_downloaded.
+            public_season.downloaded = bool(public_season.episodes) and all(
+                episode.downloaded for episode in public_season.episodes
+            )
             public_seasons.append(public_season)
 
         public_show.seasons = public_seasons
@@ -566,7 +574,22 @@ class TvService:
                 episodes = {episode.number: episode.id for episode in season.episodes}
 
                 if indexer_result.episode:
-                    episode_ids = [episodes.get(ep_number) for ep_number in indexer_result.episode]
+                    episode_ids = []
+                    missing_episodes = []
+                    for ep_number in indexer_result.episode:
+                        ep_id = episodes.get(ep_number)
+                        if ep_id is None:
+                            missing_episodes.append(ep_number)
+                            continue
+                        episode_ids.append(ep_id)
+                    if missing_episodes:
+                        log.warning(
+                            "Some episodes from indexer result were not found in season %s "
+                            "for show %s and will be skipped: %s",
+                            season.id,
+                            show_id,
+                            ", ".join(str(ep) for ep in missing_episodes),
+                        )
                 else:
                     episode_ids = [episode.id for episode in season.episodes]
 

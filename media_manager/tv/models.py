@@ -63,7 +63,7 @@ class Episode(Base):
     number: Mapped[int]
     external_id: Mapped[int]
     title: Mapped[str]
-    overview: Mapped[str]
+    overview: Mapped[str | None] = mapped_column(nullable=True)
 
     season: Mapped["Season"] = relationship(back_populates="episodes")
     episode_files = relationship(
