@@ -626,10 +626,10 @@ export interface paths {
 			cookie?: never;
 		};
 		/**
-		 * Get Season Files
-		 * @description Get files associated with a specific season.
+		 * Get Episode Files
+		 * @description Get episode files associated with a specific season.
 		 */
-		get: operations['get_season_files_api_v1_tv_seasons__season_id__files_get'];
+		get: operations['get_episode_files_api_v1_tv_seasons__season_id__files_get'];
 		put?: never;
 		post?: never;
 		delete?: never;
@@ -1316,6 +1316,8 @@ export interface components {
 			external_id: number;
 			/** Title */
 			title: string;
+			/** Overview */
+			overview?: string | null;
 		};
 		/** ErrorModel */
 		ErrorModel: {
@@ -1360,6 +1362,8 @@ export interface components {
 			readonly quality: components['schemas']['Quality'];
 			/** Season */
 			readonly season: number[];
+			/** Episode */
+			readonly episode: number[];
 		};
 		/** LibraryItem */
 		LibraryItem: {
@@ -1504,6 +1508,45 @@ export interface components {
 			/** Authorization Url */
 			authorization_url: string;
 		};
+		/** PublicEpisode */
+		PublicEpisode: {
+			/**
+			 * Id
+			 * Format: uuid
+			 */
+			id: string;
+			/** Number */
+			number: number;
+			/**
+			 * Downloaded
+			 * @default false
+			 */
+			downloaded: boolean;
+			/** Title */
+			title: string;
+			/** Overview */
+			overview?: string | null;
+			/** External Id */
+			external_id: number;
+		};
+		/** PublicEpisodeFile */
+		PublicEpisodeFile: {
+			/**
+			 * Episode Id
+			 * Format: uuid
+			 */
+			episode_id: string;
+			quality: components['schemas']['Quality'];
+			/** Torrent Id */
+			torrent_id: string | null;
+			/** File Path Suffix */
+			file_path_suffix: string;
+			/**
+			 * Downloaded
+			 * @default false
+			 */
+			downloaded: boolean;
+		};
 		/** PublicMovie */
 		PublicMovie: {
 			/**
@@ -1580,25 +1623,7 @@ export interface components {
 			/** External Id */
 			external_id: number;
 			/** Episodes */
-			episodes: components['schemas']['Episode'][];
-		};
-		/** PublicSeasonFile */
-		PublicSeasonFile: {
-			/**
-			 * Season Id
-			 * Format: uuid
-			 */
-			season_id: string;
-			quality: components['schemas']['Quality'];
-			/** Torrent Id */
-			torrent_id: string | null;
-			/** File Path Suffix */
-			file_path_suffix: string;
-			/**
-			 * Downloaded
-			 * @default false
-			 */
-			downloaded: boolean;
+			episodes: components['schemas']['PublicEpisode'][];
 		};
 		/** PublicShow */
 		PublicShow: {
@@ -1719,6 +1744,8 @@ export interface components {
 			file_path_suffix: string;
 			/** Seasons */
 			seasons: number[];
+			/** Episodes */
+			episodes: number[];
 		};
 		/** RichShowTorrent */
 		RichShowTorrent: {
@@ -3232,7 +3259,7 @@ export interface operations {
 			};
 		};
 	};
-	get_season_files_api_v1_tv_seasons__season_id__files_get: {
+	get_episode_files_api_v1_tv_seasons__season_id__files_get: {
 		parameters: {
 			query?: never;
 			header?: never;
@@ -3250,7 +3277,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					'application/json': components['schemas']['PublicSeasonFile'][];
+					'application/json': components['schemas']['PublicEpisodeFile'][];
 				};
 			};
 			/** @description Validation Error */

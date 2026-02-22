@@ -48,9 +48,6 @@ class Season(Base):
         back_populates="season", cascade="all, delete"
     )
 
-    season_files = relationship(
-        "SeasonFile", back_populates="season", cascade="all, delete"
-    )
     season_requests = relationship(
         "SeasonRequest", back_populates="season", cascade="all, delete"
     )
@@ -66,15 +63,19 @@ class Episode(Base):
     number: Mapped[int]
     external_id: Mapped[int]
     title: Mapped[str]
+    overview: Mapped[str | None] = mapped_column(nullable=True)
 
     season: Mapped["Season"] = relationship(back_populates="episodes")
+    episode_files = relationship(
+        "EpisodeFile", back_populates="episode", cascade="all, delete"
+    )
 
 
-class SeasonFile(Base):
-    __tablename__ = "season_file"
-    __table_args__ = (PrimaryKeyConstraint("season_id", "file_path_suffix"),)
-    season_id: Mapped[UUID] = mapped_column(
-        ForeignKey(column="season.id", ondelete="CASCADE"),
+class EpisodeFile(Base):
+    __tablename__ = "episode_file"
+    __table_args__ = (PrimaryKeyConstraint("episode_id", "file_path_suffix"),)
+    episode_id: Mapped[UUID] = mapped_column(
+        ForeignKey(column="episode.id", ondelete="CASCADE"),
     )
     torrent_id: Mapped[UUID | None] = mapped_column(
         ForeignKey(column="torrent.id", ondelete="SET NULL"),
@@ -82,8 +83,8 @@ class SeasonFile(Base):
     file_path_suffix: Mapped[str]
     quality: Mapped[Quality]
 
-    torrent = relationship("Torrent", back_populates="season_files", uselist=False)
-    season = relationship("Season", back_populates="season_files", uselist=False)
+    torrent = relationship("Torrent", back_populates="episode_files", uselist=False)
+    episode = relationship("Episode", back_populates="episode_files", uselist=False)
 
 
 class SeasonRequest(Base):

@@ -24,6 +24,7 @@ class Episode(BaseModel):
     number: EpisodeNumber
     external_id: int
     title: str
+    overview: str | None = None
 
 
 class Season(BaseModel):
@@ -98,16 +99,16 @@ class RichSeasonRequest(SeasonRequest):
     season: Season
 
 
-class SeasonFile(BaseModel):
+class EpisodeFile(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    season_id: SeasonId
+    episode_id: EpisodeId
     quality: Quality
     torrent_id: TorrentId | None
     file_path_suffix: str
 
 
-class PublicSeasonFile(SeasonFile):
+class PublicEpisodeFile(EpisodeFile):
     downloaded: bool = False
 
 
@@ -123,6 +124,7 @@ class RichSeasonTorrent(BaseModel):
 
     file_path_suffix: str
     seasons: list[SeasonNumber]
+    episodes: list[EpisodeNumber]
 
 
 class RichShowTorrent(BaseModel):
@@ -133,6 +135,18 @@ class RichShowTorrent(BaseModel):
     year: int | None
     metadata_provider: str
     torrents: list[RichSeasonTorrent]
+
+
+class PublicEpisode(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: EpisodeId
+    number: EpisodeNumber
+
+    downloaded: bool = False
+    title: str
+    overview: str | None = None
+
+    external_id: int
 
 
 class PublicSeason(BaseModel):
@@ -147,7 +161,7 @@ class PublicSeason(BaseModel):
 
     external_id: int
 
-    episodes: list[Episode]
+    episodes: list[PublicEpisode]
 
 
 class PublicShow(BaseModel):

@@ -1,8 +1,5 @@
 from sqlalchemy import delete, func, select
-from sqlalchemy.exc import (
-    IntegrityError,
-    SQLAlchemyError,
-)
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 
 from media_manager.exceptions import ConflictError, NotFoundError
@@ -10,32 +7,21 @@ from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import Torrent as TorrentSchema
 from media_manager.torrent.schemas import TorrentId
 from media_manager.tv import log
-from media_manager.tv.models import Episode, Season, SeasonFile, SeasonRequest, Show
-from media_manager.tv.schemas import (
-    Episode as EpisodeSchema,
-)
+from media_manager.tv.models import Episode, EpisodeFile, Season, SeasonRequest, Show
+from media_manager.tv.schemas import Episode as EpisodeSchema
+from media_manager.tv.schemas import EpisodeFile as EpisodeFileSchema
 from media_manager.tv.schemas import (
     EpisodeId,
+    EpisodeNumber,
     SeasonId,
     SeasonNumber,
     SeasonRequestId,
     ShowId,
 )
-from media_manager.tv.schemas import (
-    RichSeasonRequest as RichSeasonRequestSchema,
-)
-from media_manager.tv.schemas import (
-    Season as SeasonSchema,
-)
-from media_manager.tv.schemas import (
-    SeasonFile as SeasonFileSchema,
-)
-from media_manager.tv.schemas import (
-    SeasonRequest as SeasonRequestSchema,
-)
-from media_manager.tv.schemas import (
-    Show as ShowSchema,
-)
+from media_manager.tv.schemas import RichSeasonRequest as RichSeasonRequestSchema
+from media_manager.tv.schemas import Season as SeasonSchema
+from media_manager.tv.schemas import SeasonRequest as SeasonRequestSchema
+from media_manager.tv.schemas import Show as ShowSchema
 
 
 class TvRepository:
@@ -120,9 +106,7 @@ class TvRepository:
 
     def get_total_downloaded_episodes_count(self) -> int:
         try:
-            stmt = (
-                select(func.count()).select_from(Episode).join(Season).join(SeasonFile)
-            )
+            stmt = select(func.count(Episode.id)).select_from(Episode).join(EpisodeFile)
             return self.db.execute(stmt).scalar_one_or_none()
         except SQLAlchemyError:
             log.exception("Database error while calculating downloaded episodes count")
@@ -173,6 +157,7 @@ class TvRepository:
                                 number=episode.number,
                                 external_id=episode.external_id,
                                 title=episode.title,
+                                overview=episode.overview,
                             )
                             for episode in season.episodes
                         ],
@@ -232,6 +217,43 @@ class TvRepository:
             return SeasonSchema.model_validate(season)
         except SQLAlchemyError:
             log.exception(f"Database error while retrieving season {season_id}")
+            raise
+
+    def get_episode(self, episode_id: EpisodeId) -> EpisodeSchema:
+        """
+        Retrieve an episode by its ID.
+
+        :param episode_id: The ID of the episode to get.
+        :return: An Episode object.
+        :raises NotFoundError: If the episode with the given ID is not found.
+        :raises SQLAlchemyError: If a database error occurs.
+        """
+        try:
+            episode = self.db.get(Episode, episode_id)
+            if not episode:
+                msg = f"Episode with id {episode_id} not found."
+                raise NotFoundError(msg)
+            return EpisodeSchema.model_validate(episode)
+        except SQLAlchemyError as e:
+            log.error(f"Database error while retrieving episode {episode_id}: {e}")
+            raise
+
+    def get_season_by_episode(self, episode_id: EpisodeId) -> SeasonSchema:
+        try:
+            stmt = select(Season).join(Season.episodes).where(Episode.id == episode_id)
+
+            season = self.db.scalar(stmt)
+
+            if not season:
+                msg = f"Season not found for episode {episode_id}"
+                raise NotFoundError(msg)
+
+            return SeasonSchema.model_validate(season)
+
+        except SQLAlchemyError as e:
+            log.error(
+                f"Database error while retrieving season for episode {episode_id}: {e}"
+            )
             raise
 
     def add_season_request(
@@ -355,46 +377,46 @@ class TvRepository:
             log.exception("Database error while retrieving season requests")
             raise
 
-    def add_season_file(self, season_file: SeasonFileSchema) -> SeasonFileSchema:
+    def add_episode_file(self, episode_file: EpisodeFileSchema) -> EpisodeFileSchema:
         """
-        Adds a season file record to the database.
+        Adds an episode file record to the database.
 
-        :param season_file: The SeasonFile object to add.
-        :return: The added SeasonFile object.
+        :param episode_file: The EpisodeFile object to add.
+        :return: The added EpisodeFile object.
         :raises IntegrityError: If the record violates constraints.
         :raises SQLAlchemyError: If a database error occurs.
         """
-        db_model = SeasonFile(**season_file.model_dump())
+        db_model = EpisodeFile(**episode_file.model_dump())
         try:
             self.db.add(db_model)
             self.db.commit()
             self.db.refresh(db_model)
-            return SeasonFileSchema.model_validate(db_model)
-        except IntegrityError:
+            return EpisodeFileSchema.model_validate(db_model)
+        except IntegrityError as e:
             self.db.rollback()
-            log.exception("Integrity error while adding season file")
+            log.error(f"Integrity error while adding episode file: {e}")
             raise
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
             self.db.rollback()
-            log.exception("Database error while adding season file")
+            log.error(f"Database error while adding episode file: {e}")
             raise
 
-    def remove_season_files_by_torrent_id(self, torrent_id: TorrentId) -> int:
+    def remove_episode_files_by_torrent_id(self, torrent_id: TorrentId) -> int:
         """
-        Removes season file records associated with a given torrent ID.
+        Removes episode file records associated with a given torrent ID.
 
-        :param torrent_id: The ID of the torrent whose season files are to be removed.
-        :return: The number of season files removed.
+        :param torrent_id: The ID of the torrent whose episode files are to be removed.
+        :return: The number of episode files removed.
         :raises SQLAlchemyError: If a database error occurs.
         """
         try:
-            stmt = delete(SeasonFile).where(SeasonFile.torrent_id == torrent_id)
+            stmt = delete(EpisodeFile).where(EpisodeFile.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
         except SQLAlchemyError:
             self.db.rollback()
             log.exception(
-                f"Database error removing season files for torrent_id {torrent_id}"
+                f"Database error removing episode files for torrent_id {torrent_id}"
             )
             raise
         return result.rowcount
@@ -420,23 +442,45 @@ class TvRepository:
             log.exception(f"Database error setting library for show {show_id}")
             raise
 
-    def get_season_files_by_season_id(
+    def get_episode_files_by_season_id(
         self, season_id: SeasonId
-    ) -> list[SeasonFileSchema]:
+    ) -> list[EpisodeFileSchema]:
         """
-        Retrieve all season files for a given season ID.
+        Retrieve all episode files for a given season ID.
 
         :param season_id: The ID of the season.
-        :return: A list of SeasonFile objects.
+        :return: A list of EpisodeFile objects.
         :raises SQLAlchemyError: If a database error occurs.
         """
         try:
-            stmt = select(SeasonFile).where(SeasonFile.season_id == season_id)
+            stmt = (
+                select(EpisodeFile).join(Episode).where(Episode.season_id == season_id)
+            )
             results = self.db.execute(stmt).scalars().all()
-            return [SeasonFileSchema.model_validate(sf) for sf in results]
+            return [EpisodeFileSchema.model_validate(ef) for ef in results]
         except SQLAlchemyError:
             log.exception(
-                f"Database error retrieving season files for season_id {season_id}"
+                f"Database error retrieving episode files for season_id {season_id}"
+            )
+            raise
+
+    def get_episode_files_by_episode_id(
+        self, episode_id: EpisodeId
+    ) -> list[EpisodeFileSchema]:
+        """
+        Retrieve all episode files for a given episode ID.
+
+        :param episode_id: The ID of the episode.
+        :return: A list of EpisodeFile objects.
+        :raises SQLAlchemyError: If a database error occurs.
+        """
+        try:
+            stmt = select(EpisodeFile).where(EpisodeFile.episode_id == episode_id)
+            results = self.db.execute(stmt).scalars().all()
+            return [EpisodeFileSchema.model_validate(sf) for sf in results]
+        except SQLAlchemyError as e:
+            log.error(
+                f"Database error retrieving episode files for episode_id {episode_id}: {e}"
             )
             raise
 
@@ -452,8 +496,9 @@ class TvRepository:
             stmt = (
                 select(Torrent)
                 .distinct()
-                .join(SeasonFile, SeasonFile.torrent_id == Torrent.id)
-                .join(Season, Season.id == SeasonFile.season_id)
+                .join(EpisodeFile, EpisodeFile.torrent_id == Torrent.id)
+                .join(Episode, Episode.id == EpisodeFile.episode_id)
+                .join(Season, Season.id == Episode.season_id)
                 .where(Season.show_id == show_id)
             )
             results = self.db.execute(stmt).scalars().unique().all()
@@ -474,8 +519,9 @@ class TvRepository:
                 select(Show)
                 .distinct()
                 .join(Season, Show.id == Season.show_id)
-                .join(SeasonFile, Season.id == SeasonFile.season_id)
-                .join(Torrent, SeasonFile.torrent_id == Torrent.id)
+                .join(Episode, Season.id == Episode.season_id)
+                .join(EpisodeFile, Episode.id == EpisodeFile.episode_id)
+                .join(Torrent, EpisodeFile.torrent_id == Torrent.id)
                 .options(joinedload(Show.seasons).joinedload(Season.episodes))
                 .order_by(Show.name)
             )
@@ -497,14 +543,41 @@ class TvRepository:
             stmt = (
                 select(Season.number)
                 .distinct()
-                .join(SeasonFile, Season.id == SeasonFile.season_id)
-                .where(SeasonFile.torrent_id == torrent_id)
+                .join(Episode, Episode.season_id == Season.id)
+                .join(EpisodeFile, EpisodeFile.episode_id == Episode.id)
+                .where(EpisodeFile.torrent_id == torrent_id)
             )
             results = self.db.execute(stmt).scalars().unique().all()
             return [SeasonNumber(x) for x in results]
         except SQLAlchemyError:
             log.exception(
                 f"Database error retrieving season numbers for torrent_id {torrent_id}"
+            )
+            raise
+
+    def get_episodes_by_torrent_id(self, torrent_id: TorrentId) -> list[EpisodeNumber]:
+        """
+        Retrieve episode numbers associated with a given torrent ID.
+
+        :param torrent_id: The ID of the torrent.
+        :return: A list of EpisodeNumber objects.
+        :raises SQLAlchemyError: If a database error occurs.
+        """
+        try:
+            stmt = (
+                select(Episode.number)
+                .join(EpisodeFile, EpisodeFile.episode_id == Episode.id)
+                .where(EpisodeFile.torrent_id == torrent_id)
+                .order_by(Episode.number)
+            )
+
+            episode_numbers = self.db.execute(stmt).scalars().all()
+
+            return [EpisodeNumber(n) for n in sorted(set(episode_numbers))]
+
+        except SQLAlchemyError as e:
+            log.error(
+                f"Database error retrieving episodes for torrent_id {torrent_id}: {e}"
             )
             raise
 
@@ -734,11 +807,15 @@ class TvRepository:
         return SeasonSchema.model_validate(db_season)
 
     def update_episode_attributes(
-        self, episode_id: EpisodeId, title: str | None = None
+        self,
+        episode_id: EpisodeId,
+        title: str | None = None,
+        overview: str | None = None,
     ) -> EpisodeSchema:
         """
         Update attributes of an existing episode.
 
+        :param overview: Tje new overview for the episode.
         :param episode_id: The ID of the episode to update.
         :param title: The new title for the episode.
         :param external_id: The new external ID for the episode.
@@ -754,6 +831,9 @@ class TvRepository:
         updated = False
         if title is not None and db_episode.title != title:
             db_episode.title = title
+            updated = True
+        if overview is not None and db_episode.overview != overview:
+            db_episode.overview = overview
             updated = True
 
         if updated:

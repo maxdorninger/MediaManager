@@ -11,9 +11,15 @@
 	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	let seasonFiles: components['schemas']['PublicSeasonFile'][] = $derived(page.data.files);
+	let episodeFiles: components['schemas']['PublicEpisodeFile'][] = $derived(page.data.files);
 	let season: components['schemas']['Season'] = $derived(page.data.season);
 	let show: components['schemas']['Show'] = $derived(page.data.showData);
+
+	let episodeById = $derived(
+		Object.fromEntries(
+			season.episodes.map((ep) => [ep.id, `E${String(ep.number).padStart(2, '0')}`])
+		)
+	);
 </script>
 
 <svelte:head>
@@ -59,7 +65,7 @@
 	</div>
 </header>
 <h1 class="scroll-m-20 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">
-	{getFullyQualifiedMediaName(show)} Season {season.number}
+	{getFullyQualifiedMediaName(show)} - Season {season.number}
 </h1>
 <main class="mx-auto flex w-full flex-1 flex-col gap-4 p-4 md:max-w-[80em]">
 	<div class="flex flex-col gap-4 md:flex-row md:items-stretch">
@@ -68,13 +74,20 @@
 		</div>
 		<div class="h-full w-full flex-auto rounded-xl md:w-1/4">
 			<Card.Root class="h-full w-full">
-				<Card.Header>
-					<Card.Title>Overview</Card.Title>
-				</Card.Header>
-				<Card.Content>
-					<p class="leading-7 not-first:mt-6">
-						{show.overview}
-					</p>
+				<Card.Content class="flex flex-col gap-6">
+					<div>
+						<Card.Title class="mb-2 text-base">Series Overview</Card.Title>
+						<p class="text-justify text-sm leading-6 hyphens-auto text-muted-foreground">
+							{show.overview}
+						</p>
+					</div>
+					<div class="border-t border-border"></div>
+					<div>
+						<Card.Title class="mb-2 text-base">Season Overview</Card.Title>
+						<p class="text-justify text-sm leading-6 hyphens-auto text-muted-foreground">
+							{season.overview}
+						</p>
+					</div>
 				</Card.Content>
 			</Card.Root>
 		</div>
@@ -95,14 +108,18 @@
 						>
 						<Table.Header>
 							<Table.Row>
+								<Table.Head>Episode</Table.Head>
 								<Table.Head>Quality</Table.Head>
 								<Table.Head>File Path Suffix</Table.Head>
 								<Table.Head>Imported</Table.Head>
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each seasonFiles as file (file)}
+							{#each episodeFiles as file (file)}
 								<Table.Row>
+									<Table.Cell class="w-[50px]">
+										{episodeById[file.episode_id] ?? 'E??'}
+									</Table.Cell>
 									<Table.Cell class="w-[50px]">
 										{getTorrentQualityString(file.quality)}
 									</Table.Cell>
@@ -114,7 +131,11 @@
 									</Table.Cell>
 								</Table.Row>
 							{:else}
-								<span class="font-semibold">You haven't downloaded this season yet.</span>
+								<Table.Row>
+									<Table.Cell colspan={4} class="text-center py-6 font-semibold">
+										You haven't downloaded episodes of this season yet.
+									</Table.Cell>
+								</Table.Row>
 							{/each}
 						</Table.Body>
 					</Table.Root>
@@ -132,19 +153,23 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="w-full overflow-x-auto">
-				<Table.Root>
+				<Table.Root class="w-full table-fixed">
 					<Table.Caption>A list of all episodes.</Table.Caption>
 					<Table.Header>
 						<Table.Row>
-							<Table.Head class="w-[100px]">Number</Table.Head>
-							<Table.Head class="min-w-[50px]">Title</Table.Head>
+							<Table.Head class="w-[80px]">Number</Table.Head>
+							<Table.Head class="w-[240px]">Title</Table.Head>
+							<Table.Head>Overview</Table.Head>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
 						{#each season.episodes as episode (episode.id)}
 							<Table.Row>
-								<Table.Cell class="w-[100px] font-medium">{episode.number}</Table.Cell>
+								<Table.Cell class="w-[100px] font-medium"
+									>E{String(episode.number).padStart(2, '0')}</Table.Cell
+								>
 								<Table.Cell class="min-w-[50px]">{episode.title}</Table.Cell>
+								<Table.Cell class="truncate">{episode.overview}</Table.Cell>
 							</Table.Row>
 						{/each}
 					</Table.Body>
