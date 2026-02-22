@@ -54,9 +54,6 @@ from media_manager.tv.schemas import (
     Show,
     ShowId,
 )
-from media_manager.tv.schemas import (
-    Episode as EpisodeSchema,
-)
 
 
 class TvService:
@@ -940,7 +937,7 @@ class TvService:
                         log.debug(
                             f"Adding new episode {fresh_episode_data.number} to season {existing_season.number}"
                         )
-                        episode_schema = EpisodeSchema(
+                        episode_schema = Episode(
                             id=EpisodeId(fresh_episode_data.id),
                             number=fresh_episode_data.number,
                             external_id=fresh_episode_data.external_id,
@@ -956,7 +953,7 @@ class TvService:
                     f"Adding new season {fresh_season_data.number} to show {db_show.name}"
                 )
                 episodes_for_schema = [
-                    EpisodeSchema(
+                    Episode(
                         id=EpisodeId(ep_data.id),
                         number=ep_data.number,
                         external_id=ep_data.external_id,
