@@ -3,7 +3,6 @@ from uuid import UUID
 from sqlalchemy import ForeignKey, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from media_manager.auth.db import User
 from media_manager.database import Base
 from media_manager.torrent.models import Quality
 
@@ -48,10 +47,6 @@ class Season(Base):
         back_populates="season", cascade="all, delete"
     )
 
-    season_requests = relationship(
-        "SeasonRequest", back_populates="season", cascade="all, delete"
-    )
-
 
 class Episode(Base):
     __tablename__ = "episode"
@@ -85,29 +80,3 @@ class EpisodeFile(Base):
 
     torrent = relationship("Torrent", back_populates="episode_files", uselist=False)
     episode = relationship("Episode", back_populates="episode_files", uselist=False)
-
-
-class SeasonRequest(Base):
-    __tablename__ = "season_request"
-    __table_args__ = (UniqueConstraint("season_id", "wanted_quality"),)
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    season_id: Mapped[UUID] = mapped_column(
-        ForeignKey(column="season.id", ondelete="CASCADE"),
-    )
-    wanted_quality: Mapped[Quality]
-    min_quality: Mapped[Quality]
-    requested_by_id: Mapped[UUID | None] = mapped_column(
-        ForeignKey(column="user.id", ondelete="SET NULL"),
-    )
-    authorized: Mapped[bool] = mapped_column(default=False)
-    authorized_by_id: Mapped[UUID | None] = mapped_column(
-        ForeignKey(column="user.id", ondelete="SET NULL"),
-    )
-
-    requested_by: Mapped["User|None"] = relationship(
-        foreign_keys=[requested_by_id], uselist=False
-    )
-    authorized_by: Mapped["User|None"] = relationship(
-        foreign_keys=[authorized_by_id], uselist=False
-    )
-    season = relationship("Season", back_populates="season_requests", uselist=False)

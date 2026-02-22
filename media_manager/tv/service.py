@@ -25,7 +25,6 @@ from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.schemas import (
     Quality,
-    QualityStrings,
     Torrent,
     TorrentStatus,
 )
@@ -48,17 +47,13 @@ from media_manager.tv.schemas import (
     PublicEpisodeFile,
     PublicSeason,
     PublicShow,
-    RichSeasonRequest,
     RichSeasonTorrent,
     RichShowTorrent,
     Season,
     SeasonId,
-    SeasonRequest,
-    SeasonRequestId,
     Show,
     ShowId,
 )
-from media_manager.tv.schemas import Episode as EpisodeSchema
 
 
 class TvService:
@@ -94,28 +89,6 @@ class TvService:
         metadata_provider.download_show_poster_image(show=saved_show)
         return saved_show
 
-    def add_season_request(self, season_request: SeasonRequest) -> SeasonRequest:
-        """
-        Add a new season request.
-
-        :param season_request: The season request to add.
-        :return: The added season request.
-        """
-        return self.tv_repository.add_season_request(season_request=season_request)
-
-    def get_season_request_by_id(
-        self, season_request_id: SeasonRequestId
-    ) -> SeasonRequest | None:
-        """
-        Get a season request by its ID.
-
-        :param season_request_id: The ID of the season request.
-        :return: The season request or None if not found.
-        """
-        return self.tv_repository.get_season_request(
-            season_request_id=season_request_id
-        )
-
     def get_total_downloaded_episoded_count(self) -> int:
         """
         Get total number of downloaded episodes.
@@ -123,26 +96,8 @@ class TvService:
 
         return self.tv_repository.get_total_downloaded_episodes_count()
 
-    def update_season_request(self, season_request: SeasonRequest) -> SeasonRequest:
-        """
-        Update an existing season request.
-
-        :param season_request: The season request to update.
-        :return: The updated season request.
-        """
-        self.tv_repository.delete_season_request(season_request_id=season_request.id)
-        return self.tv_repository.add_season_request(season_request=season_request)
-
     def set_show_library(self, show: Show, library: str) -> None:
         self.tv_repository.set_show_library(show_id=show.id, library=library)
-
-    def delete_season_request(self, season_request_id: SeasonRequestId) -> None:
-        """
-        Delete a season request by its ID.
-
-        :param season_request_id: The ID of the season request to delete.
-        """
-        self.tv_repository.delete_season_request(season_request_id=season_request_id)
 
     def delete_show(
         self,
@@ -498,14 +453,6 @@ class TvService:
         """
         return self.tv_repository.get_season_by_episode(episode_id=episode_id)
 
-    def get_all_season_requests(self) -> list[RichSeasonRequest]:
-        """
-        Get all season requests.
-
-        :return: A list of rich season requests.
-        """
-        return self.tv_repository.get_season_requests()
-
     def get_torrents_for_show(self, show: Show) -> RichShowTorrent:
         """
         Get torrents for a given show.
@@ -631,72 +578,6 @@ class TvService:
             self.torrent_service.resume_download(torrent=show_torrent)
 
         return show_torrent
-
-    def download_approved_season_request(
-        self, season_request: SeasonRequest, show: Show
-    ) -> bool:
-        """
-        Download an approved season request.
-
-        :param season_request: The season request to download.
-        :param show: The Show object.
-        :return: True if the download was successful, False otherwise.
-        :raises ValueError: If the season request is not authorized.
-        """
-        if not season_request.authorized:
-            msg = f"Season request {season_request.id} is not authorized for download"
-            raise ValueError(msg)
-
-        log.info(f"Downloading approved season request {season_request.id}")
-
-        season = self.get_season(season_id=season_request.season_id)
-        torrents = self.get_all_available_torrents_for_a_season(
-            season_number=season.number, show_id=show.id
-        )
-        available_torrents: list[IndexerQueryResult] = []
-
-        for torrent in torrents:
-            if (
-                (torrent.quality.value < season_request.wanted_quality.value)
-                or (torrent.quality.value > season_request.min_quality.value)
-                or (torrent.seeders < 3)
-            ):
-                log.info(
-                    f"Skipping torrent {torrent.title} with quality {torrent.quality} for season {season.id}, because it does not match the requested quality {season_request.wanted_quality}"
-                )
-            elif torrent.season != [season.number]:
-                log.info(
-                    f"Skipping torrent {torrent.title} with quality {torrent.quality} for season {season.id}, because it contains to many/wrong seasons {torrent.season} (wanted: {season.number})"
-                )
-            else:
-                available_torrents.append(torrent)
-                log.info(
-                    f"Taking torrent {torrent.title} with quality {torrent.quality} for season {season.id} into consideration"
-                )
-
-        if len(available_torrents) == 0:
-            log.warning(
-                f"No torrents matching criteria were found (wanted quality: {season_request.wanted_quality}, min_quality: {season_request.min_quality} for season {season.id})"
-            )
-            return False
-
-        available_torrents.sort()
-
-        torrent = self.torrent_service.download(indexer_result=available_torrents[0])
-        season_file = SeasonFile(  # noqa: F821
-            season_id=season.id,
-            quality=torrent.quality,
-            torrent_id=torrent.id,
-            file_path_suffix=QualityStrings[torrent.quality.name].value.upper(),
-        )
-        try:
-            self.tv_repository.add_season_file(season_file=season_file)
-        except IntegrityError:
-            log.warning(
-                f"Season file for season {season.id} and quality {torrent.quality} already exists, skipping."
-            )
-        self.delete_season_request(season_request.id)
-        return True
 
     def get_root_show_directory(self, show: Show) -> Path:
         misc_config = MediaManagerConfig().misc
@@ -1056,7 +937,7 @@ class TvService:
                         log.debug(
                             f"Adding new episode {fresh_episode_data.number} to season {existing_season.number}"
                         )
-                        episode_schema = EpisodeSchema(
+                        episode_schema = Episode(
                             id=EpisodeId(fresh_episode_data.id),
                             number=fresh_episode_data.number,
                             external_id=fresh_episode_data.external_id,
@@ -1072,7 +953,7 @@ class TvService:
                     f"Adding new season {fresh_season_data.number} to show {db_show.name}"
                 )
                 episodes_for_schema = [
-                    EpisodeSchema(
+                    Episode(
                         id=EpisodeId(ep_data.id),
                         number=ep_data.number,
                         external_id=ep_data.external_id,
@@ -1190,49 +1071,6 @@ class TvService:
         return import_suggestions
 
 
-def auto_download_all_approved_season_requests() -> None:
-    """
-    Auto download all approved season requests.
-    This is a standalone function as it creates its own DB session.
-    """
-    with next(get_session()) as db:
-        tv_repository = TvRepository(db=db)
-        torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
-        indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-        notification_service = NotificationService(
-            notification_repository=NotificationRepository(db=db)
-        )
-        tv_service = TvService(
-            tv_repository=tv_repository,
-            torrent_service=torrent_service,
-            indexer_service=indexer_service,
-            notification_service=notification_service,
-        )
-
-        log.info("Auto downloading all approved season requests")
-        season_requests = tv_repository.get_season_requests()
-        log.info(f"Found {len(season_requests)} season requests to process")
-        count = 0
-
-        for season_request in season_requests:
-            if season_request.authorized:
-                log.info(f"Processing season request {season_request.id} for download")
-                show = tv_repository.get_show_by_season_id(
-                    season_id=season_request.season_id
-                )
-                if tv_service.download_approved_season_request(
-                    season_request=season_request, show=show
-                ):
-                    count += 1
-                else:
-                    log.warning(
-                        f"Failed to download season request {season_request.id} for show {show.name}"
-                    )
-
-        log.info(f"Auto downloaded {count} approved season requests")
-        db.commit()
-
-
 def import_all_show_torrents() -> None:
     with next(get_session()) as db:
         tv_repository = TvRepository(db=db)
@@ -1310,30 +1148,8 @@ def update_all_non_ended_shows_metadata() -> None:
                 db_show=show, metadata_provider=metadata_provider
             )
 
-            # Automatically add season requests for new seasons
-            existing_seasons = [x.id for x in show.seasons]
-            new_seasons = [
-                x for x in updated_show.seasons if x.id not in existing_seasons
-            ]
-
-            if show.continuous_download:
-                for new_season in new_seasons:
-                    log.info(
-                        f"Automatically adding season request for new season {new_season.number} of show {updated_show.name}"
-                    )
-                    tv_service.add_season_request(
-                        SeasonRequest(
-                            min_quality=Quality.sd,
-                            wanted_quality=Quality.uhd,
-                            season_id=new_season.id,
-                            authorized=True,
-                        )
-                    )
-
             if updated_show:
-                log.debug(
-                    f"Added new seasons: {len(new_seasons)} to show: {updated_show.name}"
-                )
+                log.debug("Updated show metadata", extra={"show": updated_show.name})
             else:
                 log.warning(f"Failed to update metadata for show: {show.name}")
         db.commit()

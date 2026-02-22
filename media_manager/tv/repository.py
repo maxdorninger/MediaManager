@@ -7,7 +7,7 @@ from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import Torrent as TorrentSchema
 from media_manager.torrent.schemas import TorrentId
 from media_manager.tv import log
-from media_manager.tv.models import Episode, EpisodeFile, Season, SeasonRequest, Show
+from media_manager.tv.models import Episode, EpisodeFile, Season, Show
 from media_manager.tv.schemas import Episode as EpisodeSchema
 from media_manager.tv.schemas import EpisodeFile as EpisodeFileSchema
 from media_manager.tv.schemas import (
@@ -15,12 +15,9 @@ from media_manager.tv.schemas import (
     EpisodeNumber,
     SeasonId,
     SeasonNumber,
-    SeasonRequestId,
     ShowId,
 )
-from media_manager.tv.schemas import RichSeasonRequest as RichSeasonRequestSchema
 from media_manager.tv.schemas import Season as SeasonSchema
-from media_manager.tv.schemas import SeasonRequest as SeasonRequestSchema
 from media_manager.tv.schemas import Show as ShowSchema
 
 
@@ -256,67 +253,6 @@ class TvRepository:
             )
             raise
 
-    def add_season_request(
-        self, season_request: SeasonRequestSchema
-    ) -> SeasonRequestSchema:
-        """
-        Adds a Season to the SeasonRequest table, which marks it as requested.
-
-        :param season_request: The SeasonRequest object to add.
-        :return: The added SeasonRequest object.
-        :raises IntegrityError: If a similar request already exists or violates constraints.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        db_model = SeasonRequest(
-            id=season_request.id,
-            season_id=season_request.season_id,
-            wanted_quality=season_request.wanted_quality,
-            min_quality=season_request.min_quality,
-            requested_by_id=season_request.requested_by.id
-            if season_request.requested_by
-            else None,
-            authorized=season_request.authorized,
-            authorized_by_id=season_request.authorized_by.id
-            if season_request.authorized_by
-            else None,
-        )
-        try:
-            self.db.add(db_model)
-            self.db.commit()
-            self.db.refresh(db_model)
-            return SeasonRequestSchema.model_validate(db_model)
-        except IntegrityError:
-            self.db.rollback()
-            log.exception("Integrity error while adding season request")
-            raise
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception("Database error while adding season request")
-            raise
-
-    def delete_season_request(self, season_request_id: SeasonRequestId) -> None:
-        """
-        Removes a SeasonRequest by its ID.
-
-        :param season_request_id: The ID of the season request to delete.
-        :raises NotFoundError: If the season request is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            stmt = delete(SeasonRequest).where(SeasonRequest.id == season_request_id)
-            result = self.db.execute(stmt)
-            if result.rowcount == 0:
-                self.db.rollback()
-                msg = f"SeasonRequest with id {season_request_id} not found."
-                raise NotFoundError(msg)
-            self.db.commit()
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception(
-                f"Database error while deleting season request {season_request_id}"
-            )
-            raise
-
     def get_season_by_number(self, season_number: int, show_id: ShowId) -> SeasonSchema:
         """
         Retrieve a season by its number and show ID.
@@ -343,38 +279,6 @@ class TvRepository:
             log.exception(
                 f"Database error retrieving season {season_number} for show {show_id}"
             )
-            raise
-
-    def get_season_requests(self) -> list[RichSeasonRequestSchema]:
-        """
-        Retrieve all season requests.
-
-        :return: A list of RichSeasonRequest objects.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            stmt = select(SeasonRequest).options(
-                joinedload(SeasonRequest.requested_by),
-                joinedload(SeasonRequest.authorized_by),
-                joinedload(SeasonRequest.season).joinedload(Season.show),
-            )
-            results = self.db.execute(stmt).scalars().unique().all()
-            return [
-                RichSeasonRequestSchema(
-                    id=SeasonRequestId(x.id),
-                    min_quality=x.min_quality,
-                    wanted_quality=x.wanted_quality,
-                    season_id=SeasonId(x.season_id),
-                    show=x.season.show,
-                    season=x.season,
-                    requested_by=x.requested_by,
-                    authorized_by=x.authorized_by,
-                    authorized=x.authorized,
-                )
-                for x in results
-            ]
-        except SQLAlchemyError:
-            log.exception("Database error while retrieving season requests")
             raise
 
     def add_episode_file(self, episode_file: EpisodeFileSchema) -> EpisodeFileSchema:
@@ -578,30 +482,6 @@ class TvRepository:
         except SQLAlchemyError as e:
             log.error(
                 f"Database error retrieving episodes for torrent_id {torrent_id}: {e}"
-            )
-            raise
-
-    def get_season_request(
-        self, season_request_id: SeasonRequestId
-    ) -> SeasonRequestSchema:
-        """
-        Retrieve a season request by its ID.
-
-        :param season_request_id: The ID of the season request.
-        :return: A SeasonRequest object.
-        :raises NotFoundError: If the season request is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            request = self.db.get(SeasonRequest, season_request_id)
-            if not request:
-                log.warning(f"Season request with id {season_request_id} not found.")
-                msg = f"Season request with id {season_request_id} not found."
-                raise NotFoundError(msg)
-            return SeasonRequestSchema.model_validate(request)
-        except SQLAlchemyError:
-            log.exception(
-                f"Database error retrieving season request {season_request_id}"
             )
             raise
 

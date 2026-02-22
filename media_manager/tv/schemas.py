@@ -2,9 +2,8 @@ import typing
 import uuid
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
-from media_manager.auth.schemas import UserRead
 from media_manager.torrent.models import Quality
 from media_manager.torrent.schemas import TorrentId, TorrentStatus
 
@@ -14,7 +13,6 @@ EpisodeId = typing.NewType("EpisodeId", UUID)
 
 SeasonNumber = typing.NewType("SeasonNumber", int)
 EpisodeNumber = typing.NewType("EpisodeNumber", int)
-SeasonRequestId = typing.NewType("SeasonRequestId", UUID)
 
 
 class Episode(BaseModel):
@@ -61,42 +59,6 @@ class Show(BaseModel):
     imdb_id: str | None = None
 
     seasons: list[Season]
-
-
-class SeasonRequestBase(BaseModel):
-    min_quality: Quality
-    wanted_quality: Quality
-
-    @model_validator(mode="after")
-    def ensure_wanted_quality_is_eq_or_gt_min_quality(self) -> "SeasonRequestBase":
-        if self.min_quality.value < self.wanted_quality.value:
-            msg = "wanted_quality must be equal to or lower than minimum_quality."
-            raise ValueError(msg)
-        return self
-
-
-class CreateSeasonRequest(SeasonRequestBase):
-    season_id: SeasonId
-
-
-class UpdateSeasonRequest(SeasonRequestBase):
-    id: SeasonRequestId
-
-
-class SeasonRequest(SeasonRequestBase):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: SeasonRequestId = Field(default_factory=lambda: SeasonRequestId(uuid.uuid4()))
-
-    season_id: SeasonId
-    requested_by: UserRead | None = None
-    authorized: bool = False
-    authorized_by: UserRead | None = None
-
-
-class RichSeasonRequest(SeasonRequest):
-    show: Show
-    season: Season
 
 
 class EpisodeFile(BaseModel):

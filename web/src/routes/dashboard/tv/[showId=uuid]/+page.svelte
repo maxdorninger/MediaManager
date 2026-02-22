@@ -15,7 +15,6 @@
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import { page } from '$app/state';
 	import TorrentTable from '$lib/components/torrents/torrent-table.svelte';
-	import RequestSeasonDialog from '$lib/components/requests/request-season-dialog.svelte';
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { toast } from 'svelte-sonner';
@@ -241,7 +240,6 @@
 							<DownloadCustomDialog {show} />
 						{/if}
 					{/if}
-					<RequestSeasonDialog {show} />
 				</Card.Content>
 			</Card.Root>
 		</div>
