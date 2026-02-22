@@ -4,10 +4,9 @@ from pathlib import Path
 from typing import overload
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
 from media_manager.config import MediaManagerConfig
-from media_manager.database import SessionLocal, get_session
+from media_manager.database import get_session
 from media_manager.exceptions import InvalidConfigError, NotFoundError, RenameError
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
@@ -25,11 +24,8 @@ from media_manager.movies.schemas import (
     Movie,
     MovieFile,
     MovieId,
-    MovieRequest,
-    MovieRequestId,
     PublicMovie,
     PublicMovieFile,
-    RichMovieRequest,
     RichMovieTorrent,
 )
 from media_manager.notification.repository import NotificationRepository
@@ -38,7 +34,6 @@ from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.schemas import (
     Quality,
-    QualityStrings,
     Torrent,
     TorrentStatus,
 )
@@ -88,44 +83,6 @@ class MovieService:
         saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
         metadata_provider.download_movie_poster_image(movie=saved_movie)
         return saved_movie
-
-    def add_movie_request(self, movie_request: MovieRequest) -> MovieRequest:
-        """
-        Add a new movie request.
-
-        :param movie_request: The movie request to add.
-        :return: The added movie request.
-        """
-        return self.movie_repository.add_movie_request(movie_request=movie_request)
-
-    def get_movie_request_by_id(self, movie_request_id: MovieRequestId) -> MovieRequest:
-        """
-        Get a movie request by its ID.
-
-        :param movie_request_id: The ID of the movie request.
-        :return: The movie request or None if not found.
-        """
-        return self.movie_repository.get_movie_request(
-            movie_request_id=movie_request_id
-        )
-
-    def update_movie_request(self, movie_request: MovieRequest) -> MovieRequest:
-        """
-        Update an existing movie request.
-
-        :param movie_request: The movie request to update.
-        :return: The updated movie request.
-        """
-        self.movie_repository.delete_movie_request(movie_request_id=movie_request.id)
-        return self.movie_repository.add_movie_request(movie_request=movie_request)
-
-    def delete_movie_request(self, movie_request_id: MovieRequestId) -> None:
-        """
-        Delete a movie request by its ID.
-
-        :param movie_request_id: The ID of the movie request to delete.
-        """
-        self.movie_repository.delete_movie_request(movie_request_id=movie_request_id)
 
     def delete_movie(
         self,
@@ -391,14 +348,6 @@ class MovieService:
             external_id=external_id, metadata_provider=metadata_provider
         )
 
-    def get_all_movie_requests(self) -> list[RichMovieRequest]:
-        """
-        Get all movie requests.
-
-        :return: A list of rich movie requests.
-        """
-        return self.movie_repository.get_movie_requests()
-
     def set_movie_library(self, movie: Movie, library: str) -> None:
         self.movie_repository.set_movie_library(movie_id=movie.id, library=library)
 
@@ -470,65 +419,6 @@ class MovieService:
             )
             self.torrent_service.resume_download(torrent=movie_torrent)
         return movie_torrent
-
-    def download_approved_movie_request(
-        self, movie_request: MovieRequest, movie: Movie
-    ) -> bool:
-        """
-        Download an approved movie request.
-
-        :param movie_request: The movie request to download.
-        :param movie: The Movie object.
-        :return: True if the download was successful, False otherwise.
-        :raises ValueError: If the movie request is not authorized.
-        """
-        if not movie_request.authorized:
-            msg = "Movie request is not authorized"
-            raise ValueError(msg)
-
-        log.info(f"Downloading approved movie request {movie_request.id}")
-
-        torrents = self.get_all_available_torrents_for_movie(movie=movie)
-        available_torrents: list[IndexerQueryResult] = []
-
-        for torrent in torrents:
-            if (
-                (torrent.quality.value < movie_request.wanted_quality.value)
-                or (torrent.quality.value > movie_request.min_quality.value)
-                or (torrent.seeders < 3)
-            ):
-                log.debug(
-                    f"Skipping torrent {torrent.title} with quality {torrent.quality} for movie {movie.id}, because it does not match the requested quality {movie_request.wanted_quality}"
-                )
-            else:
-                available_torrents.append(torrent)
-                log.debug(
-                    f"Taking torrent {torrent.title} with quality {torrent.quality} for movie {movie.id} into consideration"
-                )
-
-        if len(available_torrents) == 0:
-            log.warning(
-                f"No torrents found for movie request {movie_request.id} with quality between {QualityStrings[movie_request.min_quality.name]} and {QualityStrings[movie_request.wanted_quality.name]}"
-            )
-            return False
-
-        available_torrents.sort()
-
-        torrent = self.torrent_service.download(indexer_result=available_torrents[0])
-        movie_file = MovieFile(
-            movie_id=movie.id,
-            quality=torrent.quality,
-            torrent_id=torrent.id,
-            file_path_suffix=QualityStrings[torrent.quality.name].value.upper(),
-        )
-        try:
-            self.movie_repository.add_movie_file(movie_file=movie_file)
-        except IntegrityError:
-            log.warning(
-                f"Movie file for movie {movie.name} and torrent {torrent.title} already exists"
-            )
-        self.delete_movie_request(movie_request.id)
-        return True
 
     def get_movie_root_path(self, movie: Movie) -> Path:
         misc_config = MediaManagerConfig().misc
@@ -772,47 +662,6 @@ class MovieService:
 
         log.debug(f"Found {len(importable_movies)} importable movies.")
         return importable_movies
-
-
-def auto_download_all_approved_movie_requests() -> None:
-    """
-    Auto download all approved movie requests.
-    This is a standalone function as it creates its own DB session.
-    """
-    db: Session = SessionLocal() if SessionLocal else next(get_session())
-    movie_repository = MovieRepository(db=db)
-    torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
-    indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-    notification_service = NotificationService(
-        notification_repository=NotificationRepository(db=db)
-    )
-    movie_service = MovieService(
-        movie_repository=movie_repository,
-        torrent_service=torrent_service,
-        indexer_service=indexer_service,
-        notification_service=notification_service,
-    )
-
-    log.info("Auto downloading all approved movie requests")
-    movie_requests = movie_repository.get_movie_requests()
-    log.info(f"Found {len(movie_requests)} movie requests to process")
-    count = 0
-
-    for movie_request in movie_requests:
-        if movie_request.authorized:
-            movie = movie_repository.get_movie_by_id(movie_id=movie_request.movie_id)
-            if movie_service.download_approved_movie_request(
-                movie_request=movie_request, movie=movie
-            ):
-                count += 1
-            else:
-                log.info(
-                    f"Could not download movie request {movie_request.id} for movie {movie.name}"
-                )
-
-    log.info(f"Auto downloaded {count} approved movie requests")
-    db.commit()
-    db.close()
 
 
 def import_all_movie_torrents() -> None:

@@ -11,7 +11,6 @@
 	import TorrentTable from '$lib/components/torrents/torrent-table.svelte';
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import DownloadMovieDialog from '$lib/components/download-dialogs/download-movie-dialog.svelte';
-	import RequestMovieDialog from '$lib/components/requests/request-movie-dialog.svelte';
 	import LibraryCombobox from '$lib/components/library-combobox.svelte';
 	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -108,7 +107,6 @@
 					{#if user().is_superuser}
 						<DownloadMovieDialog {movie} />
 					{/if}
-					<RequestMovieDialog {movie} />
 				</Card.Content>
 			</Card.Root>
 		</div>

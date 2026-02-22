@@ -5,10 +5,10 @@ from sqlalchemy.exc import (
     IntegrityError,
     SQLAlchemyError,
 )
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from media_manager.exceptions import ConflictError, NotFoundError
-from media_manager.movies.models import Movie, MovieFile, MovieRequest
+from media_manager.movies.models import Movie, MovieFile
 from media_manager.movies.schemas import (
     Movie as MovieSchema,
 )
@@ -17,16 +17,9 @@ from media_manager.movies.schemas import (
 )
 from media_manager.movies.schemas import (
     MovieId,
-    MovieRequestId,
-)
-from media_manager.movies.schemas import (
-    MovieRequest as MovieRequestSchema,
 )
 from media_manager.movies.schemas import (
     MovieTorrent as MovieTorrentSchema,
-)
-from media_manager.movies.schemas import (
-    RichMovieRequest as RichMovieRequestSchema,
 )
 from media_manager.torrent.models import Torrent
 from media_manager.torrent.schemas import TorrentId
@@ -173,46 +166,6 @@ class MovieRepository:
             log.exception(f"Database error while deleting movie {movie_id}")
             raise
 
-    def add_movie_request(
-        self, movie_request: MovieRequestSchema
-    ) -> MovieRequestSchema:
-        """
-        Adds a Movie to the MovieRequest table, which marks it as requested.
-
-        :param movie_request: The MovieRequest object to add.
-        :return: The added MovieRequest object.
-        :raises IntegrityError: If a similar request already exists or violates constraints.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        log.debug(f"Adding movie request: {movie_request.model_dump_json()}")
-        db_model = MovieRequest(
-            id=movie_request.id,
-            movie_id=movie_request.movie_id,
-            requested_by_id=movie_request.requested_by.id
-            if movie_request.requested_by
-            else None,
-            authorized_by_id=movie_request.authorized_by.id
-            if movie_request.authorized_by
-            else None,
-            wanted_quality=movie_request.wanted_quality,
-            min_quality=movie_request.min_quality,
-            authorized=movie_request.authorized,
-        )
-        try:
-            self.db.add(db_model)
-            self.db.commit()
-            self.db.refresh(db_model)
-            log.info(f"Successfully added movie request with id: {db_model.id}")
-            return MovieRequestSchema.model_validate(db_model)
-        except IntegrityError:
-            self.db.rollback()
-            log.exception("Integrity error while adding movie request")
-            raise
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception("Database error while adding movie request")
-            raise
-
     def set_movie_library(self, movie_id: MovieId, library: str) -> None:
         """
         Sets the library for a movie.
@@ -232,49 +185,6 @@ class MovieRepository:
         except SQLAlchemyError:
             self.db.rollback()
             log.exception(f"Database error setting library for movie {movie_id}")
-            raise
-
-    def delete_movie_request(self, movie_request_id: MovieRequestId) -> None:
-        """
-        Removes a MovieRequest by its ID.
-
-        :param movie_request_id: The ID of the movie request to delete.
-        :raises NotFoundError: If the movie request is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            stmt = delete(MovieRequest).where(MovieRequest.id == movie_request_id)
-            result = self.db.execute(stmt)
-            if result.rowcount == 0:
-                self.db.rollback()
-                msg = f"movie request with id {movie_request_id} not found."
-                raise NotFoundError(msg)
-            self.db.commit()
-            # Successfully deleted movie request with id: {movie_request_id}
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception(
-                f"Database error while deleting movie request {movie_request_id}"
-            )
-            raise
-
-    def get_movie_requests(self) -> list[RichMovieRequestSchema]:
-        """
-        Retrieve all movie requests.
-
-        :return: A list of RichMovieRequest objects.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            stmt = select(MovieRequest).options(
-                joinedload(MovieRequest.requested_by),
-                joinedload(MovieRequest.authorized_by),
-                joinedload(MovieRequest.movie),
-            )
-            results = self.db.execute(stmt).scalars().unique().all()
-            return [RichMovieRequestSchema.model_validate(x) for x in results]
-        except SQLAlchemyError:
-            log.exception("Database error while retrieving movie requests")
             raise
 
     def add_movie_file(self, movie_file: MovieFileSchema) -> MovieFileSchema:
@@ -394,25 +304,6 @@ class MovieRepository:
             return [MovieSchema.model_validate(movie) for movie in results]
         except SQLAlchemyError:
             log.exception("Database error retrieving all movies with torrents")
-            raise
-
-    def get_movie_request(self, movie_request_id: MovieRequestId) -> MovieRequestSchema:
-        """
-        Retrieve a movie request by its ID.
-
-        :param movie_request_id: The ID of the movie request.
-        :return: A MovieRequest object.
-        :raises NotFoundError: If the movie request is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            request = self.db.get(MovieRequest, movie_request_id)
-            if not request:
-                msg = f"Movie request with id {movie_request_id} not found."
-                raise NotFoundError(msg)
-            return MovieRequestSchema.model_validate(request)
-        except SQLAlchemyError:
-            log.exception(f"Database error retrieving movie request {movie_request_id}")
             raise
 
     def get_movie_by_torrent_id(self, torrent_id: TorrentId) -> MovieSchema:

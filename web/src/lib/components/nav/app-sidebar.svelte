@@ -34,10 +34,6 @@
 					{
 						title: 'Torrents',
 						url: resolve('/dashboard/tv/torrents', {})
-					},
-					{
-						title: 'Requests',
-						url: resolve('/dashboard/tv/requests', {})
 					}
 				]
 			},
@@ -54,10 +50,6 @@
 					{
 						title: 'Torrents',
 						url: resolve('/dashboard/movies/torrents', {})
-					},
-					{
-						title: 'Requests',
-						url: resolve('/dashboard/movies/requests', {})
 					}
 				]
 			}

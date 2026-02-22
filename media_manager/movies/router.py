@@ -1,9 +1,7 @@
 from pathlib import Path
-from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, MediaManagerConfig
 from media_manager.exceptions import ConflictError, NotFoundError
@@ -13,20 +11,14 @@ from media_manager.indexer.schemas import (
 )
 from media_manager.metadataProvider.dependencies import metadata_provider_dep
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.movies import log
 from media_manager.movies.dependencies import (
     movie_dep,
     movie_service_dep,
 )
 from media_manager.movies.schemas import (
-    CreateMovieRequest,
     Movie,
-    MovieRequest,
-    MovieRequestBase,
-    MovieRequestId,
     PublicMovie,
     PublicMovieFile,
-    RichMovieRequest,
     RichMovieTorrent,
 )
 from media_manager.schemas import MediaImportSuggestion
@@ -186,103 +178,6 @@ def get_available_libraries() -> list[LibraryItem]:
     Get available Movie libraries from configuration.
     """
     return MediaManagerConfig().misc.movie_libraries
-
-
-# -----------------------------------------------------------------------------
-# MOVIE REQUESTS
-# -----------------------------------------------------------------------------
-
-
-@router.get(
-    "/requests",
-    dependencies=[Depends(current_active_user)],
-)
-def get_all_movie_requests(movie_service: movie_service_dep) -> list[RichMovieRequest]:
-    """
-    Get all movie requests.
-    """
-    return movie_service.get_all_movie_requests()
-
-
-@router.post(
-    "/requests",
-    status_code=status.HTTP_201_CREATED,
-)
-def create_movie_request(
-    movie_service: movie_service_dep,
-    movie_request: CreateMovieRequest,
-    user: Annotated[UserRead, Depends(current_active_user)],
-) -> MovieRequest:
-    """
-    Create a new movie request.
-    """
-    log.info(
-        f"User {user.email} is creating a movie request for {movie_request.movie_id}"
-    )
-    movie_request: MovieRequest = MovieRequest.model_validate(movie_request)
-    movie_request.requested_by = user
-    if user.is_superuser:
-        movie_request.authorized = True
-        movie_request.authorized_by = user
-
-    return movie_service.add_movie_request(movie_request=movie_request)
-
-
-@router.put(
-    "/requests/{movie_request_id}",
-)
-def update_movie_request(
-    movie_service: movie_service_dep,
-    movie_request_id: MovieRequestId,
-    update_movie_request: MovieRequestBase,
-    user: Annotated[UserRead, Depends(current_active_user)],
-) -> MovieRequest:
-    """
-    Update an existing movie request.
-    """
-    movie_request = movie_service.get_movie_request_by_id(
-        movie_request_id=movie_request_id
-    )
-    if movie_request.requested_by.id != user.id or user.is_superuser:
-        movie_request.min_quality = update_movie_request.min_quality
-        movie_request.wanted_quality = update_movie_request.wanted_quality
-
-    return movie_service.update_movie_request(movie_request=movie_request)
-
-
-@router.patch("/requests/{movie_request_id}", status_code=status.HTTP_204_NO_CONTENT)
-def authorize_request(
-    movie_service: movie_service_dep,
-    movie_request_id: MovieRequestId,
-    user: Annotated[UserRead, Depends(current_superuser)],
-    authorized_status: bool = False,
-) -> None:
-    """
-    Authorize or de-authorize a movie request.
-    """
-    movie_request = movie_service.get_movie_request_by_id(
-        movie_request_id=movie_request_id
-    )
-    movie_request.authorized = authorized_status
-    if authorized_status:
-        movie_request.authorized_by = user
-    else:
-        movie_request.authorized_by = None
-    movie_service.update_movie_request(movie_request=movie_request)
-
-
-@router.delete(
-    "/requests/{movie_request_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(current_superuser)],
-)
-def delete_movie_request(
-    movie_service: movie_service_dep, movie_request_id: MovieRequestId
-) -> None:
-    """
-    Delete a movie request.
-    """
-    movie_service.delete_movie_request(movie_request_id=movie_request_id)
 
 
 # -----------------------------------------------------------------------------

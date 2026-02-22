@@ -1,10 +1,7 @@
 from pathlib import Path
-from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from media_manager.auth.db import User
-from media_manager.auth.schemas import UserRead
 from media_manager.auth.users import current_active_user, current_superuser
 from media_manager.config import LibraryItem, MediaManagerConfig
 from media_manager.exceptions import MediaAlreadyExistsError, NotFoundError
@@ -17,24 +14,18 @@ from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import Torrent
 from media_manager.torrent.utils import get_importable_media_directories
-from media_manager.tv import log
 from media_manager.tv.dependencies import (
     season_dep,
     show_dep,
     tv_service_dep,
 )
 from media_manager.tv.schemas import (
-    CreateSeasonRequest,
     PublicEpisodeFile,
     PublicShow,
-    RichSeasonRequest,
     RichShowTorrent,
     Season,
-    SeasonRequest,
-    SeasonRequestId,
     Show,
     ShowId,
-    UpdateSeasonRequest,
 )
 
 router = APIRouter()
@@ -276,110 +267,6 @@ def get_a_shows_torrents(show: show_dep, tv_service: tv_service_dep) -> RichShow
     Get torrents associated with a specific show.
     """
     return tv_service.get_torrents_for_show(show=show)
-
-
-# -----------------------------------------------------------------------------
-# SEASONS - REQUESTS
-# -----------------------------------------------------------------------------
-
-
-@router.get(
-    "/seasons/requests",
-    status_code=status.HTTP_200_OK,
-    dependencies=[Depends(current_active_user)],
-)
-def get_season_requests(tv_service: tv_service_dep) -> list[RichSeasonRequest]:
-    """
-    Get all season requests.
-    """
-    return tv_service.get_all_season_requests()
-
-
-@router.post("/seasons/requests", status_code=status.HTTP_204_NO_CONTENT)
-def request_a_season(
-    user: Annotated[User, Depends(current_active_user)],
-    season_request: CreateSeasonRequest,
-    tv_service: tv_service_dep,
-) -> None:
-    """
-    Create a new season request.
-    """
-    request: SeasonRequest = SeasonRequest.model_validate(season_request)
-    request.requested_by = UserRead.model_validate(user)
-    if user.is_superuser:
-        request.authorized = True
-        request.authorized_by = UserRead.model_validate(user)
-    tv_service.add_season_request(request)
-    return
-
-
-@router.put("/seasons/requests", status_code=status.HTTP_204_NO_CONTENT)
-def update_request(
-    tv_service: tv_service_dep,
-    user: Annotated[User, Depends(current_active_user)],
-    season_request: UpdateSeasonRequest,
-) -> None:
-    """
-    Update an existing season request.
-    """
-    updated_season_request: SeasonRequest = SeasonRequest.model_validate(season_request)
-    request = tv_service.get_season_request_by_id(
-        season_request_id=updated_season_request.id
-    )
-    if request.requested_by.id == user.id or user.is_superuser:
-        updated_season_request.requested_by = UserRead.model_validate(user)
-        tv_service.update_season_request(season_request=updated_season_request)
-    return
-
-
-@router.patch(
-    "/seasons/requests/{season_request_id}", status_code=status.HTTP_204_NO_CONTENT
-)
-def authorize_request(
-    tv_service: tv_service_dep,
-    user: Annotated[User, Depends(current_superuser)],
-    season_request_id: SeasonRequestId,
-    authorized_status: bool = False,
-) -> None:
-    """
-    Authorize or de-authorize a season request.
-    """
-    season_request = tv_service.get_season_request_by_id(
-        season_request_id=season_request_id
-    )
-    if not season_request:
-        raise NotFoundError
-    season_request.authorized_by = UserRead.model_validate(user)
-    season_request.authorized = authorized_status
-    if not authorized_status:
-        season_request.authorized_by = None
-    tv_service.update_season_request(season_request=season_request)
-
-
-@router.delete(
-    "/seasons/requests/{request_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_season_request(
-    tv_service: tv_service_dep,
-    user: Annotated[User, Depends(current_active_user)],
-    request_id: SeasonRequestId,
-) -> None:
-    """
-    Delete a season request.
-    """
-    request = tv_service.get_season_request_by_id(season_request_id=request_id)
-    if user.is_superuser or request.requested_by.id == user.id:
-        tv_service.delete_season_request(season_request_id=request_id)
-        log.info(f"User {user.id} deleted season request {request_id}.")
-        return
-    log.warning(
-        f"User {user.id} tried to delete season request {request_id} but is not authorized."
-    )
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Not authorized to delete this request",
-    )
 
 
 # -----------------------------------------------------------------------------
