@@ -337,11 +337,19 @@ class TvService:
 
         for season in show.seasons:
             public_season = PublicSeason.model_validate(season)
-            public_season.downloaded = self.is_season_downloaded(season=season, show=show)
 
             for episode in public_season.episodes:
-                episode.downloaded = self.is_episode_downloaded(episode=episode, season=season, show=show)
+                episode.downloaded = self.is_episode_downloaded(
+                    episode=episode,
+                    season=season,
+                    show=show,
+                )
 
+            # A season is considered downloaded if it has episodes and all of them are downloaded,
+            # matching the behavior of is_season_downloaded.
+            public_season.downloaded = bool(public_season.episodes) and all(
+                episode.downloaded for episode in public_season.episodes
+            )
             public_seasons.append(public_season)
 
         public_show.seasons = public_seasons
