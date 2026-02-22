@@ -574,7 +574,22 @@ class TvService:
                 episodes = {episode.number: episode.id for episode in season.episodes}
 
                 if indexer_result.episode:
-                    episode_ids = [episodes.get(ep_number) for ep_number in indexer_result.episode]
+                    episode_ids = []
+                    missing_episodes = []
+                    for ep_number in indexer_result.episode:
+                        ep_id = episodes.get(ep_number)
+                        if ep_id is None:
+                            missing_episodes.append(ep_number)
+                            continue
+                        episode_ids.append(ep_id)
+                    if missing_episodes:
+                        log.warning(
+                            "Some episodes from indexer result were not found in season %s "
+                            "for show %s and will be skipped: %s",
+                            season.id,
+                            show_id,
+                            ", ".join(str(ep) for ep in missing_episodes),
+                        )
                 else:
                     episode_ids = [episode.id for episode in season.episodes]
 
