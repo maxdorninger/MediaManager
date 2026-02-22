@@ -807,11 +807,15 @@ class TvRepository:
         return SeasonSchema.model_validate(db_season)
 
     def update_episode_attributes(
-        self, episode_id: EpisodeId, title: str | None = None
+        self,
+        episode_id: EpisodeId,
+        title: str | None = None,
+        overview: str | None = None,
     ) -> EpisodeSchema:
         """
         Update attributes of an existing episode.
 
+        :param overview: Tje new overview for the episode.
         :param episode_id: The ID of the episode to update.
         :param title: The new title for the episode.
         :param external_id: The new external ID for the episode.
@@ -827,6 +831,9 @@ class TvRepository:
         updated = False
         if title is not None and db_episode.title != title:
             db_episode.title = title
+            updated = True
+        if overview is not None and db_episode.overview != overview:
+            db_episode.overview = overview
             updated = True
 
         if updated:
