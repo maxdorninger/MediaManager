@@ -60,9 +60,7 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         try:
             self.api_client.torrents_create_category(
                 name=self.config.category_name,
-                save_path=self.config.category_save_path
-                if self.config.category_save_path != ""
-                else None,
+                save_path=self.config.category_save_path,
             )
         except Conflict409Error:
             try:
