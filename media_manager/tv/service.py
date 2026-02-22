@@ -44,6 +44,7 @@ from media_manager.tv.schemas import (
     Episode,
     EpisodeFile,
     EpisodeId,
+    EpisodeNumber,
     PublicEpisodeFile,
     PublicSeason,
     PublicShow,
@@ -589,7 +590,7 @@ class TvService:
                     episode_ids = []
                     missing_episodes = []
                     for ep_number in indexer_result.episode:
-                        ep_id = episodes.get(ep_number)
+                        ep_id = episodes.get(EpisodeNumber(ep_number))
                         if ep_id is None:
                             missing_episodes.append(ep_number)
                             continue
@@ -618,6 +619,7 @@ class TvService:
             log.error(
                 f"Episode file for episode {episode_id} of season {season.id} and quality {indexer_result.quality} already exists, skipping."
             )
+            self.tv_repository.remove_episode_files_by_torrent_id(show_torrent.id)
             self.torrent_service.cancel_download(
                 torrent=show_torrent, delete_files=True
             )
