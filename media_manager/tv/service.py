@@ -1071,29 +1071,28 @@ class TvService:
                 log.debug(
                     f"Adding new season {fresh_season_data.number} to show {db_show.name}"
                 )
-                episodes_for_schema = []
-                for ep_data in fresh_season_data.episodes:
-                    episodes_for_schema.append(
-                        EpisodeSchema(
-                            id=EpisodeId(ep_data.id),
-                            number=ep_data.number,
-                            external_id=ep_data.external_id,
-                            title=ep_data.title,
-                            overview=ep_data.overview,
-                        )
+                episodes_for_schema = [
+                    EpisodeSchema(
+                        id=EpisodeId(ep_data.id),
+                        number=ep_data.number,
+                        external_id=ep_data.external_id,
+                        title=ep_data.title,
+                        overview=ep_data.overview,
                     )
-                    for _ep_data in fresh_season_data.episodes:
-                        season_schema = Season(
-                            id=SeasonId(fresh_season_data.id),
-                            number=fresh_season_data.number,
-                            name=fresh_season_data.name,
-                            overview=fresh_season_data.overview,
-                            external_id=fresh_season_data.external_id,
-                            episodes=episodes_for_schema,
-                        )
-                        self.tv_repository.add_season_to_show(
-                            show_id=db_show.id, season_data=season_schema
-                        )
+                    for ep_data in fresh_season_data.episodes
+                ]
+
+                season_schema = Season(
+                    id=SeasonId(fresh_season_data.id),
+                    number=fresh_season_data.number,
+                    name=fresh_season_data.name,
+                    overview=fresh_season_data.overview,
+                    external_id=fresh_season_data.external_id,
+                    episodes=episodes_for_schema,
+                )
+                self.tv_repository.add_season_to_show(
+                    show_id=db_show.id, season_data=season_schema
+                )
 
         updated_show = self.tv_repository.get_show_by_id(show_id=db_show.id)
 
