@@ -23,6 +23,7 @@
 
 	let dialogueState = $state(false);
 	let torrentsPromise: any = $state();
+	let torrentsError: string | null = $state(null);
 	let isLoading: boolean = $state(false);
 	let filePathSuffix: string = $state('');
 
@@ -63,6 +64,7 @@
 		}
 
 		isLoading = true;
+		torrentsError = null;
 
 		torrentsPromise = Promise.all(
 			selectedEpisodeNumbers.map((ep) =>
@@ -80,14 +82,21 @@
 			)
 		)
 			.then((results) => results.flat())
-			.then((allTorrents) =>
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			.then((allTorrents: any[]) =>
 				allTorrents.filter((torrent) =>
 					torrentMatchesSelectedEpisodes(torrent.title, selectedEpisodeNumbers)
 				)
 			)
 			.finally(() => (isLoading = false));
 
-		await torrentsPromise;
+		try {
+			await torrentsPromise;
+		} catch (error: any) {
+			console.error(error);
+			torrentsError = error.message || 'An error occurred while searching for torrents.';
+			toast.error(torrentsError);
+		}
 	}
 
 	async function downloadTorrent(result_id: string) {
@@ -140,6 +149,12 @@
 			Search Torrents
 		</Button>
 	</div>
+
+	{#if torrentsError}
+		<div class="my-2 w-full text-center text-red-500">
+			An error occurred: {torrentsError}
+		</div>
+	{/if}
 
 	<TorrentTable {torrentsPromise} columns={tableColumnHeadings}>
 		{#snippet rowSnippet(torrent)}

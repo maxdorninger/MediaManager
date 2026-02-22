@@ -109,7 +109,13 @@
 			.then((allTorrents) => allTorrents.filter((torrent) => !isEpisodeRelease(torrent.title)))
 			.finally(() => (isLoading = false));
 
-		await torrentsPromise;
+		try {
+			await torrentsPromise;
+		} catch (error: any) {
+			console.error(error);
+			torrentsError = error.message || 'An error occurred while searching for torrents.';
+			toast.error(torrentsError);
+		}
 	}
 </script>
 
