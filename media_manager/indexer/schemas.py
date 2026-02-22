@@ -35,10 +35,10 @@ class IndexerQueryResult(BaseModel):
     @computed_field
     @property
     def quality(self) -> Quality:
-        high_quality_pattern = r"\b(4k)\b"
-        medium_quality_pattern = r"\b(1080p)\b"
-        low_quality_pattern = r"\b(720p)\b"
-        very_low_quality_pattern = r"\b(480p|360p)\b"
+        high_quality_pattern = r"\b(4k|2160p|uhd)\b"
+        medium_quality_pattern = r"\b(1080p|full[ ._-]?hd)\b"
+        low_quality_pattern = r"\b(720p|(?<!full[ ._-])hd(?![a-z]))\b"
+        very_low_quality_pattern = r"\b(480p|360p|sd)\b"
 
         if re.search(high_quality_pattern, self.title, re.IGNORECASE):
             return Quality.uhd
