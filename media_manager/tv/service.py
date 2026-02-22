@@ -515,7 +515,7 @@ class TvService:
                 quality=show_torrent.quality,
                 imported=show_torrent.imported,
                 seasons=seasons,
-                episodes=episodes,
+                episodes=episodes if len(seasons) == 1 else [],
                 file_path_suffix=file_path_suffix,
                 usenet=show_torrent.usenet,
             )
