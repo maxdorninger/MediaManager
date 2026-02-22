@@ -181,7 +181,9 @@ class TvService:
 
         self.tv_repository.delete_show(show_id=show.id)
 
-    def get_public_episode_files_by_season_id(self, season: Season) -> list[PublicEpisodeFile]:
+    def get_public_episode_files_by_season_id(
+        self, season: Season
+    ) -> list[PublicEpisodeFile]:
         """
         Get all public episode files for a given season.
 
@@ -191,7 +193,9 @@ class TvService:
         episode_files = self.tv_repository.get_episode_files_by_season_id(
             season_id=season.id
         )
-        public_episode_files = [PublicEpisodeFile.model_validate(x) for x in episode_files]
+        public_episode_files = [
+            PublicEpisodeFile.model_validate(x) for x in episode_files
+        ]
         result = []
         for episode_file in public_episode_files:
             if self.episode_file_exists_on_file(episode_file=episode_file):
@@ -378,11 +382,15 @@ class TvService:
             return False
 
         for episode in episodes:
-            if not self.is_episode_downloaded(episode=episode, season=season, show=show):
+            if not self.is_episode_downloaded(
+                episode=episode, season=season, show=show
+            ):
                 return False
         return True
 
-    def is_episode_downloaded(self, episode: Episode, season: Season, show: Show) -> bool:
+    def is_episode_downloaded(
+        self, episode: Episode, season: Season, show: Show
+    ) -> bool:
         """
         Check if an episode is downloaded and imported (file exists on disk).
 
@@ -513,9 +521,13 @@ class TvService:
             episodes = self.tv_repository.get_episodes_by_torrent_id(
                 torrent_id=show_torrent.id
             )
-            episode_files = self.torrent_service.get_episode_files_of_torrent(torrent=show_torrent)
+            episode_files = self.torrent_service.get_episode_files_of_torrent(
+                torrent=show_torrent
+            )
 
-            file_path_suffix = episode_files[0].file_path_suffix if episode_files else ""
+            file_path_suffix = (
+                episode_files[0].file_path_suffix if episode_files else ""
+            )
             season_torrent = RichSeasonTorrent(
                 torrent_id=show_torrent.id,
                 torrent_title=show_torrent.title,
@@ -876,7 +888,9 @@ class TvService:
             f"Importing these {len(video_files)} files:\n" + pprint.pformat(video_files)
         )
 
-        episode_files = self.torrent_service.get_episode_files_of_torrent(torrent=torrent)
+        episode_files = self.torrent_service.get_episode_files_of_torrent(
+            torrent=torrent
+        )
         if not episode_files:
             log.warning(
                 f"No episode files associated with torrent {torrent.title}, skipping import."
@@ -915,7 +929,9 @@ class TvService:
             success.append(episoded_import_success)
 
             if episoded_import_success:
-                imported_episodes_by_season.setdefault(season.number, []).append(episode.number)
+                imported_episodes_by_season.setdefault(season.number, []).append(
+                    episode.number
+                )
 
                 log.info(
                     f"Episode {episode.number} from Season {season.number} successfully imported from torrent {torrent.title}"
@@ -1131,7 +1147,6 @@ class TvService:
                 file_path_suffix="IMPORTED",
             )
         for episode in imported_episodes:
-
             episode_file = EpisodeFile(
                 episode_id=episode.id,
                 quality=Quality.unknown,
@@ -1139,10 +1154,7 @@ class TvService:
                 torrent_id=None,
             )
 
-            self.tv_repository.add_episode_file(
-                episode_file=episode_file
-            )
-
+            self.tv_repository.add_episode_file(episode_file=episode_file)
 
     def get_importable_tv_shows(
         self, metadata_provider: AbstractMetadataProvider

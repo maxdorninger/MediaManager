@@ -22,7 +22,9 @@ class TorrentRepository:
     ) -> list[EpisodeFileSchema]:
         stmt = select(EpisodeFile).where(EpisodeFile.torrent_id == torrent_id)
         result = self.db.execute(stmt).scalars().all()
-        return [EpisodeFileSchema.model_validate(episode_file) for episode_file in result]
+        return [
+            EpisodeFileSchema.model_validate(episode_file) for episode_file in result
+        ]
 
     def get_show_of_torrent(self, torrent_id: TorrentId) -> ShowSchema | None:
         stmt = (

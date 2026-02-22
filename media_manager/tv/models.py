@@ -86,6 +86,7 @@ class EpisodeFile(Base):
     torrent = relationship("Torrent", back_populates="episode_files", uselist=False)
     episode = relationship("Episode", back_populates="episode_files", uselist=False)
 
+
 class SeasonRequest(Base):
     __tablename__ = "season_request"
     __table_args__ = (UniqueConstraint("season_id", "wanted_quality"),)

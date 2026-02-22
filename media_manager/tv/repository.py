@@ -106,11 +106,7 @@ class TvRepository:
 
     def get_total_downloaded_episodes_count(self) -> int:
         try:
-            stmt = (
-                select(func.count(Episode.id))
-                .select_from(Episode)
-                .join(EpisodeFile)
-            )
+            stmt = select(func.count(Episode.id)).select_from(Episode).join(EpisodeFile)
             return self.db.execute(stmt).scalar_one_or_none()
         except SQLAlchemyError:
             log.exception("Database error while calculating downloaded episodes count")
@@ -244,11 +240,7 @@ class TvRepository:
 
     def get_season_by_episode(self, episode_id: EpisodeId) -> SeasonSchema:
         try:
-            stmt = (
-                select(Season)
-                .join(Season.episodes)
-                .where(Episode.id == episode_id)
-            )
+            stmt = select(Season).join(Season.episodes).where(Episode.id == episode_id)
 
             season = self.db.scalar(stmt)
 
@@ -260,8 +252,7 @@ class TvRepository:
 
         except SQLAlchemyError as e:
             log.error(
-                f"Database error while retrieving season for episode "
-                f"{episode_id}: {e}"
+                f"Database error while retrieving season for episode {episode_id}: {e}"
             )
             raise
 
@@ -451,7 +442,9 @@ class TvRepository:
             log.exception(f"Database error setting library for show {show_id}")
             raise
 
-    def get_episode_files_by_season_id(self, season_id: SeasonId) -> list[EpisodeFileSchema]:
+    def get_episode_files_by_season_id(
+        self, season_id: SeasonId
+    ) -> list[EpisodeFileSchema]:
         """
         Retrieve all episode files for a given season ID.
 
@@ -461,9 +454,7 @@ class TvRepository:
         """
         try:
             stmt = (
-                select(EpisodeFile)
-                .join(Episode)
-                .where(Episode.season_id == season_id)
+                select(EpisodeFile).join(Episode).where(Episode.season_id == season_id)
             )
             results = self.db.execute(stmt).scalars().all()
             return [EpisodeFileSchema.model_validate(ef) for ef in results]
@@ -473,7 +464,9 @@ class TvRepository:
             )
             raise
 
-    def get_episode_files_by_episode_id(self, episode_id: EpisodeId) -> list[EpisodeFileSchema]:
+    def get_episode_files_by_episode_id(
+        self, episode_id: EpisodeId
+    ) -> list[EpisodeFileSchema]:
         """
         Retrieve all episode files for a given episode ID.
 
@@ -587,7 +580,6 @@ class TvRepository:
                 f"Database error retrieving episodes for torrent_id {torrent_id}: {e}"
             )
             raise
-
 
     def get_season_request(
         self, season_request_id: SeasonRequestId
