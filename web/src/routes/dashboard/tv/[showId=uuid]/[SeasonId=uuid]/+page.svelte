@@ -169,7 +169,7 @@
 									>E{String(episode.number).padStart(2, '0')}</Table.Cell
 								>
 								<Table.Cell class="min-w-[50px]">{episode.title}</Table.Cell>
-								<Table.Cell colspan={2} class="truncate">{episode.overview}</Table.Cell>
+								<Table.Cell class="truncate">{episode.overview}</Table.Cell>
 							</Table.Row>
 						{/each}
 					</Table.Body>
