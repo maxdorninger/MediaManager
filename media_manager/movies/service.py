@@ -6,9 +6,7 @@ from typing import overload
 from sqlalchemy.exc import IntegrityError
 
 from media_manager.config import MediaManagerConfig
-from media_manager.database import get_session
 from media_manager.exceptions import InvalidConfigError, NotFoundError, RenameError
-from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
 from media_manager.indexer.utils import evaluate_indexer_query_results
@@ -28,10 +26,8 @@ from media_manager.movies.schemas import (
     PublicMovieFile,
     RichMovieTorrent,
 )
-from media_manager.notification.repository import NotificationRepository
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
-from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.schemas import (
     Quality,
     Torrent,
@@ -663,61 +659,29 @@ class MovieService:
         log.debug(f"Found {len(importable_movies)} importable movies.")
         return importable_movies
 
-
-def import_all_movie_torrents() -> None:
-    with next(get_session()) as db:
-        movie_repository = MovieRepository(db=db)
-        torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
-        indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-        notification_service = NotificationService(
-            notification_repository=NotificationRepository(db=db)
-        )
-        movie_service = MovieService(
-            movie_repository=movie_repository,
-            torrent_service=torrent_service,
-            indexer_service=indexer_service,
-            notification_service=notification_service,
-        )
+    def import_all_torrents(self) -> None:
         log.info("Importing all torrents")
-        torrents = torrent_service.get_all_torrents()
+        torrents = self.torrent_service.get_all_torrents()
         log.info("Found %d torrents to import", len(torrents))
         for t in torrents:
             try:
                 if not t.imported and t.status == TorrentStatus.finished:
-                    movie = torrent_service.get_movie_of_torrent(torrent=t)
+                    movie = self.torrent_service.get_movie_of_torrent(torrent=t)
                     if movie is None:
                         log.warning(
                             f"torrent {t.title} is not a movie torrent, skipping import."
                         )
                         continue
-                    movie_service.import_torrent_files(torrent=t, movie=movie)
+                    self.import_torrent_files(torrent=t, movie=movie)
             except RuntimeError:
                 log.exception(f"Failed to import torrent {t.title}")
         log.info("Finished importing all torrents")
-        db.commit()
 
-
-def update_all_movies_metadata() -> None:
-    """
-    Updates the metadata of all movies.
-    """
-    with next(get_session()) as db:
-        movie_repository = MovieRepository(db=db)
-        movie_service = MovieService(
-            movie_repository=movie_repository,
-            torrent_service=TorrentService(torrent_repository=TorrentRepository(db=db)),
-            indexer_service=IndexerService(indexer_repository=IndexerRepository(db=db)),
-            notification_service=NotificationService(
-                notification_repository=NotificationRepository(db=db)
-            ),
-        )
-
+    def update_all_metadata(self) -> None:
+        """Updates the metadata of all movies."""
         log.info("Updating metadata for all movies")
-
-        movies = movie_repository.get_movies()
-
+        movies = self.movie_repository.get_movies()
         log.info(f"Found {len(movies)} movies to update")
-
         for movie in movies:
             try:
                 if movie.metadata_provider == "tmdb":
@@ -734,7 +698,6 @@ def update_all_movies_metadata() -> None:
                     f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}",
                 )
                 continue
-            movie_service.update_movie_metadata(
+            self.update_movie_metadata(
                 db_movie=movie, metadata_provider=metadata_provider
             )
-        db.commit()

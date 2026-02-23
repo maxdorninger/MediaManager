@@ -41,4 +41,4 @@ ignore = [
 ]
 
 [lint.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Depends", "fastapi.Path"]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Path", "taskiq.TaskiqDepends"]

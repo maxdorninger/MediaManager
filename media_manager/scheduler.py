@@ -1,9 +1,13 @@
-import asyncio
 
-from taskiq import TaskiqScheduler
+from taskiq import TaskiqDepends, TaskiqScheduler
 from taskiq.cli.scheduler.run import SchedulerLoop
 from taskiq_postgresql import PostgresqlBroker
 from taskiq_postgresql.scheduler_source import PostgresqlSchedulerSource
+
+from media_manager.movies.dependencies import get_movie_service
+from media_manager.movies.service import MovieService
+from media_manager.tv.dependencies import get_tv_service
+from media_manager.tv.service import TvService
 
 
 def _build_db_connection_string_for_taskiq() -> str:
@@ -21,31 +25,31 @@ broker = PostgresqlBroker(
 
 
 @broker.task(schedule=[{"cron": "*/15 * * * *"}])
-async def import_all_movie_torrents_task() -> None:
-    from media_manager.movies.service import import_all_movie_torrents
-
-    await asyncio.to_thread(import_all_movie_torrents)
+async def import_all_movie_torrents_task(
+    movie_service: MovieService = TaskiqDepends(get_movie_service),
+) -> None:
+    movie_service.import_all_torrents()
 
 
 @broker.task(schedule=[{"cron": "*/15 * * * *"}])
-async def import_all_show_torrents_task() -> None:
-    from media_manager.tv.service import import_all_show_torrents
-
-    await asyncio.to_thread(import_all_show_torrents)
-
-
-@broker.task(schedule=[{"cron": "0 0 * * 1"}])
-async def update_all_movies_metadata_task() -> None:
-    from media_manager.movies.service import update_all_movies_metadata
-
-    await asyncio.to_thread(update_all_movies_metadata)
+async def import_all_show_torrents_task(
+    tv_service: TvService = TaskiqDepends(get_tv_service),
+) -> None:
+    tv_service.import_all_torrents()
 
 
 @broker.task(schedule=[{"cron": "0 0 * * 1"}])
-async def update_all_non_ended_shows_metadata_task() -> None:
-    from media_manager.tv.service import update_all_non_ended_shows_metadata
+async def update_all_movies_metadata_task(
+    movie_service: MovieService = TaskiqDepends(get_movie_service),
+) -> None:
+    movie_service.update_all_metadata()
 
-    await asyncio.to_thread(update_all_non_ended_shows_metadata)
+
+@broker.task(schedule=[{"cron": "0 0 * * 1"}])
+async def update_all_non_ended_shows_metadata_task(
+    tv_service: TvService = TaskiqDepends(get_tv_service),
+) -> None:
+    tv_service.update_all_non_ended_shows_metadata()
 
 
 def build_scheduler_loop() -> SchedulerLoop:
