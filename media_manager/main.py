@@ -1,5 +1,8 @@
+import asyncio
 import logging
 import os
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
@@ -9,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from psycopg.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import FileResponse, RedirectResponse
+from taskiq_fastapi import populate_dependency_context
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 import media_manager.movies.router as movies_router
@@ -42,7 +46,7 @@ from media_manager.exceptions import (
 from media_manager.filesystem_checks import run_filesystem_checks
 from media_manager.logging import LOGGING_CONFIG, setup_logging
 from media_manager.notification.router import router as notification_router
-from media_manager.scheduler import setup_scheduler
+from media_manager.scheduler import broker, build_scheduler_loop
 
 setup_logging()
 
@@ -52,8 +56,6 @@ log = logging.getLogger(__name__)
 if config.misc.development:
     log.warning("Development Mode activated!")
 
-scheduler = setup_scheduler(config)
-
 run_filesystem_checks(config, log)
 
 BASE_PATH = os.getenv("BASE_PATH", "")
@@ -62,7 +64,28 @@ DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() == "tru
 FRONTEND_FOLLOW_SYMLINKS = os.getenv("FRONTEND_FOLLOW_SYMLINKS", "").lower() == "true"
 
 log.info("Hello World!")
-app = FastAPI(root_path=BASE_PATH)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator:
+    await broker.startup()
+    populate_dependency_context(broker, app)
+    scheduler_loop = build_scheduler_loop()
+    for source in scheduler_loop.scheduler.sources:
+        await source.startup()
+    loop_task = asyncio.create_task(scheduler_loop.run())
+    yield
+    loop_task.cancel()
+    try:
+        await loop_task
+    except asyncio.CancelledError:
+        pass
+    for source in scheduler_loop.scheduler.sources:
+        await source.shutdown()
+    await broker.shutdown()
+
+
+app = FastAPI(root_path=BASE_PATH, lifespan=lifespan)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 origins = config.misc.cors_urls
 log.info(f"CORS URLs activated for following origins: {origins}")
