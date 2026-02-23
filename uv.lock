@@ -1037,7 +1037,7 @@ dependencies = [
     { name = "pathvalidate" },
     { name = "patool" },
     { name = "pillow" },
-    { name = "psycopg", extra = ["binary"] },
+    { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pydantic" },
     { name = "pydantic-settings", extra = ["toml"] },
     { name = "pytest" },
@@ -1049,6 +1049,7 @@ dependencies = [
     { name = "starlette" },
     { name = "taskiq" },
     { name = "taskiq-fastapi" },
+    { name = "taskiq-postgresql", extra = ["psycopg"] },
     { name = "tmdbsimple" },
     { name = "transmission-rpc" },
     { name = "tvdb-v4-official" },
@@ -1079,7 +1080,7 @@ requires-dist = [
     { name = "pathvalidate", specifier = ">=3.3.1" },
     { name = "patool", specifier = ">=4.0.1" },
     { name = "pillow", specifier = ">=11.3.0" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2.9" },
+    { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2.9" },
     { name = "pydantic", specifier = ">=2.11.5" },
     { name = "pydantic-settings", extras = ["toml"], specifier = ">=2.9.1" },
     { name = "pytest", specifier = ">=8.4.0" },
@@ -1091,6 +1092,8 @@ requires-dist = [
     { name = "starlette", specifier = ">=0.49.1" },
     { name = "taskiq", specifier = ">=0.12.0" },
     { name = "taskiq-fastapi", specifier = ">=0.4.0" },
+    { name = "taskiq-postgresql", specifier = ">=0.4.0" },
+    { name = "taskiq-postgresql", extras = ["psycopg"], specifier = ">=0.4.0" },
     { name = "tmdbsimple", specifier = ">=2.9.1" },
     { name = "transmission-rpc", specifier = ">=7.0.11" },
     { name = "tvdb-v4-official", specifier = ">=1.1.0" },
@@ -1387,6 +1390,9 @@ wheels = [
 binary = [
     { name = "psycopg-binary", marker = "implementation_name != 'pypy'" },
 ]
+pool = [
+    { name = "psycopg-pool" },
+]
 
 [[package]]
 name = "psycopg-binary"
@@ -1415,6 +1421,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/fa/d0/c20f4e668e89494972e551c31be2a0016e3f50d552d7ae9ac07086407599/psycopg_binary-3.3.2-cp314-cp314-musllinux_1_2_riscv64.whl", hash = "sha256:1586e220be05547c77afc326741dd41cc7fba38a81f9931f616ae98865439678", size = 3928660, upload-time = "2025-12-06T17:34:46.757Z" },
     { url = "https://files.pythonhosted.org/packages/0f/e1/99746c171de22539fd5eb1c9ca21dc805b54cfae502d7451d237d1dbc349/psycopg_binary-3.3.2-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:458696a5fa5dad5b6fb5d5862c22454434ce4fe1cf66ca6c0de5f904cbc1ae3e", size = 4239169, upload-time = "2025-12-06T17:34:49.751Z" },
     { url = "https://files.pythonhosted.org/packages/72/f7/212343c1c9cfac35fd943c527af85e9091d633176e2a407a0797856ff7b9/psycopg_binary-3.3.2-cp314-cp314-win_amd64.whl", hash = "sha256:04bb2de4ba69d6f8395b446ede795e8884c040ec71d01dd07ac2b2d18d4153d1", size = 3642122, upload-time = "2025-12-06T17:34:52.506Z" },
+]
+
+[[package]]
+name = "psycopg-pool"
+version = "3.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/56/9a/9470d013d0d50af0da9c4251614aeb3c1823635cab3edc211e3839db0bcf/psycopg_pool-3.3.0.tar.gz", hash = "sha256:fa115eb2860bd88fce1717d75611f41490dec6135efb619611142b24da3f6db5", size = 31606, upload-time = "2025-12-01T11:34:33.11Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e7/c3/26b8a0908a9db249de3b4169692e1c7c19048a9bc41a4d3209cee7dbb758/psycopg_pool-3.3.0-py3-none-any.whl", hash = "sha256:2e44329155c410b5e8666372db44276a8b1ebd8c90f1c3026ebba40d4bc81063", size = 39995, upload-time = "2025-12-01T11:34:29.761Z" },
 ]
 
 [[package]]
@@ -1992,6 +2010,23 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/cf/fe/f9e885a4dd6bd4d4224e3dee05d9b38bf58102a0ef5e553e812d654dfa72/taskiq_fastapi-0.4.0.tar.gz", hash = "sha256:f683ab0aab1ab2db117d1e121e5e534f3ba4a4e5f382177012e29eca986863fb", size = 5819, upload-time = "2025-11-29T15:22:59.191Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/39/58/11eacc48d615703618f93ff44812409dca94cb465ab5cb173a8a90e079b1/taskiq_fastapi-0.4.0-py3-none-any.whl", hash = "sha256:9e7e57fa337b4fad2641c8761cafc7b54a63bf7bf726423a28fc2b15c55fd0bc", size = 5369, upload-time = "2025-11-29T15:23:00.185Z" },
+]
+
+[[package]]
+name = "taskiq-postgresql"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "taskiq" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e1/1a/dc903813bc238fcba16624e22f959e681f96bd210583a98e77c1d1c7607c/taskiq_postgresql-0.4.0.tar.gz", hash = "sha256:3e8cda663ec2893adfcf2d1f30447b2c03cc46067622e1f9e1c9a45f4e22731f", size = 125271, upload-time = "2025-10-01T17:30:28.653Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/c7/9a5bec60989cd1d7d97c624fd272a36efe087a0e54ae1f17117c2b56655f/taskiq_postgresql-0.4.0-py3-none-any.whl", hash = "sha256:0e64adc6faf5ffa6b67a59722e56181fc6e79a1bac6d5584fbaca6916bb1ec7b", size = 25844, upload-time = "2025-10-01T17:30:27.348Z" },
+]
+
+[package.optional-dependencies]
+psycopg = [
+    { name = "psycopg", extra = ["binary", "pool"] },
 ]
 
 [[package]]

@@ -13,7 +13,7 @@ dependencies = [
     "httpx-oauth>=0.16.1",
     "jsonschema>=4.24.0",
     "patool>=4.0.1",
-    "psycopg[binary]>=3.2.9",
+    "psycopg[binary,pool]>=3.2.9",
     "pydantic>=2.11.5",
     "pydantic-settings[toml]>=2.9.1",
     "python-json-logger>=3.3.0",
@@ -28,6 +28,7 @@ dependencies = [
     "fastapi-utils>=0.8.0",
     "taskiq>=0.12.0",
     "taskiq-fastapi>=0.4.0",
+    "taskiq-postgresql[psycopg]>=0.4.0",
     "alembic>=1.16.1",
     "pytest>=8.4.0",
     "pillow>=11.3.0",
@@ -36,6 +37,7 @@ dependencies = [
     "libtorrent>=2.0.11",
     "pathvalidate>=3.3.1",
     "asgi-correlation-id>=4.3.4",
+    "taskiq-postgresql>=0.4.0",
 ]
 
 [dependency-groups]

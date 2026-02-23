@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from psycopg.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import FileResponse, RedirectResponse
+from taskiq.receiver import Receiver
 from taskiq_fastapi import populate_dependency_context
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
@@ -73,13 +74,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     scheduler_loop = build_scheduler_loop()
     for source in scheduler_loop.scheduler.sources:
         await source.startup()
-    loop_task = asyncio.create_task(scheduler_loop.run())
+    finish_event = asyncio.Event()
+    receiver = Receiver(broker, run_startup=False, max_async_tasks=10)
+    receiver_task = asyncio.create_task(receiver.listen(finish_event))
+    loop_task = asyncio.create_task(scheduler_loop.run(skip_first_run=True))
     yield
     loop_task.cancel()
     try:
         await loop_task
     except asyncio.CancelledError:
         pass
+    finish_event.set()
+    await receiver_task
     for source in scheduler_loop.scheduler.sources:
         await source.shutdown()
     await broker.shutdown()

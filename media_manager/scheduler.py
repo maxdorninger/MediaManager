@@ -1,10 +1,23 @@
 import asyncio
 
-from taskiq import InMemoryBroker, TaskiqScheduler
+from taskiq import TaskiqScheduler
 from taskiq.cli.scheduler.run import SchedulerLoop
-from taskiq.schedule_sources import LabelScheduleSource
+from taskiq_postgresql import PostgresqlBroker
+from taskiq_postgresql.scheduler_source import PostgresqlSchedulerSource
 
-broker = InMemoryBroker()
+
+def _build_db_connection_string_for_taskiq() -> str:
+    from media_manager.config import MediaManagerConfig
+
+    db_config = MediaManagerConfig().database
+    return f"postgresql://{db_config.user}:{db_config.password}@{db_config.host}:{db_config.port}/{db_config.dbname}"
+
+
+broker = PostgresqlBroker(
+    dsn=_build_db_connection_string_for_taskiq,
+    driver="psycopg",
+    run_migrations=True,
+)
 
 
 @broker.task(schedule=[{"cron": "*/15 * * * *"}])
@@ -36,8 +49,11 @@ async def update_all_non_ended_shows_metadata_task() -> None:
 
 
 def build_scheduler_loop() -> SchedulerLoop:
-    scheduler = TaskiqScheduler(
+    source = PostgresqlSchedulerSource(
+        dsn=_build_db_connection_string_for_taskiq,
+        driver="psycopg",
         broker=broker,
-        sources=[LabelScheduleSource(broker)],
+        run_migrations=True,
     )
+    scheduler = TaskiqScheduler(broker=broker, sources=[source])
     return SchedulerLoop(scheduler)
