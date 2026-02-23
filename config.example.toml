@@ -138,7 +138,7 @@ negate = false
 
 [[indexers.title_scoring_rules]]
 name = "avoid_cam"
-keywords = ["cam", "ts"]
+keywords = ["cam", "camrip", "bdscr", "ddc", "dvdscreener","dvdscr", "hdcam", "hdtc", "hdts", "scr", "screener","telesync", "ts", "webscreener", "tc", "telecine", "tvrip"]
 score_modifier = -10000
 negate = false
 
