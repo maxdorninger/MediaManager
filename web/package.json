@@ -59,7 +59,7 @@
 		"sveltekit-superforms": "^2.29.1",
 		"tailwind-merge": "^3.3.1",
 		"tailwind-variants": "^0.2.1",
-		"tailwindcss": "^4.1.11",
+		"tailwindcss": "^4.2.1",
 		"tw-animate-css": "^1.3.6",
 		"typescript": "^5.9.2",
 		"typescript-eslint": "^8.39.1",
