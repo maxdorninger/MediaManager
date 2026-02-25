@@ -156,5 +156,3 @@ def follow_redirects_to_final_torrent_url(
         )
         msg = "An error occurred during the request"
         raise RuntimeError(msg) from e
-
-    return current_url
