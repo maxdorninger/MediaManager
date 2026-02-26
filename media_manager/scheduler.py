@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from urllib.parse import quote
 
@@ -41,7 +42,7 @@ async def import_all_movie_torrents_task(
     movie_service: MovieService = TaskiqDepends(get_movie_service),
 ) -> None:
     log.info("Importing all Movie torrents")
-    movie_service.import_all_torrents()
+    await asyncio.to_thread(movie_service.import_all_torrents)
 
 
 @broker.task
@@ -49,21 +50,21 @@ async def import_all_show_torrents_task(
     tv_service: TvService = TaskiqDepends(get_tv_service),
 ) -> None:
     log.info("Importing all Show torrents")
-    tv_service.import_all_torrents()
+    await asyncio.to_thread(tv_service.import_all_torrents)
 
 
 @broker.task
 async def update_all_movies_metadata_task(
     movie_service: MovieService = TaskiqDepends(get_movie_service),
 ) -> None:
-    movie_service.update_all_metadata()
+    await asyncio.to_thread(movie_service.update_all_metadata)
 
 
 @broker.task
 async def update_all_non_ended_shows_metadata_task(
     tv_service: TvService = TaskiqDepends(get_tv_service),
 ) -> None:
-    tv_service.update_all_non_ended_shows_metadata()
+    await asyncio.to_thread(tv_service.update_all_non_ended_shows_metadata)
 
 
 # Maps each task to its cron schedule so PostgresqlSchedulerSource can seed

@@ -62,7 +62,6 @@ setup_logging()
 config = MediaManagerConfig()
 log = logging.getLogger(__name__)
 
-init_engine(config.database)
 
 if config.misc.development:
     log.warning("Development Mode activated!")
@@ -79,6 +78,7 @@ log.info("Hello World!")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
+    init_engine(config.database)
     broker_started = False
     started_sources: list = []
     finish_event: asyncio.Event | None = None
