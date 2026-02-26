@@ -1067,6 +1067,7 @@ class TvService:
         torrents = self.torrent_service.get_all_torrents()
         log.info("Found %d torrents to import", len(torrents))
         for t in torrents:
+            show = None
             try:
                 if not t.imported and t.status == TorrentStatus.finished:
                     show = self.torrent_service.get_show_of_torrent(torrent=t)
@@ -1077,8 +1078,9 @@ class TvService:
                         continue
                     self.import_episode_files_from_torrent(torrent=t, show=show)
             except RuntimeError as e:
+                show_name = show.name if show is not None else "<unknown>"
                 log.error(
-                    f"Error importing torrent {t.title} for show {show.name}: {e}",
+                    f"Error importing torrent {t.title} for show {show_name}: {e}",
                     exc_info=True,
                 )
         log.info("Finished importing all torrents")
