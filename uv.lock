@@ -1092,7 +1092,6 @@ requires-dist = [
     { name = "starlette", specifier = ">=0.49.1" },
     { name = "taskiq", specifier = ">=0.12.0" },
     { name = "taskiq-fastapi", specifier = ">=0.4.0" },
-    { name = "taskiq-postgresql", specifier = ">=0.4.0" },
     { name = "taskiq-postgresql", extras = ["psycopg"], specifier = ">=0.4.0" },
     { name = "tmdbsimple", specifier = ">=2.9.1" },
     { name = "transmission-rpc", specifier = ">=7.0.11" },
