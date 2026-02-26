@@ -915,7 +915,7 @@ class TvService:
                     ep.external_id: ep for ep in existing_season.episodes
                 }
                 for fresh_episode_data in fresh_season_data.episodes:
-                    if fresh_episode_data.number in existing_episode_external_ids:
+                    if fresh_episode_data.external_id in existing_episode_external_ids:
                         # Update existing episode
                         existing_episode = existing_episode_external_ids[
                             fresh_episode_data.external_id
