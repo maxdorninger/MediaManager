@@ -24,7 +24,11 @@ def evaluate_indexer_query_result(
                 log.debug(f"Applying rule {rule.name} to {query_result.title}")
                 if (
                     any(
-                        re.search(rf"\b{re.escape(keyword)}\b", query_result.title, re.IGNORECASE)
+                        re.search(
+                            rf"\b{re.escape(keyword)}\b",
+                            query_result.title,
+                            re.IGNORECASE,
+                        )
                         for keyword in rule.keywords
                     )
                     and not rule.negate
@@ -35,7 +39,11 @@ def evaluate_indexer_query_result(
                     query_result.score += rule.score_modifier
                 elif (
                     not any(
-                        re.search(rf"\b{re.escape(keyword)}\b", query_result.title, re.IGNORECASE)
+                        re.search(
+                            rf"\b{re.escape(keyword)}\b",
+                            query_result.title,
+                            re.IGNORECASE,
+                        )
                         for keyword in rule.keywords
                     )
                     and rule.negate

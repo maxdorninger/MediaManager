@@ -1,52 +1,91 @@
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
+import asyncio
+import logging
+from urllib.parse import quote
 
-import media_manager.database
-from media_manager.config import MediaManagerConfig
-from media_manager.movies.service import (
-    import_all_movie_torrents,
-    update_all_movies_metadata,
+import taskiq_fastapi
+from taskiq import TaskiqDepends, TaskiqScheduler
+from taskiq.cli.scheduler.run import SchedulerLoop
+from taskiq_postgresql import PostgresqlBroker
+from taskiq_postgresql.scheduler_source import PostgresqlSchedulerSource
+
+from media_manager.movies.dependencies import get_movie_service
+from media_manager.movies.service import MovieService
+from media_manager.tv.dependencies import get_tv_service
+from media_manager.tv.service import TvService
+
+
+def _build_db_connection_string_for_taskiq() -> str:
+    from media_manager.config import MediaManagerConfig
+
+    db_config = MediaManagerConfig().database
+    user = quote(db_config.user, safe="")
+    password = quote(db_config.password, safe="")
+    dbname = quote(db_config.dbname, safe="")
+    host = quote(str(db_config.host), safe="")
+    port = quote(str(db_config.port), safe="")
+    return f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+
+
+broker = PostgresqlBroker(
+    dsn=_build_db_connection_string_for_taskiq,
+    driver="psycopg",
+    run_migrations=True,
 )
-from media_manager.tv.service import (
-    import_all_show_torrents,
-    update_all_non_ended_shows_metadata,
-)
+
+# Register FastAPI app with the broker so worker processes can resolve FastAPI
+# dependencies. Using a string reference avoids circular imports.
+taskiq_fastapi.init(broker, "media_manager.main:app")
+
+log = logging.getLogger(__name__)
 
 
-def setup_scheduler(config: MediaManagerConfig) -> BackgroundScheduler:
-    from media_manager.database import init_engine
+@broker.task
+async def import_all_movie_torrents_task(
+    movie_service: MovieService = TaskiqDepends(get_movie_service),
+) -> None:
+    log.info("Importing all Movie torrents")
+    await asyncio.to_thread(movie_service.import_all_torrents)
 
-    init_engine(config.database)
-    jobstores = {"default": SQLAlchemyJobStore(engine=media_manager.database.engine)}
-    scheduler = BackgroundScheduler(jobstores=jobstores)
-    every_15_minutes_trigger = CronTrigger(minute="*/15", hour="*")
-    weekly_trigger = CronTrigger(
-        day_of_week="mon", hour=0, minute=0, jitter=60 * 60 * 24 * 2
+
+@broker.task
+async def import_all_show_torrents_task(
+    tv_service: TvService = TaskiqDepends(get_tv_service),
+) -> None:
+    log.info("Importing all Show torrents")
+    await asyncio.to_thread(tv_service.import_all_torrents)
+
+
+@broker.task
+async def update_all_movies_metadata_task(
+    movie_service: MovieService = TaskiqDepends(get_movie_service),
+) -> None:
+    await asyncio.to_thread(movie_service.update_all_metadata)
+
+
+@broker.task
+async def update_all_non_ended_shows_metadata_task(
+    tv_service: TvService = TaskiqDepends(get_tv_service),
+) -> None:
+    await asyncio.to_thread(tv_service.update_all_non_ended_shows_metadata)
+
+
+# Maps each task to its cron schedule so PostgresqlSchedulerSource can seed
+# the taskiq_schedulers table on first startup.
+_STARTUP_SCHEDULES: dict[str, list[dict[str, str]]] = {
+    import_all_movie_torrents_task.task_name: [{"cron": "*/2 * * * *"}],
+    import_all_show_torrents_task.task_name: [{"cron": "*/2 * * * *"}],
+    update_all_movies_metadata_task.task_name: [{"cron": "0 0 * * 1"}],
+    update_all_non_ended_shows_metadata_task.task_name: [{"cron": "0 0 * * 1"}],
+}
+
+
+def build_scheduler_loop() -> SchedulerLoop:
+    source = PostgresqlSchedulerSource(
+        dsn=_build_db_connection_string_for_taskiq,
+        driver="psycopg",
+        broker=broker,
+        run_migrations=True,
+        startup_schedule=_STARTUP_SCHEDULES,
     )
-    scheduler.add_job(
-        import_all_movie_torrents,
-        every_15_minutes_trigger,
-        id="import_all_movie_torrents",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        import_all_show_torrents,
-        every_15_minutes_trigger,
-        id="import_all_show_torrents",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        update_all_movies_metadata,
-        weekly_trigger,
-        id="update_all_movies_metadata",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        update_all_non_ended_shows_metadata,
-        weekly_trigger,
-        id="update_all_non_ended_shows_metadata",
-        replace_existing=True,
-    )
-    scheduler.start()
-    return scheduler
+    scheduler = TaskiqScheduler(broker=broker, sources=[source])
+    return SchedulerLoop(scheduler)

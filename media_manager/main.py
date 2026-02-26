@@ -1,5 +1,8 @@
+import asyncio
 import logging
 import os
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
@@ -9,6 +12,8 @@ from fastapi.staticfiles import StaticFiles
 from psycopg.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import FileResponse, RedirectResponse
+from taskiq.receiver import Receiver
+from taskiq_fastapi import populate_dependency_context
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 import media_manager.movies.router as movies_router
@@ -28,6 +33,7 @@ from media_manager.auth.users import (
     fastapi_users,
 )
 from media_manager.config import MediaManagerConfig
+from media_manager.database import init_engine
 from media_manager.exceptions import (
     ConflictError,
     InvalidConfigError,
@@ -42,17 +48,23 @@ from media_manager.exceptions import (
 from media_manager.filesystem_checks import run_filesystem_checks
 from media_manager.logging import LOGGING_CONFIG, setup_logging
 from media_manager.notification.router import router as notification_router
-from media_manager.scheduler import setup_scheduler
+from media_manager.scheduler import (
+    broker,
+    build_scheduler_loop,
+    import_all_movie_torrents_task,
+    import_all_show_torrents_task,
+    update_all_movies_metadata_task,
+    update_all_non_ended_shows_metadata_task,
+)
 
 setup_logging()
 
 config = MediaManagerConfig()
 log = logging.getLogger(__name__)
 
+
 if config.misc.development:
     log.warning("Development Mode activated!")
-
-scheduler = setup_scheduler(config)
 
 run_filesystem_checks(config, log)
 
@@ -62,7 +74,57 @@ DISABLE_FRONTEND_MOUNT = os.getenv("DISABLE_FRONTEND_MOUNT", "").lower() == "tru
 FRONTEND_FOLLOW_SYMLINKS = os.getenv("FRONTEND_FOLLOW_SYMLINKS", "").lower() == "true"
 
 log.info("Hello World!")
-app = FastAPI(root_path=BASE_PATH)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator:
+    init_engine(config.database)
+    broker_started = False
+    started_sources: list = []
+    finish_event: asyncio.Event | None = None
+    receiver_task: asyncio.Task | None = None
+    loop_task: asyncio.Task | None = None
+    try:
+        if not broker.is_worker_process:
+            await broker.startup()
+            broker_started = True
+        populate_dependency_context(broker, app)
+        scheduler_loop = build_scheduler_loop()
+        for source in scheduler_loop.scheduler.sources:
+            await source.startup()
+            started_sources.append(source)
+        finish_event = asyncio.Event()
+        receiver = Receiver(broker, run_startup=False, max_async_tasks=10)
+        receiver_task = asyncio.create_task(receiver.listen(finish_event))
+        loop_task = asyncio.create_task(scheduler_loop.run(skip_first_run=True))
+        try:
+            await asyncio.gather(
+                import_all_movie_torrents_task.kiq(),
+                import_all_show_torrents_task.kiq(),
+                update_all_movies_metadata_task.kiq(),
+                update_all_non_ended_shows_metadata_task.kiq(),
+            )
+        except Exception:
+            log.exception("Failed to submit initial background tasks during startup.")
+            raise
+        yield
+    finally:
+        if loop_task is not None:
+            loop_task.cancel()
+            try:
+                await loop_task
+            except asyncio.CancelledError:
+                pass
+        if finish_event is not None and receiver_task is not None:
+            finish_event.set()
+            await receiver_task
+        for source in started_sources:
+            await source.shutdown()
+        if broker_started:
+            await broker.shutdown()
+
+
+app = FastAPI(root_path=BASE_PATH, lifespan=lifespan)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 origins = config.misc.cors_urls
 log.info(f"CORS URLs activated for following origins: {origins}")

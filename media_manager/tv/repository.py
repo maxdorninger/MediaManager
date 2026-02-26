@@ -684,6 +684,9 @@ class TvRepository:
         if updated:
             self.db.commit()
             self.db.refresh(db_season)
+            log.debug(
+                f"Updating existing season {db_season.number} for show {db_season.show.name}"
+            )
         return SeasonSchema.model_validate(db_season)
 
     def update_episode_attributes(
@@ -719,4 +722,5 @@ class TvRepository:
         if updated:
             self.db.commit()
             self.db.refresh(db_episode)
+            log.info(f"Updating existing episode {db_episode.number}")
         return EpisodeSchema.model_validate(db_episode)

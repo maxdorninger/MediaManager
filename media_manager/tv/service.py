@@ -7,9 +7,7 @@ from typing import overload
 from sqlalchemy.exc import IntegrityError
 
 from media_manager.config import MediaManagerConfig
-from media_manager.database import get_session
 from media_manager.exceptions import InvalidConfigError, NotFoundError, RenameError
-from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
 from media_manager.indexer.utils import evaluate_indexer_query_results
@@ -19,10 +17,8 @@ from media_manager.metadataProvider.abstract_metadata_provider import (
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
-from media_manager.notification.repository import NotificationRepository
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
-from media_manager.torrent.repository import TorrentRepository
 from media_manager.torrent.schemas import (
     Quality,
     Torrent,
@@ -905,9 +901,7 @@ class TvService:
                 existing_season = existing_season_external_ids[
                     fresh_season_data.external_id
                 ]
-                log.debug(
-                    f"Updating existing season {existing_season.number} for show {db_show.name}"
-                )
+
                 self.tv_repository.update_season_attributes(
                     season_id=existing_season.id,
                     name=fresh_season_data.name,
@@ -919,14 +913,12 @@ class TvService:
                     ep.external_id: ep for ep in existing_season.episodes
                 }
                 for fresh_episode_data in fresh_season_data.episodes:
-                    if fresh_episode_data.number in existing_episode_external_ids:
+                    if fresh_episode_data.external_id in existing_episode_external_ids:
                         # Update existing episode
                         existing_episode = existing_episode_external_ids[
                             fresh_episode_data.external_id
                         ]
-                        log.debug(
-                            f"Updating existing episode {existing_episode.number} for season {existing_season.number}"
-                        )
+
                         self.tv_repository.update_episode_attributes(
                             episode_id=existing_episode.id,
                             title=fresh_episode_data.title,
@@ -977,7 +969,7 @@ class TvService:
 
         updated_show = self.tv_repository.get_show_by_id(show_id=db_show.id)
 
-        log.info(f"Successfully updated metadata for show ID: {db_show.id}")
+        log.info(f"Successfully updated metadata for show: {updated_show.name}")
         metadata_provider.download_show_poster_image(show=updated_show)
         return updated_show
 
@@ -1070,64 +1062,34 @@ class TvService:
         log.debug(f"Detected {len(import_suggestions)} importable TV shows.")
         return import_suggestions
 
-
-def import_all_show_torrents() -> None:
-    with next(get_session()) as db:
-        tv_repository = TvRepository(db=db)
-        torrent_service = TorrentService(torrent_repository=TorrentRepository(db=db))
-        indexer_service = IndexerService(indexer_repository=IndexerRepository(db=db))
-        notification_service = NotificationService(
-            notification_repository=NotificationRepository(db=db)
-        )
-        tv_service = TvService(
-            tv_repository=tv_repository,
-            torrent_service=torrent_service,
-            indexer_service=indexer_service,
-            notification_service=notification_service,
-        )
+    def import_all_torrents(self) -> None:
         log.info("Importing all torrents")
-        torrents = torrent_service.get_all_torrents()
+        torrents = self.torrent_service.get_all_torrents()
         log.info("Found %d torrents to import", len(torrents))
         for t in torrents:
+            show = None
             try:
                 if not t.imported and t.status == TorrentStatus.finished:
-                    show = torrent_service.get_show_of_torrent(torrent=t)
+                    show = self.torrent_service.get_show_of_torrent(torrent=t)
                     if show is None:
                         log.warning(
                             f"torrent {t.title} is not a tv torrent, skipping import."
                         )
                         continue
-                    tv_service.import_episode_files_from_torrent(torrent=t, show=show)
+                    self.import_episode_files_from_torrent(torrent=t, show=show)
             except RuntimeError as e:
+                show_name = show.name if show is not None else "<unknown>"
                 log.error(
-                    f"Error importing torrent {t.title} for show {show.name}: {e}",
+                    f"Error importing torrent {t.title} for show {show_name}: {e}",
                     exc_info=True,
                 )
         log.info("Finished importing all torrents")
-        db.commit()
 
-
-def update_all_non_ended_shows_metadata() -> None:
-    """
-    Updates the metadata of all non-ended shows.
-    """
-    with next(get_session()) as db:
-        tv_repository = TvRepository(db=db)
-        tv_service = TvService(
-            tv_repository=tv_repository,
-            torrent_service=TorrentService(torrent_repository=TorrentRepository(db=db)),
-            indexer_service=IndexerService(indexer_repository=IndexerRepository(db=db)),
-            notification_service=NotificationService(
-                notification_repository=NotificationRepository(db=db)
-            ),
-        )
-
+    def update_all_non_ended_shows_metadata(self) -> None:
+        """Updates the metadata of all non-ended shows."""
         log.info("Updating metadata for all non-ended shows")
-
-        shows = [show for show in tv_repository.get_shows() if not show.ended]
-
+        shows = [show for show in self.tv_repository.get_shows() if not show.ended]
         log.info(f"Found {len(shows)} non-ended shows to update")
-
         for show in shows:
             try:
                 if show.metadata_provider == "tmdb":
@@ -1144,12 +1106,10 @@ def update_all_non_ended_shows_metadata() -> None:
                     f"Error initializing metadata provider {show.metadata_provider} for show {show.name}"
                 )
                 continue
-            updated_show = tv_service.update_show_metadata(
+            updated_show = self.update_show_metadata(
                 db_show=show, metadata_provider=metadata_provider
             )
-
             if updated_show:
                 log.debug("Updated show metadata", extra={"show": updated_show.name})
             else:
                 log.warning(f"Failed to update metadata for show: {show.name}")
-        db.commit()

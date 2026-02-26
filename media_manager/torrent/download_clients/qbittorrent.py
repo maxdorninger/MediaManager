@@ -57,21 +57,45 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
             log.exception("Failed to log into qbittorrent")
             raise
 
-        try:
-            self.api_client.torrents_create_category(
-                name=self.config.category_name,
-                save_path=self.config.category_save_path,
+        categories = self.api_client.torrents_categories()
+        log.debug(f"Found following categories in qBittorrent: {categories}")
+        if self.config.category_name in categories:
+            category = categories.get(self.config.category_name)
+            if category.get("savePath") == self.config.category_save_path:
+                log.debug(
+                    f"Category '{self.config.category_name}' already exists in qBittorrent with the correct save path."
+                )
+                return
+            # category exists but with a different save path, attempt to update it
+            log.debug(
+                f"Category '{self.config.category_name}' already exists in qBittorrent but with a different save path. Attempting to update it."
             )
-        except Conflict409Error:
             try:
                 self.api_client.torrents_edit_category(
                     name=self.config.category_name,
-                    save_path=self.config.category_save_path
-                    if self.config.category_save_path != ""
-                    else None,
+                    save_path=self.config.category_save_path,
                 )
-            except Exception:
-                log.exception("Error on updating MediaManager category in qBittorrent")
+            except Conflict409Error:
+                log.exception(
+                    f"Attempt to update category '{self.config.category_name}' in qBittorrent with a different save"
+                    f" path failed. The configured save path and the save path saved in Qbittorrent differ,"
+                    f" manually update it in the qBittorrent WebUI or change the save path in the MediaManager"
+                    f" config to match the one in qBittorrent."
+                )
+        else:
+            # create category if it doesn't exist
+            log.debug(
+                f"Category '{self.config.category_name}' does not exist in qBittorrent. Attempting to create it."
+            )
+            try:
+                self.api_client.torrents_create_category(
+                    name=self.config.category_name,
+                    save_path=self.config.category_save_path,
+                )
+            except Conflict409Error:
+                log.exception(
+                    f"Attempt to create category '{self.config.category_name}' in qBittorrent failed. The category already exists but was not found in the initial category list, manually check if the category exists in the qBittorrent WebUI or change the category name in the MediaManager config."
+                )
 
     def download_torrent(self, indexer_result: IndexerQueryResult) -> Torrent:
         """
