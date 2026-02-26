@@ -1,3 +1,4 @@
+import logging
 
 from taskiq import TaskiqDepends, TaskiqScheduler
 from taskiq.cli.scheduler.run import SchedulerLoop
@@ -23,11 +24,13 @@ broker = PostgresqlBroker(
     run_migrations=True,
 )
 
+log = logging.getLogger(__name__)
 
 @broker.task(schedule=[{"cron": "*/15 * * * *"}])
 async def import_all_movie_torrents_task(
     movie_service: MovieService = TaskiqDepends(get_movie_service),
 ) -> None:
+    log.info("Importing all Movie torrents")
     movie_service.import_all_torrents()
 
 
@@ -35,6 +38,7 @@ async def import_all_movie_torrents_task(
 async def import_all_show_torrents_task(
     tv_service: TvService = TaskiqDepends(get_tv_service),
 ) -> None:
+    log.info("Importing all Show torrents")
     tv_service.import_all_torrents()
 
 
@@ -57,6 +61,7 @@ def build_scheduler_loop() -> SchedulerLoop:
         dsn=_build_db_connection_string_for_taskiq,
         driver="psycopg",
         broker=broker,
+
         run_migrations=True,
     )
     scheduler = TaskiqScheduler(broker=broker, sources=[source])
