@@ -79,32 +79,43 @@ log.info("Hello World!")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
-    if not broker.is_worker_process:
-        await broker.startup()
-    populate_dependency_context(broker, app)
-    scheduler_loop = build_scheduler_loop()
-    for source in scheduler_loop.scheduler.sources:
-        await source.startup()
-    finish_event = asyncio.Event()
-    receiver = Receiver(broker, run_startup=False, max_async_tasks=10)
-    receiver_task = asyncio.create_task(receiver.listen(finish_event))
-    loop_task = asyncio.create_task(scheduler_loop.run(skip_first_run=True))
-    await import_all_movie_torrents_task.kiq()
-    await import_all_show_torrents_task.kiq()
-    await update_all_movies_metadata_task.kiq()
-    await update_all_non_ended_shows_metadata_task.kiq()
-    yield
-    loop_task.cancel()
+    broker_started = False
+    started_sources: list = []
+    finish_event: asyncio.Event | None = None
+    receiver_task: asyncio.Task | None = None
+    loop_task: asyncio.Task | None = None
     try:
-        await loop_task
-    except asyncio.CancelledError:
-        pass
-    finish_event.set()
-    await receiver_task
-    for source in scheduler_loop.scheduler.sources:
-        await source.shutdown()
-    if not broker.is_worker_process:
-        await broker.shutdown()
+        if not broker.is_worker_process:
+            await broker.startup()
+            broker_started = True
+        populate_dependency_context(broker, app)
+        scheduler_loop = build_scheduler_loop()
+        for source in scheduler_loop.scheduler.sources:
+            await source.startup()
+            started_sources.append(source)
+        finish_event = asyncio.Event()
+        receiver = Receiver(broker, run_startup=False, max_async_tasks=10)
+        receiver_task = asyncio.create_task(receiver.listen(finish_event))
+        loop_task = asyncio.create_task(scheduler_loop.run(skip_first_run=True))
+        await import_all_movie_torrents_task.kiq()
+        await import_all_show_torrents_task.kiq()
+        await update_all_movies_metadata_task.kiq()
+        await update_all_non_ended_shows_metadata_task.kiq()
+        yield
+    finally:
+        if loop_task is not None:
+            loop_task.cancel()
+            try:
+                await loop_task
+            except asyncio.CancelledError:
+                pass
+        if finish_event is not None and receiver_task is not None:
+            finish_event.set()
+            await receiver_task
+        for source in started_sources:
+            await source.shutdown()
+        if broker_started:
+            await broker.shutdown()
 
 
 app = FastAPI(root_path=BASE_PATH, lifespan=lifespan)
