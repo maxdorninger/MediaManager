@@ -37,7 +37,6 @@ dependencies = [
     "libtorrent>=2.0.11",
     "pathvalidate>=3.3.1",
     "asgi-correlation-id>=4.3.4",
-    "taskiq-postgresql>=0.4.0",
 ]
 
 [dependency-groups]
