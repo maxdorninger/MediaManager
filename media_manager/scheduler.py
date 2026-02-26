@@ -71,7 +71,7 @@ async def update_all_non_ended_shows_metadata_task(
 
 # Maps each task to its cron schedule so PostgresqlSchedulerSource can seed
 # the taskiq_schedulers table on first startup.
-_STARTUP_SCHEDULES: dict = {
+_STARTUP_SCHEDULES: dict[str, list[dict[str, str]]] = {
     import_all_movie_torrents_task.task_name: [{"cron": "*/2 * * * *"}],
     import_all_show_torrents_task.task_name: [{"cron": "*/2 * * * *"}],
     update_all_movies_metadata_task.task_name: [{"cron": "0 0 * * 1"}],
