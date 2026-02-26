@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import quote
 
 import taskiq_fastapi
 from taskiq import TaskiqDepends, TaskiqScheduler
@@ -16,7 +17,10 @@ def _build_db_connection_string_for_taskiq() -> str:
     from media_manager.config import MediaManagerConfig
 
     db_config = MediaManagerConfig().database
-    return f"postgresql://{db_config.user}:{db_config.password}@{db_config.host}:{db_config.port}/{db_config.dbname}"
+    user = quote(db_config.user, safe="")
+    password = quote(db_config.password, safe="")
+    dbname = quote(db_config.dbname, safe="")
+    return f"postgresql://{user}:{password}@{db_config.host}:{db_config.port}/{dbname}"
 
 
 broker = PostgresqlBroker(
