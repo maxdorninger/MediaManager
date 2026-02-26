@@ -33,6 +33,7 @@ from media_manager.auth.users import (
     fastapi_users,
 )
 from media_manager.config import MediaManagerConfig
+from media_manager.database import init_engine
 from media_manager.exceptions import (
     ConflictError,
     InvalidConfigError,
@@ -47,12 +48,21 @@ from media_manager.exceptions import (
 from media_manager.filesystem_checks import run_filesystem_checks
 from media_manager.logging import LOGGING_CONFIG, setup_logging
 from media_manager.notification.router import router as notification_router
-from media_manager.scheduler import broker, build_scheduler_loop
+from media_manager.scheduler import (
+    broker,
+    build_scheduler_loop,
+    import_all_movie_torrents_task,
+    import_all_show_torrents_task,
+    update_all_movies_metadata_task,
+    update_all_non_ended_shows_metadata_task,
+)
 
 setup_logging()
 
 config = MediaManagerConfig()
 log = logging.getLogger(__name__)
+
+init_engine(config.database)
 
 if config.misc.development:
     log.warning("Development Mode activated!")
@@ -78,6 +88,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     receiver = Receiver(broker, run_startup=False, max_async_tasks=10)
     receiver_task = asyncio.create_task(receiver.listen(finish_event))
     loop_task = asyncio.create_task(scheduler_loop.run(skip_first_run=True))
+    await import_all_movie_torrents_task.kiq()
+    await import_all_show_torrents_task.kiq()
+    await update_all_movies_metadata_task.kiq()
+    await update_all_non_ended_shows_metadata_task.kiq()
     yield
     loop_task.cancel()
     try:
