@@ -27,7 +27,7 @@ broker = PostgresqlBroker(
 log = logging.getLogger(__name__)
 
 
-@broker.task(schedule=[{"cron": "*/15 * * * *"}])
+@broker.task(schedule=[{"cron": "* * * * *"}])
 async def import_all_movie_torrents_task(
     movie_service: MovieService = TaskiqDepends(get_movie_service),
 ) -> None:
@@ -35,7 +35,7 @@ async def import_all_movie_torrents_task(
     movie_service.import_all_torrents()
 
 
-@broker.task(schedule=[{"cron": "*/15 * * * *"}])
+@broker.task(schedule=[{"cron": "* * * * *"}])
 async def import_all_show_torrents_task(
     tv_service: TvService = TaskiqDepends(get_tv_service),
 ) -> None:
