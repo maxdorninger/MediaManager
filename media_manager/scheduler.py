@@ -21,7 +21,9 @@ def _build_db_connection_string_for_taskiq() -> str:
     user = quote(db_config.user, safe="")
     password = quote(db_config.password, safe="")
     dbname = quote(db_config.dbname, safe="")
-    return f"postgresql://{user}:{password}@{db_config.host}:{db_config.port}/{dbname}"
+    host = quote(str(db_config.host), safe="")
+    port = quote(str(db_config.port), safe="")
+    return f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
 
 
 broker = PostgresqlBroker(
