@@ -901,9 +901,7 @@ class TvService:
                 existing_season = existing_season_external_ids[
                     fresh_season_data.external_id
                 ]
-                log.debug(
-                    f"Updating existing season {existing_season.number} for show {db_show.name}"
-                )
+
                 self.tv_repository.update_season_attributes(
                     season_id=existing_season.id,
                     name=fresh_season_data.name,
@@ -920,9 +918,7 @@ class TvService:
                         existing_episode = existing_episode_external_ids[
                             fresh_episode_data.external_id
                         ]
-                        log.debug(
-                            f"Updating existing episode {existing_episode.number} for season {existing_season.number}"
-                        )
+
                         self.tv_repository.update_episode_attributes(
                             episode_id=existing_episode.id,
                             title=fresh_episode_data.title,
@@ -973,7 +969,7 @@ class TvService:
 
         updated_show = self.tv_repository.get_show_by_id(show_id=db_show.id)
 
-        log.info(f"Successfully updated metadata for show ID: {db_show.id}")
+        log.info(f"Successfully updated metadata for show: {updated_show.name}")
         metadata_provider.download_show_poster_image(show=updated_show)
         return updated_show
 

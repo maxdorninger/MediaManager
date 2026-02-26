@@ -26,6 +26,7 @@ broker = PostgresqlBroker(
 
 log = logging.getLogger(__name__)
 
+
 @broker.task(schedule=[{"cron": "*/15 * * * *"}])
 async def import_all_movie_torrents_task(
     movie_service: MovieService = TaskiqDepends(get_movie_service),
@@ -61,7 +62,6 @@ def build_scheduler_loop() -> SchedulerLoop:
         dsn=_build_db_connection_string_for_taskiq,
         driver="psycopg",
         broker=broker,
-
         run_migrations=True,
     )
     scheduler = TaskiqScheduler(broker=broker, sources=[source])
