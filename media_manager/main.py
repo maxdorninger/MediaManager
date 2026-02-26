@@ -79,7 +79,8 @@ log.info("Hello World!")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
-    await broker.startup()
+    if not broker.is_worker_process:
+        await broker.startup()
     populate_dependency_context(broker, app)
     scheduler_loop = build_scheduler_loop()
     for source in scheduler_loop.scheduler.sources:
@@ -102,7 +103,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     await receiver_task
     for source in scheduler_loop.scheduler.sources:
         await source.shutdown()
-    await broker.shutdown()
+    if not broker.is_worker_process:
+        await broker.shutdown()
 
 
 app = FastAPI(root_path=BASE_PATH, lifespan=lifespan)
