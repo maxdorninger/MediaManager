@@ -609,7 +609,7 @@ class MovieService:
         )
         if not fresh_movie_data:
             log.warning(
-                f"Could not fetch fresh metadata for movie: {db_movie.name} (ID: {db_movie.external_id})"
+                f"Could not fetch fresh metadata for movie: {db_movie.name} ({db_movie.year})"
             )
             return None
         log.debug(f"Fetched fresh metadata for movie: {fresh_movie_data.name}")
@@ -624,7 +624,9 @@ class MovieService:
 
         updated_movie = self.movie_repository.get_movie_by_id(movie_id=db_movie.id)
 
-        log.info(f"Successfully updated metadata for movie ID: {db_movie.id}")
+        log.info(
+            f"Successfully updated metadata for movie: {db_movie.name} ({db_movie.year})"
+        )
         metadata_provider.download_movie_poster_image(movie=updated_movie)
         return updated_movie
 
