@@ -97,10 +97,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
         receiver = Receiver(broker, run_startup=False, max_async_tasks=10)
         receiver_task = asyncio.create_task(receiver.listen(finish_event))
         loop_task = asyncio.create_task(scheduler_loop.run(skip_first_run=True))
-        await import_all_movie_torrents_task.kiq()
-        await import_all_show_torrents_task.kiq()
-        await update_all_movies_metadata_task.kiq()
-        await update_all_non_ended_shows_metadata_task.kiq()
+        try:
+            await asyncio.gather(
+                import_all_movie_torrents_task.kiq(),
+                import_all_show_torrents_task.kiq(),
+                update_all_movies_metadata_task.kiq(),
+                update_all_non_ended_shows_metadata_task.kiq(),
+            )
+        except Exception:
+            log.exception("Failed to submit initial background tasks during startup.")
+            raise
         yield
     finally:
         if loop_task is not None:
