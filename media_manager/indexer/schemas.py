@@ -69,10 +69,10 @@ class IndexerQueryResult(BaseModel):
                 return list(range(start, end + 1))
             return []
 
-        # 3) Pack S01 / S1
-        m = re.search(r"\bs(\d{1,2})\b", title)
-        if m:
-            return [int(m.group(1))]
+        # 3) Pack S01 / S1 (or multiple: S01 S03 S05)
+        matches = re.findall(r"\bs(\d{1,2})\b", title)
+        if matches:
+            return sorted(set(int(m) for m in matches))
 
         # 4) Season 01 / Season 1
         m = re.search(r"\bseason\s*(\d{1,2})\b", title)

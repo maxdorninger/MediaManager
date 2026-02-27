@@ -519,6 +519,7 @@ class TvService:
         indexer_result = self.indexer_service.get_result(
             result_id=public_indexer_result_id
         )
+
         show_torrent = self.torrent_service.download(indexer_result=indexer_result)
         self.torrent_service.pause_download(torrent=show_torrent)
 
@@ -598,6 +599,16 @@ class TvService:
     def get_root_season_directory(self, show: Show, season_number: int) -> Path:
         return self.get_root_show_directory(show) / Path(f"Season {season_number}")
 
+    @staticmethod
+    def _episode_file_pattern(season_number: int, episode_number: int) -> str:
+        return (
+            r".*[. ]S0?"
+            + str(season_number)
+            + r"E(?:\d+-?E?)?0?"
+            + str(episode_number)
+            + r"[. -].*"
+        )
+
     def import_episode(
         self,
         show: Show,
@@ -610,9 +621,7 @@ class TvService:
         episode_file_name = f"{remove_special_characters(show.name)} S{season.number:02d}E{episode_number:02d}"
         if file_path_suffix != "":
             episode_file_name += f" - {file_path_suffix}"
-        pattern = (
-            r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode_number) + r"[. ].*"
-        )
+        pattern = self._episode_file_pattern(season.number, episode_number)
         subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
         target_file_name = (
             self.get_root_season_directory(show=show, season_number=season.number)
@@ -703,9 +712,7 @@ class TvService:
         episode_file_name = f"{remove_special_characters(show.name)} S{season.number:02d}E{episode.number:02d}"
         if file_path_suffix != "":
             episode_file_name += f" - {file_path_suffix}"
-        pattern = (
-            r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode.number) + r"[. ].*"
-        )
+        pattern = self._episode_file_pattern(season.number, episode.number)
         subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
         target_file_name = (
             self.get_root_season_directory(show=show, season_number=season.number)
