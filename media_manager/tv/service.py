@@ -610,10 +610,15 @@ class TvService:
         episode_file_name = f"{remove_special_characters(show.name)} S{season.number:02d}E{episode_number:02d}"
         if file_path_suffix != "":
             episode_file_name += f" - {file_path_suffix}"
-        pattern = (
-            r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode_number) + r"[. ].*"
+        se_marker = (
+            r"(?<![A-Za-z\d])S0*"
+            + str(season.number)
+            + r"E0*"
+            + str(episode_number)
+            + r"(?!\d)"
         )
-        subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
+        pattern = se_marker
+        subtitle_pattern = se_marker + r".*[-_. ]([A-Za-z]{2})\.srt$"
         target_file_name = (
             self.get_root_season_directory(show=show, season_number=season.number)
             / episode_file_name

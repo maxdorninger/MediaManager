@@ -12,7 +12,7 @@ ARGS ?=
 APP_SVC ?= mediamanager
 FRONTEND_SVC ?= frontend
 
-.PHONY: help up down logs ps restartapp frontend
+.PHONY: help up down logs ps restart app frontend test
 
 help:
 	@echo "Usage:"
@@ -24,6 +24,8 @@ help:
 	@echo "  make ps | restart           # Check status or restart containers"
 	@echo "  make app                    # Shell into $(APP_SVC) container"
 	@echo "  make frontend               # Shell into $(FRONTEND_SVC) container"
+	@echo "  make test ARGS=\"...\"        # Run pytest (optional ARGS passed to pytest)"
+
 
 # Core lifecycle
 up:
@@ -47,3 +49,7 @@ app:
 
 frontend:
 	@$(DC) exec -it $(FRONTEND_SVC) bash 2>/dev/null || $(DC) exec -it $(FRONTEND_SVC) sh
+
+# Run pytest via uv
+test:
+	uv run pytest tests/ $(ARGS)
