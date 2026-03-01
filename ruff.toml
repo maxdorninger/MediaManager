@@ -40,5 +40,8 @@ ignore = [
     "TD002", "TD003",
 ]
 
+[lint.per-file-ignores]
+"tests/**" = ["ANN", "S101"]
+
 [lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Path", "taskiq.TaskiqDepends"]
