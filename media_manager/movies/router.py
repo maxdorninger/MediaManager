@@ -23,7 +23,7 @@ from media_manager.movies.schemas import (
 )
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import Torrent
-from media_manager.torrent.utils import get_importable_media_directories
+from media_manager.utils.files import get_importable_media_directories
 
 router = APIRouter()
 

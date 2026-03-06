@@ -4,6 +4,13 @@ import shutil
 from pathlib import Path
 from typing import overload
 
+from media_manager.utils.files import (
+    extract_external_id_from_string,
+    get_importable_media_directories,
+    import_file, import_subtitle,
+    remove_special_characters,
+    remove_special_chars_and_parentheses
+)
 from sqlalchemy.exc import IntegrityError
 
 from media_manager.config import MediaManagerConfig
@@ -26,12 +33,7 @@ from media_manager.torrent.schemas import (
 )
 from media_manager.torrent.service import TorrentService
 from media_manager.torrent.utils import (
-    extract_external_id_from_string,
     get_files_for_import,
-    get_importable_media_directories,
-    import_file,
-    remove_special_characters,
-    remove_special_chars_and_parentheses,
 )
 from media_manager.tv import log
 from media_manager.tv.repository import TvRepository
@@ -613,7 +615,6 @@ class TvService:
         pattern = (
             r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode_number) + r"[. ].*"
         )
-        subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
         target_file_name = (
             self.get_root_season_directory(show=show, season_number=season.number)
             / episode_file_name
@@ -621,19 +622,7 @@ class TvService:
 
         # import subtitle
         for subtitle_file in subtitle_files:
-            regex_result = re.search(
-                subtitle_pattern, subtitle_file.name, re.IGNORECASE
-            )
-            if regex_result:
-                language_code = regex_result.group(1)
-                target_subtitle_file = target_file_name.with_suffix(
-                    f".{language_code}.srt"
-                )
-                import_file(target_file=target_subtitle_file, source_file=subtitle_file)
-            else:
-                log.debug(
-                    f"Didn't find any pattern {subtitle_pattern} in subtitle file: {subtitle_file.name}"
-                )
+            import_subtitle(subtitle_file=subtitle_file, target_file=target_file_name)
 
         # import episode videos
         for file in video_files:
@@ -706,7 +695,6 @@ class TvService:
         pattern = (
             r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode.number) + r"[. ].*"
         )
-        subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
         target_file_name = (
             self.get_root_season_directory(show=show, season_number=season.number)
             / episode_file_name
@@ -714,19 +702,7 @@ class TvService:
 
         # import subtitle
         for subtitle_file in subtitle_files:
-            regex_result = re.search(
-                subtitle_pattern, subtitle_file.name, re.IGNORECASE
-            )
-            if regex_result:
-                language_code = regex_result.group(1)
-                target_subtitle_file = target_file_name.with_suffix(
-                    f".{language_code}.srt"
-                )
-                import_file(target_file=target_subtitle_file, source_file=subtitle_file)
-            else:
-                log.debug(
-                    f"Didn't find any pattern {subtitle_pattern} in subtitle file: {subtitle_file.name}"
-                )
+            import_subtitle(subtitle_file=subtitle_file, target_file=target_file_name)
 
         found_video = False
 

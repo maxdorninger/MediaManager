@@ -3,6 +3,13 @@ import shutil
 from pathlib import Path
 from typing import overload
 
+from media_manager.utils.files import (
+    extract_external_id_from_string,
+    get_importable_media_directories,
+    import_file, import_subtitle,
+    remove_special_characters,
+    remove_special_chars_and_parentheses
+)
 from sqlalchemy.exc import IntegrityError
 
 from media_manager.config import MediaManagerConfig
@@ -35,12 +42,7 @@ from media_manager.torrent.schemas import (
 )
 from media_manager.torrent.service import TorrentService
 from media_manager.torrent.utils import (
-    extract_external_id_from_string,
     get_files_for_import,
-    get_importable_media_directories,
-    import_file,
-    remove_special_characters,
-    remove_special_chars_and_parentheses,
 )
 
 
@@ -466,21 +468,12 @@ class MovieService:
             import_file(target_file=target_video_file, source_file=video_files[0])
             success = True
 
+        target_subtitle_file = (
+            movie_root_path / f"{movie_file_name}"
+        )
         # import subtitles
         for subtitle_file in subtitle_files:
-            language_code_match = re.search(
-                r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
-            )
-            if not language_code_match:
-                log.warning(
-                    f"Subtitle file {subtitle_file.name} does not match expected format, can't extract language code, skipping."
-                )
-                continue
-            language_code = language_code_match.group(1)
-            target_subtitle_file = (
-                movie_root_path / f"{movie_file_name}.{language_code}.srt"
-            )
-            import_file(target_file=target_subtitle_file, source_file=subtitle_file)
+            import_subtitle(subtitle_file=subtitle_file, target_file=target_subtitle_file)
 
         return success
 
