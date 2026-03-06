@@ -13,7 +13,6 @@ from media_manager.metadataProvider.dependencies import metadata_provider_dep
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import Torrent
-from media_manager.utils.file_handler import get_importable_media_directories
 from media_manager.tv.dependencies import (
     season_dep,
     show_dep,
@@ -27,6 +26,7 @@ from media_manager.tv.schemas import (
     Show,
     ShowId,
 )
+from media_manager.utils.file_handler import get_importable_media_directories
 
 router = APIRouter()
 

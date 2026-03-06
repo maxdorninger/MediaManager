@@ -1,15 +1,13 @@
-import logging
 import mimetypes
-import patoolib
-from pathlib import Path, UnsupportedOperation
 import re
 import shutil
+from pathlib import Path, UnsupportedOperation
+
+import patoolib
 
 from media_manager.config import MediaManagerConfig
-from media_manager.torrent.utils import log
 from media_manager.torrent.schemas import Torrent
-
-log = logging.getLogger(__name__)
+from media_manager.utils import log
 
 
 def extract_external_id_from_string(input_string: str) -> tuple[str | None, int | None]:
@@ -26,6 +24,7 @@ def extract_external_id_from_string(input_string: str) -> tuple[str | None, int 
         return match.group(1).lower(), int(match.group(2))
 
     return None, None
+
 
 def list_files_recursively(path: Path = Path()) -> list[Path]:
     files = list(path.glob("**/*"))
@@ -129,9 +128,7 @@ def get_files_for_import(
                     f"File is neither a video nor a subtitle, will not be imported: {file}"
                 )
         else:
-            log.debug(
-                f"Unknown file type, will not be imported: {file}"
-            )
+            log.debug(f"Unknown file type, will not be imported: {file}")
 
     log.info(
         f"Found {len(all_files)} files ({len(video_files)} video files, {len(subtitle_files)} subtitle files) for further processing."

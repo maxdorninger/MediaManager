@@ -7,8 +7,8 @@ from media_manager.indexer.indexers.prowlarr import Prowlarr
 from media_manager.indexer.repository import IndexerRepository
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.movies.schemas import Movie
-from media_manager.utils.file_handler import remove_special_chars_and_parentheses
 from media_manager.tv.schemas import Show
+from media_manager.utils.file_handler import remove_special_chars_and_parentheses
 
 log = logging.getLogger(__name__)
 
