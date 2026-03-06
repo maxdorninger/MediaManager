@@ -3,9 +3,10 @@ import shutil
 from pathlib import Path
 from typing import overload
 
-from media_manager.utils.files import (
+from media_manager.utils.file_handler import (
     extract_external_id_from_string,
     get_importable_media_directories,
+    get_files_for_import,
     import_file, import_subtitle,
     remove_special_characters,
     remove_special_chars_and_parentheses
@@ -41,9 +42,6 @@ from media_manager.torrent.schemas import (
     TorrentStatus,
 )
 from media_manager.torrent.service import TorrentService
-from media_manager.torrent.utils import (
-    get_files_for_import,
-)
 
 
 class MovieService:
