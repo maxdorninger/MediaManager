@@ -6,7 +6,7 @@ from pathlib import Path, UnsupportedOperation
 import patoolib
 
 from media_manager.config import MediaManagerConfig
-from media_manager.torrent.schemas import Torrent
+from media_manager.torrent.schemas import Quality, Torrent
 from media_manager.utils import log
 
 
@@ -24,6 +24,27 @@ def extract_external_id_from_string(input_string: str) -> tuple[str | None, int 
         return match.group(1).lower(), int(match.group(2))
 
     return None, None
+
+def extract_quality_video_file(file: Path) -> Quality:
+    """
+    Extracts the quality of a video file based on its name.
+
+    :param file: The path to the video file.
+    :return: The extracted quality or None if not found.
+    """
+    quality_pattern = r"\b(4k|UHD|ultra[ ._-]?hd|2160p|FHD|full[ ._-]?hd|1080p|HD|720p|SD|480p)\b"
+    match = re.search(quality_pattern, file.stem, re.IGNORECASE)
+    if match:
+        quality = match.group(1).lower()
+        if quality in {"4k", "uhd", "2160p"}:
+            return Quality.uhd
+        if quality in {"fhd", "1080p", "hd"}:
+            return Quality.fullhd
+        if quality in {"720p"}:
+            return Quality.hd
+        if quality in {"sd", "480p"}:
+            return Quality.sd
+    return Quality.unknown
 
 
 def list_files_recursively(path: Path = Path()) -> list[Path]:
@@ -137,6 +158,12 @@ def get_files_for_import(
 
 
 def import_subtitle(subtitle_file: Path, target_file: str) -> None:
+    """
+    Imports a subtitle file by renaming it to match the target video file and placing it in the same directory.
+
+    :param subtitle_file: The path to the subtitle file to be imported.
+    :return None
+    """
     subtitle_pattern = r"[. ]?([a-z]{2,3})(?:\.(\d+))?\.srt$"
     regex_result = re.search(subtitle_pattern, subtitle_file.name, re.IGNORECASE)
     if regex_result:

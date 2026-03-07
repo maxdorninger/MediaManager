@@ -44,6 +44,7 @@ from media_manager.tv.schemas import (
 )
 from media_manager.utils.file_handler import (
     extract_external_id_from_string,
+    extract_quality_video_file,
     get_files_for_import,
     get_importable_media_directories,
     import_file,
@@ -655,13 +656,15 @@ class TvService:
 
         for episode in season.episodes:
             try:
+                file_quality = extract_quality_video_file(video_files[0])
+                new_path_suffix = f"{file_quality} - {file_path_suffix}"
                 imported = self.import_episode(
                     show=show,
                     subtitle_files=subtitle_files,
                     video_files=video_files,
                     season=season,
                     episode_number=episode.number,
-                    file_path_suffix=file_path_suffix,
+                    file_path_suffix=new_path_suffix,
                 )
                 if imported:
                     imported_episodes.append(episode)

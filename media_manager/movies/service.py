@@ -28,13 +28,13 @@ from media_manager.movies.schemas import (
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import (
-    Quality,
     Torrent,
     TorrentStatus,
 )
 from media_manager.torrent.service import TorrentService
 from media_manager.utils.file_handler import (
     extract_external_id_from_string,
+    extract_quality_video_file,
     get_files_for_import,
     get_importable_media_directories,
     import_file,
@@ -564,19 +564,22 @@ class MovieService:
             directory=new_source_path
         )
 
+        file_quality = extract_quality_video_file(video_files[0])
+        file_suffix = f"{file_quality} - IMPORTED"
+
         success = self.import_movie(
             movie=movie,
             video_files=video_files,
             subtitle_files=subtitle_files,
-            file_path_suffix="IMPORTED",
+            file_path_suffix=file_suffix,
         )
         if success:
             self.movie_repository.add_movie_file(
                 MovieFile(
                     movie_id=movie.id,
-                    file_path_suffix="IMPORTED",
+                    file_path_suffix=file_suffix,
                     torrent_id=None,
-                    quality=Quality.unknown,
+                    quality=file_quality,
                 )
             )
 
