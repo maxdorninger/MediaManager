@@ -25,6 +25,7 @@ def extract_external_id_from_string(input_string: str) -> tuple[str | None, int 
 
     return None, None
 
+
 def extract_quality_video_file(file: Path) -> Quality:
     """
     Extracts the quality of a video file based on its name.
@@ -32,15 +33,17 @@ def extract_quality_video_file(file: Path) -> Quality:
     :param file: The path to the video file.
     :return: The extracted quality or None if not found.
     """
-    quality_pattern = r"\b(4k|UHD|ultra[ ._-]?hd|2160p|FHD|full[ ._-]?hd|1080p|HD|720p|SD|480p)\b"
+    quality_pattern = (
+        r"\b(4k|UHD|ultra[ ._-]?hd|2160p|FHD|full[ ._-]?hd|1080p|HD|720p|SD|480p)\b"
+    )
     match = re.search(quality_pattern, file.stem, re.IGNORECASE)
     if match:
         quality = match.group(1).lower()
         if quality in {"4k", "uhd", "2160p"}:
             return Quality.uhd
-        if quality in {"fhd", "1080p", "hd"}:
+        if quality in {"fhd", "1080p"}:
             return Quality.fullhd
-        if quality in {"720p"}:
+        if quality in {"hd", "720p"}:
             return Quality.hd
         if quality in {"sd", "480p"}:
             return Quality.sd
