@@ -661,7 +661,9 @@ class TvService:
         for episode in season.episodes:
             try:
                 episode.quality = extract_quality_video_file(video_files[0])
-                new_path_suffix = f"{QualityStrings.get_label(quality=episode.quality)} - {file_path_suffix}"
+                new_path_suffix = (
+                    f"{QualityStrings.get_label(episode.quality)} - {file_path_suffix}"
+                )
                 imported = self.import_episode(
                     show=show,
                     subtitle_files=subtitle_files,
