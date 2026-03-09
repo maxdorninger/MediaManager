@@ -23,6 +23,7 @@ class Episode(BaseModel):
     external_id: int
     title: str
     overview: str | None = None
+    quality: Quality = Quality.unknown
 
 
 class Season(BaseModel):

@@ -56,7 +56,7 @@ class TorrentService:
         self.torrent_repository.save_torrent(torrent=torrent)
         return torrent
 
-    def cancel_download(self, torrent: Torrent, delete_files: bool = False) -> Torrent:
+    def cancel_download(self, torrent: Torrent, delete_files: bool = False) -> None:
         """
         cancels download of a torrent
 
@@ -65,7 +65,6 @@ class TorrentService:
         """
         log.info(f"Cancelling download for torrent: {torrent.title}")
         self.download_manager.remove_torrent(torrent, delete_data=delete_files)
-        return self.get_torrent_status(torrent=torrent)
 
     def pause_download(self, torrent: Torrent) -> Torrent:
         """

@@ -22,6 +22,10 @@ class QualityStrings(Enum):
     sd = "400p"
     unknown = "unknown"
 
+    @staticmethod
+    def get_label(quality: Quality) -> str:
+        return QualityStrings[quality.name].value
+
 
 class TorrentStatus(Enum):
     finished = 1

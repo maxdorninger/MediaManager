@@ -20,19 +20,11 @@ from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import (
-    Quality,
+    QualityStrings,
     Torrent,
     TorrentStatus,
 )
 from media_manager.torrent.service import TorrentService
-from media_manager.torrent.utils import (
-    extract_external_id_from_string,
-    get_files_for_import,
-    get_importable_media_directories,
-    import_file,
-    remove_special_characters,
-    remove_special_chars_and_parentheses,
-)
 from media_manager.tv import log
 from media_manager.tv.repository import TvRepository
 from media_manager.tv.schemas import (
@@ -49,6 +41,16 @@ from media_manager.tv.schemas import (
     SeasonId,
     Show,
     ShowId,
+)
+from media_manager.utils.file_handler import (
+    extract_external_id_from_string,
+    extract_quality_video_file,
+    get_files_for_import,
+    get_importable_media_directories,
+    import_file,
+    import_subtitle,
+    remove_special_characters,
+    remove_special_chars_and_parentheses,
 )
 
 
@@ -613,7 +615,6 @@ class TvService:
         pattern = (
             r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode_number) + r"[. ].*"
         )
-        subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
         target_file_name = (
             self.get_root_season_directory(show=show, season_number=season.number)
             / episode_file_name
@@ -621,29 +622,21 @@ class TvService:
 
         # import subtitle
         for subtitle_file in subtitle_files:
-            regex_result = re.search(
-                subtitle_pattern, subtitle_file.name, re.IGNORECASE
-            )
-            if regex_result:
-                language_code = regex_result.group(1)
-                target_subtitle_file = target_file_name.with_suffix(
-                    f".{language_code}.srt"
-                )
-                import_file(target_file=target_subtitle_file, source_file=subtitle_file)
-            else:
-                log.debug(
-                    f"Didn't find any pattern {subtitle_pattern} in subtitle file: {subtitle_file.name}"
-                )
+            import_subtitle(subtitle_file=subtitle_file, target_file=target_file_name)
 
         # import episode videos
         for file in video_files:
-            if re.search(pattern, file.name, re.IGNORECASE):
-                target_video_file = target_file_name.with_suffix(file.suffix)
-                import_file(target_file=target_video_file, source_file=file)
-                return True
-        else:
-            msg = f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
-            raise Exception(msg)  # noqa: TRY002 # TODO: resolve this
+            try:
+                if re.search(pattern, file.name, re.IGNORECASE):
+                    target_video_file = target_file_name.with_suffix(file.suffix)
+                    import_file(target_file=target_video_file, source_file=file)
+                    return True
+            except FileNotFoundError:
+                log.error(
+                    f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
+                )
+                return False
+        return False
 
     def import_season(
         self,
@@ -667,28 +660,44 @@ class TvService:
 
         for episode in season.episodes:
             try:
+                episode.quality = extract_quality_video_file(video_files[0])
+                new_path_suffix = (
+                    f"{QualityStrings.get_label(episode.quality)} - {file_path_suffix}"
+                )
                 imported = self.import_episode(
                     show=show,
                     subtitle_files=subtitle_files,
                     video_files=video_files,
                     season=season,
                     episode_number=episode.number,
-                    file_path_suffix=file_path_suffix,
+                    file_path_suffix=new_path_suffix,
                 )
                 if imported:
                     imported_episodes.append(episode)
 
-            except Exception:
+            except FileNotFoundError as e:
+                log.exception(
+                    f"IO/FST problem while importing S{season.number:02d}E{episode.number:02d}: {e}"
+                )
                 # Send notification about missing episode file
                 if self.notification_service:
                     self.notification_service.send_notification_to_all_providers(
                         title="Missing Episode File",
                         message=f"No video file found for S{season.number:02d}E{episode.number:02d} for show {show.name}. Manual intervention may be required.",
                     )
-                success = False
-                log.warning(
-                    f"S{season.number}E{episode.number} not found when trying to import episode for show {show.name}."
+                raise
+            except Exception as e:
+                # Send notification about unknown error
+                log.exception(
+                    f"Unexpected error importing S{season.number:02d}E{episode.number:02d}: {e}"
                 )
+                if self.notification_service:
+                    self.notification_service.send_notification_to_all_providers(
+                        title="Unexpected Error",
+                        message=f"An unexpected error occurred while importing S{season.number:02d}E{episode.number:02d} for {show.name}. Check server logs.",
+                    )
+                success = False
+
         return success, imported_episodes
 
     def import_episode_files(
@@ -706,7 +715,6 @@ class TvService:
         pattern = (
             r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode.number) + r"[. ].*"
         )
-        subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
         target_file_name = (
             self.get_root_season_directory(show=show, season_number=season.number)
             / episode_file_name
@@ -714,19 +722,7 @@ class TvService:
 
         # import subtitle
         for subtitle_file in subtitle_files:
-            regex_result = re.search(
-                subtitle_pattern, subtitle_file.name, re.IGNORECASE
-            )
-            if regex_result:
-                language_code = regex_result.group(1)
-                target_subtitle_file = target_file_name.with_suffix(
-                    f".{language_code}.srt"
-                )
-                import_file(target_file=target_subtitle_file, source_file=subtitle_file)
-            else:
-                log.debug(
-                    f"Didn't find any pattern {subtitle_pattern} in subtitle file: {subtitle_file.name}"
-                )
+            import_subtitle(subtitle_file=subtitle_file, target_file=target_file_name)
 
         found_video = False
 
@@ -1023,7 +1019,7 @@ class TvService:
             for episode in imported_episodes:
                 episode_file = EpisodeFile(
                     episode_id=episode.id,
-                    quality=Quality.unknown,
+                    quality=episode.quality,
                     file_path_suffix="IMPORTED",
                     torrent_id=None,
                 )

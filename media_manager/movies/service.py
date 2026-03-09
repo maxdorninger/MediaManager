@@ -1,4 +1,3 @@
-import re
 import shutil
 from pathlib import Path
 from typing import overload
@@ -29,16 +28,18 @@ from media_manager.movies.schemas import (
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import (
-    Quality,
+    QualityStrings,
     Torrent,
     TorrentStatus,
 )
 from media_manager.torrent.service import TorrentService
-from media_manager.torrent.utils import (
+from media_manager.utils.file_handler import (
     extract_external_id_from_string,
+    extract_quality_video_file,
     get_files_for_import,
     get_importable_media_directories,
     import_file,
+    import_subtitle,
     remove_special_characters,
     remove_special_chars_and_parentheses,
 )
@@ -466,21 +467,12 @@ class MovieService:
             import_file(target_file=target_video_file, source_file=video_files[0])
             success = True
 
+        target_subtitle_file = movie_root_path / f"{movie_file_name}"
         # import subtitles
         for subtitle_file in subtitle_files:
-            language_code_match = re.search(
-                r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
+            import_subtitle(
+                subtitle_file=subtitle_file, target_file=target_subtitle_file
             )
-            if not language_code_match:
-                log.warning(
-                    f"Subtitle file {subtitle_file.name} does not match expected format, can't extract language code, skipping."
-                )
-                continue
-            language_code = language_code_match.group(1)
-            target_subtitle_file = (
-                movie_root_path / f"{movie_file_name}.{language_code}.srt"
-            )
-            import_file(target_file=target_subtitle_file, source_file=subtitle_file)
 
         return success
 
@@ -573,19 +565,22 @@ class MovieService:
             directory=new_source_path
         )
 
+        file_quality = extract_quality_video_file(video_files[0])
+        file_suffix = f"{QualityStrings.get_label(file_quality)} - IMPORTED"
+
         success = self.import_movie(
             movie=movie,
             video_files=video_files,
             subtitle_files=subtitle_files,
-            file_path_suffix="IMPORTED",
+            file_path_suffix=file_suffix,
         )
         if success:
             self.movie_repository.add_movie_file(
                 MovieFile(
                     movie_id=movie.id,
-                    file_path_suffix="IMPORTED",
+                    file_path_suffix=file_suffix,
                     torrent_id=None,
-                    quality=Quality.unknown,
+                    quality=file_quality,
                 )
             )
 
