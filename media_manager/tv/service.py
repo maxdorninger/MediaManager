@@ -20,7 +20,7 @@ from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import (
-    Quality,
+    QualityStrings,
     Torrent,
     TorrentStatus,
 )
@@ -626,13 +626,17 @@ class TvService:
 
         # import episode videos
         for file in video_files:
-            if re.search(pattern, file.name, re.IGNORECASE):
-                target_video_file = target_file_name.with_suffix(file.suffix)
-                import_file(target_file=target_video_file, source_file=file)
-                return True
-        else:
-            msg = f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
-            raise Exception(msg)  # noqa: TRY002 # TODO: resolve this
+            try:
+                if re.search(pattern, file.name, re.IGNORECASE):
+                    target_video_file = target_file_name.with_suffix(file.suffix)
+                    import_file(target_file=target_video_file, source_file=file)
+                    return True
+            except FileNotFoundError:
+                log.error(
+                    f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
+                )
+                return False
+        return False
 
     def import_season(
         self,
@@ -656,8 +660,8 @@ class TvService:
 
         for episode in season.episodes:
             try:
-                file_quality = extract_quality_video_file(video_files[0])
-                new_path_suffix = f"{file_quality} - {file_path_suffix}"
+                episode.quality = extract_quality_video_file(video_files[0])
+                new_path_suffix = f"{QualityStrings.get_label(quality=episode.quality)} - {file_path_suffix}"
                 imported = self.import_episode(
                     show=show,
                     subtitle_files=subtitle_files,
@@ -669,17 +673,29 @@ class TvService:
                 if imported:
                     imported_episodes.append(episode)
 
-            except Exception:
+            except FileNotFoundError as e:
+                log.exception(
+                    f"IO/FST problem while importing S{season.number:02d}E{episode.number:02d}: {e}"
+                )
                 # Send notification about missing episode file
                 if self.notification_service:
                     self.notification_service.send_notification_to_all_providers(
                         title="Missing Episode File",
                         message=f"No video file found for S{season.number:02d}E{episode.number:02d} for show {show.name}. Manual intervention may be required.",
                     )
-                success = False
-                log.warning(
-                    f"S{season.number}E{episode.number} not found when trying to import episode for show {show.name}."
+                raise
+            except Exception as e:
+                # Send notification about unknown error
+                log.exception(
+                    f"Unexpected error importing S{season.number:02d}E{episode.number:02d}: {e}"
                 )
+                if self.notification_service:
+                    self.notification_service.send_notification_to_all_providers(
+                        title="Unexpected Error",
+                        message=f"An unexpected error occurred while importing S{season.number:02d}E{episode.number:02d} for {show.name}. Check server logs.",
+                    )
+                success = False
+
         return success, imported_episodes
 
     def import_episode_files(
@@ -1001,7 +1017,7 @@ class TvService:
             for episode in imported_episodes:
                 episode_file = EpisodeFile(
                     episode_id=episode.id,
-                    quality=Quality.unknown,
+                    quality=episode.quality,
                     file_path_suffix="IMPORTED",
                     torrent_id=None,
                 )

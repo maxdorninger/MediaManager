@@ -28,6 +28,7 @@ from media_manager.movies.schemas import (
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import (
+    QualityStrings,
     Torrent,
     TorrentStatus,
 )
@@ -466,12 +467,12 @@ class MovieService:
             import_file(target_file=target_video_file, source_file=video_files[0])
             success = True
 
-        target_subtitle_file = (
-            movie_root_path / f"{movie_file_name}"
-        )
+        target_subtitle_file = movie_root_path / f"{movie_file_name}"
         # import subtitles
         for subtitle_file in subtitle_files:
-            import_subtitle(subtitle_file=subtitle_file, target_file=target_subtitle_file)
+            import_subtitle(
+                subtitle_file=subtitle_file, target_file=target_subtitle_file
+            )
 
         return success
 
@@ -565,7 +566,7 @@ class MovieService:
         )
 
         file_quality = extract_quality_video_file(video_files[0])
-        file_suffix = f"{file_quality} - IMPORTED"
+        file_suffix = f"{QualityStrings.get_label(file_quality)} - IMPORTED"
 
         success = self.import_movie(
             movie=movie,

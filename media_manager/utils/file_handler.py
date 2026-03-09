@@ -157,7 +157,7 @@ def get_files_for_import(
     return video_files, subtitle_files, all_files
 
 
-def import_subtitle(subtitle_file: Path, target_file: str) -> None:
+def import_subtitle(subtitle_file: Path, target_file: Path) -> None:
     """
     Imports a subtitle file by renaming it to match the target video file and placing it in the same directory.
 
