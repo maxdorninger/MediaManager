@@ -12,12 +12,12 @@
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
+	import type { MetaDataProviderSearchResult } from '$lib/api/api';
 	import { handleQueryNotificationToast } from '$lib/utils.ts';
 
 	let searchTerm: string = $state('');
 	let metadataProvider: 'tmdb' | 'tvdb' = $state('tmdb');
-	let results: components['schemas']['MetaDataProviderSearchResult'][] | null = $state(null);
+	let results: MetaDataProviderSearchResult[] | null = $state(null);
 	let isSearching: boolean = $state(false);
 
 	onMount(() => {
@@ -39,7 +39,7 @@
 						})
 					: await client.GET('/api/v1/movies/recommended');
 			if (data && data.length > 0) {
-				results = data as components['schemas']['MetaDataProviderSearchResult'][];
+				results = data as MetaDataProviderSearchResult[];
 			} else {
 				results = null;
 			}

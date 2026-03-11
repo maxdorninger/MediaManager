@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { components } from '$lib/api/api.ts';
+	import type { PublicMovie, PublicShow } from '$lib/api/api.ts';
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api/index.ts';
 	import { goto } from '$app/navigation';
@@ -14,7 +14,7 @@
 		media,
 		isShow
 	}: {
-		media: components['schemas']['PublicMovie'] | components['schemas']['PublicShow'];
+		media: PublicMovie | PublicShow;
 		isShow: boolean;
 	} = $props();
 	let deleteDialogOpen = $state(false);

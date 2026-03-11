@@ -7,7 +7,7 @@
 	import { Ellipsis } from 'lucide-svelte';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { getContext } from 'svelte';
-	import type { components } from '$lib/api/api';
+	import type { PublicShow, RichShowTorrent, UserRead } from '$lib/api/api';
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import DownloadSelectedSeasonsDialog from '$lib/components/download-dialogs/download-selected-seasons-dialog.svelte';
 	import DownloadSelectedEpisodesDialog from '$lib/components/download-dialogs/download-selected-episodes-dialog.svelte';
@@ -27,9 +27,9 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { SvelteSet } from 'svelte/reactivity';
 
-	let show: components['schemas']['PublicShow'] = $derived(page.data.showData);
-	let torrents: components['schemas']['RichShowTorrent'] = $derived(page.data.torrentsData);
-	let user: () => components['schemas']['UserRead'] = getContext('user');
+	let show: PublicShow = $derived(page.data.showData);
+	let torrents: RichShowTorrent = $derived(page.data.torrentsData);
+	let user: () => UserRead = getContext('user');
 
 	let expandedSeasons = $state<Set<string>>(new Set());
 

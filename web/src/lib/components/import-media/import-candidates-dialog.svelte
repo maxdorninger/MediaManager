@@ -3,7 +3,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
+	import type { MetaDataProviderSearchResult } from '$lib/api/api';
 	import { Spinner } from '$lib/components/ui/spinner';
 	import SuggestedMediaCard from '$lib/components/import-media/suggested-media-card.svelte';
 	import { invalidateAll } from '$app/navigation';
@@ -16,14 +16,14 @@
 	}: {
 		isTv: boolean;
 		name: string;
-		candidates: components['schemas']['MetaDataProviderSearchResult'][];
+		candidates: MetaDataProviderSearchResult[];
 		children: any;
 	} = $props();
 	let dialogOpen = $state(false);
 	let submitRequestError = $state<string | null>(null);
 	let isImporting = $state<boolean>(false);
 
-	async function handleImportMedia(media: components['schemas']['MetaDataProviderSearchResult']) {
+	async function handleImportMedia(media: MetaDataProviderSearchResult) {
 		isImporting = true;
 		submitRequestError = null;
 		let errored = null;

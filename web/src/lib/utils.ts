@@ -4,7 +4,7 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { toast } from 'svelte-sonner';
 import client from '$lib/api';
-import type { components } from '$lib/api/api';
+import type { Show, Movie } from '$lib/api/api';
 
 export const qualityMap: { [key: number]: string } = {
 	1: '4K/UHD',
@@ -110,10 +110,7 @@ export function handleQueryNotificationToast(count: number = 0, query: string = 
 	else if (count == 0) toast.info(`No results found for "${query}".`);
 }
 
-export function saveDirectoryPreview(
-	media: components['schemas']['Show'] | components['schemas']['Movie'],
-	filePathSuffix: string = ''
-) {
+export function saveDirectoryPreview(media: Show | Movie, filePathSuffix: string = '') {
 	let path =
 		'/' +
 		getFullyQualifiedMediaName(media) +

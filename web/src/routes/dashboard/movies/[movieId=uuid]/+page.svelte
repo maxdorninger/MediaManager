@@ -5,7 +5,7 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { ImageOff } from 'lucide-svelte';
 	import { getContext } from 'svelte';
-	import type { components } from '$lib/api/api';
+	import type { PublicMovie, PublicMovieFile, UserRead } from '$lib/api/api';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils';
 	import { page } from '$app/state';
 	import TorrentTable from '$lib/components/torrents/torrent-table.svelte';
@@ -17,9 +17,9 @@
 	import DeleteMediaDialog from '$lib/components/delete-media-dialog.svelte';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 
-	let movie: components['schemas']['PublicMovie'] = $derived(page.data.movie);
-	let movieFiles: components['schemas']['PublicMovieFile'][] = $derived(page.data.movieFiles);
-	let user: () => components['schemas']['UserRead'] = getContext('user');
+	let movie: PublicMovie = $derived(page.data.movie);
+	let movieFiles: PublicMovieFile[] = $derived(page.data.movieFiles);
+	let user: () => UserRead = getContext('user');
 </script>
 
 <svelte:head>

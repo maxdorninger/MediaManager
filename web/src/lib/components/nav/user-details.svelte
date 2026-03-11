@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import type { components } from '$lib/api/api';
-	const user: () => components['schemas']['UserRead'] = getContext('user');
+	import type { UserRead } from '$lib/api/api';
+	const user: () => UserRead = getContext('user');
 </script>
 
 <span class="truncate font-semibold">{user().email}</span>
