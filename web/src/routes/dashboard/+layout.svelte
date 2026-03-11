@@ -7,11 +7,11 @@
 	import { resolve } from '$app/paths';
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
+	import type { MediaImportSuggestion } from '$lib/api/api';
 
 	let { data, children }: LayoutProps = $props();
-	let importableShows: components['schemas']['MediaImportSuggestion'][] = $state([]);
-	let importableMovies: components['schemas']['MediaImportSuggestion'][] = $state([]);
+	let importableShows: MediaImportSuggestion[] = $state([]);
+	let importableMovies: MediaImportSuggestion[] = $state([]);
 	setContext('user', () => data.user);
 	setContext('importableMovies', () => importableMovies);
 	setContext('importableShows', () => importableShows);

@@ -5,7 +5,7 @@
 	import * as Table from '$lib/components/ui/table';
 	import { Badge } from '$lib/components/ui/badge';
 	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
+	import type { Show } from '$lib/api/api';
 	import SelectFilePathSuffixDialog from '$lib/components/download-dialogs/select-file-path-suffix-dialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import TorrentTable from '$lib/components/download-dialogs/torrent-table.svelte';
@@ -16,7 +16,7 @@
 		selectedEpisodeNumbers,
 		triggerText = 'Download Episodes'
 	}: {
-		show: components['schemas']['Show'];
+		show: Show;
 		selectedEpisodeNumbers: { seasonNumber: number; episodeNumber: number }[];
 		triggerText?: string;
 	} = $props();

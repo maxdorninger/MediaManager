@@ -1718,6 +1718,49 @@ export interface components {
 	headers: never;
 	pathItems: never;
 }
+export type AuthMetadata = components['schemas']['AuthMetadata'];
+export type BearerResponse = components['schemas']['BearerResponse'];
+export type BodyAuthCookieLoginApiV1AuthCookieLoginPost =
+	components['schemas']['Body_auth_cookie_login_api_v1_auth_cookie_login_post'];
+export type BodyAuthJwtLoginApiV1AuthJwtLoginPost =
+	components['schemas']['Body_auth_jwt_login_api_v1_auth_jwt_login_post'];
+export type BodyResetForgotPasswordApiV1AuthForgotPasswordPost =
+	components['schemas']['Body_reset_forgot_password_api_v1_auth_forgot_password_post'];
+export type BodyResetResetPasswordApiV1AuthResetPasswordPost =
+	components['schemas']['Body_reset_reset_password_api_v1_auth_reset_password_post'];
+export type BodyVerifyRequestTokenApiV1AuthRequestVerifyTokenPost =
+	components['schemas']['Body_verify_request_token_api_v1_auth_request_verify_token_post'];
+export type BodyVerifyVerifyApiV1AuthVerifyPost =
+	components['schemas']['Body_verify_verify_api_v1_auth_verify_post'];
+export type Episode = components['schemas']['Episode'];
+export type ErrorModel = components['schemas']['ErrorModel'];
+export type HttpValidationError = components['schemas']['HTTPValidationError'];
+export type IndexerQueryResult = components['schemas']['IndexerQueryResult'];
+export type LibraryItem = components['schemas']['LibraryItem'];
+export type MediaImportSuggestion = components['schemas']['MediaImportSuggestion'];
+export type MetaDataProviderSearchResult = components['schemas']['MetaDataProviderSearchResult'];
+export type Movie = components['schemas']['Movie'];
+export type MovieTorrent = components['schemas']['MovieTorrent'];
+export type Notification = components['schemas']['Notification'];
+export type OAuth2AuthorizeResponse = components['schemas']['OAuth2AuthorizeResponse'];
+export type PublicEpisode = components['schemas']['PublicEpisode'];
+export type PublicEpisodeFile = components['schemas']['PublicEpisodeFile'];
+export type PublicMovie = components['schemas']['PublicMovie'];
+export type PublicMovieFile = components['schemas']['PublicMovieFile'];
+export type PublicSeason = components['schemas']['PublicSeason'];
+export type PublicShow = components['schemas']['PublicShow'];
+export type Quality = components['schemas']['Quality'];
+export type RichMovieTorrent = components['schemas']['RichMovieTorrent'];
+export type RichSeasonTorrent = components['schemas']['RichSeasonTorrent'];
+export type RichShowTorrent = components['schemas']['RichShowTorrent'];
+export type Season = components['schemas']['Season'];
+export type Show = components['schemas']['Show'];
+export type Torrent = components['schemas']['Torrent'];
+export type TorrentStatus = components['schemas']['TorrentStatus'];
+export type UserCreate = components['schemas']['UserCreate'];
+export type UserRead = components['schemas']['UserRead'];
+export type UserUpdate = components['schemas']['UserUpdate'];
+export type ValidationError = components['schemas']['ValidationError'];
 export type $defs = Record<string, never>;
 export interface operations {
 	hello_world_api_v1_health_get: {

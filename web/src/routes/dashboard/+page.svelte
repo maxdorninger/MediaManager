@@ -7,22 +7,22 @@
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 	import client from '$lib/api';
-	import type { components } from '$lib/api/api.d.ts';
+	import type { MetaDataProviderSearchResult } from '$lib/api/api.d.ts';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
-	let recommendedShows: components['schemas']['MetaDataProviderSearchResult'][] = $state([]);
+	let recommendedShows: MetaDataProviderSearchResult[] = $state([]);
 	let showsLoading = $state(true);
 
-	let recommendedMovies: components['schemas']['MetaDataProviderSearchResult'][] = $state([]);
+	let recommendedMovies: MetaDataProviderSearchResult[] = $state([]);
 	let moviesLoading = $state(true);
 
 	onMount(async () => {
 		client.GET('/api/v1/tv/recommended').then((res) => {
-			recommendedShows = res.data as components['schemas']['MetaDataProviderSearchResult'][];
+			recommendedShows = res.data as MetaDataProviderSearchResult[];
 			showsLoading = false;
 		});
 		client.GET('/api/v1/movies/recommended').then((res) => {
-			recommendedMovies = res.data as components['schemas']['MetaDataProviderSearchResult'][];
+			recommendedMovies = res.data as MetaDataProviderSearchResult[];
 			moviesLoading = false;
 		});
 	});
