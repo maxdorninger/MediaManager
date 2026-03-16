@@ -212,9 +212,11 @@ class MovieService:
         :return: A list of indexer query results.
         """
         if search_query_override:
-            return self.indexer_service.search(query=search_query_override, is_tv=False)
-
-        torrents = self.indexer_service.search_movie(movie=movie)
+            torrents = self.indexer_service.search(
+                query=search_query_override, is_tv=False
+            )
+        else:
+            torrents = self.indexer_service.search_movie(movie=movie)
 
         return evaluate_indexer_query_results(
             is_tv=False, query_results=torrents, media=movie
