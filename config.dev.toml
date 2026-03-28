@@ -30,7 +30,7 @@ name = "Documentary"
 path = "/data/movies/documentary"  # Change this to match your actual movies location
 
 [database]
-host = "db"
+host = "postgres"
 port = 5432
 user = "MediaManager"
 password = "MediaManager"
