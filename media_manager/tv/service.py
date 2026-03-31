@@ -212,14 +212,16 @@ class TvService:
         :return: A list of indexer query results.
         """
 
-        if search_query_override:
-            return self.indexer_service.search(query=search_query_override, is_tv=True)
-
         show = self.tv_repository.get_show_by_id(show_id=show_id)
 
-        torrents = self.indexer_service.search_season(
-            show=show, season_number=season_number
-        )
+        if search_query_override:
+            torrents = self.indexer_service.search(
+                query=search_query_override, is_tv=True
+            )
+        else:
+            torrents = self.indexer_service.search_season(
+                show=show, season_number=season_number
+            )
 
         results = [torrent for torrent in torrents if season_number in torrent.season]
 
