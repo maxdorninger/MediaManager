@@ -6,9 +6,9 @@ import shutil
 from pathlib import Path, UnsupportedOperation
 
 import bencoder
-import libtorrent
 import patoolib
 import requests
+import torf
 from pathvalidate import sanitize_filename
 from requests.exceptions import InvalidSchema
 
@@ -142,7 +142,7 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
     if torrent.download_url.startswith("magnet:"):
         log.info(f"Parsing torrent with magnet URL: {torrent.title}")
         log.debug(f"Magnet URL: {torrent.download_url}")
-        torrent_hash = str(libtorrent.parse_magnet_uri(torrent.download_url).info_hash)
+        torrent_hash = torf.Magnet.from_string(torrent.download_url).infohash
     else:
         # downloading the torrent file
         log.info(f"Downloading .torrent file of torrent: {torrent.title}")
@@ -157,7 +157,7 @@ def get_torrent_hash(torrent: IndexerQueryResult) -> str:
                 session=requests.Session(),
                 timeout=MediaManagerConfig().indexers.prowlarr.timeout_seconds,
             )
-            return str(libtorrent.parse_magnet_uri(final_url).info_hash)
+            return torf.Magnet.from_string(final_url).infohash
         except Exception:
             log.exception("Failed to download torrent file")
             raise
