@@ -127,7 +127,8 @@ class NzbgetDownloadClient(AbstractDownloadClient):
             result = self._call("editqueue", ["GroupDelete", "", [nzb_id]])
             if not result:
                 # If not in queue, try removing from history
-                self._call("editqueue", ["HistoryDelete", "", [nzb_id]])
+                history_cmd = "HistoryFinalDelete" if delete_data else "HistoryDelete"
+                self._call("editqueue", [history_cmd, "", [nzb_id]])
         except Exception:
             log.exception(f"Failed to remove torrent {torrent.title}")
             raise

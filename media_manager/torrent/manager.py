@@ -6,8 +6,8 @@ from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.download_clients.abstract_download_client import (
     AbstractDownloadClient,
 )
-from media_manager.torrent.download_clients.qbittorrent import QbittorrentDownloadClient
 from media_manager.torrent.download_clients.nzbget import NzbgetDownloadClient
+from media_manager.torrent.download_clients.qbittorrent import QbittorrentDownloadClient
 from media_manager.torrent.download_clients.sabnzbd import SabnzbdDownloadClient
 from media_manager.torrent.download_clients.transmission import (
     TransmissionDownloadClient,
