@@ -30,7 +30,17 @@ class SabnzbdConfig(BaseSettings):
     base_path: str = "/api"
 
 
+class NzbgetConfig(BaseSettings):
+    host: str = "localhost"
+    port: int = 6789
+    username: str = "nzbget"
+    password: str = "tegbzn6789"  # noqa: S105
+    use_https: bool = False
+    enabled: bool = False
+
+
 class TorrentConfig(BaseSettings):
     qbittorrent: QbittorrentConfig = QbittorrentConfig()
     transmission: TransmissionConfig = TransmissionConfig()
     sabnzbd: SabnzbdConfig = SabnzbdConfig()
+    nzbget: NzbgetConfig = NzbgetConfig()

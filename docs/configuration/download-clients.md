@@ -1,6 +1,6 @@
 # Download Clients
 
-Download client settings are configured in the `[torrents]` section of your `config.toml` file. MediaManager supports both qBittorrent and SABnzbd as download clients.
+Download client settings are configured in the `[torrents]` section of your `config.toml` file. MediaManager supports qBittorrent, Transmission, SABnzbd, and NZBGet as download clients.
 
 ## qBittorrent Settings (`[torrents.qbittorrent]`)
 
@@ -54,6 +54,23 @@ SABnzbd is a Usenet newsreader that MediaManager can integrate with for download
 * `base_path`\
   API base path for SABnzbd. It usually ends with `/api`, the default is `/api`.
 
+## NZBGet Settings (`[torrents.nzbget]`)
+
+NZBGet is a Usenet newsreader that MediaManager can integrate with for downloading NZB files. It is an alternative to SABnzbd.
+
+* `enabled`\
+  Set to `true` to enable NZBGet integration. Default is `false`.
+* `host`\
+  Hostname or IP of the NZBGet server (without protocol).
+* `port`\
+  Port of the NZBGet web interface. Default is `6789`.
+* `username`\
+  Username for NZBGet authentication. Default is `nzbget`.
+* `password`\
+  Password for NZBGet authentication. Default is `tegbzn6789`.
+* `use_https`\
+  Set to `true` if your NZBGet instance uses HTTPS. Default is `false`.
+
 ## Example Configuration
 
 Here's a complete example of the download clients section in your `config.toml`:
@@ -84,6 +101,15 @@ Here's a complete example of the download clients section in your `config.toml`:
     host = "http://sabnzbd"
     port = 8080
     api_key = "your_sabnzbd_api_key"
+
+    # NZBGet configuration
+    [torrents.nzbget]
+    enabled = false
+    host = "nzbget"
+    port = 6789
+    username = "nzbget"
+    password = "your_secure_password"
+    use_https = false
 ```
 
 ## Docker Compose Integration
@@ -113,6 +139,15 @@ services:
     image: lscr.io/linuxserver/sabnzbd:latest
     ports:
       - "8081:8080"
+    volumes:
+      - ./data/usenet:/downloads
+    # ... other configuration ...
+
+  # NZBGet service
+  nzbget:
+    image: lscr.io/linuxserver/nzbget:latest
+    ports:
+      - "6789:6789"
     volumes:
       - ./data/usenet:/downloads
     # ... other configuration ...
