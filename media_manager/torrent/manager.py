@@ -6,6 +6,7 @@ from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.torrent.download_clients.abstract_download_client import (
     AbstractDownloadClient,
 )
+from media_manager.torrent.download_clients.nzbget import NzbgetDownloadClient
 from media_manager.torrent.download_clients.qbittorrent import QbittorrentDownloadClient
 from media_manager.torrent.download_clients.sabnzbd import SabnzbdDownloadClient
 from media_manager.torrent.download_clients.transmission import (
@@ -53,12 +54,18 @@ class DownloadManager:
             except Exception:
                 log.exception("Failed to initialize Transmission client")
 
-        # Initialize SABnzbd client for usenet
+        # Initialize usenet client (prioritize SABnzbd, fallback to NZBGet)
         if self.config.sabnzbd.enabled:
             try:
                 self._usenet_client = SabnzbdDownloadClient()
             except Exception:
                 log.exception("Failed to initialize SABnzbd client")
+
+        if self._usenet_client is None and self.config.nzbget.enabled:
+            try:
+                self._usenet_client = NzbgetDownloadClient()
+            except Exception:
+                log.exception("Failed to initialize NZBGet client")
 
         active_clients = []
         if self._torrent_client:
