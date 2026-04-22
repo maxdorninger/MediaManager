@@ -8,5 +8,5 @@ dependencies = [
     "starlette-exporter>=0.23.0",
     "tmdbsimple>=2.9.1",
     "tvdb-v4-official>=1.1.0",
-    "uvicorn>=0.34.3",
+    "uvicorn>=0.45.0",
 ]
