@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi[standard]>=0.115.14",
+    "fastapi[standard]>=0.136.1",
     "starlette-exporter>=0.23.0",
     "tmdbsimple>=2.9.1",
     "tvdb-v4-official>=1.1.0",
