@@ -22,6 +22,21 @@
 	let dialogOpen = $state(false);
 	let submitRequestError = $state<string | null>(null);
 	let isImporting = $state<boolean>(false);
+	let searchQuery = $state<string>('');
+	let isSearching = $state<boolean>(false);
+	let searchResults = $state<components['schemas']['MetaDataProviderSearchResult'][] | null>(null);
+	let searchProvider = $state<'tmdb' | 'tvdb'>('tmdb');
+
+	async function handleManualSearch() {
+		if (!searchQuery.trim()) return;
+		isSearching = true;
+		const endpoint = isTv ? '/api/v1/tv/search' : '/api/v1/movies/search';
+		const { data } = await client.GET(endpoint, {
+			params: { query: { query: searchQuery, metadata_provider: searchProvider } }
+		});
+		searchResults = data ?? [];
+		isSearching = false;
+	}
 
 	async function handleImportMedia(media: components['schemas']['MetaDataProviderSearchResult']) {
 		isImporting = true;
@@ -106,7 +121,34 @@
 					<SuggestedMediaCard result={candidate} action={() => handleImportMedia(candidate)}
 					></SuggestedMediaCard>
 				{:else}
-					No {isTv ? 'shows' : 'movies'} were found, change the directory's name for better search results!
+					<div class="col-span-full flex flex-col items-center gap-3 py-4">
+						<p class="text-sm text-muted-foreground">
+							{searchResults !== null && searchResults.length === 0
+								? 'No results found. Try a different search.'
+								: `No ${isTv ? 'shows' : 'movies'} found automatically. Search manually:`}
+						</p>
+						<div class="flex gap-2">
+							<input
+								class="border rounded px-3 py-1 text-sm"
+								type="text"
+								placeholder="Enter title..."
+								bind:value={searchQuery}
+								onkeydown={(e) => e.key === 'Enter' && handleManualSearch()}
+							/>
+							<select bind:value={searchProvider} class="border rounded px-2 py-1 text-sm">
+								<option value="tmdb">TMDB</option>
+								<option value="tvdb">TVDB</option>
+							</select>
+							<Button onclick={handleManualSearch} disabled={isSearching}>
+								{isSearching ? 'Searching...' : 'Search'}
+							</Button>
+						</div>
+					</div>
+					{#if searchResults && searchResults.length > 0}
+						{#each searchResults as candidate (candidate.external_id)}
+							<SuggestedMediaCard result={candidate} action={() => handleImportMedia(candidate)} />
+						{/each}
+					{/if}
 				{/each}
 			{:else}
 				<Spinner class="size-8"></Spinner>
