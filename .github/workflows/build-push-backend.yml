@@ -123,7 +123,7 @@ jobs:
 
       - name: Extract metadata (tags + labels)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/mediamanager
@@ -204,7 +204,7 @@ jobs:
 
       - name: Extract metadata (tags + labels)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.name }}/mediamanager
