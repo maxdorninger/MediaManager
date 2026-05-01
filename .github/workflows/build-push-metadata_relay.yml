@@ -106,7 +106,7 @@ jobs:
             suffix=-${{ matrix.arch }},onlatest=true
 
       - name: Build and push arch image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context:  ./metadata_relay
           file: ./metadata_relay/Dockerfile
