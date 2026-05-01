@@ -8,20 +8,20 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
+	import type { PublicShow, PublicMovie, LibraryItem } from '$lib/api/api';
 	import { invalidateAll } from '$app/navigation';
 
 	let {
 		media,
 		mediaType
 	}: {
-		media: components['schemas']['PublicShow'] | components['schemas']['PublicMovie'];
+		media: PublicShow | PublicMovie;
 		mediaType: 'tv' | 'movie';
 	} = $props();
 
 	let open = $state(false);
 	let value = $derived(media.library === '' ? 'Default' : media.library);
-	let libraries: components['schemas']['LibraryItem'][] = $state([]);
+	let libraries: LibraryItem[] = $state([]);
 	let triggerRef: HTMLButtonElement = $state(null!);
 	const selectedLabel: string = $derived(
 		libraries.find((item) => item.name === value)?.name ?? 'Default'
@@ -31,9 +31,9 @@
 		const movieLibraries = await client.GET('/api/v1/movies/libraries');
 
 		if (mediaType === 'tv') {
-			libraries = tvLibraries.data as components['schemas']['LibraryItem'][];
+			libraries = tvLibraries.data as LibraryItem[];
 		} else {
-			libraries = movieLibraries.data as components['schemas']['LibraryItem'][];
+			libraries = movieLibraries.data as LibraryItem[];
 		}
 
 		if (!value && libraries.length > 0) {
@@ -42,7 +42,7 @@
 		libraries.push({
 			name: 'Default',
 			path: 'Default'
-		} as components['schemas']['LibraryItem']);
+		} as LibraryItem);
 	});
 
 	async function handleSelect() {

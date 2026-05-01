@@ -4,15 +4,13 @@
 	import { ImageOff, LoaderCircle } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import type { components } from '$lib/api/api';
+	import type { MetaDataProviderSearchResult } from '$lib/api/api';
 	import client from '$lib/api';
 
 	let loading = $state(false);
 	let errorMessage = $state<string | null>(null);
-	let {
-		result,
-		isShow = true
-	}: { result: components['schemas']['MetaDataProviderSearchResult']; isShow: boolean } = $props();
+	let { result, isShow = true }: { result: MetaDataProviderSearchResult; isShow: boolean } =
+		$props();
 
 	async function addMedia() {
 		loading = true;

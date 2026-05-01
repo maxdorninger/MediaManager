@@ -4,16 +4,16 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
-	import type { components } from '$lib/api/api';
+	import type { PublicEpisodeFile, Season, Show } from '$lib/api/api';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import { getFullyQualifiedMediaName, getTorrentQualityString } from '$lib/utils';
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	let episodeFiles: components['schemas']['PublicEpisodeFile'][] = $derived(page.data.files);
-	let season: components['schemas']['Season'] = $derived(page.data.season);
-	let show: components['schemas']['Show'] = $derived(page.data.showData);
+	let episodeFiles: PublicEpisodeFile[] = $derived(page.data.files);
+	let season: Season = $derived(page.data.season);
+	let show: Show = $derived(page.data.showData);
 
 	let episodeById = $derived(
 		Object.fromEntries(

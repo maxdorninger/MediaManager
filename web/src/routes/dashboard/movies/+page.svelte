@@ -6,7 +6,7 @@
 	import { getFullyQualifiedMediaName } from '$lib/utils';
 	import MediaPicture from '$lib/components/media-picture.svelte';
 	import { resolve } from '$app/paths';
-	import type { components } from '$lib/api/api.d.ts';
+	import type { MediaImportSuggestion } from '$lib/api/api';
 	import ImportCandidatesDialog from '$lib/components/import-media/import-candidates-dialog.svelte';
 	import DetectedMediaCard from '$lib/components/import-media/detected-media-card.svelte';
 	import { getContext } from 'svelte';
@@ -14,8 +14,7 @@
 	import LoadingBar from '$lib/components/loading-bar.svelte';
 
 	let { data }: PageProps = $props();
-	let importableMovies: () => components['schemas']['MediaImportSuggestion'][] =
-		getContext('importableMovies');
+	let importableMovies: () => MediaImportSuggestion[] = getContext('importableMovies');
 </script>
 
 <svelte:head>

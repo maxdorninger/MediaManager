@@ -7,7 +7,7 @@
 	} from '$lib/utils.js';
 	import CheckmarkX from '$lib/components/checkmark-x.svelte';
 	import * as Table from '$lib/components/ui/table';
-	import type { components } from '$lib/api/api';
+	import type { MovieTorrent, RichSeasonTorrent, UserRead } from '$lib/api/api';
 	import { getContext } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import client from '$lib/api';
@@ -22,19 +22,15 @@
 		showId,
 		movieId
 	}: {
-		torrents:
-			| components['schemas']['MovieTorrent'][]
-			| components['schemas']['RichSeasonTorrent'][];
+		torrents: MovieTorrent[] | RichSeasonTorrent[];
 		isShow: boolean;
 		showId?: string;
 		movieId?: string;
 	} = $props();
 
-	let user: () => components['schemas']['UserRead'] = getContext('user');
+	let user: () => UserRead = getContext('user');
 
-	async function retryTorrentDownload(
-		torrent: components['schemas']['MovieTorrent'] | components['schemas']['RichSeasonTorrent']
-	) {
+	async function retryTorrentDownload(torrent: MovieTorrent | RichSeasonTorrent) {
 		console.log(`Retrying download for torrent ${torrent.torrent_title}`);
 		const { error } = await client.POST('/api/v1/torrent/{torrent_id}/retry', {
 			params: {
@@ -95,14 +91,10 @@
 				</Table.Cell>
 				{#if isShow}
 					<Table.Cell>
-						{convertTorrentSeasonRangeToIntegerRange(
-							(torrent as components['schemas']['RichSeasonTorrent']).seasons!
-						)}
+						{convertTorrentSeasonRangeToIntegerRange((torrent as RichSeasonTorrent).seasons!)}
 					</Table.Cell>
 					<Table.Cell>
-						{convertTorrentEpisodeRangeToIntegerRange(
-							(torrent as components['schemas']['RichSeasonTorrent']).episodes!
-						)}
+						{convertTorrentEpisodeRangeToIntegerRange((torrent as RichSeasonTorrent).episodes!)}
 					</Table.Cell>
 				{/if}
 				<Table.Cell>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import type { components } from '$lib/api/api';
+	import type { MovieTorrent, RichSeasonTorrent } from '$lib/api/api';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Label } from '$lib/components/ui/label';
 	import client from '$lib/api';
@@ -11,7 +11,7 @@
 	let {
 		torrent
 	}: {
-		torrent: components['schemas']['MovieTorrent'] | components['schemas']['RichSeasonTorrent'];
+		torrent: MovieTorrent | RichSeasonTorrent;
 	} = $props();
 	let dialogOpen = $state(false);
 	let importedState = $derived(torrent.imported);

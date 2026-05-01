@@ -8,14 +8,13 @@
 	import { resolve } from '$app/paths';
 	import ImportCandidatesDialog from '$lib/components/import-media/import-candidates-dialog.svelte';
 	import DetectedMediaCard from '$lib/components/import-media/detected-media-card.svelte';
-	import type { components } from '$lib/api/api';
+	import type { MediaImportSuggestion } from '$lib/api/api';
 	import { getContext } from 'svelte';
 	import type { PageProps } from './$types';
 	import LoadingBar from '$lib/components/loading-bar.svelte';
 
 	let { data }: PageProps = $props();
-	let importableShows: () => components['schemas']['MediaImportSuggestion'][] =
-		getContext('importableShows');
+	let importableShows: () => MediaImportSuggestion[] = getContext('importableShows');
 </script>
 
 <svelte:head>

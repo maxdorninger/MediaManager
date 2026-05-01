@@ -3,7 +3,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
 	import { ChevronRight } from 'lucide-svelte';
-	import type { components } from '$lib/api/api';
+	import type { MetaDataProviderSearchResult } from '$lib/api/api';
 	import { resolve } from '$app/paths';
 
 	let {
@@ -11,7 +11,7 @@
 		isShow,
 		isLoading
 	}: {
-		media: components['schemas']['MetaDataProviderSearchResult'][];
+		media: MetaDataProviderSearchResult[];
 		isShow: boolean;
 		isLoading: boolean;
 	} = $props();

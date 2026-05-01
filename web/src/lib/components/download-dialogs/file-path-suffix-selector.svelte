@@ -2,7 +2,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import { saveDirectoryPreview } from '$lib/utils.js';
-	import type { components } from '$lib/api/api';
+	import type { Movie, Show } from '$lib/api/api';
 	import * as Tabs from '$lib/components/ui/tabs';
 
 	import { Input } from '$lib/components/ui/input';
@@ -10,7 +10,7 @@
 		media,
 		filePathSuffix = $bindable()
 	}: {
-		media: components['schemas']['Movie'] | components['schemas']['Show'];
+		media: Movie | Show;
 		filePathSuffix: string;
 	} = $props();
 </script>

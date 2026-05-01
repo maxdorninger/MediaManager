@@ -5,14 +5,14 @@
 
 	import * as Table from '$lib/components/ui/table';
 	import client from '$lib/api';
-	import type { components } from '$lib/api/api';
+	import type { Movie } from '$lib/api/api';
 	import SelectFilePathSuffixDialog from '$lib/components/download-dialogs/select-file-path-suffix-dialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import TorrentTable from '$lib/components/download-dialogs/torrent-table.svelte';
 	import SearchTabs from '$lib/components/download-dialogs/search-tabs.svelte';
 	import DownloadDialogWrapper from '$lib/components/download-dialogs/download-dialog-wrapper.svelte';
 
-	let { movie }: { movie: components['schemas']['Movie'] } = $props();
+	let { movie }: { movie: Movie } = $props();
 	let dialogueState = $state(false);
 	let torrentsError: string | null = $state(null);
 	let queryOverride: string = $state('');

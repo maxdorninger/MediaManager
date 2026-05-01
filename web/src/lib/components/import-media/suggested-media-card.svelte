@@ -2,13 +2,13 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { ImageOff } from 'lucide-svelte';
-	import type { components } from '$lib/api/api';
+	import type { MetaDataProviderSearchResult } from '$lib/api/api';
 
 	let {
 		result,
 		action
 	}: {
-		result: components['schemas']['MetaDataProviderSearchResult'];
+		result: MetaDataProviderSearchResult;
 		action: () => void;
 	} = $props();
 </script>
