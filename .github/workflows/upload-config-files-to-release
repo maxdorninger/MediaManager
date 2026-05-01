@@ -1,0 +1,20 @@
+name: Upload config files to release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Upload files to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            docker-compose.yaml
+            config.example.toml
