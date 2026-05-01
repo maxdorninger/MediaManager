@@ -65,7 +65,7 @@
 		"typescript-eslint": "^8.39.1",
 		"valibot": "^0.42.1",
 		"vaul-svelte": "^1.0.0-next.7",
-		"vite": "^7.3.1",
+		"vite": "^7.3.2",
 		"yup": "^1.7.0",
 		"zod": "^3.25.76"
 	},
@@ -73,6 +73,6 @@
 		"animejs": "^4.2.2",
 		"lucide-svelte": "^0.574.0",
 		"openapi-fetch": "^0.14.0",
-		"uuid": "^11.1.0"
+		"uuid": "^14.0.0"
 	}
 }
