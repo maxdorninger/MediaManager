@@ -4,7 +4,7 @@ from media_manager.indexer.schemas import IndexerQueryResult
 from media_manager.movies.schemas import Movie, MovieFile
 from media_manager.torrent.manager import DownloadManager
 from media_manager.torrent.repository import TorrentRepository
-from media_manager.torrent.schemas import Torrent, TorrentId
+from media_manager.torrent.schemas import Torrent, TorrentId, TorrentStatus
 from media_manager.tv.schemas import EpisodeFile, Show
 
 log = logging.getLogger(__name__)
@@ -95,6 +95,13 @@ class TorrentService:
             except RuntimeError:
                 log.exception(f"Error fetching status for torrent {x.title}")
         return torrents
+
+    def get_completed_torrents(self) -> list[Torrent]:
+        return [
+            t
+            for t in self.get_all_torrents()
+            if t.status == TorrentStatus.finished and not t.imported
+        ]
 
     def get_torrent_by_id(self, torrent_id: TorrentId) -> Torrent:
         return self.get_torrent_status(

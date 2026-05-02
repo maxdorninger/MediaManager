@@ -32,23 +32,6 @@ movie_metadata_service_dep = Annotated[
 ]
 
 
-def get_movie_service(
-    movie_repository: movie_repository_dep,
-    torrent_service: torrent_service_dep,
-    indexer_service: indexer_service_dep,
-    notification_service: notification_service_dep,
-) -> MovieService:
-    return MovieService(
-        movie_repository=movie_repository,
-        torrent_service=torrent_service,
-        indexer_service=indexer_service,
-        notification_service=notification_service,
-    )
-
-
-movie_service_dep = Annotated[MovieService, Depends(get_movie_service)]
-
-
 def get_movie_import_service(
     movie_repository: movie_repository_dep,
     torrent_service: torrent_service_dep,
@@ -66,6 +49,27 @@ def get_movie_import_service(
 movie_import_service_dep = Annotated[
     MovieImportService, Depends(get_movie_import_service)
 ]
+
+
+def get_movie_service(
+    movie_repository: movie_repository_dep,
+    torrent_service: torrent_service_dep,
+    indexer_service: indexer_service_dep,
+    notification_service: notification_service_dep,
+    movie_import_service: movie_import_service_dep,
+    movie_metadata_service: movie_metadata_service_dep,
+) -> MovieService:
+    return MovieService(
+        movie_repository=movie_repository,
+        torrent_service=torrent_service,
+        indexer_service=indexer_service,
+        notification_service=notification_service,
+        movie_import_service=movie_import_service,
+        movie_metadata_service=movie_metadata_service,
+    )
+
+
+movie_service_dep = Annotated[MovieService, Depends(get_movie_service)]
 
 
 def get_movie_by_id(

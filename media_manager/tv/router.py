@@ -375,4 +375,4 @@ def get_total_count_of_downloaded_episodes(tv_service: tv_service_dep) -> int:
     """
     Get the total count of downloaded episodes across all shows.
     """
-    return tv_service.get_total_downloaded_episoded_count()
+    return tv_service.get_total_downloaded_episodes_count()

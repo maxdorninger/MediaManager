@@ -14,6 +14,8 @@ from media_manager.torrent.schemas import (
 )
 from media_manager.torrent.service import TorrentService
 from media_manager.tv import log
+from media_manager.tv.importer import TvImportService
+from media_manager.tv.metadata import TvMetadataService
 from media_manager.tv.repository import TvRepository
 from media_manager.tv.schemas import (
     Episode,
@@ -39,6 +41,8 @@ class TvService(BaseMediaService[Show, Show]):
         torrent_service: TorrentService,
         indexer_service: IndexerService,
         notification_service: NotificationService,
+        tv_import_service: TvImportService,
+        tv_metadata_service: TvMetadataService,
     ) -> None:
         super().__init__(
             repository=tv_repository,
@@ -47,8 +51,10 @@ class TvService(BaseMediaService[Show, Show]):
             notification_service=notification_service,
         )
         self.tv_repository = tv_repository
+        self.tv_import_service = tv_import_service
+        self.tv_metadata_service = tv_metadata_service
 
-    def get_total_downloaded_episoded_count(self) -> int:
+    def get_total_downloaded_episodes_count(self) -> int:
         """
         Get total number of downloaded episodes.
         """
@@ -56,7 +62,13 @@ class TvService(BaseMediaService[Show, Show]):
         return self.tv_repository.get_total_downloaded_episodes_count()
 
     def set_show_library(self, show: Show, library: str) -> None:
-        self.tv_repository.set_show_library(show_id=show.id, library=library)
+        self.tv_repository.set_show_library(show.id, library)
+
+    def get_all_shows(self) -> list[Show]:
+        """
+        Get all shows in the library.
+        """
+        return self.get_all_media()
 
     def delete_show(
         self,
@@ -94,7 +106,7 @@ class TvService(BaseMediaService[Show, Show]):
                             f"Failed to delete torrent {torrent.hash}", exc_info=True
                         )
 
-        self.tv_repository.delete_show(show_id=show.id)
+        self.tv_repository.delete_show(show.id)
 
     def get_public_episode_files_by_season_id(
         self, season: Season
@@ -466,3 +478,15 @@ class TvService(BaseMediaService[Show, Show]):
         return self.tv_repository.update_show_attributes(
             show_id=show.id, continuous_download=continuous_download
         )
+
+    def import_all_torrents(self) -> None:
+        """
+        Delegate to TvImportService.
+        """
+        self.tv_import_service.import_all_torrents()
+
+    def update_all_non_ended_shows_metadata(self) -> None:
+        """
+        Delegate to TvMetadataService.
+        """
+        self.tv_metadata_service.update_all_non_ended_shows_metadata()

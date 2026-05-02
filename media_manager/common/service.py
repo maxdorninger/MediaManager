@@ -180,9 +180,7 @@ class BaseMetadataService[T, S]:
         download_poster_func: Callable[[S], bool],
         language: str | None = None,
     ) -> S:
-        media_with_metadata = get_metadata_func(
-            external_id=external_id, language=language
-        )
+        media_with_metadata = get_metadata_func(external_id, language=language)
         if not media_with_metadata:
             raise NotFoundError
 

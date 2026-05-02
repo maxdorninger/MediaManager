@@ -72,7 +72,7 @@ class MovieMetadataService(BaseMetadataService[Movie, Movie]):
             year=fresh_movie_data.year,
             imdb_id=fresh_movie_data.imdb_id,
         )
-        updated_movie = self.movie_repository.get_movie_by_id(movie_id=db_movie.id)
+        updated_movie = self.movie_repository.get_movie_by_id(db_movie.id)
         metadata_provider.download_movie_poster_image(movie=updated_movie)
         return updated_movie
 

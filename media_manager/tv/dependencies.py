@@ -30,23 +30,6 @@ def get_tv_metadata_service(
 tv_metadata_service_dep = Annotated[TvMetadataService, Depends(get_tv_metadata_service)]
 
 
-def get_tv_service(
-    tv_repository: tv_repository_dep,
-    torrent_service: torrent_service_dep,
-    indexer_service: indexer_service_dep,
-    notification_service: notification_service_dep,
-) -> TvService:
-    return TvService(
-        tv_repository=tv_repository,
-        torrent_service=torrent_service,
-        indexer_service=indexer_service,
-        notification_service=notification_service,
-    )
-
-
-tv_service_dep = Annotated[TvService, Depends(get_tv_service)]
-
-
 def get_tv_import_service(
     tv_repository: tv_repository_dep,
     torrent_service: torrent_service_dep,
@@ -62,6 +45,27 @@ def get_tv_import_service(
 
 
 tv_import_service_dep = Annotated[TvImportService, Depends(get_tv_import_service)]
+
+
+def get_tv_service(
+    tv_repository: tv_repository_dep,
+    torrent_service: torrent_service_dep,
+    indexer_service: indexer_service_dep,
+    notification_service: notification_service_dep,
+    tv_import_service: tv_import_service_dep,
+    tv_metadata_service: tv_metadata_service_dep,
+) -> TvService:
+    return TvService(
+        tv_repository=tv_repository,
+        torrent_service=torrent_service,
+        indexer_service=indexer_service,
+        notification_service=notification_service,
+        tv_import_service=tv_import_service,
+        tv_metadata_service=tv_metadata_service,
+    )
+
+
+tv_service_dep = Annotated[TvService, Depends(get_tv_service)]
 
 
 def get_show_by_id(

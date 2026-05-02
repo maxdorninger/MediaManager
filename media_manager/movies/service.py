@@ -9,6 +9,8 @@ from media_manager.config import MediaManagerConfig
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
 from media_manager.indexer.utils import evaluate_indexer_query_results
+from media_manager.movies.importer import MovieImportService
+from media_manager.movies.metadata import MovieMetadataService
 from media_manager.movies.repository import MovieRepository
 from media_manager.movies.schemas import (
     Movie,
@@ -34,6 +36,8 @@ class MovieService(BaseMediaService[Movie, Movie]):
         torrent_service: TorrentService,
         indexer_service: IndexerService,
         notification_service: NotificationService,
+        movie_import_service: MovieImportService,
+        movie_metadata_service: MovieMetadataService,
     ) -> None:
         super().__init__(
             repository=movie_repository,
@@ -42,6 +46,8 @@ class MovieService(BaseMediaService[Movie, Movie]):
             notification_service=notification_service,
         )
         self.movie_repository = movie_repository
+        self.movie_import_service = movie_import_service
+        self.movie_metadata_service = movie_metadata_service
 
     def delete_movie(
         self,
@@ -87,7 +93,7 @@ class MovieService(BaseMediaService[Movie, Movie]):
                         log.exception(f"Failed to delete torrent {torrent.hash}")
 
         # Delete from database
-        self.movie_repository.delete_movie(movie_id=movie.id)
+        self.movie_repository.delete_movie(movie.id)
 
     def get_public_movie_files(self, movie: Movie) -> list[PublicMovieFile]:
         """
@@ -145,7 +151,7 @@ class MovieService(BaseMediaService[Movie, Movie]):
         :param movie_id: The ID of the movie.
         :return: The movie.
         """
-        return self.movie_repository.get_movie_by_id(movie_id=movie_id)
+        return self.movie_repository.get_movie_by_id(movie_id)
 
     def is_movie_downloaded(self, movie: Movie) -> bool:
         """
@@ -191,7 +197,13 @@ class MovieService(BaseMediaService[Movie, Movie]):
         )
 
     def set_movie_library(self, movie: Movie, library: str) -> None:
-        self.movie_repository.set_movie_library(movie_id=movie.id, library=library)
+        self.movie_repository.set_movie_library(movie.id, library)
+
+    def get_all_movies(self) -> list[Movie]:
+        """
+        Get all movies in the library.
+        """
+        return self.get_all_media()
 
     def get_torrents_for_movie(self, movie: Movie) -> RichMovieTorrent:
         """
@@ -269,3 +281,15 @@ class MovieService(BaseMediaService[Movie, Movie]):
             default_dir=misc_config.movie_directory,
             libraries=misc_config.movie_libraries,
         )
+
+    def import_all_torrents(self) -> None:
+        """
+        Delegate to MovieImportService.
+        """
+        self.movie_import_service.import_all_torrents()
+
+    def update_all_metadata(self) -> None:
+        """
+        Delegate to MovieMetadataService.
+        """
+        self.movie_metadata_service.update_all_metadata()

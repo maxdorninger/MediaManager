@@ -15,6 +15,7 @@ from media_manager.torrent.schemas import Quality, Torrent
 from media_manager.torrent.service import TorrentService
 from media_manager.torrent.utils import (
     get_files_for_import,
+    get_torrent_filepath,
     import_file,
 )
 from media_manager.tv.metadata import TvMetadataService
@@ -98,7 +99,7 @@ class TvImportService(BaseMediaService[Show, Show]):
     def import_torrent_files(self, torrent: Torrent, show: Show) -> None:
         success = self.import_tv_show(
             show=show,
-            source_directory=self.torrent_service.get_torrent_path(torrent),
+            source_directory=get_torrent_filepath(torrent),
             quality=torrent.quality,
             torrent_id=torrent.id,
         )

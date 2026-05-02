@@ -99,8 +99,8 @@ class BaseRepository[T, S]:
             return self.schema.model_validate(db_obj)
 
     def update_media_attributes_base(
-        self, media_id: EntityId, model_class: type[T], **attributes: Any
-    ) -> S:  # noqa: ANN401
+        self, media_id: EntityId, model_class: type[T], **attributes: Any  # noqa: ANN401
+    ) -> S:
         """
         Generic update method for media attributes.
         """
