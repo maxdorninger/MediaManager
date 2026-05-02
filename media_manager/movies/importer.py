@@ -1,19 +1,25 @@
 import logging
 import re
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from media_manager.common.service import BaseMediaService
 from media_manager.config import MediaManagerConfig
-from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
+from media_manager.metadataProvider.abstract_metadata_provider import (
+    AbstractMetadataProvider,
+)
+from media_manager.movies.metadata import MovieMetadataService
+from media_manager.movies.repository import MovieRepository
+from media_manager.movies.schemas import Movie, MovieFile
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import Quality, Torrent
 from media_manager.torrent.service import TorrentService
-from media_manager.torrent.utils import get_files_for_import, import_file, remove_special_characters
-from media_manager.movies.metadata import MovieMetadataService
-from media_manager.movies.repository import MovieRepository
-from media_manager.movies.schemas import Movie, MovieFile
+from media_manager.torrent.utils import (
+    get_files_for_import,
+    import_file,
+    remove_special_characters,
+)
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +66,7 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
             if video_files:
                 target_video_file = movie_root_path / f"{movie_file_name}{video_files[0].suffix}"
                 import_file(target_file=target_video_file, source_file=video_files[0])
-            
+
             for subtitle_file in subtitle_files:
                 match = re.search(r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE)
                 if match:

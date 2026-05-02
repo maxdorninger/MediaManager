@@ -1,8 +1,9 @@
 import logging
-from typing import Optional
 
 from media_manager.common.service import BaseMetadataService
-from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
+from media_manager.metadataProvider.abstract_metadata_provider import (
+    AbstractMetadataProvider,
+)
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider

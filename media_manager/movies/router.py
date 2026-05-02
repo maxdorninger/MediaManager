@@ -13,9 +13,9 @@ from media_manager.metadataProvider.dependencies import metadata_provider_dep
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.movies.dependencies import (
     movie_dep,
-    movie_service_dep,
-    movie_metadata_service_dep,
     movie_import_service_dep,
+    movie_metadata_service_dep,
+    movie_service_dep,
 )
 from media_manager.movies.schemas import (
     Movie,

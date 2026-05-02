@@ -1,10 +1,11 @@
 import logging
 from pathlib import Path
-from typing import Callable
 
 from media_manager.common.service import BaseMediaService
 from media_manager.config import MediaManagerConfig
-from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
+from media_manager.metadataProvider.abstract_metadata_provider import (
+    AbstractMetadataProvider,
+)
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import Quality, Torrent
@@ -65,14 +66,14 @@ class TvImportService(BaseMediaService[Show, Show]):
                 s_num, e_num = int(match.group(1)), int(match.group(2))
                 season_dir = self.get_media_root_path(show) / f"Season {s_num}"
                 season_dir.mkdir(parents=True, exist_ok=True)
-                
+
                 target_name = f"{show.name} - S{s_num:02d}E{e_num:02d}"
                 if file_path_suffix:
                     target_name += f" - {file_path_suffix}"
                 target_file = season_dir / f"{target_name}{video_file.suffix}"
-                
+
                 import_file(target_file=target_file, source_file=video_file)
-                
+
                 # Update DB
                 try:
                     season = self.tv_repository.get_season_by_number(s_num, show.id)

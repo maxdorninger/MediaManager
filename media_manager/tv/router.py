@@ -17,9 +17,9 @@ from media_manager.torrent.utils import get_importable_media_directories
 from media_manager.tv.dependencies import (
     season_dep,
     show_dep,
-    tv_service_dep,
-    tv_metadata_service_dep,
     tv_import_service_dep,
+    tv_metadata_service_dep,
+    tv_service_dep,
 )
 from media_manager.tv.schemas import (
     PublicEpisodeFile,

@@ -1,20 +1,22 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Generic, TypeVar, List, Any, Optional, Callable
+from typing import Any, Generic, TypeVar
 
 from media_manager.common.repository import BaseRepository
-from media_manager.exceptions import NotFoundError, RenameError, InvalidConfigError
-from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
+from media_manager.exceptions import InvalidConfigError, NotFoundError
+from media_manager.indexer.service import IndexerService
+from media_manager.metadataProvider.abstract_metadata_provider import (
+    AbstractMetadataProvider,
+)
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
+from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.service import TorrentService
-from media_manager.indexer.service import IndexerService
-from media_manager.notification.service import NotificationService
 from media_manager.torrent.utils import (
-    remove_special_characters,
     get_importable_media_directories,
+    remove_special_characters,
 )
-from media_manager.config import MediaManagerConfig
 
 log = logging.getLogger(__name__)
 
@@ -37,14 +39,14 @@ class BaseMediaService(Generic[T, S]):
         self.indexer_service = indexer_service
         self.notification_service = notification_service
 
-    def get_all_media(self) -> List[S]:
+    def get_all_media(self) -> list[S]:
         return self.repository.get_all()
 
-    def get_root_directory(self, media: S, default_dir: Path, libraries: List[Any]) -> Path:
+    def get_root_directory(self, media: S, default_dir: Path, libraries: list[Any]) -> Path:
         """
         Determines the root directory for a media item.
         """
-        if hasattr(media, 'library') and media.library:
+        if hasattr(media, "library") and media.library:
             for library in libraries:
                 if library.name == media.library:
                     return Path(library.path) / Path(remove_special_characters(media.name))
@@ -74,12 +76,12 @@ class BaseMediaService(Generic[T, S]):
             )
 
     # ... (rest of the methods I added before: get_import_candidates, get_importable_media, etc.)
-    
+
     def get_import_candidates(
         self,
         directory: Path,
         metadata_provider: AbstractMetadataProvider,
-        search_func: Callable[[str, AbstractMetadataProvider], List[MetaDataProviderSearchResult]],
+        search_func: Callable[[str, AbstractMetadataProvider], list[MetaDataProviderSearchResult]],
     ) -> MediaImportSuggestion:
         # Implementation from previous turn
         name, year = self._extract_name_and_year(directory.name)
@@ -89,7 +91,7 @@ class BaseMediaService(Generic[T, S]):
             candidates=candidates,
         )
 
-    def _extract_name_and_year(self, directory_name: str) -> tuple[str, Optional[int]]:
+    def _extract_name_and_year(self, directory_name: str) -> tuple[str, int | None]:
         import re
         match = re.search(r"^(.*)\s\((\d{4})\)$", directory_name)
         if match:
@@ -101,7 +103,7 @@ class BaseMediaService(Generic[T, S]):
         root_path: Path,
         metadata_provider: AbstractMetadataProvider,
         get_candidates_func: Callable[[Path, AbstractMetadataProvider], MediaImportSuggestion],
-    ) -> List[MediaImportSuggestion]:
+    ) -> list[MediaImportSuggestion]:
         importable_dirs = get_importable_media_directories(root_path)
         suggestions = []
         for directory in importable_dirs:
@@ -163,12 +165,12 @@ class BaseMetadataService(Generic[T, S]):
         get_metadata_func: Callable[..., S],
         save_func: Callable[[S], S],
         download_poster_func: Callable[[S], bool],
-        language: Optional[str] = None,
+        language: str | None = None,
     ) -> S:
         media_with_metadata = get_metadata_func(external_id=external_id, language=language)
         if not media_with_metadata:
             raise NotFoundError
-        
+
         saved_media = save_func(media_with_metadata)
         download_poster_func(saved_media)
         return saved_media
@@ -177,9 +179,9 @@ class BaseMetadataService(Generic[T, S]):
         self,
         query: str,
         metadata_provider: AbstractMetadataProvider,
-        search_func: Callable[[Optional[str]], List[MetaDataProviderSearchResult]],
+        search_func: Callable[[str | None], list[MetaDataProviderSearchResult]],
         get_by_external_id_func: Callable[..., S],
-    ) -> List[MetaDataProviderSearchResult]:
+    ) -> list[MetaDataProviderSearchResult]:
         results = search_func(query)
         for result in results:
             if self.check_if_exists(
@@ -201,8 +203,8 @@ class BaseMetadataService(Generic[T, S]):
     def get_popular_media_base(
         self,
         metadata_provider: AbstractMetadataProvider,
-        search_func: Callable[[Optional[str]], List[MetaDataProviderSearchResult]],
-    ) -> List[MetaDataProviderSearchResult]:
+        search_func: Callable[[str | None], list[MetaDataProviderSearchResult]],
+    ) -> list[MetaDataProviderSearchResult]:
         results = search_func(None)
         return [
             result
@@ -214,8 +216,8 @@ class BaseMetadataService(Generic[T, S]):
 
     def update_all_metadata_base(
         self,
-        get_all_to_update_func: Callable[[], List[S]],
-        update_single_func: Callable[[S, AbstractMetadataProvider], Optional[S]],
+        get_all_to_update_func: Callable[[], list[S]],
+        update_single_func: Callable[[S, AbstractMetadataProvider], S | None],
         tmdb_provider_class: Any,
         tvdb_provider_class: Any,
         media_type_name: str,

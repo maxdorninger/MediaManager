@@ -1,5 +1,3 @@
-import logging
-import re
 import shutil
 from pathlib import Path
 
@@ -7,19 +5,14 @@ from sqlalchemy.exc import IntegrityError
 
 from media_manager.common.service import BaseMediaService
 from media_manager.config import MediaManagerConfig
-from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
 from media_manager.indexer.utils import evaluate_indexer_query_results
 from media_manager.notification.service import NotificationService
 from media_manager.torrent.schemas import (
-    Quality,
     Torrent,
 )
 from media_manager.torrent.service import TorrentService
-from media_manager.torrent.utils import (
-    remove_special_characters,
-)
 from media_manager.tv import log
 from media_manager.tv.repository import TvRepository
 from media_manager.tv.schemas import (

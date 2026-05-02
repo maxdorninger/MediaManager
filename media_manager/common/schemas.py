@@ -1,7 +1,10 @@
 import uuid
 from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict, Field
+
 from media_manager.torrent.models import Quality
+
 
 class BaseMedia(BaseModel):
     model_config = ConfigDict(from_attributes=True)

@@ -1,9 +1,11 @@
 import logging
-from typing import Generic, Type, TypeVar, List, Any, Optional
-from sqlalchemy import select, delete, update
-from sqlalchemy.orm import Session
+from typing import Any, Generic, TypeVar
+
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from media_manager.exceptions import NotFoundError, ConflictError
+from sqlalchemy.orm import Session
+
+from media_manager.exceptions import ConflictError, NotFoundError
 
 log = logging.getLogger(__name__)
 
@@ -14,7 +16,7 @@ class BaseRepository(Generic[T, S]):
     """
     Base repository providing common CRUD operations for media models.
     """
-    def __init__(self, db: Session, model: Type[T], schema: Type[S]) -> None:
+    def __init__(self, db: Session, model: type[T], schema: type[S]) -> None:
         self.db = db
         self.model = model
         self.schema = schema
@@ -37,7 +39,7 @@ class BaseRepository(Generic[T, S]):
             raise NotFoundError(msg)
         return self.schema.model_validate(result)
 
-    def get_all(self) -> List[S]:
+    def get_all(self) -> list[S]:
         stmt = select(self.model)
         results = self.db.execute(stmt).scalars().unique().all()
         return [self.schema.model_validate(r) for r in results]
@@ -58,7 +60,7 @@ class BaseRepository(Generic[T, S]):
         obj.library = library
         self.db.commit()
 
-    def save_media_base(self, media_schema: Any, model_class: Type[Any]) -> S:
+    def save_media_base(self, media_schema: Any, model_class: type[Any]) -> S:
         """
         Generic save method for media models.
         """
@@ -89,7 +91,7 @@ class BaseRepository(Generic[T, S]):
             log.exception(f"Database error while saving {model_class.__name__}")
             raise
 
-    def update_media_attributes_base(self, media_id: Any, model_class: Type[Any], **attributes) -> S:
+    def update_media_attributes_base(self, media_id: Any, model_class: type[Any], **attributes) -> S:
         """
         Generic update method for media attributes.
         """
@@ -111,10 +113,10 @@ class BaseRepository(Generic[T, S]):
             except SQLAlchemyError:
                 self.db.rollback()
                 raise
-        
+
         return self.schema.model_validate(db_obj)
 
-    def add_media_file_base(self, file_schema: Any, model_class: Type[Any], schema_class: Type[Any]) -> Any:
+    def add_media_file_base(self, file_schema: Any, model_class: type[Any], schema_class: type[Any]) -> Any:
         """
         Generic method to add a media file record.
         """
@@ -131,7 +133,7 @@ class BaseRepository(Generic[T, S]):
             self.db.rollback()
             raise
 
-    def remove_files_by_torrent_id_base(self, torrent_id: Any, model_class: Type[Any]) -> int:
+    def remove_files_by_torrent_id_base(self, torrent_id: Any, model_class: type[Any]) -> int:
         """
         Generic method to remove media files by torrent ID.
         """

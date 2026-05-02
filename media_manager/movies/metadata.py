@@ -1,8 +1,9 @@
 import logging
-from typing import Optional
 
 from media_manager.common.service import BaseMetadataService
-from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
+from media_manager.metadataProvider.abstract_metadata_provider import (
+    AbstractMetadataProvider,
+)
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
@@ -63,7 +64,7 @@ class MovieMetadataService(BaseMetadataService[Movie, Movie]):
         if not fresh_movie_data:
             log.warning(f"Could not fetch fresh metadata for movie: {db_movie.name}")
             return None
-        
+
         self.movie_repository.update_movie_attributes(
             movie_id=db_movie.id,
             name=fresh_movie_data.name,

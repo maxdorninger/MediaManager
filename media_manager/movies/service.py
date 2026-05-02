@@ -6,11 +6,9 @@ from sqlalchemy.exc import IntegrityError
 
 from media_manager.common.service import BaseMediaService
 from media_manager.config import MediaManagerConfig
-from media_manager.exceptions import NotFoundError
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
 from media_manager.indexer.utils import evaluate_indexer_query_results
-from media_manager.notification.service import NotificationService
 from media_manager.movies.repository import MovieRepository
 from media_manager.movies.schemas import (
     Movie,
@@ -20,6 +18,7 @@ from media_manager.movies.schemas import (
     PublicMovieFile,
     RichMovieTorrent,
 )
+from media_manager.notification.service import NotificationService
 from media_manager.torrent.schemas import (
     Torrent,
 )

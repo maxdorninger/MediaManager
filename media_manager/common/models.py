@@ -1,7 +1,10 @@
 from uuid import UUID
+
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
+
 from media_manager.torrent.models import Quality
+
 
 class MediaMixin:
     """

@@ -1,4 +1,4 @@
-from sqlalchemy import delete, func, select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 
@@ -94,7 +94,7 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
 
         if db_show:  # Use base for update
             return self.save_media_base(media_schema=show, model_class=Show)
-        
+
         # Custom insertion for nested seasons/episodes
         db_show = Show(
             id=show.id,
