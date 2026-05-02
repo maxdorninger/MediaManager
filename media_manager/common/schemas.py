@@ -19,12 +19,14 @@ class BaseMedia(BaseModel):
     original_language: str | None = None
     imdb_id: str | None = None
 
+
 class BaseMediaFile(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     quality: Quality
     torrent_id: UUID | None = None
     file_path_suffix: str
+
 
 class PublicMediaFile(BaseMediaFile):
     downloaded: bool = False

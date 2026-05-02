@@ -14,10 +14,12 @@ T = TypeVar("T")
 S = TypeVar("S")
 EntityId = UUID | int | str
 
+
 class BaseRepository[T, S]:
     """
     Base repository providing common CRUD operations for media models.
     """
+
     def __init__(self, db: Session, model: type[T], schema: type[S]) -> None:
         self.db = db
         self.model = model
@@ -33,7 +35,7 @@ class BaseRepository[T, S]:
     def get_by_external_id(self, external_id: int, metadata_provider: str) -> S:
         stmt = select(self.model).where(
             self.model.external_id == external_id,
-            self.model.metadata_provider == metadata_provider
+            self.model.metadata_provider == metadata_provider,
         )
         result = self.db.execute(stmt).scalar_one_or_none()
         if not result:
@@ -70,12 +72,16 @@ class BaseRepository[T, S]:
 
         if db_obj:
             # Update existing
-            for key, value in media_schema.model_dump(exclude={"id", "seasons", "episodes"}).items():
+            for key, value in media_schema.model_dump(
+                exclude={"id", "seasons", "episodes"}
+            ).items():
                 if hasattr(db_obj, key):
                     setattr(db_obj, key, value)
         else:
             # Insert new
-            db_obj = model_class(**media_schema.model_dump(exclude={"seasons", "episodes"}))
+            db_obj = model_class(
+                **media_schema.model_dump(exclude={"seasons", "episodes"})
+            )
             self.db.add(db_obj)
 
         try:
@@ -92,7 +98,9 @@ class BaseRepository[T, S]:
         else:
             return self.schema.model_validate(db_obj)
 
-    def update_media_attributes_base(self, media_id: EntityId, model_class: type[T], **attributes: Any) -> S: # noqa: ANN401
+    def update_media_attributes_base(
+        self, media_id: EntityId, model_class: type[T], **attributes: Any
+    ) -> S:  # noqa: ANN401
         """
         Generic update method for media attributes.
         """
@@ -103,7 +111,11 @@ class BaseRepository[T, S]:
 
         updated = False
         for key, value in attributes.items():
-            if value is not None and hasattr(db_obj, key) and getattr(db_obj, key) != value:
+            if (
+                value is not None
+                and hasattr(db_obj, key)
+                and getattr(db_obj, key) != value
+            ):
                 setattr(db_obj, key, value)
                 updated = True
 
@@ -117,7 +129,9 @@ class BaseRepository[T, S]:
 
         return self.schema.model_validate(db_obj)
 
-    def add_media_file_base(self, file_schema: S, model_class: type[T], schema_class: type[S]) -> S:
+    def add_media_file_base(
+        self, file_schema: S, model_class: type[T], schema_class: type[S]
+    ) -> S:
         """
         Generic method to add a media file record.
         """
@@ -135,7 +149,9 @@ class BaseRepository[T, S]:
         else:
             return schema_class.model_validate(db_model)
 
-    def remove_files_by_torrent_id_base(self, torrent_id: EntityId, model_class: type[T]) -> int:
+    def remove_files_by_torrent_id_base(
+        self, torrent_id: EntityId, model_class: type[T]
+    ) -> int:
         """
         Generic method to remove media files by torrent ID.
         """

@@ -64,11 +64,15 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
         try:
             movie_root_path.mkdir(parents=True, exist_ok=True)
             if video_files:
-                target_video_file = movie_root_path / f"{movie_file_name}{video_files[0].suffix}"
+                target_video_file = (
+                    movie_root_path / f"{movie_file_name}{video_files[0].suffix}"
+                )
                 import_file(target_file=target_video_file, source_file=video_files[0])
 
             for subtitle_file in subtitle_files:
-                match = re.search(r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE)
+                match = re.search(
+                    r"[. ]([a-z]{2})\.srt$", subtitle_file.name, re.IGNORECASE
+                )
                 if match:
                     lang = match.group(1)
                     target = movie_root_path / f"{movie_file_name}.{lang}.srt"
@@ -82,11 +86,18 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
     def import_torrent_files(self, torrent: Torrent, movie: Movie) -> None:
         video_files, subtitle_files, _ = get_files_for_import(torrent=torrent)
         if len(video_files) != 1:
-            self.notify_import_failure(movie.name, "movie", "Multiple video files found. Manual import required.")
+            self.notify_import_failure(
+                movie.name,
+                "movie",
+                "Multiple video files found. Manual import required.",
+            )
             return
 
         movie_files = self.torrent_service.get_movie_files_of_torrent(torrent=torrent)
-        success = [self.import_movie(movie, video_files, subtitle_files, mf.file_path_suffix) for mf in movie_files]
+        success = [
+            self.import_movie(movie, video_files, subtitle_files, mf.file_path_suffix)
+            for mf in movie_files
+        ]
 
         if all(success):
             torrent.imported = True
@@ -95,7 +106,9 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
         else:
             self.notify_import_failure(movie.name, "movie")
 
-    def get_import_candidates(self, movie_path: Path, metadata_provider: AbstractMetadataProvider) -> MediaImportSuggestion:
+    def get_import_candidates(
+        self, movie_path: Path, metadata_provider: AbstractMetadataProvider
+    ) -> MediaImportSuggestion:
         return super().get_import_candidates(
             directory=movie_path,
             metadata_provider=metadata_provider,
@@ -107,7 +120,14 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
             v, s, _ = get_files_for_import(directory=path)
             res = self.import_movie(m, v, s, "IMPORTED")
             if res:
-                add_cb(MovieFile(movie_id=m.id, file_path_suffix="IMPORTED", torrent_id=None, quality=Quality.unknown))
+                add_cb(
+                    MovieFile(
+                        movie_id=m.id,
+                        file_path_suffix="IMPORTED",
+                        torrent_id=None,
+                        quality=Quality.unknown,
+                    )
+                )
             return res
 
         return self.import_existing_media(
@@ -117,7 +137,9 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
             add_file_record_func=self.movie_repository.add_movie_file,
         )
 
-    def get_importable_movies(self, metadata_provider: AbstractMetadataProvider) -> list[MediaImportSuggestion]:
+    def get_importable_movies(
+        self, metadata_provider: AbstractMetadataProvider
+    ) -> list[MediaImportSuggestion]:
         return self.get_importable_media(
             root_path=MediaManagerConfig().misc.movie_directory,
             metadata_provider=metadata_provider,

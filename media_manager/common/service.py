@@ -23,10 +23,12 @@ log = logging.getLogger(__name__)
 T = TypeVar("T")
 S = TypeVar("S")
 
+
 class BaseMediaService[T, S]:
     """
     Base service providing common logic for media modules.
     """
+
     def __init__(
         self,
         repository: BaseRepository[T, S],
@@ -42,14 +44,18 @@ class BaseMediaService[T, S]:
     def get_all_media(self) -> list[S]:
         return self.repository.get_all()
 
-    def get_root_directory(self, media: S, default_dir: Path, libraries: list[Any]) -> Path:
+    def get_root_directory(
+        self, media: S, default_dir: Path, libraries: list[Any]
+    ) -> Path:
         """
         Determines the root directory for a media item.
         """
         if hasattr(media, "library") and media.library:
             for library in libraries:
                 if library.name == media.library:
-                    return Path(library.path) / Path(remove_special_characters(media.name))
+                    return Path(library.path) / Path(
+                        remove_special_characters(media.name)
+                    )
         return default_dir / Path(remove_special_characters(media.name))
 
     def get_media_root_path(self, media: S) -> Path:
@@ -65,7 +71,9 @@ class BaseMediaService[T, S]:
                 message=f"{media_type.capitalize()} {media_name} has been successfully downloaded and imported.",
             )
 
-    def notify_import_failure(self, media_name: str, media_type: str, error_msg: str = "") -> None:
+    def notify_import_failure(
+        self, media_name: str, media_type: str, error_msg: str = ""
+    ) -> None:
         if self.notification_service:
             msg = f"Failed to import files for {media_type} {media_name}."
             if error_msg:
@@ -79,7 +87,9 @@ class BaseMediaService[T, S]:
         self,
         directory: Path,
         metadata_provider: AbstractMetadataProvider,
-        search_func: Callable[[str, AbstractMetadataProvider], list[MetaDataProviderSearchResult]],
+        search_func: Callable[
+            [str, AbstractMetadataProvider], list[MetaDataProviderSearchResult]
+        ],
     ) -> MediaImportSuggestion:
         # Implementation from previous turn
         name, _ = self._extract_name_and_year(directory.name)
@@ -91,6 +101,7 @@ class BaseMediaService[T, S]:
 
     def _extract_name_and_year(self, directory_name: str) -> tuple[str, int | None]:
         import re
+
         match = re.search(r"^(.*)\s\((\d{4})\)$", directory_name)
         if match:
             return match.group(1), int(match.group(2))
@@ -100,10 +111,15 @@ class BaseMediaService[T, S]:
         self,
         root_path: Path,
         metadata_provider: AbstractMetadataProvider,
-        get_candidates_func: Callable[[Path, AbstractMetadataProvider], MediaImportSuggestion],
+        get_candidates_func: Callable[
+            [Path, AbstractMetadataProvider], MediaImportSuggestion
+        ],
     ) -> list[MediaImportSuggestion]:
         importable_dirs = get_importable_media_directories(root_path)
-        return [get_candidates_func(directory, metadata_provider) for directory in importable_dirs]
+        return [
+            get_candidates_func(directory, metadata_provider)
+            for directory in importable_dirs
+        ]
 
     def import_existing_media(
         self,
@@ -141,6 +157,7 @@ class BaseMetadataService[T, S]:
     """
     Base service for metadata operations.
     """
+
     def __init__(self, repository: BaseRepository[T, S]) -> None:
         self.repository = repository
 
@@ -163,7 +180,9 @@ class BaseMetadataService[T, S]:
         download_poster_func: Callable[[S], bool],
         language: str | None = None,
     ) -> S:
-        media_with_metadata = get_metadata_func(external_id=external_id, language=language)
+        media_with_metadata = get_metadata_func(
+            external_id=external_id, language=language
+        )
         if not media_with_metadata:
             raise NotFoundError
 
@@ -228,7 +247,9 @@ class BaseMetadataService[T, S]:
                 elif item.metadata_provider == "tvdb":
                     provider = tvdb_provider_class()
                 else:
-                    log.error(f"Unsupported provider {item.metadata_provider} for {item.name}")
+                    log.error(
+                        f"Unsupported provider {item.metadata_provider} for {item.name}"
+                    )
                     continue
                 update_single_func(item, provider)
             except InvalidConfigError:

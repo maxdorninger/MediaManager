@@ -59,7 +59,9 @@ class MovieRepository(BaseRepository[Movie, MovieSchema]):
             results = self.db.execute(stmt).scalars().all()
             return [MovieFileSchema.model_validate(sf) for sf in results]
         except SQLAlchemyError:
-            log.exception(f"Database error retrieving movie files for movie_id {movie_id}")
+            log.exception(
+                f"Database error retrieving movie files for movie_id {movie_id}"
+            )
             raise
 
     def get_torrents_by_movie_id(self, movie_id: MovieId) -> list[MovieTorrentSchema]:

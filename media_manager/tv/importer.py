@@ -79,14 +79,18 @@ class TvImportService(BaseMediaService[Show, Show]):
                 # Update DB
                 try:
                     season = self.tv_repository.get_season_by_number(s_num, show.id)
-                    episode = next((e for e in season.episodes if e.number == e_num), None)
+                    episode = next(
+                        (e for e in season.episodes if e.number == e_num), None
+                    )
                     if episode:
-                        self.tv_repository.add_episode_file(EpisodeFile(
-                            episode_id=episode.id,
-                            quality=quality,
-                            torrent_id=torrent_id,
-                            file_path_suffix=file_path_suffix
-                        ))
+                        self.tv_repository.add_episode_file(
+                            EpisodeFile(
+                                episode_id=episode.id,
+                                quality=quality,
+                                torrent_id=torrent_id,
+                                file_path_suffix=file_path_suffix,
+                            )
+                        )
                 except Exception:
                     log.warning(f"Could not update DB for {video_file.name}")
         return True
@@ -105,7 +109,9 @@ class TvImportService(BaseMediaService[Show, Show]):
         else:
             self.notify_import_failure(show.name, "TV show")
 
-    def get_import_candidates(self, tv_path: Path, metadata_provider: AbstractMetadataProvider) -> MediaImportSuggestion:
+    def get_import_candidates(
+        self, tv_path: Path, metadata_provider: AbstractMetadataProvider
+    ) -> MediaImportSuggestion:
         return super().get_import_candidates(
             directory=tv_path,
             metadata_provider=metadata_provider,
@@ -120,10 +126,14 @@ class TvImportService(BaseMediaService[Show, Show]):
             media=tv_show,
             source_directory=source_directory,
             import_func=_logic,
-            add_file_record_func=lambda _: None, # Handled inside import_tv_show for now
+            add_file_record_func=lambda _: (
+                None
+            ),  # Handled inside import_tv_show for now
         )
 
-    def get_importable_tv_shows(self, metadata_provider: AbstractMetadataProvider) -> list[MediaImportSuggestion]:
+    def get_importable_tv_shows(
+        self, metadata_provider: AbstractMetadataProvider
+    ) -> list[MediaImportSuggestion]:
         return self.get_importable_media(
             root_path=MediaManagerConfig().misc.tv_directory,
             metadata_provider=metadata_provider,

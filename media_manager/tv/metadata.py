@@ -80,16 +80,22 @@ class TvMetadataService(BaseMetadataService[Show, Show]):
         existing_season_external_ids = {s.external_id: s for s in db_show.seasons}
         for fresh_season_data in fresh_show_data.seasons:
             if fresh_season_data.external_id in existing_season_external_ids:
-                existing_season = existing_season_external_ids[fresh_season_data.external_id]
+                existing_season = existing_season_external_ids[
+                    fresh_season_data.external_id
+                ]
                 self.tv_repository.update_season_attributes(
                     season_id=existing_season.id,
                     name=fresh_season_data.name,
                     overview=fresh_season_data.overview,
                 )
-                existing_episode_external_ids = {ep.external_id: ep for ep in existing_season.episodes}
+                existing_episode_external_ids = {
+                    ep.external_id: ep for ep in existing_season.episodes
+                }
                 for fresh_episode_data in fresh_season_data.episodes:
                     if fresh_episode_data.external_id in existing_episode_external_ids:
-                        existing_episode = existing_episode_external_ids[fresh_episode_data.external_id]
+                        existing_episode = existing_episode_external_ids[
+                            fresh_episode_data.external_id
+                        ]
                         self.tv_repository.update_episode_attributes(
                             episode_id=existing_episode.id,
                             title=fresh_episode_data.title,
@@ -124,7 +130,9 @@ class TvMetadataService(BaseMetadataService[Show, Show]):
                         for ep_data in fresh_season_data.episodes
                     ],
                 )
-                self.tv_repository.add_season_to_show(show_id=db_show.id, season_data=season_schema)
+                self.tv_repository.add_season_to_show(
+                    show_id=db_show.id, season_data=season_schema
+                )
 
         updated_show = self.tv_repository.get_show_by_id(show_id=db_show.id)
         metadata_provider.download_show_poster_image(show=updated_show)

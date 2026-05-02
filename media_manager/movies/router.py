@@ -62,7 +62,9 @@ def get_popular_movies(
     """
     Get a list of recommended/popular movies from the metadata provider.
     """
-    return movie_metadata_service.get_popular_movies(metadata_provider=metadata_provider)
+    return movie_metadata_service.get_popular_movies(
+        metadata_provider=metadata_provider
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -76,12 +78,15 @@ def get_popular_movies(
     dependencies=[Depends(current_superuser)],
 )
 def get_all_importable_movies(
-    movie_import_service: movie_import_service_dep, metadata_provider: metadata_provider_dep
+    movie_import_service: movie_import_service_dep,
+    metadata_provider: metadata_provider_dep,
 ) -> list[MediaImportSuggestion]:
     """
     Get a list of unknown movies that were detected in the movie directory and are importable.
     """
-    return movie_import_service.get_importable_movies(metadata_provider=metadata_provider)
+    return movie_import_service.get_importable_movies(
+        metadata_provider=metadata_provider
+    )
 
 
 @router.post(

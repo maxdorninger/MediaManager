@@ -42,12 +42,16 @@ router = APIRouter()
     dependencies=[Depends(current_active_user)],
 )
 def search_metadata_providers_for_a_show(
-    tv_metadata_service: tv_metadata_service_dep, query: str, metadata_provider: metadata_provider_dep
+    tv_metadata_service: tv_metadata_service_dep,
+    query: str,
+    metadata_provider: metadata_provider_dep,
 ) -> list[MetaDataProviderSearchResult]:
     """
     Search for a show on the configured metadata provider.
     """
-    return tv_metadata_service.search_for_show(query=query, metadata_provider=metadata_provider)
+    return tv_metadata_service.search_for_show(
+        query=query, metadata_provider=metadata_provider
+    )
 
 
 @router.get(
@@ -55,7 +59,8 @@ def search_metadata_providers_for_a_show(
     dependencies=[Depends(current_active_user)],
 )
 def get_recommended_shows(
-    tv_metadata_service: tv_metadata_service_dep, metadata_provider: metadata_provider_dep
+    tv_metadata_service: tv_metadata_service_dep,
+    metadata_provider: metadata_provider_dep,
 ) -> list[MetaDataProviderSearchResult]:
     """
     Get a list of recommended/popular shows from the metadata provider.
@@ -79,7 +84,9 @@ def get_all_importable_shows(
     """
     Get a list of unknown shows that were detected in the TV directory and are importable.
     """
-    return tv_import_service.get_importable_tv_shows(metadata_provider=metadata_provider)
+    return tv_import_service.get_importable_tv_shows(
+        metadata_provider=metadata_provider
+    )
 
 
 @router.post(
@@ -218,12 +225,17 @@ def delete_a_show(
     dependencies=[Depends(current_active_user)],
 )
 def update_shows_metadata(
-    show: show_dep, tv_metadata_service: tv_metadata_service_dep, tv_service: tv_service_dep, metadata_provider: metadata_provider_dep
+    show: show_dep,
+    tv_metadata_service: tv_metadata_service_dep,
+    tv_service: tv_service_dep,
+    metadata_provider: metadata_provider_dep,
 ) -> PublicShow:
     """
     Update a show's metadata from the provider.
     """
-    tv_metadata_service.update_show_metadata(db_show=show, metadata_provider=metadata_provider)
+    tv_metadata_service.update_show_metadata(
+        db_show=show, metadata_provider=metadata_provider
+    )
     return tv_service.get_public_show_by_id(show=show)
 
 
