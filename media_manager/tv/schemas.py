@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from media_manager.common.schemas import BaseMedia, BaseMediaFile
 from media_manager.torrent.models import Quality
 from media_manager.torrent.schemas import TorrentId, TorrentStatus
 
@@ -39,35 +40,17 @@ class Season(BaseModel):
     episodes: list[Episode]
 
 
-class Show(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class Show(BaseMedia):
     id: ShowId = Field(default_factory=lambda: ShowId(uuid.uuid4()))
 
-    name: str
-    overview: str
-    year: int | None
-
     ended: bool = False
-    external_id: int
-    metadata_provider: str
-
     continuous_download: bool = False
-    library: str = "Default"
-    original_language: str | None = None
-
-    imdb_id: str | None = None
 
     seasons: list[Season]
 
 
-class EpisodeFile(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class EpisodeFile(BaseMediaFile):
     episode_id: EpisodeId
-    quality: Quality
-    torrent_id: TorrentId | None
-    file_path_suffix: str
 
 
 class PublicEpisodeFile(EpisodeFile):

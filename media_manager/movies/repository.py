@@ -7,6 +7,7 @@ from sqlalchemy.exc import (
 )
 from sqlalchemy.orm import Session
 
+from media_manager.common.repository import BaseRepository
 from media_manager.exceptions import ConflictError, NotFoundError
 from media_manager.movies.models import Movie, MovieFile
 from media_manager.movies.schemas import (
@@ -27,78 +28,20 @@ from media_manager.torrent.schemas import TorrentId
 log = logging.getLogger(__name__)
 
 
-class MovieRepository:
+class MovieRepository(BaseRepository[Movie, MovieSchema]):
     """
     Repository for managing movies in the database.
     Provides methods to retrieve, save, and delete movies.
     """
 
     def __init__(self, db: Session) -> None:
-        self.db = db
+        super().__init__(db, Movie, MovieSchema)
 
-    def get_movie_by_id(self, movie_id: MovieId) -> MovieSchema:
-        """
-        Retrieve a movie by its ID.
-
-        :param movie_id: The ID of the movie to retrieve.
-        :return: A Movie object if found.
-        :raises NotFoundError: If the movie with the given ID is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            stmt = select(Movie).where(Movie.id == movie_id)
-            result = self.db.execute(stmt).unique().scalar_one_or_none()
-            if not result:
-                msg = f"Movie with id {movie_id} not found."
-                raise NotFoundError(msg)
-            return MovieSchema.model_validate(result)
-        except SQLAlchemyError:
-            log.exception(f"Database error while retrieving movie {movie_id}")
-            raise
-
-    def get_movie_by_external_id(
-        self, external_id: int, metadata_provider: str
-    ) -> MovieSchema:
-        """
-        Retrieve a movie by its external ID.
-
-        :param external_id: The ID of the movie to retrieve.
-        :param metadata_provider: The metadata provider associated with the ID.
-        :return: A Movie object if found.
-        :raises NotFoundError: If the movie with the given external ID and provider is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            stmt = (
-                select(Movie)
-                .where(Movie.external_id == external_id)
-                .where(Movie.metadata_provider == metadata_provider)
-            )
-            result = self.db.execute(stmt).unique().scalar_one_or_none()
-            if not result:
-                msg = f"Movie with external_id {external_id} and provider {metadata_provider} not found."
-                raise NotFoundError(msg)
-            return MovieSchema.model_validate(result)
-        except SQLAlchemyError:
-            log.exception(
-                f"Database error while retrieving movie by external_id {external_id}"
-            )
-            raise
-
-    def get_movies(self) -> list[MovieSchema]:
-        """
-        Retrieve all movies from the database.
-
-        :return: A list of Movie objects.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            stmt = select(Movie)
-            results = self.db.execute(stmt).scalars().unique().all()
-            return [MovieSchema.model_validate(movie) for movie in results]
-        except SQLAlchemyError:
-            log.exception("Database error while retrieving all movies")
-            raise
+    get_movie_by_id = BaseRepository.get_by_id
+    get_movie_by_external_id = BaseRepository.get_by_external_id
+    get_movies = BaseRepository.get_all
+    delete_movie = BaseRepository.delete
+    set_movie_library = BaseRepository.set_library
 
     def save_movie(self, movie: MovieSchema) -> MovieSchema:
         """
@@ -141,50 +84,6 @@ class MovieRepository:
         except SQLAlchemyError:
             self.db.rollback()
             log.exception(f"Database error while saving movie {movie.name}")
-            raise
-
-    def delete_movie(self, movie_id: MovieId) -> None:
-        """
-        Delete a movie by its ID.
-
-        :param movie_id: The ID of the movie to delete.
-        :raises NotFoundError: If the movie with the given ID is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        log.debug(f"Attempting to delete movie with id: {movie_id}")
-        try:
-            movie = self.db.get(Movie, movie_id)
-            if not movie:
-                log.warning(f"Movie with id {movie_id} not found for deletion.")
-                msg = f"Movie with id {movie_id} not found."
-                raise NotFoundError(msg)
-            self.db.delete(movie)
-            self.db.commit()
-            log.info(f"Successfully deleted movie with id: {movie_id}")
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception(f"Database error while deleting movie {movie_id}")
-            raise
-
-    def set_movie_library(self, movie_id: MovieId, library: str) -> None:
-        """
-        Sets the library for a movie.
-
-        :param movie_id: The ID of the movie to update.
-        :param library: The library path to set for the movie.
-        :raises NotFoundError: If the movie with the given ID is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            movie = self.db.get(Movie, movie_id)
-            if not movie:
-                msg = f"movie with id {movie_id} not found."
-                raise NotFoundError(msg)
-            movie.library = library
-            self.db.commit()
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception(f"Database error setting library for movie {movie_id}")
             raise
 
     def add_movie_file(self, movie_file: MovieFileSchema) -> MovieFileSchema:

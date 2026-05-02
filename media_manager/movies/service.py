@@ -5,6 +5,7 @@ from typing import overload
 
 from sqlalchemy.exc import IntegrityError
 
+from media_manager.common.service import BaseMediaService
 from media_manager.config import MediaManagerConfig
 from media_manager.exceptions import InvalidConfigError, NotFoundError, RenameError
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
@@ -44,7 +45,7 @@ from media_manager.torrent.utils import (
 )
 
 
-class MovieService:
+class MovieService(BaseMediaService[Movie, Movie]):
     def __init__(
         self,
         movie_repository: MovieRepository,
@@ -52,10 +53,13 @@ class MovieService:
         indexer_service: IndexerService,
         notification_service: NotificationService,
     ) -> None:
+        super().__init__(
+            repository=movie_repository,
+            torrent_service=torrent_service,
+            indexer_service=indexer_service,
+            notification_service=notification_service,
+        )
         self.movie_repository = movie_repository
-        self.torrent_service = torrent_service
-        self.indexer_service = indexer_service
-        self.notification_service = notification_service
 
     def add_movie(
         self,
@@ -145,61 +149,7 @@ class MovieService:
             result.append(movie_file)
         return result
 
-    @overload
-    def check_if_movie_exists(
-        self, *, external_id: int, metadata_provider: str
-    ) -> bool:
-        """
-        Check if a movie exists in the database.
-
-        :param external_id: The external ID of the movie.
-        :param metadata_provider: The metadata provider.
-        :return: True if the movie exists, False otherwise.
-        """
-
-    @overload
-    def check_if_movie_exists(self, *, movie_id: MovieId) -> bool:
-        """
-        Check if a movie exists in the database.
-
-        :param movie_id: The ID of the movie.
-        :return: True if the movie exists, False otherwise.
-        """
-
-    def check_if_movie_exists(
-        self,
-        *,
-        external_id=None,
-        metadata_provider=None,
-        movie_id=None,
-    ) -> bool:
-        """
-        Check if a movie exists in the database.
-
-        :param external_id: The external ID of the movie.
-        :param metadata_provider: The metadata provider.
-        :param movie_id: The ID of the movie.
-        :return: True if the movie exists, False otherwise.
-        :raises ValueError: If neither external ID and metadata provider nor movie ID are provided.
-        """
-
-        if not (external_id is None or metadata_provider is None):
-            try:
-                self.movie_repository.get_movie_by_external_id(
-                    external_id=external_id, metadata_provider=metadata_provider
-                )
-            except NotFoundError:
-                return False
-        elif movie_id is not None:
-            try:
-                self.movie_repository.get_movie_by_id(movie_id=movie_id)
-            except NotFoundError:
-                return False
-        else:
-            msg = "Use one of the provided overloads for this function!"
-            raise ValueError(msg)
-
-        return True
+    check_if_movie_exists = BaseMediaService.check_if_exists
 
     def get_all_available_torrents_for_movie(
         self, movie: Movie, search_query_override: str | None = None
@@ -220,13 +170,7 @@ class MovieService:
             is_tv=False, query_results=torrents, media=movie
         )
 
-    def get_all_movies(self) -> list[Movie]:
-        """
-        Get all movies.
-
-        :return: A list of all movies.
-        """
-        return self.movie_repository.get_movies()
+    get_all_movies = BaseMediaService.get_all
 
     def search_for_movie(
         self, query: str, metadata_provider: AbstractMetadataProvider
@@ -418,26 +362,11 @@ class MovieService:
 
     def get_movie_root_path(self, movie: Movie) -> Path:
         misc_config = MediaManagerConfig().misc
-        movie_file_path = (
-            misc_config.movie_directory
-            / f"{remove_special_characters(movie.name)} ({movie.year}) [{movie.metadata_provider}id-{movie.external_id}]"
+        return self.get_root_directory(
+            media=movie,
+            default_dir=misc_config.movie_directory,
+            libraries=misc_config.movie_libraries,
         )
-        log.debug(
-            f"Movie {movie.name} without special characters: {remove_special_characters(movie.name)}"
-        )
-        if movie.library != "Default":
-            for library in misc_config.movie_libraries:
-                if library.name == movie.library:
-                    log.debug(f"Using library {library.name} for movie {movie.name}")
-                    return (
-                        Path(library.path)
-                        / f"{remove_special_characters(movie.name)} ({movie.year}) [{movie.metadata_provider}id-{movie.external_id}]"
-                    )
-            else:
-                log.warning(
-                    f"Library {movie.library} not found in config, using default library"
-                )
-        return movie_file_path
 
     def import_movie(
         self,
@@ -548,48 +477,38 @@ class MovieService:
     def get_import_candidates(
         self, movie: Path, metadata_provider: AbstractMetadataProvider
     ) -> MediaImportSuggestion:
-        search_result = self.search_for_movie(
-            query=remove_special_chars_and_parentheses(movie.name),
-            metadata_provider=metadata_provider,
-        )
-        import_candidates = MediaImportSuggestion(
+        return super().get_import_candidates(
             directory=movie,
-            candidates=search_result,
+            metadata_provider=metadata_provider,
+            search_func=self.search_for_movie,
         )
-        log.debug(
-            f"Found {len(search_result)} candidates for {movie.name} in {movie.parent}"
-        )
-        return import_candidates
 
     def import_existing_movie(self, movie: Movie, source_directory: Path) -> bool:
-        new_source_path = source_directory.parent / ("." + source_directory.name)
-        try:
-            source_directory.rename(new_source_path)
-        except Exception as e:
-            log.exception(f"Failed to rename {source_directory} to {new_source_path}")
-            raise RenameError from e
-
-        video_files, subtitle_files, _all_files = get_files_for_import(
-            directory=new_source_path
-        )
-
-        success = self.import_movie(
-            movie=movie,
-            video_files=video_files,
-            subtitle_files=subtitle_files,
-            file_path_suffix="IMPORTED",
-        )
-        if success:
-            self.movie_repository.add_movie_file(
-                MovieFile(
-                    movie_id=movie.id,
-                    file_path_suffix="IMPORTED",
-                    torrent_id=None,
-                    quality=Quality.unknown,
-                )
+        def _import_logic(m: Movie, path: Path, add_record_cb: Callable[[MovieFile], None]) -> bool:
+            video_files, subtitle_files, _all_files = get_files_for_import(directory=path)
+            success = self.import_movie(
+                movie=m,
+                video_files=video_files,
+                subtitle_files=subtitle_files,
+                file_path_suffix="IMPORTED",
             )
+            if success:
+                add_record_cb(
+                    MovieFile(
+                        movie_id=m.id,
+                        file_path_suffix="IMPORTED",
+                        torrent_id=None,
+                        quality=Quality.unknown,
+                    )
+                )
+            return success
 
-        return success
+        return self.import_existing_media(
+            media=movie,
+            source_directory=source_directory,
+            import_func=_import_logic,
+            add_file_record_func=self.movie_repository.add_movie_file,
+        )
 
     def update_movie_metadata(
         self, db_movie: Movie, metadata_provider: AbstractMetadataProvider
@@ -633,51 +552,18 @@ class MovieService:
     def get_importable_movies(
         self, metadata_provider: AbstractMetadataProvider
     ) -> list[MediaImportSuggestion]:
-        movie_root_path = MediaManagerConfig().misc.movie_directory
-        importable_movies: list[MediaImportSuggestion] = []
-        candidate_dirs = get_importable_media_directories(movie_root_path)
-
-        for movie_dir in candidate_dirs:
-            metadata, external_id = extract_external_id_from_string(movie_dir.name)
-            if metadata is not None and external_id is not None:
-                try:
-                    self.movie_repository.get_movie_by_external_id(
-                        external_id=external_id, metadata_provider=metadata
-                    )
-                    log.debug(
-                        f"Movie {movie_dir.name} already exists in the database, skipping."
-                    )
-                    continue
-                except NotFoundError:
-                    log.debug(
-                        f"Movie {movie_dir.name} not found in database, checking for import candidates."
-                    )
-
-            import_candidates = self.get_import_candidates(
-                movie=movie_dir, metadata_provider=metadata_provider
-            )
-            importable_movies.append(import_candidates)
-
-        log.debug(f"Found {len(importable_movies)} importable movies.")
-        return importable_movies
+        return self.get_importable_media(
+            root_path=MediaManagerConfig().misc.movie_directory,
+            metadata_provider=metadata_provider,
+            get_candidates_func=self.get_import_candidates,
+        )
 
     def import_all_torrents(self) -> None:
-        log.info("Importing all torrents")
-        torrents = self.torrent_service.get_all_torrents()
-        log.info("Found %d torrents to import", len(torrents))
-        for t in torrents:
-            try:
-                if not t.imported and t.status == TorrentStatus.finished:
-                    movie = self.torrent_service.get_movie_of_torrent(torrent=t)
-                    if movie is None:
-                        log.warning(
-                            f"torrent {t.title} is not a movie torrent, skipping import."
-                        )
-                        continue
-                    self.import_torrent_files(torrent=t, movie=movie)
-            except RuntimeError:
-                log.exception(f"Failed to import torrent {t.title}")
-        log.info("Finished importing all torrents")
+        self.import_all_torrents_base(
+            get_media_func=self.torrent_service.get_movie_of_torrent,
+            import_torrent_func=self.import_torrent_files,
+            media_type_name="movie",
+        )
 
     def update_all_metadata(self) -> None:
         """Updates the metadata of all movies."""
