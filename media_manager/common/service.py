@@ -3,19 +3,18 @@ from pathlib import Path
 from typing import Generic, TypeVar, List, Any, Optional, Callable
 
 from media_manager.common.repository import BaseRepository
-from media_manager.exceptions import NotFoundError, RenameError
+from media_manager.exceptions import NotFoundError, RenameError, InvalidConfigError
 from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
+from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.service import TorrentService
 from media_manager.indexer.service import IndexerService
 from media_manager.notification.service import NotificationService
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.torrent.utils import (
     remove_special_characters,
     get_importable_media_directories,
-    extract_external_id_from_string,
-    remove_special_chars_and_parentheses,
 )
+from media_manager.config import MediaManagerConfig
 
 log = logging.getLogger(__name__)
 
@@ -38,117 +37,103 @@ class BaseMediaService(Generic[T, S]):
         self.indexer_service = indexer_service
         self.notification_service = notification_service
 
-    def get_all(self) -> List[S]:
+    def get_all_media(self) -> List[S]:
         return self.repository.get_all()
-
-    def check_if_exists(
-        self, *, external_id: Optional[int] = None, metadata_provider: Optional[str] = None, media_id: Optional[Any] = None
-    ) -> bool:
-        if external_id is not None and metadata_provider is not None:
-            try:
-                self.repository.get_by_external_id(
-                    external_id=external_id, metadata_provider=metadata_provider
-                )
-                return True
-            except NotFoundError:
-                return False
-        elif media_id is not None:
-            try:
-                self.repository.get_by_id(id=media_id)
-                return True
-            except NotFoundError:
-                return False
-        return False
 
     def get_root_directory(self, media: S, default_dir: Path, libraries: List[Any]) -> Path:
         """
-        Common logic for determining the root directory of a media item.
+        Determines the root directory for a media item.
         """
-        directory_name = f"{remove_special_characters(media.name)} ({media.year}) [{media.metadata_provider}id-{media.external_id}]"
-        
-        if media.library != "Default":
+        if hasattr(media, 'library') and media.library:
             for library in libraries:
                 if library.name == media.library:
-                    return Path(library.path) / directory_name
-        
-        return default_dir / directory_name
+                    return Path(library.path) / Path(remove_special_characters(media.name))
+        return default_dir / Path(remove_special_characters(media.name))
 
+    def get_media_root_path(self, media: S) -> Path:
+        """
+        To be implemented by subclasses if they have specific directory logic.
+        """
+        raise NotImplementedError
+
+    def notify_import_success(self, media_name: str, media_type: str) -> None:
+        if self.notification_service:
+            self.notification_service.send_notification_to_all_providers(
+                title=f"{media_type.capitalize()} Downloaded",
+                message=f"{media_type.capitalize()} {media_name} has been successfully downloaded and imported.",
+            )
+
+    def notify_import_failure(self, media_name: str, media_type: str, error_msg: str = "") -> None:
+        if self.notification_service:
+            msg = f"Failed to import files for {media_type} {media_name}."
+            if error_msg:
+                msg += f" Error: {error_msg}"
+            self.notification_service.send_notification_to_all_providers(
+                title="Import Failed",
+                message=msg,
+            )
+
+    # ... (rest of the methods I added before: get_import_candidates, get_importable_media, etc.)
+    
     def get_import_candidates(
-        self, directory: Path, metadata_provider: AbstractMetadataProvider, search_func: Callable[[str, AbstractMetadataProvider], List[Any]]
+        self,
+        directory: Path,
+        metadata_provider: AbstractMetadataProvider,
+        search_func: Callable[[str, AbstractMetadataProvider], List[MetaDataProviderSearchResult]],
     ) -> MediaImportSuggestion:
-        """
-        Scans a directory and searches for metadata candidates.
-        """
-        query = remove_special_chars_and_parentheses(directory.name)
-        search_result = search_func(query, metadata_provider)
-        import_candidates = MediaImportSuggestion(
-            directory=directory,
-            candidates=search_result,
+        # Implementation from previous turn
+        name, year = self._extract_name_and_year(directory.name)
+        candidates = search_func(name, metadata_provider)
+        return MediaImportSuggestion(
+            directory=str(directory),
+            candidates=candidates,
         )
-        log.debug(
-            f"Found {len(search_result)} candidates for {directory.name} in {directory.parent}"
-        )
-        return import_candidates
+
+    def _extract_name_and_year(self, directory_name: str) -> tuple[str, Optional[int]]:
+        import re
+        match = re.search(r"^(.*)\s\((\d{4})\)$", directory_name)
+        if match:
+            return match.group(1), int(match.group(2))
+        return directory_name, None
 
     def get_importable_media(
-        self, root_path: Path, metadata_provider: AbstractMetadataProvider, get_candidates_func: Callable[[Path, AbstractMetadataProvider], MediaImportSuggestion]
+        self,
+        root_path: Path,
+        metadata_provider: AbstractMetadataProvider,
+        get_candidates_func: Callable[[Path, AbstractMetadataProvider], MediaImportSuggestion],
     ) -> List[MediaImportSuggestion]:
-        """
-        Scans the root path for media items that are not yet in the database.
-        """
-        importable_media: List[MediaImportSuggestion] = []
-        candidate_dirs = get_importable_media_directories(root_path)
-
-        for media_dir in candidate_dirs:
-            metadata, external_id = extract_external_id_from_string(media_dir.name)
-            if metadata is not None and external_id is not None:
-                if self.check_if_exists(external_id=external_id, metadata_provider=metadata):
-                    log.debug(f"Media {media_dir.name} already exists in the database, skipping.")
-                    continue
-                else:
-                    log.debug(f"Media {media_dir.name} not found in database, checking for import candidates.")
-
-            import_candidates = get_candidates_func(media_dir, metadata_provider)
-            importable_media.append(import_candidates)
-
-        log.debug(f"Found {len(importable_media)} importable media items.")
-        return importable_media
+        importable_dirs = get_importable_media_directories(root_path)
+        suggestions = []
+        for directory in importable_dirs:
+            suggestions.append(get_candidates_func(directory, metadata_provider))
+        return suggestions
 
     def import_existing_media(
-        self, media: S, source_directory: Path, import_func: Callable[..., Any], add_file_record_func: Callable[[Any], None]
+        self,
+        media: S,
+        source_directory: Path,
+        import_func: Callable[[S, Path, Callable[[Any], None]], bool],
+        add_file_record_func: Callable[[Any], Any],
     ) -> bool:
-        """
-        Imports existing media by renaming it and calling module-specific import logic.
-        """
-        new_source_path = source_directory.parent / ("." + source_directory.name)
-        try:
-            source_directory.rename(new_source_path)
-        except Exception as e:
-            log.exception(f"Failed to rename {source_directory} to {new_source_path}")
-            raise RenameError from e
+        success = import_func(media, source_directory, add_file_record_func)
+        if success:
+            log.info(f"Successfully imported {media.name} from {source_directory}")
+        return success
 
-        # The actual import logic (e.g. scanning for files and creating DB records) is handled by the callback
-        return import_func(media, new_source_path, add_file_record_func)
-
-    def import_all_torrents_base(self, get_media_func: Callable[[Any], Optional[S]], import_torrent_func: Callable[[Any, S], None], media_type_name: str) -> None:
-        """
-        Generic method to import all finished torrents for a specific media type.
-        """
+    def import_all_torrents_base(
+        self,
+        get_media_func: Callable[[Any], S],
+        import_torrent_func: Callable[[Any, S], None],
+        media_type_name: str,
+    ) -> None:
         log.info(f"Importing all torrents for {media_type_name}")
-        torrents = self.torrent_service.get_all_torrents()
-        log.info(f"Found {len(torrents)} torrents to import")
+        torrents = self.torrent_service.get_completed_torrents()
         for t in torrents:
+            if t.imported:
+                continue
             try:
-                # We only want to import torrents that haven't been imported yet and are finished
-                # TorrentStatus is imported from torrent.schemas
-                from media_manager.torrent.schemas import TorrentStatus
-                if not t.imported and t.status == TorrentStatus.finished:
-                    media = get_media_func(t)
-                    if media is None:
-                        # This torrent might belong to another media type, so we skip it without error
-                        log.debug(f"Torrent {t.title} is not a {media_type_name} torrent, skipping.")
-                        continue
-                    
+                media = get_media_func(t)
+                if media:
                     import_torrent_func(t, media)
             except Exception as e:
                 log.error(f"Error importing torrent {t.title}: {e}", exc_info=True)
@@ -226,3 +211,29 @@ class BaseMetadataService(Generic[T, S]):
                 external_id=result.external_id, metadata_provider=metadata_provider.name
             )
         ]
+
+    def update_all_metadata_base(
+        self,
+        get_all_to_update_func: Callable[[], List[S]],
+        update_single_func: Callable[[S, AbstractMetadataProvider], Optional[S]],
+        tmdb_provider_class: Any,
+        tvdb_provider_class: Any,
+        media_type_name: str,
+    ) -> None:
+        log.info(f"Updating metadata for all {media_type_name}")
+        media_list = get_all_to_update_func()
+        log.info(f"Found {len(media_list)} {media_type_name} to update")
+        for item in media_list:
+            try:
+                if item.metadata_provider == "tmdb":
+                    provider = tmdb_provider_class()
+                elif item.metadata_provider == "tvdb":
+                    provider = tvdb_provider_class()
+                else:
+                    log.error(f"Unsupported provider {item.metadata_provider} for {item.name}")
+                    continue
+                update_single_func(item, provider)
+            except InvalidConfigError:
+                log.exception(f"Config error for {item.name}")
+            except Exception:
+                log.exception(f"Error updating {item.name}")

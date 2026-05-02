@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from media_manager.common.service import BaseMetadataService
-from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
@@ -56,25 +55,14 @@ class TvMetadataService(BaseMetadataService[Show, Show]):
     ) -> Show | None:
         """
         Updates the metadata of a show.
-        This includes adding new seasons and episodes if available from the metadata provider.
-        It also updates existing show, season, and episode attributes if they have changed.
-
-        :param metadata_provider: The metadata provider object to fetch fresh data from.
-        :param db_show: The Show to update
-        :return: The updated Show object, or None if the show is not found or an error occurs.
         """
         log.debug(f"Found show: {db_show.name} for metadata update.")
-
-        # Use stored original_language preference for metadata fetching
         fresh_show_data = metadata_provider.get_show_metadata(
             show_id=db_show.external_id, language=db_show.original_language
         )
         if not fresh_show_data:
-            log.warning(
-                f"Could not fetch fresh metadata for show {db_show.name} (External ID: {db_show.external_id}) from {db_show.metadata_provider}."
-            )
+            log.warning(f"Could not fetch fresh metadata for show {db_show.name}")
             return db_show
-        log.debug(f"Fetched fresh metadata for show: {fresh_show_data.name}")
 
         self.tv_repository.update_show_attributes(
             show_id=db_show.id,
@@ -88,43 +76,25 @@ class TvMetadataService(BaseMetadataService[Show, Show]):
             else False,
         )
 
-        # Process seasons and episodes
         existing_season_external_ids = {s.external_id: s for s in db_show.seasons}
-
         for fresh_season_data in fresh_show_data.seasons:
             if fresh_season_data.external_id in existing_season_external_ids:
-                # Update existing season
-                existing_season = existing_season_external_ids[
-                    fresh_season_data.external_id
-                ]
-
+                existing_season = existing_season_external_ids[fresh_season_data.external_id]
                 self.tv_repository.update_season_attributes(
                     season_id=existing_season.id,
                     name=fresh_season_data.name,
                     overview=fresh_season_data.overview,
                 )
-
-                # Process episodes for this season
-                existing_episode_external_ids = {
-                    ep.external_id: ep for ep in existing_season.episodes
-                }
+                existing_episode_external_ids = {ep.external_id: ep for ep in existing_season.episodes}
                 for fresh_episode_data in fresh_season_data.episodes:
                     if fresh_episode_data.external_id in existing_episode_external_ids:
-                        # Update existing episode
-                        existing_episode = existing_episode_external_ids[
-                            fresh_episode_data.external_id
-                        ]
-
+                        existing_episode = existing_episode_external_ids[fresh_episode_data.external_id]
                         self.tv_repository.update_episode_attributes(
                             episode_id=existing_episode.id,
                             title=fresh_episode_data.title,
                             overview=fresh_episode_data.overview,
                         )
                     else:
-                        # Add new episode
-                        log.debug(
-                            f"Adding new episode {fresh_episode_data.number} to season {existing_season.number}"
-                        )
                         episode_schema = Episode(
                             id=EpisodeId(fresh_episode_data.id),
                             number=fresh_episode_data.number,
@@ -136,64 +106,37 @@ class TvMetadataService(BaseMetadataService[Show, Show]):
                             season_id=existing_season.id, episode_data=episode_schema
                         )
             else:
-                # Add new season (and its episodes)
-                log.debug(
-                    f"Adding new season {fresh_season_data.number} to show {db_show.name}"
-                )
-                episodes_for_schema = [
-                    Episode(
-                        id=EpisodeId(ep_data.id),
-                        number=ep_data.number,
-                        external_id=ep_data.external_id,
-                        title=ep_data.title,
-                        overview=ep_data.overview,
-                    )
-                    for ep_data in fresh_season_data.episodes
-                ]
-
                 season_schema = Season(
                     id=SeasonId(fresh_season_data.id),
                     number=fresh_season_data.number,
                     name=fresh_season_data.name,
                     overview=fresh_season_data.overview,
                     external_id=fresh_season_data.external_id,
-                    episodes=episodes_for_schema,
+                    episodes=[
+                        Episode(
+                            id=EpisodeId(ep_data.id),
+                            number=ep_data.number,
+                            external_id=ep_data.external_id,
+                            title=ep_data.title,
+                            overview=ep_data.overview,
+                        )
+                        for ep_data in fresh_season_data.episodes
+                    ],
                 )
-                self.tv_repository.add_season_to_show(
-                    show_id=db_show.id, season_data=season_schema
-                )
+                self.tv_repository.add_season_to_show(show_id=db_show.id, season_data=season_schema)
 
         updated_show = self.tv_repository.get_show_by_id(show_id=db_show.id)
-
-        log.info(f"Successfully updated metadata for show: {updated_show.name}")
         metadata_provider.download_show_poster_image(show=updated_show)
         return updated_show
 
     def update_all_non_ended_shows_metadata(self) -> None:
-        """Updates the metadata of all non-ended shows."""
-        log.info("Updating metadata for all non-ended shows")
-        shows = [show for show in self.tv_repository.get_shows() if not show.ended]
-        log.info(f"Found {len(shows)} non-ended shows to update")
-        for show in shows:
-            try:
-                if show.metadata_provider == "tmdb":
-                    metadata_provider = TmdbMetadataProvider()
-                elif show.metadata_provider == "tvdb":
-                    metadata_provider = TvdbMetadataProvider()
-                else:
-                    log.error(
-                        f"Unsupported metadata provider {show.metadata_provider} for show {show.name}, skipping update."
-                    )
-                    continue
-            except InvalidConfigError:
-                log.exception(
-                    f"Error initializing metadata provider {show.metadata_provider} for show {show.name}"
-                )
-                continue
-            updated_show = self.update_show_metadata(
-                db_show=show, metadata_provider=metadata_provider
-            )
-            if updated_show:
-                log.debug("Updated show metadata", extra={"show": updated_show.name})
-            else:
-                log.warning(f"Failed to update metadata for show: {show.name}")
+        def get_non_ended_shows():
+            return [show for show in self.tv_repository.get_shows() if not show.ended]
+
+        self.update_all_metadata_base(
+            get_all_to_update_func=get_non_ended_shows,
+            update_single_func=self.update_show_metadata,
+            tmdb_provider_class=TmdbMetadataProvider,
+            tvdb_provider_class=TvdbMetadataProvider,
+            media_type_name="tv show",
+        )

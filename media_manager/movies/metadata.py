@@ -2,13 +2,12 @@ import logging
 from typing import Optional
 
 from media_manager.common.service import BaseMetadataService
-from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
 from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
 from media_manager.movies.repository import MovieRepository
-from media_manager.movies.schemas import Movie, MovieId
+from media_manager.movies.schemas import Movie
 
 log = logging.getLogger(__name__)
 
@@ -56,24 +55,15 @@ class MovieMetadataService(BaseMetadataService[Movie, Movie]):
     ) -> Movie | None:
         """
         Updates the metadata of a movie.
-
-        :param metadata_provider: The metadata provider object to fetch fresh data from.
-        :param db_movie: The Movie to update
-        :return: The updated Movie object, or None if the movie is not found or an error occurs.
         """
         log.debug(f"Found movie: {db_movie.name} for metadata update.")
-
-        # Use stored original_language preference for metadata fetching
         fresh_movie_data = metadata_provider.get_movie_metadata(
             movie_id=db_movie.external_id, language=db_movie.original_language
         )
         if not fresh_movie_data:
-            log.warning(
-                f"Could not fetch fresh metadata for movie: {db_movie.name} ({db_movie.year})"
-            )
+            log.warning(f"Could not fetch fresh metadata for movie: {db_movie.name}")
             return None
-        log.debug(f"Fetched fresh metadata for movie: {fresh_movie_data.name}")
-
+        
         self.movie_repository.update_movie_attributes(
             movie_id=db_movie.id,
             name=fresh_movie_data.name,
@@ -81,36 +71,15 @@ class MovieMetadataService(BaseMetadataService[Movie, Movie]):
             year=fresh_movie_data.year,
             imdb_id=fresh_movie_data.imdb_id,
         )
-
         updated_movie = self.movie_repository.get_movie_by_id(movie_id=db_movie.id)
-
-        log.info(
-            f"Successfully updated metadata for movie: {db_movie.name} ({db_movie.year})"
-        )
         metadata_provider.download_movie_poster_image(movie=updated_movie)
         return updated_movie
 
     def update_all_metadata(self) -> None:
-        """Updates the metadata of all movies."""
-        log.info("Updating metadata for all movies")
-        movies = self.movie_repository.get_movies()
-        log.info(f"Found {len(movies)} movies to update")
-        for movie in movies:
-            try:
-                if movie.metadata_provider == "tmdb":
-                    metadata_provider = TmdbMetadataProvider()
-                elif movie.metadata_provider == "tvdb":
-                    metadata_provider = TvdbMetadataProvider()
-                else:
-                    log.error(
-                        f"Unsupported metadata provider {movie.metadata_provider} for movie {movie.name}, skipping update."
-                    )
-                    continue
-            except InvalidConfigError:
-                log.exception(
-                    f"Error initializing metadata provider {movie.metadata_provider} for movie {movie.name}",
-                )
-                continue
-            self.update_movie_metadata(
-                db_movie=movie, metadata_provider=metadata_provider
-            )
+        self.update_all_metadata_base(
+            get_all_to_update_func=self.movie_repository.get_movies,
+            update_single_func=self.update_movie_metadata,
+            tmdb_provider_class=TmdbMetadataProvider,
+            tvdb_provider_class=TvdbMetadataProvider,
+            media_type_name="movie",
+        )

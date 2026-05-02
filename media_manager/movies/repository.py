@@ -1,14 +1,11 @@
 import logging
 
-from sqlalchemy import delete, select
-from sqlalchemy.exc import (
-    IntegrityError,
-    SQLAlchemyError,
-)
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from media_manager.common.repository import BaseRepository
-from media_manager.exceptions import ConflictError, NotFoundError
+from media_manager.exceptions import NotFoundError
 from media_manager.movies.models import Movie, MovieFile
 from media_manager.movies.schemas import (
     Movie as MovieSchema,
@@ -44,119 +41,28 @@ class MovieRepository(BaseRepository[Movie, MovieSchema]):
     set_movie_library = BaseRepository.set_library
 
     def save_movie(self, movie: MovieSchema) -> MovieSchema:
-        """
-        Save a new movie or update an existing one in the database.
-
-        :param movie: The Movie object to save.
-        :return: The saved Movie object.
-        :raises ValueError: If a movie with the same primary key already exists (on insert).
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        log.debug(f"Attempting to save movie: {movie.name} (ID: {movie.id})")
-        db_movie = self.db.get(Movie, movie.id) if movie.id else None
-
-        if db_movie:  # Update existing movie
-            log.debug(f"Updating existing movie with ID: {movie.id}")
-            db_movie.external_id = movie.external_id
-            db_movie.metadata_provider = movie.metadata_provider
-            db_movie.name = movie.name
-            db_movie.overview = movie.overview
-            db_movie.year = movie.year
-            db_movie.original_language = movie.original_language
-            db_movie.imdb_id = movie.imdb_id
-        else:  # Insert new movie
-            log.debug(f"Creating new movie: {movie.name}")
-            db_movie = Movie(**movie.model_dump())
-            self.db.add(db_movie)
-
-        try:
-            self.db.commit()
-            self.db.refresh(db_movie)
-            log.info(f"Successfully saved movie: {db_movie.name} (ID: {db_movie.id})")
-            return MovieSchema.model_validate(db_movie)
-        except IntegrityError as e:
-            self.db.rollback()
-            log.exception(f"Integrity error while saving movie {movie.name}")
-            msg = (
-                f"Movie with this primary key or unique constraint violation: {e.orig}"
-            )
-            raise ConflictError(msg) from e
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception(f"Database error while saving movie {movie.name}")
-            raise
+        return self.save_media_base(media_schema=movie, model_class=Movie)
 
     def add_movie_file(self, movie_file: MovieFileSchema) -> MovieFileSchema:
-        """
-        Adds a movie file record to the database.
-
-        :param movie_file: The MovieFile object to add.
-        :return: The added MovieFile object.
-        :raises IntegrityError: If the record violates constraints.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        db_model = MovieFile(**movie_file.model_dump())
-        try:
-            self.db.add(db_model)
-            self.db.commit()
-            self.db.refresh(db_model)
-            return MovieFileSchema.model_validate(db_model)
-        except IntegrityError:
-            self.db.rollback()
-            log.exception("Integrity error while adding movie file")
-            raise
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception("Database error while adding movie file")
-            raise
+        return self.add_media_file_base(
+            file_schema=movie_file, model_class=MovieFile, schema_class=MovieFileSchema
+        )
 
     def remove_movie_files_by_torrent_id(self, torrent_id: TorrentId) -> int:
-        """
-        Removes movie file records associated with a given torrent ID.
-
-        :param torrent_id: The ID of the torrent whose movie files are to be removed.
-        :return: The number of movie files removed.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
-        try:
-            stmt = delete(MovieFile).where(MovieFile.torrent_id == torrent_id)
-            result = self.db.execute(stmt)
-            self.db.commit()
-        except SQLAlchemyError:
-            self.db.rollback()
-            log.exception(
-                f"Database error removing movie files for torrent_id {torrent_id}"
-            )
-            raise
-
-        return result.rowcount
+        return self.remove_files_by_torrent_id_base(
+            torrent_id=torrent_id, model_class=MovieFile
+        )
 
     def get_movie_files_by_movie_id(self, movie_id: MovieId) -> list[MovieFileSchema]:
-        """
-        Retrieve all movie files for a given movie ID.
-
-        :param movie_id: The ID of the movie.
-        :return: A list of MovieFile objects.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
         try:
             stmt = select(MovieFile).where(MovieFile.movie_id == movie_id)
             results = self.db.execute(stmt).scalars().all()
             return [MovieFileSchema.model_validate(sf) for sf in results]
         except SQLAlchemyError:
-            log.exception(
-                f"Database error retrieving movie files for movie_id {movie_id}"
-            )
+            log.exception(f"Database error retrieving movie files for movie_id {movie_id}")
             raise
 
     def get_torrents_by_movie_id(self, movie_id: MovieId) -> list[MovieTorrentSchema]:
-        """
-        Retrieve all torrents associated with a given movie ID.
-
-        :param movie_id: The ID of the movie.
-        :return: A list of Torrent objects.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
         try:
             stmt = (
                 select(Torrent, MovieFile.file_path_suffix)
@@ -177,20 +83,12 @@ class MovieRepository(BaseRepository[Movie, MovieSchema]):
                     usenet=torrent.usenet,
                 )
                 formatted_results.append(movie_torrent)
-
+            return formatted_results
         except SQLAlchemyError:
             log.exception(f"Database error retrieving torrents for movie_id {movie_id}")
             raise
 
-        return formatted_results
-
     def get_all_movies_with_torrents(self) -> list[MovieSchema]:
-        """
-        Retrieve all movies that are associated with a torrent, ordered alphabetically by movie name.
-
-        :return: A list of Movie objects.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
         try:
             stmt = (
                 select(Movie)
@@ -206,14 +104,6 @@ class MovieRepository(BaseRepository[Movie, MovieSchema]):
             raise
 
     def get_movie_by_torrent_id(self, torrent_id: TorrentId) -> MovieSchema:
-        """
-        Retrieve a movie by a torrent ID.
-
-        :param torrent_id: The ID of the torrent to retrieve the movie for.
-        :return: A Movie object.
-        :raises NotFoundError: If the movie for the given torrent ID is not found.
-        :raises SQLAlchemyError: If a database error occurs.
-        """
         try:
             stmt = (
                 select(Movie)
@@ -237,36 +127,11 @@ class MovieRepository(BaseRepository[Movie, MovieSchema]):
         year: int | None = None,
         imdb_id: str | None = None,
     ) -> MovieSchema:
-        """
-        Update attributes of an existing movie.
-
-        :param imdb_id: The new IMDb ID for the movie.
-        :param movie_id: The ID of the movie to update.
-        :param name: The new name for the movie.
-        :param overview: The new overview for the movie.
-        :param year: The new year for the movie.
-        :return: The updated MovieSchema object.
-        """
-        db_movie = self.db.get(Movie, movie_id)
-        if not db_movie:
-            msg = f"Movie with id {movie_id} not found."
-            raise NotFoundError(msg)
-
-        updated = False
-        if name is not None and db_movie.name != name:
-            db_movie.name = name
-            updated = True
-        if overview is not None and db_movie.overview != overview:
-            db_movie.overview = overview
-            updated = True
-        if year is not None and db_movie.year != year:
-            db_movie.year = year
-            updated = True
-        if imdb_id is not None and db_movie.imdb_id != imdb_id:
-            db_movie.imdb_id = imdb_id
-            updated = True
-
-        if updated:
-            self.db.commit()
-            self.db.refresh(db_movie)
-        return MovieSchema.model_validate(db_movie)
+        return self.update_media_attributes_base(
+            media_id=movie_id,
+            model_class=Movie,
+            name=name,
+            overview=overview,
+            year=year,
+            imdb_id=imdb_id,
+        )
