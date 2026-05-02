@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+from media_manager.common.service import BaseMetadataService
 from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
@@ -12,20 +13,10 @@ from media_manager.movies.schemas import Movie, MovieId
 log = logging.getLogger(__name__)
 
 
-class MovieMetadataService:
+class MovieMetadataService(BaseMetadataService[Movie, Movie]):
     def __init__(self, movie_repository: MovieRepository) -> None:
+        super().__init__(repository=movie_repository)
         self.movie_repository = movie_repository
-
-    def check_if_movie_exists(
-        self, external_id: int, metadata_provider: str
-    ) -> bool:
-        try:
-            self.movie_repository.get_movie_by_external_id(
-                external_id=external_id, metadata_provider=metadata_provider
-            )
-            return True
-        except NotFoundError:
-            return False
 
     def add_movie(
         self,
@@ -33,71 +24,32 @@ class MovieMetadataService:
         metadata_provider: AbstractMetadataProvider,
         language: str | None = None,
     ) -> Movie:
-        """
-        Add a new movie to the database.
-
-        :param external_id: The ID of the movie in the metadata provider's system.
-        :param metadata_provider: The name of the metadata provider.
-        :param language: Optional language code (ISO 639-1) to fetch metadata in.
-        """
-        movie_with_metadata = metadata_provider.get_movie_metadata(
-            movie_id=external_id, language=language
+        return self.add_media_base(
+            external_id=external_id,
+            metadata_provider=metadata_provider,
+            get_metadata_func=metadata_provider.get_movie_metadata,
+            save_func=self.movie_repository.save_movie,
+            download_poster_func=metadata_provider.download_movie_poster_image,
+            language=language,
         )
-        if not movie_with_metadata:
-            raise NotFoundError
-
-        saved_movie = self.movie_repository.save_movie(movie=movie_with_metadata)
-        metadata_provider.download_movie_poster_image(movie=saved_movie)
-        return saved_movie
 
     def search_for_movie(
         self, query: str, metadata_provider: AbstractMetadataProvider
     ) -> list[MetaDataProviderSearchResult]:
-        """
-        Search for movies using a given query.
-
-        :param query: The search query.
-        :param metadata_provider: The metadata provider to search.
-        :return: A list of metadata provider movie search results.
-        """
-        results = metadata_provider.search_movie(query)
-        for result in results:
-            if self.check_if_movie_exists(
-                external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                result.added = True
-
-                # Fetch the internal movie ID.
-                try:
-                    movie = self.movie_repository.get_movie_by_external_id(
-                        external_id=result.external_id,
-                        metadata_provider=metadata_provider.name,
-                    )
-                    result.id = movie.id
-                except Exception:
-                    log.error(
-                        f"Unable to find internal movie ID for {result.external_id} on {metadata_provider.name}"
-                    )
-        return results
+        return self.search_for_media_base(
+            query=query,
+            metadata_provider=metadata_provider,
+            search_func=metadata_provider.search_movie,
+            get_by_external_id_func=self.movie_repository.get_movie_by_external_id,
+        )
 
     def get_popular_movies(
         self, metadata_provider: AbstractMetadataProvider
     ) -> list[MetaDataProviderSearchResult]:
-        """
-        Get popular movies from a given metadata provider.
-
-        :param metadata_provider: The metadata provider to use.
-        :return: A list of metadata provider movie search results.
-        """
-        results = metadata_provider.search_movie()
-
-        return [
-            result
-            for result in results
-            if not self.check_if_movie_exists(
-                external_id=result.external_id, metadata_provider=metadata_provider.name
-            )
-        ]
+        return self.get_popular_media_base(
+            metadata_provider=metadata_provider,
+            search_func=metadata_provider.search_movie,
+        )
 
     def update_movie_metadata(
         self, db_movie: Movie, metadata_provider: AbstractMetadataProvider

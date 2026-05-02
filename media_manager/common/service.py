@@ -9,6 +9,7 @@ from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.service import TorrentService
 from media_manager.indexer.service import IndexerService
 from media_manager.notification.service import NotificationService
+from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.torrent.utils import (
     remove_special_characters,
     get_importable_media_directories,
@@ -152,3 +153,76 @@ class BaseMediaService(Generic[T, S]):
             except Exception as e:
                 log.error(f"Error importing torrent {t.title}: {e}", exc_info=True)
         log.info(f"Finished importing all torrents for {media_type_name}")
+
+
+class BaseMetadataService(Generic[T, S]):
+    """
+    Base service for metadata operations.
+    """
+    def __init__(self, repository: BaseRepository[T, S]) -> None:
+        self.repository = repository
+
+    def check_if_exists(self, external_id: int, metadata_provider: str) -> bool:
+        try:
+            self.repository.get_by_external_id(
+                external_id=external_id, metadata_provider=metadata_provider
+            )
+            return True
+        except NotFoundError:
+            return False
+
+    def add_media_base(
+        self,
+        external_id: int,
+        metadata_provider: AbstractMetadataProvider,
+        get_metadata_func: Callable[..., S],
+        save_func: Callable[[S], S],
+        download_poster_func: Callable[[S], bool],
+        language: Optional[str] = None,
+    ) -> S:
+        media_with_metadata = get_metadata_func(external_id=external_id, language=language)
+        if not media_with_metadata:
+            raise NotFoundError
+        
+        saved_media = save_func(media_with_metadata)
+        download_poster_func(saved_media)
+        return saved_media
+
+    def search_for_media_base(
+        self,
+        query: str,
+        metadata_provider: AbstractMetadataProvider,
+        search_func: Callable[[Optional[str]], List[MetaDataProviderSearchResult]],
+        get_by_external_id_func: Callable[..., S],
+    ) -> List[MetaDataProviderSearchResult]:
+        results = search_func(query)
+        for result in results:
+            if self.check_if_exists(
+                external_id=result.external_id, metadata_provider=metadata_provider.name
+            ):
+                result.added = True
+                try:
+                    media = get_by_external_id_func(
+                        external_id=result.external_id,
+                        metadata_provider=metadata_provider.name,
+                    )
+                    result.id = media.id
+                except Exception:
+                    log.error(
+                        f"Unable to find internal ID for {result.external_id} on {metadata_provider.name}"
+                    )
+        return results
+
+    def get_popular_media_base(
+        self,
+        metadata_provider: AbstractMetadataProvider,
+        search_func: Callable[[Optional[str]], List[MetaDataProviderSearchResult]],
+    ) -> List[MetaDataProviderSearchResult]:
+        results = search_func(None)
+        return [
+            result
+            for result in results
+            if not self.check_if_exists(
+                external_id=result.external_id, metadata_provider=metadata_provider.name
+            )
+        ]

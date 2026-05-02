@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+from media_manager.common.service import BaseMetadataService
 from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.metadataProvider.abstract_metadata_provider import AbstractMetadataProvider
 from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
@@ -12,20 +13,10 @@ from media_manager.tv.schemas import Episode, EpisodeId, Season, SeasonId, Show
 log = logging.getLogger(__name__)
 
 
-class TvMetadataService:
+class TvMetadataService(BaseMetadataService[Show, Show]):
     def __init__(self, tv_repository: TvRepository) -> None:
+        super().__init__(repository=tv_repository)
         self.tv_repository = tv_repository
-
-    def check_if_show_exists(
-        self, external_id: int, metadata_provider: str
-    ) -> bool:
-        try:
-            self.tv_repository.get_show_by_external_id(
-                external_id=external_id, metadata_provider=metadata_provider
-            )
-            return True
-        except NotFoundError:
-            return False
 
     def add_show(
         self,
@@ -33,65 +24,32 @@ class TvMetadataService:
         metadata_provider: AbstractMetadataProvider,
         language: str | None = None,
     ) -> Show:
-        """
-        Add a new show to the database.
-
-        :param external_id: The ID of the show in the metadata provider's system.
-        :param metadata_provider: The name of the metadata provider.
-        :param language: Optional language code (ISO 639-1) to fetch metadata in.
-        """
-        show_with_metadata = metadata_provider.get_show_metadata(
-            show_id=external_id, language=language
+        return self.add_media_base(
+            external_id=external_id,
+            metadata_provider=metadata_provider,
+            get_metadata_func=metadata_provider.get_show_metadata,
+            save_func=self.tv_repository.save_show,
+            download_poster_func=metadata_provider.download_show_poster_image,
+            language=language,
         )
-        saved_show = self.tv_repository.save_show(show=show_with_metadata)
-        metadata_provider.download_show_poster_image(show=saved_show)
-        return saved_show
 
     def search_for_show(
         self, query: str, metadata_provider: AbstractMetadataProvider
     ) -> list[MetaDataProviderSearchResult]:
-        """
-        Search for shows using a given query.
-
-        :param query: The search query.
-        :param metadata_provider: The metadata provider to search.
-        :return: A list of metadata provider show search results.
-        """
-        results = metadata_provider.search_show(query)
-        for result in results:
-            if self.check_if_show_exists(
-                external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                result.added = True
-                try:
-                    show = self.tv_repository.get_show_by_external_id(
-                        external_id=result.external_id,
-                        metadata_provider=metadata_provider.name,
-                    )
-                    result.id = show.id
-                except Exception:
-                    log.error(
-                        f"Unable to find internal show ID for {result.external_id} on {metadata_provider.name}"
-                    )
-        return results
+        return self.search_for_media_base(
+            query=query,
+            metadata_provider=metadata_provider,
+            search_func=metadata_provider.search_show,
+            get_by_external_id_func=self.tv_repository.get_show_by_external_id,
+        )
 
     def get_popular_shows(
         self, metadata_provider: AbstractMetadataProvider
     ) -> list[MetaDataProviderSearchResult]:
-        """
-        Get popular shows from a given metadata provider.
-
-        :param metadata_provider: The metadata provider to use.
-        :return: A list of metadata provider show search results.
-        """
-        results = metadata_provider.search_show()
-        return [
-            result
-            for result in results
-            if not self.check_if_show_exists(
-                external_id=result.external_id, metadata_provider=metadata_provider.name
-            )
-        ]
+        return self.get_popular_media_base(
+            metadata_provider=metadata_provider,
+            search_func=metadata_provider.search_show,
+        )
 
     def update_show_metadata(
         self, db_show: Show, metadata_provider: AbstractMetadataProvider
