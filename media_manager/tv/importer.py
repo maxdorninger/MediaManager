@@ -1,5 +1,8 @@
 import logging
+import re
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from media_manager.common.service import BaseMediaService
 from media_manager.config import MediaManagerConfig
@@ -32,7 +35,7 @@ class TvImportService(BaseMediaService[Show, Show]):
         super().__init__(
             repository=tv_repository,
             torrent_service=torrent_service,
-            indexer_service=None,  # type: ignore
+            indexer_service=None,  # type: ignore[arg-type]
             notification_service=notification_service,
         )
         self.tv_repository = tv_repository
@@ -54,13 +57,12 @@ class TvImportService(BaseMediaService[Show, Show]):
         torrent_id: str | None = None,
         file_path_suffix: str = "",
     ) -> bool:
-        video_files, subtitle_files, _ = get_files_for_import(directory=source_directory)
+        video_files, _, _ = get_files_for_import(directory=source_directory)
         if not video_files:
             return False
 
         for video_file in video_files:
             # Simple heuristic for season/episode from filename
-            import re
             match = re.search(r"S(\d+)E(\d+)", video_file.name, re.IGNORECASE)
             if match:
                 s_num, e_num = int(match.group(1)), int(match.group(2))
@@ -111,14 +113,14 @@ class TvImportService(BaseMediaService[Show, Show]):
         )
 
     def import_existing_tv_show(self, tv_show: Show, source_directory: Path) -> bool:
-        def _logic(s: Show, path: Path, _):
+        def _logic(s: Show, path: Path, _: Callable[[Any], Any]) -> bool:
             return self.import_tv_show(s, path, file_path_suffix="IMPORTED")
 
         return self.import_existing_media(
             media=tv_show,
             source_directory=source_directory,
             import_func=_logic,
-            add_file_record_func=lambda x: None, # Handled inside import_tv_show for now
+            add_file_record_func=lambda _: None, # Handled inside import_tv_show for now
         )
 
     def get_importable_tv_shows(self, metadata_provider: AbstractMetadataProvider) -> list[MediaImportSuggestion]:

@@ -83,10 +83,11 @@ class MovieRepository(BaseRepository[Movie, MovieSchema]):
                     usenet=torrent.usenet,
                 )
                 formatted_results.append(movie_torrent)
-            return formatted_results
         except SQLAlchemyError:
             log.exception(f"Database error retrieving torrents for movie_id {movie_id}")
             raise
+        else:
+            return formatted_results
 
     def get_all_movies_with_torrents(self) -> list[MovieSchema]:
         try:
@@ -114,10 +115,11 @@ class MovieRepository(BaseRepository[Movie, MovieSchema]):
             if not result:
                 msg = f"Movie for torrent_id {torrent_id} not found."
                 raise NotFoundError(msg)
-            return MovieSchema.model_validate(result)
         except SQLAlchemyError:
             log.exception(f"Database error retrieving movie by torrent_id {torrent_id}")
             raise
+        else:
+            return MovieSchema.model_validate(result)
 
     def update_movie_attributes(
         self,

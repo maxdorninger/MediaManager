@@ -35,7 +35,7 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
         super().__init__(
             repository=movie_repository,
             torrent_service=torrent_service,
-            indexer_service=None,  # type: ignore
+            indexer_service=None,  # type: ignore[arg-type]
             notification_service=notification_service,
         )
         self.movie_repository = movie_repository
@@ -73,10 +73,11 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
                     lang = match.group(1)
                     target = movie_root_path / f"{movie_file_name}.{lang}.srt"
                     import_file(target_file=target, source_file=subtitle_file)
-            return True
-        except Exception as e:
-            log.exception(f"Failed to import movie {movie.name}: {e}")
+        except Exception:
+            log.exception(f"Failed to import movie {movie.name}")
             return False
+        else:
+            return True
 
     def import_torrent_files(self, torrent: Torrent, movie: Movie) -> None:
         video_files, subtitle_files, _ = get_files_for_import(torrent=torrent)

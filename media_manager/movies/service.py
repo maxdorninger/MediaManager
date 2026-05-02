@@ -24,6 +24,8 @@ from media_manager.torrent.schemas import (
 )
 from media_manager.torrent.service import TorrentService
 
+log = logging.getLogger(__name__)
+
 
 class MovieService(BaseMediaService[Movie, Movie]):
     def __init__(
@@ -62,9 +64,9 @@ class MovieService(BaseMediaService[Movie, Movie]):
                 if movie_dir.exists() and movie_dir.is_dir():
                     try:
                         shutil.rmtree(movie_dir)
-                        logging.info(f"Deleted movie directory: {movie_dir}")
+                        log.info(f"Deleted movie directory: {movie_dir}")
                     except OSError:
-                        logging.exception(f"Deleting movie directory: {movie_dir}")
+                        log.exception(f"Deleting movie directory: {movie_dir}")
 
             if delete_torrents:
                 # Get all torrents associated with this movie
@@ -80,11 +82,9 @@ class MovieService(BaseMediaService[Movie, Movie]):
                         self.torrent_service.cancel_download(
                             torrent=torrent, delete_files=True
                         )
-                        logging.info(f"Deleted torrent: {torrent.torrent_title}")
+                        log.info(f"Deleted torrent: {torrent.torrent_title}")
                     except Exception:
-                        logging.warning(
-                            f"Failed to delete torrent {torrent.hash}", exc_info=True
-                        )
+                        log.exception(f"Failed to delete torrent {torrent.hash}")
 
         # Delete from database
         self.movie_repository.delete_movie(movie_id=movie.id)
@@ -174,9 +174,7 @@ class MovieService(BaseMediaService[Movie, Movie]):
         torrent_file = self.torrent_service.get_torrent_by_id(
             torrent_id=movie_file.torrent_id
         )
-        if torrent_file.imported:
-            return True
-        return False
+        return bool(torrent_file.imported)
 
     def get_movie_by_external_id(
         self, external_id: int, metadata_provider: str
@@ -250,7 +248,7 @@ class MovieService(BaseMediaService[Movie, Movie]):
         try:
             self.movie_repository.add_movie_file(movie_file=movie_file)
         except IntegrityError:
-            logging.warning(
+            log.warning(
                 f"Movie file for movie {movie.name} and torrent {movie_torrent.title} already exists"
             )
             self.torrent_service.cancel_download(
@@ -258,7 +256,7 @@ class MovieService(BaseMediaService[Movie, Movie]):
             )
             raise
         else:
-            logging.info(
+            log.info(
                 f"Added movie file for movie {movie.name} and torrent {movie_torrent.title}"
             )
             self.torrent_service.resume_download(torrent=movie_torrent)

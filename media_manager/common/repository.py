@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
+from uuid import UUID
 
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -11,8 +12,9 @@ log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 S = TypeVar("S")
+EntityId = UUID | int | str
 
-class BaseRepository(Generic[T, S]):
+class BaseRepository[T, S]:
     """
     Base repository providing common CRUD operations for media models.
     """
@@ -21,10 +23,10 @@ class BaseRepository(Generic[T, S]):
         self.model = model
         self.schema = schema
 
-    def get_by_id(self, id: Any) -> S:
-        result = self.db.get(self.model, id)
+    def get_by_id(self, entity_id: EntityId) -> S:
+        result = self.db.get(self.model, entity_id)
         if not result:
-            msg = f"{self.model.__name__} with id {id} not found."
+            msg = f"{self.model.__name__} with id {entity_id} not found."
             raise NotFoundError(msg)
         return self.schema.model_validate(result)
 
@@ -44,23 +46,23 @@ class BaseRepository(Generic[T, S]):
         results = self.db.execute(stmt).scalars().unique().all()
         return [self.schema.model_validate(r) for r in results]
 
-    def delete(self, id: Any) -> None:
-        obj = self.db.get(self.model, id)
+    def delete(self, entity_id: EntityId) -> None:
+        obj = self.db.get(self.model, entity_id)
         if not obj:
-            msg = f"{self.model.__name__} with id {id} not found."
+            msg = f"{self.model.__name__} with id {entity_id} not found."
             raise NotFoundError(msg)
         self.db.delete(obj)
         self.db.commit()
 
-    def set_library(self, id: Any, library: str) -> None:
-        obj = self.db.get(self.model, id)
+    def set_library(self, entity_id: EntityId, library: str) -> None:
+        obj = self.db.get(self.model, entity_id)
         if not obj:
-            msg = f"{self.model.__name__} with id {id} not found."
+            msg = f"{self.model.__name__} with id {entity_id} not found."
             raise NotFoundError(msg)
         obj.library = library
         self.db.commit()
 
-    def save_media_base(self, media_schema: Any, model_class: type[Any]) -> S:
+    def save_media_base(self, media_schema: S, model_class: type[T]) -> S:
         """
         Generic save method for media models.
         """
@@ -73,15 +75,12 @@ class BaseRepository(Generic[T, S]):
                     setattr(db_obj, key, value)
         else:
             # Insert new
-            # Note: Complex nested objects like Seasons/Episodes might need specialized handling in subclasses
-            # but for Movie it works directly.
             db_obj = model_class(**media_schema.model_dump(exclude={"seasons", "episodes"}))
             self.db.add(db_obj)
 
         try:
             self.db.commit()
             self.db.refresh(db_obj)
-            return self.schema.model_validate(db_obj)
         except IntegrityError as e:
             self.db.rollback()
             msg = f"Integrity error while saving {model_class.__name__}: {e.orig}"
@@ -90,8 +89,10 @@ class BaseRepository(Generic[T, S]):
             self.db.rollback()
             log.exception(f"Database error while saving {model_class.__name__}")
             raise
+        else:
+            return self.schema.model_validate(db_obj)
 
-    def update_media_attributes_base(self, media_id: Any, model_class: type[Any], **attributes) -> S:
+    def update_media_attributes_base(self, media_id: EntityId, model_class: type[T], **attributes: Any) -> S: # noqa: ANN401
         """
         Generic update method for media attributes.
         """
@@ -116,7 +117,7 @@ class BaseRepository(Generic[T, S]):
 
         return self.schema.model_validate(db_obj)
 
-    def add_media_file_base(self, file_schema: Any, model_class: type[Any], schema_class: type[Any]) -> Any:
+    def add_media_file_base(self, file_schema: S, model_class: type[T], schema_class: type[S]) -> S:
         """
         Generic method to add a media file record.
         """
@@ -125,15 +126,16 @@ class BaseRepository(Generic[T, S]):
             self.db.add(db_model)
             self.db.commit()
             self.db.refresh(db_model)
-            return schema_class.model_validate(db_model)
         except IntegrityError:
             self.db.rollback()
             raise
         except SQLAlchemyError:
             self.db.rollback()
             raise
+        else:
+            return schema_class.model_validate(db_model)
 
-    def remove_files_by_torrent_id_base(self, torrent_id: Any, model_class: type[Any]) -> int:
+    def remove_files_by_torrent_id_base(self, torrent_id: EntityId, model_class: type[T]) -> int:
         """
         Generic method to remove media files by torrent ID.
         """
@@ -141,7 +143,8 @@ class BaseRepository(Generic[T, S]):
             stmt = delete(model_class).where(model_class.torrent_id == torrent_id)
             result = self.db.execute(stmt)
             self.db.commit()
-            return result.rowcount
         except SQLAlchemyError:
             self.db.rollback()
             raise
+        else:
+            return result.rowcount

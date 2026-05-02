@@ -41,10 +41,11 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             if not result:
                 msg = f"Show with id {show_id} not found."
                 raise NotFoundError(msg)
-            return ShowSchema.model_validate(result)
         except SQLAlchemyError:
             log.exception(f"Database error while retrieving show {show_id}")
             raise
+        else:
+            return ShowSchema.model_validate(result)
 
     def get_show_by_external_id(
         self, external_id: int, metadata_provider: str
@@ -60,12 +61,13 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             if not result:
                 msg = f"Show with external_id {external_id} and provider {metadata_provider} not found."
                 raise NotFoundError(msg)
-            return ShowSchema.model_validate(result)
         except SQLAlchemyError:
             log.exception(
                 f"Database error while retrieving show by external_id {external_id}",
             )
             raise
+        else:
+            return ShowSchema.model_validate(result)
 
     def get_shows(self) -> list[ShowSchema]:
         try:
@@ -73,10 +75,11 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
                 joinedload(Show.seasons).joinedload(Season.episodes)
             )
             results = self.db.execute(stmt).scalars().unique().all()
-            return [ShowSchema.model_validate(show) for show in results]
         except SQLAlchemyError:
             log.exception("Database error while retrieving all shows")
             raise
+        else:
+            return [ShowSchema.model_validate(show) for show in results]
 
     delete_show = BaseRepository.delete
     set_show_library = BaseRepository.set_library
@@ -84,10 +87,12 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
     def get_total_downloaded_episodes_count(self) -> int:
         try:
             stmt = select(func.count(Episode.id)).select_from(Episode).join(EpisodeFile)
-            return self.db.execute(stmt).scalar_one_or_none()
+            result = self.db.execute(stmt).scalar_one_or_none()
         except SQLAlchemyError:
             log.exception("Database error while calculating downloaded episodes count")
             raise
+        else:
+            return result or 0
 
     def save_show(self, show: ShowSchema) -> ShowSchema:
         db_show = self.db.get(Show, show.id) if show.id else None
@@ -133,37 +138,36 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
         try:
             self.db.commit()
             self.db.refresh(db_show)
-            return ShowSchema.model_validate(db_show)
         except IntegrityError as e:
             self.db.rollback()
-            raise ConflictError(f"Integrity error: {e.orig}")
+            msg = f"Integrity error: {e.orig}"
+            raise ConflictError(msg) from e
         except SQLAlchemyError:
             self.db.rollback()
             raise
+        else:
+            return ShowSchema.model_validate(db_show)
 
     def get_season(self, season_id: SeasonId) -> SeasonSchema:
-        try:
-            season = self.db.get(Season, season_id)
-            if not season:
-                raise NotFoundError(f"Season {season_id} not found")
-            return SeasonSchema.model_validate(season)
-        except SQLAlchemyError:
-            raise
+        season = self.db.get(Season, season_id)
+        if not season:
+            msg = f"Season {season_id} not found"
+            raise NotFoundError(msg)
+        return SeasonSchema.model_validate(season)
 
     def get_episode(self, episode_id: EpisodeId) -> EpisodeSchema:
-        try:
-            episode = self.db.get(Episode, episode_id)
-            if not episode:
-                raise NotFoundError(f"Episode {episode_id} not found")
-            return EpisodeSchema.model_validate(episode)
-        except SQLAlchemyError:
-            raise
+        episode = self.db.get(Episode, episode_id)
+        if not episode:
+            msg = f"Episode {episode_id} not found"
+            raise NotFoundError(msg)
+        return EpisodeSchema.model_validate(episode)
 
     def get_season_by_episode(self, episode_id: EpisodeId) -> SeasonSchema:
         stmt = select(Season).join(Season.episodes).where(Episode.id == episode_id)
         season = self.db.scalar(stmt)
         if not season:
-            raise NotFoundError(f"Season for episode {episode_id} not found")
+            msg = f"Season for episode {episode_id} not found"
+            raise NotFoundError(msg)
         return SeasonSchema.model_validate(season)
 
     def get_season_by_number(self, season_number: int, show_id: ShowId) -> SeasonSchema:
@@ -175,7 +179,8 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
         )
         result = self.db.execute(stmt).unique().scalar_one_or_none()
         if not result:
-            raise NotFoundError(f"Season {season_number} for show {show_id} not found")
+            msg = f"Season {season_number} for show {show_id} not found"
+            raise NotFoundError(msg)
         return SeasonSchema.model_validate(result)
 
     def add_episode_file(self, episode_file: EpisodeFileSchema) -> EpisodeFileSchema:
@@ -207,8 +212,7 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             .join(Season, Season.id == Episode.season_id)
             .where(Season.show_id == show_id)
         )
-        results = self.db.execute(stmt).scalars().unique().all()
-        return results
+        return list(self.db.execute(stmt).scalars().unique().all())
 
     def get_all_shows_with_torrents(self) -> list[ShowSchema]:
         stmt = (
@@ -254,13 +258,15 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
         )
         result = self.db.execute(stmt).unique().scalar_one_or_none()
         if not result:
-            raise NotFoundError(f"Show for season {season_id} not found")
+            msg = f"Show for season {season_id} not found"
+            raise NotFoundError(msg)
         return ShowSchema.model_validate(result)
 
     def add_season_to_show(self, show_id: ShowId, season_data: SeasonSchema) -> SeasonSchema:
         db_show = self.db.get(Show, show_id)
         if not db_show:
-            raise NotFoundError(f"Show {show_id} not found")
+            msg = f"Show {show_id} not found"
+            raise NotFoundError(msg)
         stmt = select(Season).where(Season.show_id == show_id, Season.number == season_data.number)
         existing = self.db.execute(stmt).scalar_one_or_none()
         if existing:
@@ -290,7 +296,8 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
     def add_episode_to_season(self, season_id: SeasonId, episode_data: EpisodeSchema) -> EpisodeSchema:
         db_season = self.db.get(Season, season_id)
         if not db_season:
-            raise NotFoundError(f"Season {season_id} not found")
+            msg = f"Season {season_id} not found"
+            raise NotFoundError(msg)
         stmt = select(Episode).where(Episode.season_id == season_id, Episode.number == episode_data.number)
         existing = self.db.execute(stmt).scalar_one_or_none()
         if existing:
@@ -333,7 +340,8 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
     ) -> SeasonSchema:
         db_season = self.db.get(Season, season_id)
         if not db_season:
-            raise NotFoundError(f"Season {season_id} not found")
+            msg = f"Season {season_id} not found"
+            raise NotFoundError(msg)
         updated = False
         if name is not None and db_season.name != name:
             db_season.name = name
@@ -351,7 +359,8 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
     ) -> EpisodeSchema:
         db_episode = self.db.get(Episode, episode_id)
         if not db_episode:
-            raise NotFoundError(f"Episode {episode_id} not found")
+            msg = f"Episode {episode_id} not found"
+            raise NotFoundError(msg)
         updated = False
         if title is not None and db_episode.title != title:
             db_episode.title = title

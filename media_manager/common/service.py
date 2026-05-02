@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from media_manager.common.repository import BaseRepository
 from media_manager.exceptions import InvalidConfigError, NotFoundError
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 T = TypeVar("T")
 S = TypeVar("S")
 
-class BaseMediaService(Generic[T, S]):
+class BaseMediaService[T, S]:
     """
     Base service providing common logic for media modules.
     """
@@ -75,8 +75,6 @@ class BaseMediaService(Generic[T, S]):
                 message=msg,
             )
 
-    # ... (rest of the methods I added before: get_import_candidates, get_importable_media, etc.)
-
     def get_import_candidates(
         self,
         directory: Path,
@@ -84,7 +82,7 @@ class BaseMediaService(Generic[T, S]):
         search_func: Callable[[str, AbstractMetadataProvider], list[MetaDataProviderSearchResult]],
     ) -> MediaImportSuggestion:
         # Implementation from previous turn
-        name, year = self._extract_name_and_year(directory.name)
+        name, _ = self._extract_name_and_year(directory.name)
         candidates = search_func(name, metadata_provider)
         return MediaImportSuggestion(
             directory=str(directory),
@@ -105,10 +103,7 @@ class BaseMediaService(Generic[T, S]):
         get_candidates_func: Callable[[Path, AbstractMetadataProvider], MediaImportSuggestion],
     ) -> list[MediaImportSuggestion]:
         importable_dirs = get_importable_media_directories(root_path)
-        suggestions = []
-        for directory in importable_dirs:
-            suggestions.append(get_candidates_func(directory, metadata_provider))
-        return suggestions
+        return [get_candidates_func(directory, metadata_provider) for directory in importable_dirs]
 
     def import_existing_media(
         self,
@@ -137,12 +132,12 @@ class BaseMediaService(Generic[T, S]):
                 media = get_media_func(t)
                 if media:
                     import_torrent_func(t, media)
-            except Exception as e:
-                log.error(f"Error importing torrent {t.title}: {e}", exc_info=True)
+            except Exception:
+                log.exception(f"Error importing torrent {t.title}")
         log.info(f"Finished importing all torrents for {media_type_name}")
 
 
-class BaseMetadataService(Generic[T, S]):
+class BaseMetadataService[T, S]:
     """
     Base service for metadata operations.
     """
@@ -154,14 +149,15 @@ class BaseMetadataService(Generic[T, S]):
             self.repository.get_by_external_id(
                 external_id=external_id, metadata_provider=metadata_provider
             )
-            return True
         except NotFoundError:
             return False
+        else:
+            return True
 
     def add_media_base(
         self,
         external_id: int,
-        metadata_provider: AbstractMetadataProvider,
+        metadata_provider: AbstractMetadataProvider,  # noqa: ARG002
         get_metadata_func: Callable[..., S],
         save_func: Callable[[S], S],
         download_poster_func: Callable[[S], bool],
@@ -195,7 +191,7 @@ class BaseMetadataService(Generic[T, S]):
                     )
                     result.id = media.id
                 except Exception:
-                    log.error(
+                    log.exception(
                         f"Unable to find internal ID for {result.external_id} on {metadata_provider.name}"
                     )
         return results
@@ -218,8 +214,8 @@ class BaseMetadataService(Generic[T, S]):
         self,
         get_all_to_update_func: Callable[[], list[S]],
         update_single_func: Callable[[S, AbstractMetadataProvider], S | None],
-        tmdb_provider_class: Any,
-        tvdb_provider_class: Any,
+        tmdb_provider_class: Callable[[], AbstractMetadataProvider],
+        tvdb_provider_class: Callable[[], AbstractMetadataProvider],
         media_type_name: str,
     ) -> None:
         log.info(f"Updating metadata for all {media_type_name}")

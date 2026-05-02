@@ -37,7 +37,7 @@ class MovieTorrent(BaseModel):
 
 class PublicMovie(Movie):
     downloaded: bool = False
-    torrents: list[MovieTorrent] = []
+    torrents: list[MovieTorrent] = Field(default_factory=list)
 
 
 class RichMovieTorrent(BaseModel):

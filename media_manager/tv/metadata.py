@@ -131,7 +131,7 @@ class TvMetadataService(BaseMetadataService[Show, Show]):
         return updated_show
 
     def update_all_non_ended_shows_metadata(self) -> None:
-        def get_non_ended_shows():
+        def get_non_ended_shows() -> list[Show]:
             return [show for show in self.tv_repository.get_shows() if not show.ended]
 
         self.update_all_metadata_base(
