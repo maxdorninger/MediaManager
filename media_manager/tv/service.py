@@ -1,38 +1,24 @@
-import pprint
+import logging
 import re
 import shutil
 from pathlib import Path
-from typing import overload
 
 from sqlalchemy.exc import IntegrityError
 
 from media_manager.common.service import BaseMediaService
 from media_manager.config import MediaManagerConfig
-from media_manager.exceptions import InvalidConfigError, NotFoundError, RenameError
+from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.indexer.schemas import IndexerQueryResult, IndexerQueryResultId
 from media_manager.indexer.service import IndexerService
 from media_manager.indexer.utils import evaluate_indexer_query_results
-from media_manager.metadataProvider.abstract_metadata_provider import (
-    AbstractMetadataProvider,
-)
-from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
-from media_manager.metadataProvider.tmdb import TmdbMetadataProvider
-from media_manager.metadataProvider.tvdb import TvdbMetadataProvider
 from media_manager.notification.service import NotificationService
-from media_manager.schemas import MediaImportSuggestion
 from media_manager.torrent.schemas import (
     Quality,
     Torrent,
-    TorrentStatus,
 )
 from media_manager.torrent.service import TorrentService
 from media_manager.torrent.utils import (
-    extract_external_id_from_string,
-    get_files_for_import,
-    get_importable_media_directories,
-    import_file,
     remove_special_characters,
-    remove_special_chars_and_parentheses,
 )
 from media_manager.tv import log
 from media_manager.tv.repository import TvRepository
@@ -51,6 +37,8 @@ from media_manager.tv.schemas import (
     Show,
     ShowId,
 )
+
+
 class TvService(BaseMediaService[Show, Show]):
     def __init__(
         self,
@@ -66,26 +54,6 @@ class TvService(BaseMediaService[Show, Show]):
             notification_service=notification_service,
         )
         self.tv_repository = tv_repository
-
-    def add_show(
-        self,
-        external_id: int,
-        metadata_provider: AbstractMetadataProvider,
-        language: str | None = None,
-    ) -> Show:
-        """
-        Add a new show to the database.
-
-        :param external_id: The ID of the show in the metadata provider\'s system.
-        :param metadata_provider: The name of the metadata provider.
-        :param language: Optional language code (ISO 639-1) to fetch metadata in.
-        """
-        show_with_metadata = metadata_provider.get_show_metadata(
-            show_id=external_id, language=language
-        )
-        saved_show = self.tv_repository.save_show(show=show_with_metadata)
-        metadata_provider.download_show_poster_image(show=saved_show)
-        return saved_show
 
     def get_total_downloaded_episoded_count(self) -> int:
         """
@@ -157,8 +125,6 @@ class TvService(BaseMediaService[Show, Show]):
             result.append(episode_file)
         return result
 
-    check_if_show_exists = BaseMediaService.check_if_exists
-
     def get_all_available_torrents_for_a_season(
         self,
         season_number: int,
@@ -188,56 +154,6 @@ class TvService(BaseMediaService[Show, Show]):
         return evaluate_indexer_query_results(
             is_tv=True, query_results=results, media=show
         )
-
-    get_all_shows = BaseMediaService.get_all
-
-    def search_for_show(
-        self, query: str, metadata_provider: AbstractMetadataProvider
-    ) -> list[MetaDataProviderSearchResult]:
-        """
-        Search for shows using a given query.
-
-        :param query: The search query.
-        :param metadata_provider: The metadata provider to search.
-        :return: A list of metadata provider show search results.
-        """
-        results = metadata_provider.search_show(query)
-        for result in results:
-            if self.check_if_show_exists(
-                external_id=result.external_id, metadata_provider=metadata_provider.name
-            ):
-                result.added = True
-
-                try:
-                    show = self.tv_repository.get_show_by_external_id(
-                        external_id=result.external_id,
-                        metadata_provider=metadata_provider.name,
-                    )
-                    result.id = show.id
-                except Exception:
-                    log.error(
-                        f"Unable to find internal show ID for {result.external_id} on {metadata_provider.name}"
-                    )
-        return results
-
-    def get_popular_shows(
-        self, metadata_provider: AbstractMetadataProvider
-    ) -> list[MetaDataProviderSearchResult]:
-        """
-        Get popular shows from a given metadata provider.
-
-        :param metadata_provider: The metadata provider to use.
-        :return: A list of metadata provider show search results.
-        """
-        results = metadata_provider.search_show()
-
-        return [
-            result
-            for result in results
-            if not self.check_if_show_exists(
-                external_id=result.external_id, metadata_provider=metadata_provider.name
-            )
-        ]
 
     def get_public_show_by_id(self, show: Show) -> PublicShow:
         """
@@ -544,381 +460,6 @@ class TvService(BaseMediaService[Show, Show]):
     def get_root_season_directory(self, show: Show, season_number: int) -> Path:
         return self.get_root_show_directory(show) / Path(f"Season {season_number}")
 
-    def import_episode(
-        self,
-        show: Show,
-        season: Season,
-        episode_number: int,
-        video_files: list[Path],
-        subtitle_files: list[Path],
-        file_path_suffix: str = "",
-    ) -> bool:
-        episode_file_name = f"{remove_special_characters(show.name)} S{season.number:02d}E{episode_number:02d}"
-        if file_path_suffix != "":
-            episode_file_name += f" - {file_path_suffix}"
-        pattern = (
-            r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode_number) + r"[. ].*"
-        )
-        subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
-        target_file_name = (
-            self.get_root_season_directory(show=show, season_number=season.number)
-            / episode_file_name
-        )
-
-        # import subtitle
-        for subtitle_file in subtitle_files:
-            regex_result = re.search(
-                subtitle_pattern, subtitle_file.name, re.IGNORECASE
-            )
-            if regex_result:
-                language_code = regex_result.group(1)
-                target_subtitle_file = target_file_name.with_suffix(
-                    f".{language_code}.srt"
-                )
-                import_file(target_file=target_subtitle_file, source_file=subtitle_file)
-            else:
-                log.debug(
-                    f"Didn't find any pattern {subtitle_pattern} in subtitle file: {subtitle_file.name}"
-                )
-
-        # import episode videos
-        for file in video_files:
-            if re.search(pattern, file.name, re.IGNORECASE):
-                target_video_file = target_file_name.with_suffix(file.suffix)
-                import_file(target_file=target_video_file, source_file=file)
-                return True
-        else:
-            msg = f"Could not find any video file for episode {episode_number} of show {show.name} S{season.number}"
-            raise Exception(msg)  # noqa: TRY002 # TODO: resolve this
-
-    def import_season(
-        self,
-        show: Show,
-        season: Season,
-        video_files: list[Path],
-        subtitle_files: list[Path],
-        file_path_suffix: str = "",
-    ) -> tuple[bool, list[Episode]]:
-        season_path = self.get_root_season_directory(
-            show=show, season_number=season.number
-        )
-        success = True
-        imported_episodes = []
-        try:
-            season_path.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            log.exception(f"Could not create path {season_path}")
-            msg = f"Could not create path {season_path}"
-            raise Exception(msg) from e  # noqa: TRY002 # TODO: resolve this
-
-        for episode in season.episodes:
-            try:
-                imported = self.import_episode(
-                    show=show,
-                    subtitle_files=subtitle_files,
-                    video_files=video_files,
-                    season=season,
-                    episode_number=episode.number,
-                    file_path_suffix=file_path_suffix,
-                )
-                if imported:
-                    imported_episodes.append(episode)
-
-            except Exception:
-                # Send notification about missing episode file
-                if self.notification_service:
-                    self.notification_service.send_notification_to_all_providers(
-                        title="Missing Episode File",
-                        message=f"No video file found for S{season.number:02d}E{episode.number:02d} for show {show.name}. Manual intervention may be required.",
-                    )
-                success = False
-                log.warning(
-                    f"S{season.number}E{episode.number} not found when trying to import episode for show {show.name}."
-                )
-        return success, imported_episodes
-
-    def import_episode_files(
-        self,
-        show: Show,
-        season: Season,
-        episode: Episode,
-        video_files: list[Path],
-        subtitle_files: list[Path],
-        file_path_suffix: str = "",
-    ) -> bool:
-        episode_file_name = f"{remove_special_characters(show.name)} S{season.number:02d}E{episode.number:02d}"
-        if file_path_suffix != "":
-            episode_file_name += f" - {file_path_suffix}"
-        pattern = (
-            r".*[. ]S0?" + str(season.number) + r"E0?" + str(episode.number) + r"[. ].*"
-        )
-        subtitle_pattern = pattern + r"[. ]([A-Za-z]{2})[. ]srt"
-        target_file_name = (
-            self.get_root_season_directory(show=show, season_number=season.number)
-            / episode_file_name
-        )
-
-        # import subtitle
-        for subtitle_file in subtitle_files:
-            regex_result = re.search(
-                subtitle_pattern, subtitle_file.name, re.IGNORECASE
-            )
-            if regex_result:
-                language_code = regex_result.group(1)
-                target_subtitle_file = target_file_name.with_suffix(
-                    f".{language_code}.srt"
-                )
-                import_file(target_file=target_subtitle_file, source_file=subtitle_file)
-            else:
-                log.debug(
-                    f"Didn't find any pattern {subtitle_pattern} in subtitle file: {subtitle_file.name}"
-                )
-
-        found_video = False
-
-        # import episode videos
-        for file in video_files:
-            if re.search(pattern, file.name, re.IGNORECASE):
-                target_video_file = target_file_name.with_suffix(file.suffix)
-                import_file(target_file=target_video_file, source_file=file)
-                found_video = True
-                break
-
-        if not found_video:
-            # Send notification about missing episode file
-            if self.notification_service:
-                self.notification_service.send_notification_to_all_providers(
-                    title="Missing Episode File",
-                    message=f"No video file found for S{season.number:02d}E{episode.number:02d} for show {show.name}. Manual intervention may be required.",
-                )
-            log.warning(
-                f"File for S{season.number}E{episode.number} not found when trying to import episode for show {show.name}."
-            )
-            return False
-
-        return True
-
-    def import_episode_files_from_torrent(self, torrent: Torrent, show: Show) -> None:
-        """
-        Organizes episodes files from a torrent into the TV directory structure, mapping them to seasons and episodes.
-        :param torrent: The Torrent object
-        :param show: The Show object
-        """
-
-        video_files, subtitle_files, _all_files = get_files_for_import(torrent=torrent)
-
-        success: list[bool] = []
-
-        log.debug(
-            f"Importing these {len(video_files)} files:\n" + pprint.pformat(video_files)
-        )
-
-        episode_files = self.torrent_service.get_episode_files_of_torrent(
-            torrent=torrent
-        )
-        if not episode_files:
-            log.warning(
-                f"No episode files associated with torrent {torrent.title}, skipping import."
-            )
-            return
-
-        log.info(
-            f"Found {len(episode_files)} episode files associated with torrent {torrent.title}"
-        )
-
-        imported_episodes_by_season: dict[int, list[int]] = {}
-
-        for episode_file in episode_files:
-            season = self.get_season_by_episode(episode_id=episode_file.episode_id)
-            episode = self.get_episode(episode_file.episode_id)
-
-            season_path = self.get_root_season_directory(
-                show=show, season_number=season.number
-            )
-            if not season_path.exists():
-                try:
-                    season_path.mkdir(parents=True)
-                except Exception as e:
-                    log.warning(f"Could not create path {season_path}: {e}")
-                    msg = f"Could not create path {season_path}"
-                    raise Exception(msg) from e  # noqa: TRY002
-
-            episoded_import_success = self.import_episode_files(
-                show=show,
-                season=season,
-                episode=episode,
-                video_files=video_files,
-                subtitle_files=subtitle_files,
-                file_path_suffix=episode_file.file_path_suffix,
-            )
-            success.append(episoded_import_success)
-
-            if episoded_import_success:
-                imported_episodes_by_season.setdefault(season.number, []).append(
-                    episode.number
-                )
-
-                log.info(
-                    f"Episode {episode.number} from Season {season.number} successfully imported from torrent {torrent.title}"
-                )
-            else:
-                log.warning(
-                    f"Episode {episode.number} from Season {season.number} failed to import from torrent {torrent.title}"
-                )
-
-        success_messages: list[str] = []
-
-        for season_number, episodes in imported_episodes_by_season.items():
-            episode_list = ",".join(str(e) for e in sorted(episodes))
-            success_messages.append(
-                f"Episode(s): {episode_list} from Season {season_number}"
-            )
-
-        episodes_summary = "; ".join(success_messages)
-
-        if all(success):
-            torrent.imported = True
-            self.torrent_service.torrent_repository.save_torrent(torrent=torrent)
-
-            # Send successful season download notification
-            if self.notification_service:
-                self.notification_service.send_notification_to_all_providers(
-                    title="TV Show imported successfully",
-                    message=(
-                        f"Successfully imported {episodes_summary} "
-                        f"of {show.name} ({show.year}) "
-                        f"from torrent {torrent.title}."
-                    ),
-                )
-        else:
-            if self.notification_service:
-                self.notification_service.send_notification_to_all_providers(
-                    title="Failed to import TV Show",
-                    message=f"Importing {show.name} ({show.year}) from torrent {torrent.title} completed with errors. Please check the logs for details.",
-                )
-
-        log.info(
-            f"Finished importing files for torrent {torrent.title} {'without' if all(success) else 'with'} errors"
-        )
-
-    def update_show_metadata(
-        self, db_show: Show, metadata_provider: AbstractMetadataProvider
-    ) -> Show | None:
-        """
-        Updates the metadata of a show.
-        This includes adding new seasons and episodes if available from the metadata provider.
-        It also updates existing show, season, and episode attributes if they have changed.
-
-        :param metadata_provider: The metadata provider object to fetch fresh data from.
-        :param db_show: The Show to update
-        :return: The updated Show object, or None if the show is not found or an error occurs.
-        """
-        log.debug(f"Found show: {db_show.name} for metadata update.")
-
-        # Use stored original_language preference for metadata fetching
-        fresh_show_data = metadata_provider.get_show_metadata(
-            show_id=db_show.external_id, language=db_show.original_language
-        )
-        if not fresh_show_data:
-            log.warning(
-                f"Could not fetch fresh metadata for show {db_show.name} (External ID: {db_show.external_id}) from {db_show.metadata_provider}."
-            )
-            return db_show
-        log.debug(f"Fetched fresh metadata for show: {fresh_show_data.name}")
-
-        self.tv_repository.update_show_attributes(
-            show_id=db_show.id,
-            name=fresh_show_data.name,
-            overview=fresh_show_data.overview,
-            year=fresh_show_data.year,
-            ended=fresh_show_data.ended,
-            imdb_id=fresh_show_data.imdb_id,
-            continuous_download=db_show.continuous_download
-            if fresh_show_data.ended is False
-            else False,
-        )
-
-        # Process seasons and episodes
-        existing_season_external_ids = {s.external_id: s for s in db_show.seasons}
-
-        for fresh_season_data in fresh_show_data.seasons:
-            if fresh_season_data.external_id in existing_season_external_ids:
-                # Update existing season
-                existing_season = existing_season_external_ids[
-                    fresh_season_data.external_id
-                ]
-
-                self.tv_repository.update_season_attributes(
-                    season_id=existing_season.id,
-                    name=fresh_season_data.name,
-                    overview=fresh_season_data.overview,
-                )
-
-                # Process episodes for this season
-                existing_episode_external_ids = {
-                    ep.external_id: ep for ep in existing_season.episodes
-                }
-                for fresh_episode_data in fresh_season_data.episodes:
-                    if fresh_episode_data.external_id in existing_episode_external_ids:
-                        # Update existing episode
-                        existing_episode = existing_episode_external_ids[
-                            fresh_episode_data.external_id
-                        ]
-
-                        self.tv_repository.update_episode_attributes(
-                            episode_id=existing_episode.id,
-                            title=fresh_episode_data.title,
-                            overview=fresh_episode_data.overview,
-                        )
-                    else:
-                        # Add new episode
-                        log.debug(
-                            f"Adding new episode {fresh_episode_data.number} to season {existing_season.number}"
-                        )
-                        episode_schema = Episode(
-                            id=EpisodeId(fresh_episode_data.id),
-                            number=fresh_episode_data.number,
-                            external_id=fresh_episode_data.external_id,
-                            title=fresh_episode_data.title,
-                            overview=fresh_episode_data.overview,
-                        )
-                        self.tv_repository.add_episode_to_season(
-                            season_id=existing_season.id, episode_data=episode_schema
-                        )
-            else:
-                # Add new season (and its episodes)
-                log.debug(
-                    f"Adding new season {fresh_season_data.number} to show {db_show.name}"
-                )
-                episodes_for_schema = [
-                    Episode(
-                        id=EpisodeId(ep_data.id),
-                        number=ep_data.number,
-                        external_id=ep_data.external_id,
-                        title=ep_data.title,
-                        overview=ep_data.overview,
-                    )
-                    for ep_data in fresh_season_data.episodes
-                ]
-
-                season_schema = Season(
-                    id=SeasonId(fresh_season_data.id),
-                    number=fresh_season_data.number,
-                    name=fresh_season_data.name,
-                    overview=fresh_season_data.overview,
-                    external_id=fresh_season_data.external_id,
-                    episodes=episodes_for_schema,
-                )
-                self.tv_repository.add_season_to_show(
-                    show_id=db_show.id, season_data=season_schema
-                )
-
-        updated_show = self.tv_repository.get_show_by_id(show_id=db_show.id)
-
-        log.info(f"Successfully updated metadata for show: {updated_show.name}")
-        metadata_provider.download_show_poster_image(show=updated_show)
-        return updated_show
-
     def set_show_continuous_download(
         self, show: Show, continuous_download: bool
     ) -> Show:
@@ -932,86 +473,3 @@ class TvService(BaseMediaService[Show, Show]):
         return self.tv_repository.update_show_attributes(
             show_id=show.id, continuous_download=continuous_download
         )
-
-    def get_import_candidates(
-        self, tv_show: Path, metadata_provider: AbstractMetadataProvider
-    ) -> MediaImportSuggestion:
-        return super().get_import_candidates(
-            directory=tv_show,
-            metadata_provider=metadata_provider,
-            search_func=self.search_for_show,
-        )
-
-    def import_existing_tv_show(self, tv_show: Show, source_directory: Path) -> bool:
-        def _import_logic(s: Show, path: Path, add_record_cb: Callable[[EpisodeFile], None]) -> bool:
-            video_files, subtitle_files, _all_files = get_files_for_import(directory=path)
-            for season in s.seasons:
-                _success, imported_episodes = self.import_season(
-                    show=s,
-                    season=season,
-                    video_files=video_files,
-                    subtitle_files=subtitle_files,
-                    file_path_suffix="IMPORTED",
-                )
-                for episode in imported_episodes:
-                    add_record_cb(
-                        EpisodeFile(
-                            episode_id=episode.id,
-                            quality=Quality.unknown,
-                            file_path_suffix="IMPORTED",
-                            torrent_id=None,
-                        )
-                    )
-            return True
-
-        return self.import_existing_media(
-            media=tv_show,
-            source_directory=source_directory,
-            import_func=_import_logic,
-            add_file_record_func=self.tv_repository.add_episode_file,
-        )
-
-    def get_importable_tv_shows(
-        self, metadata_provider: AbstractMetadataProvider
-    ) -> list[MediaImportSuggestion]:
-        return self.get_importable_media(
-            root_path=MediaManagerConfig().misc.tv_directory,
-            metadata_provider=metadata_provider,
-            get_candidates_func=self.get_import_candidates,
-        )
-
-    def import_all_torrents(self) -> None:
-        self.import_all_torrents_base(
-            get_media_func=self.torrent_service.get_show_of_torrent,
-            import_torrent_func=self.import_episode_files_from_torrent,
-            media_type_name="tv",
-        )
-
-    def update_all_non_ended_shows_metadata(self) -> None:
-        """Updates the metadata of all non-ended shows."""
-        log.info("Updating metadata for all non-ended shows")
-        shows = [show for show in self.tv_repository.get_shows() if not show.ended]
-        log.info(f"Found {len(shows)} non-ended shows to update")
-        for show in shows:
-            try:
-                if show.metadata_provider == "tmdb":
-                    metadata_provider = TmdbMetadataProvider()
-                elif show.metadata_provider == "tvdb":
-                    metadata_provider = TvdbMetadataProvider()
-                else:
-                    log.error(
-                        f"Unsupported metadata provider {show.metadata_provider} for show {show.name}, skipping update."
-                    )
-                    continue
-            except InvalidConfigError:
-                log.exception(
-                    f"Error initializing metadata provider {show.metadata_provider} for show {show.name}"
-                )
-                continue
-            updated_show = self.update_show_metadata(
-                db_show=show, metadata_provider=metadata_provider
-            )
-            if updated_show:
-                log.debug("Updated show metadata", extra={"show": updated_show.name})
-            else:
-                log.warning(f"Failed to update metadata for show: {show.name}")

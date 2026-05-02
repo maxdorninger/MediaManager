@@ -18,6 +18,8 @@ from media_manager.tv.dependencies import (
     season_dep,
     show_dep,
     tv_service_dep,
+    tv_metadata_service_dep,
+    tv_import_service_dep,
 )
 from media_manager.tv.schemas import (
     PublicEpisodeFile,
@@ -40,12 +42,12 @@ router = APIRouter()
     dependencies=[Depends(current_active_user)],
 )
 def search_metadata_providers_for_a_show(
-    tv_service: tv_service_dep, query: str, metadata_provider: metadata_provider_dep
+    tv_metadata_service: tv_metadata_service_dep, query: str, metadata_provider: metadata_provider_dep
 ) -> list[MetaDataProviderSearchResult]:
     """
     Search for a show on the configured metadata provider.
     """
-    return tv_service.search_for_show(query=query, metadata_provider=metadata_provider)
+    return tv_metadata_service.search_for_show(query=query, metadata_provider=metadata_provider)
 
 
 @router.get(
@@ -53,12 +55,12 @@ def search_metadata_providers_for_a_show(
     dependencies=[Depends(current_active_user)],
 )
 def get_recommended_shows(
-    tv_service: tv_service_dep, metadata_provider: metadata_provider_dep
+    tv_metadata_service: tv_metadata_service_dep, metadata_provider: metadata_provider_dep
 ) -> list[MetaDataProviderSearchResult]:
     """
     Get a list of recommended/popular shows from the metadata provider.
     """
-    return tv_service.get_popular_shows(metadata_provider=metadata_provider)
+    return tv_metadata_service.get_popular_shows(metadata_provider=metadata_provider)
 
 
 # -----------------------------------------------------------------------------
@@ -72,12 +74,12 @@ def get_recommended_shows(
     dependencies=[Depends(current_superuser)],
 )
 def get_all_importable_shows(
-    tv_service: tv_service_dep, metadata_provider: metadata_provider_dep
+    tv_import_service: tv_import_service_dep, metadata_provider: metadata_provider_dep
 ) -> list[MediaImportSuggestion]:
     """
     Get a list of unknown shows that were detected in the TV directory and are importable.
     """
-    return tv_service.get_importable_tv_shows(metadata_provider=metadata_provider)
+    return tv_import_service.get_importable_tv_shows(metadata_provider=metadata_provider)
 
 
 @router.post(
@@ -86,7 +88,7 @@ def get_all_importable_shows(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def import_detected_show(
-    tv_service: tv_service_dep, tv_show: show_dep, directory: str
+    tv_import_service: tv_import_service_dep, tv_show: show_dep, directory: str
 ) -> None:
     """
     Import a detected show from the specified directory into the library.
@@ -96,7 +98,7 @@ def import_detected_show(
         MediaManagerConfig().misc.tv_directory
     ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
-    tv_service.import_existing_tv_show(
+    tv_import_service.import_existing_tv_show(
         tv_show=tv_show, source_directory=source_directory
     )
 
@@ -129,7 +131,7 @@ def get_all_shows(tv_service: tv_service_dep) -> list[Show]:
     },
 )
 def add_a_show(
-    tv_service: tv_service_dep,
+    tv_metadata_service: tv_metadata_service_dep,
     metadata_provider: metadata_provider_dep,
     show_id: int,
     language: str | None = None,
@@ -138,13 +140,13 @@ def add_a_show(
     Add a new show to the library.
     """
     try:
-        show = tv_service.add_show(
+        show = tv_metadata_service.add_show(
             external_id=show_id,
             metadata_provider=metadata_provider,
             language=language,
         )
     except MediaAlreadyExistsError:
-        show = tv_service.get_show_by_external_id(
+        show = tv_metadata_service.tv_repository.get_show_by_external_id(
             show_id, metadata_provider=metadata_provider.name
         )
         if not show:
@@ -216,12 +218,12 @@ def delete_a_show(
     dependencies=[Depends(current_active_user)],
 )
 def update_shows_metadata(
-    show: show_dep, tv_service: tv_service_dep, metadata_provider: metadata_provider_dep
+    show: show_dep, tv_metadata_service: tv_metadata_service_dep, tv_service: tv_service_dep, metadata_provider: metadata_provider_dep
 ) -> PublicShow:
     """
     Update a show's metadata from the provider.
     """
-    tv_service.update_show_metadata(db_show=show, metadata_provider=metadata_provider)
+    tv_metadata_service.update_show_metadata(db_show=show, metadata_provider=metadata_provider)
     return tv_service.get_public_show_by_id(show=show)
 
 

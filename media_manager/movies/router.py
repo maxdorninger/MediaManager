@@ -14,6 +14,8 @@ from media_manager.metadataProvider.schemas import MetaDataProviderSearchResult
 from media_manager.movies.dependencies import (
     movie_dep,
     movie_service_dep,
+    movie_metadata_service_dep,
+    movie_import_service_dep,
 )
 from media_manager.movies.schemas import (
     Movie,
@@ -38,13 +40,13 @@ router = APIRouter()
 )
 def search_for_movie(
     query: str,
-    movie_service: movie_service_dep,
+    movie_metadata_service: movie_metadata_service_dep,
     metadata_provider: metadata_provider_dep,
 ) -> list[MetaDataProviderSearchResult]:
     """
     Search for a movie on the configured metadata provider.
     """
-    return movie_service.search_for_movie(
+    return movie_metadata_service.search_for_movie(
         query=query, metadata_provider=metadata_provider
     )
 
@@ -54,13 +56,13 @@ def search_for_movie(
     dependencies=[Depends(current_active_user)],
 )
 def get_popular_movies(
-    movie_service: movie_service_dep,
+    movie_metadata_service: movie_metadata_service_dep,
     metadata_provider: metadata_provider_dep,
 ) -> list[MetaDataProviderSearchResult]:
     """
     Get a list of recommended/popular movies from the metadata provider.
     """
-    return movie_service.get_popular_movies(metadata_provider=metadata_provider)
+    return movie_metadata_service.get_popular_movies(metadata_provider=metadata_provider)
 
 
 # -----------------------------------------------------------------------------
@@ -74,12 +76,12 @@ def get_popular_movies(
     dependencies=[Depends(current_superuser)],
 )
 def get_all_importable_movies(
-    movie_service: movie_service_dep, metadata_provider: metadata_provider_dep
+    movie_import_service: movie_import_service_dep, metadata_provider: metadata_provider_dep
 ) -> list[MediaImportSuggestion]:
     """
     Get a list of unknown movies that were detected in the movie directory and are importable.
     """
-    return movie_service.get_importable_movies(metadata_provider=metadata_provider)
+    return movie_import_service.get_importable_movies(metadata_provider=metadata_provider)
 
 
 @router.post(
@@ -88,7 +90,7 @@ def get_all_importable_movies(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def import_detected_movie(
-    movie_service: movie_service_dep, movie: movie_dep, directory: str
+    movie_import_service: movie_import_service_dep, movie: movie_dep, directory: str
 ) -> None:
     """
     Import a detected movie from the specified directory into the library.
@@ -98,7 +100,7 @@ def import_detected_movie(
         MediaManagerConfig().misc.movie_directory
     ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No such directory")
-    success = movie_service.import_existing_movie(
+    success = movie_import_service.import_existing_movie(
         movie=movie, source_directory=source_directory
     )
     if not success:
@@ -133,7 +135,7 @@ def get_all_movies(movie_service: movie_service_dep) -> list[Movie]:
     },
 )
 def add_a_movie(
-    movie_service: movie_service_dep,
+    movie_metadata_service: movie_metadata_service_dep,
     metadata_provider: metadata_provider_dep,
     movie_id: int,
     language: str | None = None,
@@ -142,13 +144,13 @@ def add_a_movie(
     Add a new movie to the library.
     """
     try:
-        movie = movie_service.add_movie(
+        movie = movie_metadata_service.add_movie(
             external_id=movie_id,
             metadata_provider=metadata_provider,
             language=language,
         )
     except ConflictError:
-        movie = movie_service.get_movie_by_external_id(
+        movie = movie_metadata_service.movie_repository.get_movie_by_external_id(
             external_id=movie_id, metadata_provider=metadata_provider.name
         )
         if not movie:

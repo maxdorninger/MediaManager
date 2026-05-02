@@ -12,11 +12,26 @@ from media_manager.notification.dependencies import notification_service_dep
 from media_manager.torrent.dependencies import torrent_service_dep
 
 
+from media_manager.movies.importer import MovieImportService
+from media_manager.movies.metadata import MovieMetadataService
+
+
 def get_movie_repository(db_session: DbSessionDependency) -> MovieRepository:
     return MovieRepository(db_session)
 
 
 movie_repository_dep = Annotated[MovieRepository, Depends(get_movie_repository)]
+
+
+def get_movie_metadata_service(
+    movie_repository: movie_repository_dep,
+) -> MovieMetadataService:
+    return MovieMetadataService(movie_repository=movie_repository)
+
+
+movie_metadata_service_dep = Annotated[
+    MovieMetadataService, Depends(get_movie_metadata_service)
+]
 
 
 def get_movie_service(
@@ -34,6 +49,25 @@ def get_movie_service(
 
 
 movie_service_dep = Annotated[MovieService, Depends(get_movie_service)]
+
+
+def get_movie_import_service(
+    movie_repository: movie_repository_dep,
+    torrent_service: torrent_service_dep,
+    notification_service: notification_service_dep,
+    movie_metadata_service: movie_metadata_service_dep,
+) -> MovieImportService:
+    return MovieImportService(
+        movie_repository=movie_repository,
+        torrent_service=torrent_service,
+        notification_service=notification_service,
+        movie_metadata_service=movie_metadata_service,
+    )
+
+
+movie_import_service_dep = Annotated[
+    MovieImportService, Depends(get_movie_import_service)
+]
 
 
 def get_movie_by_id(
