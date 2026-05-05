@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session, joinedload
 
 from media_manager.common.repository import BaseRepository
 from media_manager.exceptions import ConflictError, NotFoundError
-from media_manager.torrent.models import Torrent
+from media_manager.torrent.models import Torrent as TorrentModel
+from media_manager.torrent.schemas import Torrent as TorrentSchema
 from media_manager.torrent.schemas import TorrentId
 from media_manager.tv import log
 from media_manager.tv.models import Episode, EpisodeFile, Season, Show
@@ -86,7 +87,11 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
 
     def get_total_downloaded_episodes_count(self) -> int:
         try:
-            stmt = select(func.count(Episode.id)).select_from(Episode).join(EpisodeFile)
+            stmt = (
+                select(func.count(func.distinct(Episode.id)))
+                .select_from(Episode)
+                .join(EpisodeFile)
+            )
             result = self.db.execute(stmt).scalar_one_or_none()
         except SQLAlchemyError:
             log.exception("Database error while calculating downloaded episodes count")
@@ -113,6 +118,8 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             ended=show.ended,
             original_language=show.original_language,
             imdb_id=show.imdb_id,
+            continuous_download=show.continuous_download,
+            library=show.library,
             seasons=[
                 Season(
                     id=season.id,
@@ -211,16 +218,17 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
         results = self.db.execute(stmt).scalars().all()
         return [EpisodeFileSchema.model_validate(sf) for sf in results]
 
-    def get_torrents_by_show_id(self, show_id: ShowId) -> list[Torrent]:
+    def get_torrents_by_show_id(self, show_id: ShowId) -> list[TorrentSchema]:
         stmt = (
-            select(Torrent)
+            select(TorrentModel)
             .distinct()
-            .join(EpisodeFile, EpisodeFile.torrent_id == Torrent.id)
+            .join(EpisodeFile, EpisodeFile.torrent_id == TorrentModel.id)
             .join(Episode, Episode.id == EpisodeFile.episode_id)
             .join(Season, Season.id == Episode.season_id)
             .where(Season.show_id == show_id)
         )
-        return list(self.db.execute(stmt).scalars().unique().all())
+        results = self.db.execute(stmt).scalars().unique().all()
+        return [TorrentSchema.model_validate(t) for t in results]
 
     def get_all_shows_with_torrents(self) -> list[ShowSchema]:
         stmt = (
@@ -229,7 +237,7 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             .join(Season, Show.id == Season.show_id)
             .join(Episode, Season.id == Episode.season_id)
             .join(EpisodeFile, Episode.id == EpisodeFile.episode_id)
-            .join(Torrent, EpisodeFile.torrent_id == Torrent.id)
+            .join(TorrentModel, EpisodeFile.torrent_id == TorrentModel.id)
             .options(joinedload(Show.seasons).joinedload(Season.episodes))
             .order_by(Show.name)
         )
@@ -366,8 +374,12 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             db_season.overview = overview
             updated = True
         if updated:
-            self.db.commit()
-            self.db.refresh(db_season)
+            try:
+                self.db.commit()
+                self.db.refresh(db_season)
+            except SQLAlchemyError:
+                self.db.rollback()
+                raise
         return SeasonSchema.model_validate(db_season)
 
     def update_episode_attributes(
@@ -388,6 +400,10 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             db_episode.overview = overview
             updated = True
         if updated:
-            self.db.commit()
-            self.db.refresh(db_episode)
+            try:
+                self.db.commit()
+                self.db.refresh(db_episode)
+            except SQLAlchemyError:
+                self.db.rollback()
+                raise
         return EpisodeSchema.model_validate(db_episode)
