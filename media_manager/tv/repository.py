@@ -258,12 +258,13 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
     def get_episodes_by_torrent_id(self, torrent_id: TorrentId) -> list[EpisodeNumber]:
         stmt = (
             select(Episode.number)
+            .distinct()
             .join(EpisodeFile, EpisodeFile.episode_id == Episode.id)
             .where(EpisodeFile.torrent_id == torrent_id)
             .order_by(Episode.number)
         )
         episode_numbers = self.db.execute(stmt).scalars().all()
-        return [EpisodeNumber(n) for n in sorted(set(episode_numbers))]
+        return [EpisodeNumber(n) for n in episode_numbers]
 
     def get_show_by_season_id(self, season_id: SeasonId) -> ShowSchema:
         stmt = (
@@ -309,8 +310,12 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             ],
         )
         self.db.add(db_season)
-        self.db.commit()
-        self.db.refresh(db_season)
+        try:
+            self.db.commit()
+            self.db.refresh(db_season)
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise
         return SeasonSchema.model_validate(db_season)
 
     def add_episode_to_season(
@@ -334,8 +339,12 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             title=episode_data.title,
         )
         self.db.add(db_episode)
-        self.db.commit()
-        self.db.refresh(db_episode)
+        try:
+            self.db.commit()
+            self.db.refresh(db_episode)
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise
         return EpisodeSchema.model_validate(db_episode)
 
     def update_show_attributes(
