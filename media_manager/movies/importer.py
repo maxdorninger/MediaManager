@@ -56,11 +56,16 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
         subtitle_files: list[Path],
         file_path_suffix: str = "",
     ) -> bool:
+        if not video_files and not subtitle_files:
+            log.error(f"No video or subtitle files found for movie {movie.name}")
+            return False
+
         movie_file_name = f"{remove_special_characters(movie.name)} ({movie.year})"
         movie_root_path = self.get_media_root_path(media=movie)
         if file_path_suffix:
             movie_file_name += f" - {file_path_suffix}"
 
+        imported_any = False
         try:
             movie_root_path.mkdir(parents=True, exist_ok=True)
             if video_files:
@@ -68,6 +73,7 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
                     movie_root_path / f"{movie_file_name}{video_files[0].suffix}"
                 )
                 import_file(target_file=target_video_file, source_file=video_files[0])
+                imported_any = True
 
             for subtitle_file in subtitle_files:
                 match = re.search(
@@ -77,11 +83,12 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
                     lang = match.group(1)
                     target = movie_root_path / f"{movie_file_name}.{lang}.srt"
                     import_file(target_file=target, source_file=subtitle_file)
+                    imported_any = True
         except Exception:
             log.exception(f"Failed to import movie {movie.name}")
             return False
         else:
-            return True
+            return imported_any
 
     def import_torrent_files(self, torrent: Torrent, movie: Movie) -> None:
         video_files, subtitle_files, _ = get_files_for_import(torrent=torrent)
@@ -94,6 +101,12 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
             return
 
         movie_files = self.torrent_service.get_movie_files_of_torrent(torrent=torrent)
+        if not movie_files:
+            torrent.imported = False
+            self.torrent_service.torrent_repository.save_torrent(torrent=torrent)
+            self.notify_import_failure(movie.name, "movie")
+            return
+
         success = [
             self.import_movie(movie, video_files, subtitle_files, mf.file_path_suffix)
             for mf in movie_files

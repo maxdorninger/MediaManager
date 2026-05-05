@@ -17,6 +17,7 @@ from media_manager.torrent.utils import (
     get_files_for_import,
     get_torrent_filepath,
     import_file,
+    remove_special_characters,
 )
 from media_manager.tv.metadata import TvMetadataService
 from media_manager.tv.repository import TvRepository
@@ -62,6 +63,7 @@ class TvImportService(BaseMediaService[Show, Show]):
         if not video_files:
             return False
 
+        any_imported = False
         for video_file in video_files:
             # Simple heuristic for season/episode from filename
             match = re.search(r"S(\d+)E(\d+)", video_file.name, re.IGNORECASE)
@@ -70,12 +72,15 @@ class TvImportService(BaseMediaService[Show, Show]):
                 season_dir = self.get_media_root_path(show) / f"Season {s_num}"
                 season_dir.mkdir(parents=True, exist_ok=True)
 
-                target_name = f"{show.name} - S{s_num:02d}E{e_num:02d}"
+                target_name = (
+                    f"{remove_special_characters(show.name)} - S{s_num:02d}E{e_num:02d}"
+                )
                 if file_path_suffix:
                     target_name += f" - {file_path_suffix}"
                 target_file = season_dir / f"{target_name}{video_file.suffix}"
 
                 import_file(target_file=target_file, source_file=video_file)
+                any_imported = True
 
                 # Update DB
                 try:
@@ -93,8 +98,8 @@ class TvImportService(BaseMediaService[Show, Show]):
                             )
                         )
                 except Exception:
-                    log.warning(f"Could not update DB for {video_file.name}")
-        return True
+                    log.exception(f"Could not update DB for {video_file.name}")
+        return any_imported
 
     def import_torrent_files(self, torrent: Torrent, show: Show) -> None:
         success = self.import_tv_show(

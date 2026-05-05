@@ -64,24 +64,30 @@ class BaseRepository[T, S]:
         obj.library = library
         self.db.commit()
 
-    def save_media_base(self, media_schema: S, model_class: type[T]) -> S:
+    def save_media_base(
+        self,
+        media_schema: S,
+        model_class: type[T],
+        exclude: set[str] | None = None,
+    ) -> S:
         """
         Generic save method for media models.
         """
+        if exclude is None:
+            exclude = set()
+
         db_obj = self.db.get(model_class, media_schema.id) if media_schema.id else None
 
         if db_obj:
             # Update existing
-            for key, value in media_schema.model_dump(
-                exclude={"id", "seasons", "episodes"}
-            ).items():
+            # Always exclude "id" from updates
+            update_exclude = exclude | {"id"}
+            for key, value in media_schema.model_dump(exclude=update_exclude).items():
                 if hasattr(db_obj, key):
                     setattr(db_obj, key, value)
         else:
             # Insert new
-            db_obj = model_class(
-                **media_schema.model_dump(exclude={"seasons", "episodes"})
-            )
+            db_obj = model_class(**media_schema.model_dump(exclude=exclude))
             self.db.add(db_obj)
 
         try:
@@ -99,7 +105,10 @@ class BaseRepository[T, S]:
             return self.schema.model_validate(db_obj)
 
     def update_media_attributes_base(
-        self, media_id: EntityId, model_class: type[T], **attributes: Any  # noqa: ANN401
+        self,
+        media_id: EntityId,
+        model_class: type[T],
+        **attributes: Any,  # noqa: ANN401
     ) -> S:
         """
         Generic update method for media attributes.

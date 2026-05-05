@@ -17,7 +17,7 @@ class MediaMixin:
     name: Mapped[str]
     overview: Mapped[str]
     year: Mapped[int | None]
-    library: Mapped[str] = mapped_column(default="")
+    library: Mapped[str] = mapped_column(default="Default")
     original_language: Mapped[str | None] = mapped_column(default=None)
     imdb_id: Mapped[str | None] = mapped_column(default=None)
 

@@ -98,7 +98,9 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
         db_show = self.db.get(Show, show.id) if show.id else None
 
         if db_show:  # Use base for update
-            return self.save_media_base(media_schema=show, model_class=Show)
+            return self.save_media_base(
+                media_schema=show, model_class=Show, exclude={"seasons", "episodes"}
+            )
 
         # Custom insertion for nested seasons/episodes
         db_show = Show(

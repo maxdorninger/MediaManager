@@ -34,11 +34,24 @@ class MovieRepository(BaseRepository[Movie, MovieSchema]):
     def __init__(self, db: Session) -> None:
         super().__init__(db, Movie, MovieSchema)
 
-    get_movie_by_id = BaseRepository.get_by_id
-    get_movie_by_external_id = BaseRepository.get_by_external_id
-    get_movies = BaseRepository.get_all
-    delete_movie = BaseRepository.delete
-    set_movie_library = BaseRepository.set_library
+    def get_movie_by_id(self, movie_id: MovieId) -> MovieSchema:
+        return self.get_by_id(entity_id=movie_id)
+
+    def get_movie_by_external_id(
+        self, external_id: int, metadata_provider: str
+    ) -> MovieSchema:
+        return self.get_by_external_id(
+            external_id=external_id, metadata_provider=metadata_provider
+        )
+
+    def get_movies(self) -> list[MovieSchema]:
+        return self.get_all()
+
+    def delete_movie(self, movie_id: MovieId) -> None:
+        self.delete(entity_id=movie_id)
+
+    def set_movie_library(self, movie_id: MovieId, library: str) -> None:
+        self.set_library(entity_id=movie_id, library=library)
 
     def save_movie(self, movie: MovieSchema) -> MovieSchema:
         return self.save_media_base(media_schema=movie, model_class=Movie)
