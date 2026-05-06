@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import distinct, func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 
@@ -88,7 +88,7 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
     def get_total_downloaded_episodes_count(self) -> int:
         try:
             stmt = (
-                select(func.count(func.distinct(Episode.id)))
+                select(func.count(distinct(Episode.id)))
                 .select_from(Episode)
                 .join(EpisodeFile)
             )
