@@ -42,7 +42,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff",
-    "ty>=0.0.33",
+    "ty>=0.0.34",
 ]
 
 [tool.setuptools.packages.find]
