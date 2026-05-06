@@ -305,6 +305,7 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
                     number=ep_schema.number,
                     external_id=ep_schema.external_id,
                     title=ep_schema.title,
+                    overview=ep_schema.overview,
                 )
                 for ep_schema in season_data.episodes
             ],
@@ -313,6 +314,10 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
         try:
             self.db.commit()
             self.db.refresh(db_season)
+        except IntegrityError as e:
+            self.db.rollback()
+            msg = f"Integrity error: {e.orig}"
+            raise ConflictError(msg) from e
         except SQLAlchemyError:
             self.db.rollback()
             raise
@@ -337,11 +342,16 @@ class TvRepository(BaseRepository[Show, ShowSchema]):
             number=episode_data.number,
             external_id=episode_data.external_id,
             title=episode_data.title,
+            overview=episode_data.overview,
         )
         self.db.add(db_episode)
         try:
             self.db.commit()
             self.db.refresh(db_episode)
+        except IntegrityError as e:
+            self.db.rollback()
+            msg = f"Integrity error: {e.orig}"
+            raise ConflictError(msg) from e
         except SQLAlchemyError:
             self.db.rollback()
             raise
