@@ -882,15 +882,6 @@ wheels = [
 ]
 
 [[package]]
-name = "izulu"
-version = "0.50.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d0/58/6d6335c78b7ade54d8a6c6dbaa589e5c21b3fd916341d5a16f774c72652a/izulu-0.50.0.tar.gz", hash = "sha256:cc8e252d5e8560c70b95380295008eeb0786f7b745a405a40d3556ab3252d5f5", size = 48558, upload-time = "2025-03-24T15:52:21.51Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4a/9f/bf9d33546bbb6e5e80ebafe46f90b7d8b4a77410b7b05160b0ca8978c15a/izulu-0.50.0-py3-none-any.whl", hash = "sha256:4e9ae2508844e7c5f62c468a8b9e2deba2f60325ef63f01e65b39fd9a6b3fab4", size = 18095, upload-time = "2025-03-24T15:52:19.667Z" },
-]
-
-[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
@@ -1095,7 +1086,7 @@ requires-dist = [
     { name = "sabnzbd-api", specifier = ">=0.1.2" },
     { name = "sqlalchemy", specifier = ">=2.0.41" },
     { name = "starlette", specifier = ">=0.49.1" },
-    { name = "taskiq", specifier = ">=0.12.0" },
+    { name = "taskiq", specifier = ">=0.12.3" },
     { name = "taskiq-fastapi", specifier = ">=0.4.0" },
     { name = "taskiq-postgresql", extras = ["psycopg"], specifier = ">=0.4.0" },
     { name = "tmdbsimple", specifier = ">=2.9.1" },
@@ -1988,20 +1979,19 @@ wheels = [
 
 [[package]]
 name = "taskiq"
-version = "0.12.1"
+version = "0.12.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
-    { name = "izulu" },
     { name = "packaging" },
     { name = "pycron" },
     { name = "pydantic" },
     { name = "taskiq-dependencies" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/92/cf/c4a47be05d85754f3e0ecc7b72131249adc067ea37517054459e94268fb1/taskiq-0.12.1.tar.gz", hash = "sha256:338dcf58eaca327e511a9380b2185bfa6a415dd79a5cf144546a2dbb95459298", size = 60536, upload-time = "2025-12-07T16:07:43.561Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/e1/9bbf459974168c6a763f984a1fd6dbb06f5d0f07754e1dcd7361ef679543/taskiq-0.12.3.tar.gz", hash = "sha256:f9a3ae1b21d494a331e79e617ad116f3088e8bc98b9dc8cb9441e7957168cb76", size = 397625, upload-time = "2026-05-04T14:09:27.053Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/e4/a2fda3bcbb8b61108dc8e9db1a2d19a23578953db73e981f66b9d44f1207/taskiq-0.12.1-py3-none-any.whl", hash = "sha256:a8ade45e2e23edbadb972a88dec44e68c7daef83383d01fa3af48594a24a712a", size = 90668, upload-time = "2025-12-07T16:07:42.296Z" },
+    { url = "https://files.pythonhosted.org/packages/19/04/c9ccf3b1aeee67bf8a79e02522b0847940b3e3f2dae316e6c4ab50a3cb47/taskiq-0.12.3-py3-none-any.whl", hash = "sha256:113ba7f65c71076f58f017f540d17c6389df5e76516b19a1f91b087dcd7a5803", size = 91787, upload-time = "2026-05-04T14:09:28.42Z" },
 ]
 
 [[package]]
