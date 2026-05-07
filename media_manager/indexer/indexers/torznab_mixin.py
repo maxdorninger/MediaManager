@@ -18,71 +18,78 @@ class TorznabMixin:
         }
         for item in xml_tree.findall("channel/item"):
             try:
-                flags = []
-                seeders = 0
-                age = 0
-                indexer_name = "unknown"
-
-                if item.find("jackettindexer") is not None:
-                    indexer_name = item.find("jackettindexer").text
-                if item.find("prowlarrindexer") is not None:
-                    indexer_name = item.find("prowlarrindexer").text
-
-                is_usenet = (
-                    item.find("enclosure").attrib["type"] != "application/x-bittorrent"
-                )
-
-                attributes = list(item.findall("torznab:attr", xmlns))
-                for attribute in attributes:
-                    if is_usenet:
-                        if attribute.attrib["name"] == "usenetdate":
-                            posted_date = parsedate_to_datetime(
-                                attribute.attrib["value"]
-                            )
-                            now = datetime.now(datetime.UTC)
-                            age = int((now - posted_date).total_seconds())
-                    else:
-                        if attribute.attrib["name"] == "seeders":
-                            seeders = int(attribute.attrib["value"])
-
-                        if attribute.attrib["name"] == "downloadvolumefactor":
-                            download_volume_factor = float(attribute.attrib["value"])
-                            if download_volume_factor == 0:
-                                flags.append("freeleech")
-                            if download_volume_factor == 0.5:
-                                flags.append("halfleech")
-                            if download_volume_factor == 0.75:
-                                flags.append("freeleech75")
-                            if download_volume_factor == 0.25:
-                                flags.append("freeleech25")
-
-                        if attribute.attrib["name"] == "uploadvolumefactor":
-                            upload_volume_factor = int(attribute.attrib["value"])
-                            if upload_volume_factor == 2:
-                                flags.append("doubleupload")
-
-                title = item.find("title").text
-                size_str = item.find("size")
-                if size_str is None or size_str.text is None:
-                    log.warning(f"Torznab item {title} has no size, skipping.")
-                    continue
-                try:
-                    size = int(size_str.text or "0")
-                except ValueError:
-                    log.warning(f"Torznab item {title} has invalid size, skipping.")
-                    continue
-
-                result = IndexerQueryResult(
-                    title=title or "unknown",
-                    download_url=str(item.find("enclosure").attrib["url"]),
-                    seeders=seeders,
-                    flags=flags,
-                    size=size,
-                    usenet=is_usenet,
-                    age=age,
-                    indexer=indexer_name,
-                )
-                result_list.append(result)
+                result = self._process_item(item, xmlns)
+                if result:
+                    result_list.append(result)
             except Exception:
                 log.exception("1 Torznab search result failed")
         return result_list
+
+    def _process_item(self, item: ET.Element, xmlns: dict) -> IndexerQueryResult | None:
+        indexer_name = "unknown"
+        if item.find("jackettindexer") is not None:
+            indexer_name = item.find("jackettindexer").text or "unknown"
+        elif item.find("prowlarrindexer") is not None:
+            indexer_name = item.find("prowlarrindexer").text or "unknown"
+
+        is_usenet = item.find("enclosure").attrib["type"] != "application/x-bittorrent"
+
+        seeders, age, flags = self._parse_torznab_attributes(item, xmlns, is_usenet)
+
+        title = item.find("title").text or "unknown"
+        size_str = item.find("size")
+        if size_str is None or size_str.text is None:
+            log.warning(f"Torznab item {title} has no size, skipping.")
+            return None
+
+        try:
+            size = int(size_str.text or "0")
+        except ValueError:
+            log.warning(f"Torznab item {title} has invalid size, skipping.")
+            return None
+
+        return IndexerQueryResult(
+            title=title,
+            download_url=str(item.find("enclosure").attrib["url"]),
+            seeders=seeders,
+            flags=flags,
+            size=size,
+            usenet=is_usenet,
+            age=age,
+            indexer=indexer_name,
+        )
+
+    def _parse_torznab_attributes(
+        self, item: ET.Element, xmlns: dict, is_usenet: bool
+    ) -> tuple[int, int, list[str]]:
+        seeders = 0
+        age = 0
+        flags = []
+        attributes = list(item.findall("torznab:attr", xmlns))
+        for attribute in attributes:
+            name = attribute.attrib["name"]
+            value = attribute.attrib["value"]
+            if is_usenet:
+                if name == "usenetdate":
+                    posted_date = parsedate_to_datetime(value)
+                    now = datetime.now(datetime.UTC)
+                    age = int((now - posted_date).total_seconds())
+            else:
+                if name == "seeders":
+                    seeders = int(value)
+                elif name == "downloadvolumefactor":
+                    self._add_leech_flags(float(value), flags)
+                elif name == "uploadvolumefactor":
+                    if int(value) == 2:
+                        flags.append("doubleupload")
+        return seeders, age, flags
+
+    def _add_leech_flags(self, factor: float, flags: list[str]) -> None:
+        if factor == 0:
+            flags.append("freeleech")
+        elif factor == 0.5:
+            flags.append("halfleech")
+        elif factor == 0.75:
+            flags.append("freeleech75")
+        elif factor == 0.25:
+            flags.append("freeleech25")

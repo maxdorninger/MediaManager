@@ -2,6 +2,7 @@ import logging
 from typing import Any, TypeVar
 from uuid import UUID
 
+from pydantic import BaseModel
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -11,11 +12,10 @@ from media_manager.exceptions import ConflictError, NotFoundError
 log = logging.getLogger(__name__)
 
 T = TypeVar("T")
-S = TypeVar("S")
 EntityId = UUID | int | str
 
 
-class BaseRepository[T, S]:
+class BaseRepository[T, S: BaseModel]:
     """
     Base repository providing common CRUD operations for media models.
     """

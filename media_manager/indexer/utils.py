@@ -16,69 +16,52 @@ log = logging.getLogger(__name__)
 def evaluate_indexer_query_result(
     query_result: IndexerQueryResult, ruleset: ScoringRuleSet
 ) -> tuple[IndexerQueryResult, bool]:
-    title_rules = MediaManagerConfig().indexers.title_scoring_rules
-    indexer_flag_rules = MediaManagerConfig().indexers.indexer_flag_scoring_rules
+    config = MediaManagerConfig().indexers
     for rule_name in ruleset.rule_names:
-        for rule in title_rules:
-            if rule.name == rule_name:
-                log.debug(f"Applying rule {rule.name} to {query_result.title}")
-                if (
-                    any(
-                        re.search(
-                            rf"\b{re.escape(keyword)}\b",
-                            query_result.title,
-                            re.IGNORECASE,
-                        )
-                        for keyword in rule.keywords
-                    )
-                    and not rule.negate
-                ):
-                    log.debug(
-                        f"Rule {rule.name} with keywords {rule.keywords} matched for {query_result.title}"
-                    )
-                    query_result.score += rule.score_modifier
-                elif (
-                    not any(
-                        re.search(
-                            rf"\b{re.escape(keyword)}\b",
-                            query_result.title,
-                            re.IGNORECASE,
-                        )
-                        for keyword in rule.keywords
-                    )
-                    and rule.negate
-                ):
-                    log.debug(
-                        f"Negated rule {rule.name} with keywords {rule.keywords} matched for {query_result.title}"
-                    )
-                    query_result.score += rule.score_modifier
-                else:
-                    log.debug(
-                        f"Rule {rule.name} with keywords {rule.keywords} did not match for {query_result.title}"
-                    )
-        for rule in indexer_flag_rules:
-            if rule.name == rule_name:
-                log.debug(f"Applying rule {rule.name} to {query_result.title}")
-                if (
-                    any(flag in query_result.flags for flag in rule.flags)
-                    and not rule.negate
-                ):
-                    log.debug(
-                        f"Rule {rule.name} with flags {rule.flags} matched for {query_result.title} with flags {query_result.flags}"
-                    )
-                    query_result.score += rule.score_modifier
-                elif (
-                    not any(flag in query_result.flags for flag in rule.flags)
-                    and rule.negate
-                ):
-                    log.debug(
-                        f"Negated rule {rule.name} with flags {rule.flags} matched for {query_result.title} with flags {query_result.flags}"
-                    )
-                    query_result.score += rule.score_modifier
-                else:
-                    log.debug(
-                        f"Rule {rule.name} with flags {rule.flags} did not match for {query_result.title} with flags {query_result.flags}"
-                    )
+        _apply_title_rule(query_result, rule_name, config.title_scoring_rules)
+        _apply_indexer_flag_rule(
+            query_result, rule_name, config.indexer_flag_scoring_rules
+        )
+
+    if query_result.score <= 0:
+        return query_result, False
+
+    return query_result, True
+
+
+def _apply_title_rule(
+    query_result: IndexerQueryResult, rule_name: str, rules: list
+) -> None:
+    for rule in rules:
+        if rule.name == rule_name:
+            log.debug(f"Applying rule {rule.name} to {query_result.title}")
+            matched = any(
+                re.search(rf"\b{re.escape(k)}\b", query_result.title, re.IGNORECASE)
+                for k in rule.keywords
+            )
+            if matched != rule.negate:
+                log.debug(
+                    f"{'Negated ' if rule.negate else ''}Rule {rule.name} matched for {query_result.title}"
+                )
+                query_result.score += rule.score_modifier
+            else:
+                log.debug(f"Rule {rule.name} did not match for {query_result.title}")
+
+
+def _apply_indexer_flag_rule(
+    query_result: IndexerQueryResult, rule_name: str, rules: list
+) -> None:
+    for rule in rules:
+        if rule.name == rule_name:
+            log.debug(f"Applying rule {rule.name} to {query_result.title}")
+            matched = any(f in query_result.flags for f in rule.flags)
+            if matched != rule.negate:
+                log.debug(
+                    f"{'Negated ' if rule.negate else ''}Rule {rule.name} matched for {query_result.title}"
+                )
+                query_result.score += rule.score_modifier
+            else:
+                log.debug(f"Rule {rule.name} did not match for {query_result.title}")
     if query_result.score <= 0:
         return query_result, False
 
