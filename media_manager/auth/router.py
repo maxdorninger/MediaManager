@@ -34,7 +34,7 @@ def get_openid_router() -> APIRouter:
     if openid_client:
         return get_oauth_router(
             oauth_client=openid_client,
-            backend=openid_cookie_auth_backend,
+            backend=openid_cookie_auth_backend,  # ty: ignore[invalid-argument-type]
             get_user_manager=fastapi_users.get_user_manager,
             state_secret=SECRET,
             associate_by_email=True,
@@ -50,7 +50,7 @@ def get_openid_router() -> APIRouter:
             authorize_endpoint="https://example.com/authorize",
             access_token_endpoint="https://example.com/token",  # noqa: S106
         ),
-        backend=openid_cookie_auth_backend,
+        backend=openid_cookie_auth_backend,  # ty: ignore[invalid-argument-type]
         get_user_manager=fastapi_users.get_user_manager,
         state_secret=SECRET,
         associate_by_email=False,

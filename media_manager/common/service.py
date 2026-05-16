@@ -1,9 +1,11 @@
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any
 
 from media_manager.common.repository import BaseRepository
+from media_manager.common.schemas import BaseMedia
+from media_manager.database import Base
 from media_manager.exceptions import InvalidConfigError, NotFoundError
 from media_manager.indexer.service import IndexerService
 from media_manager.metadataProvider.abstract_metadata_provider import (
@@ -20,11 +22,8 @@ from media_manager.torrent.utils import (
 
 log = logging.getLogger(__name__)
 
-T = TypeVar("T")
-S = TypeVar("S")
 
-
-class BaseMediaService[T, S]:
+class BaseMediaService[T: Base, S: BaseMedia]:
     """
     Base service providing common logic for media modules.
     """
@@ -50,7 +49,7 @@ class BaseMediaService[T, S]:
         """
         Determines the root directory for a media item.
         """
-        if hasattr(media, "library") and media.library:
+        if media.library:
             for library in libraries:
                 if library.name == media.library:
                     return Path(library.path) / Path(
@@ -83,7 +82,7 @@ class BaseMediaService[T, S]:
                 message=msg,
             )
 
-    def get_import_candidates(
+    def _get_import_candidates_base(
         self,
         directory: Path,
         metadata_provider: AbstractMetadataProvider,
@@ -95,7 +94,7 @@ class BaseMediaService[T, S]:
         name, _ = self._extract_name_and_year(directory.name)
         candidates = search_func(name, metadata_provider)
         return MediaImportSuggestion(
-            directory=str(directory),
+            directory=directory,
             candidates=candidates,
         )
 
@@ -135,7 +134,7 @@ class BaseMediaService[T, S]:
 
     def import_all_torrents_base(
         self,
-        get_media_func: Callable[[Any], S],
+        get_media_func: Callable[[Any], S | None],
         import_torrent_func: Callable[[Any, S], None],
         media_type_name: str,
     ) -> None:
@@ -153,7 +152,7 @@ class BaseMediaService[T, S]:
         log.info(f"Finished importing all torrents for {media_type_name}")
 
 
-class BaseMetadataService[T, S]:
+class BaseMetadataService[T: Base, S: BaseMedia]:
     """
     Base service for metadata operations.
     """
@@ -206,7 +205,9 @@ class BaseMetadataService[T, S]:
                         external_id=result.external_id,
                         metadata_provider=metadata_provider.name,
                     )
-                    result.id = media.id
+                    # media.id is a plain UUID on BaseMedia; result.id is
+                    # typed as the narrower NewType union MovieId | ShowId.
+                    result.id = media.id  # ty: ignore[invalid-assignment]
                 except Exception:
                     log.exception(
                         f"Unable to find internal ID for {result.external_id} on {metadata_provider.name}"

@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from media_manager.torrent.models import Quality
+from media_manager.torrent.schemas import TorrentId
 
 
 class BaseMedia(BaseModel):
@@ -24,7 +25,7 @@ class BaseMediaFile(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     quality: Quality
-    torrent_id: UUID | None = None
+    torrent_id: TorrentId | None = None
     file_path_suffix: str
 
 

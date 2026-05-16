@@ -42,3 +42,17 @@ ignore = [
 
 [lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Path", "taskiq.TaskiqDepends"]
+
+[lint.per-file-ignores]
+# Tests use bare `assert`, magic numbers/literal credentials are part of
+# the test payload, and `**overrides: Any` is the standard factory shape.
+# Everything else — including full annotations on fixtures and tests — is
+# enforced the same as production code.
+# Unit tests live next to source (media_manager/<feature>/tests/); the
+# tests/ tree holds shared factories and (future) integration tests.
+"{conftest.py,tests/**/*.py,media_manager/*/tests/**/*.py}" = [
+    "S101", "S105", "S106",       # bare assert + literal "password"/"secret" args are fine in tests
+    "ANN401",                     # **overrides: Any is the standard factory signature
+    "PLR2004",                    # magic numbers are the test payload
+    "INP001",                     # __init__.py-less subpkgs are intentional under tests/
+]

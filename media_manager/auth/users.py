@@ -57,7 +57,9 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             log.info(f"User {user.id} has been granted superuser privileges.")
         if "email" in update_dict:
             updated_user = UserUpdate(is_verified=True)
-            await self.update(user=user, user_update=updated_user)
+            # `user` is typed as the upstream `models.UP` TypeVar; ty cannot
+            # see that it is concretely our `User` model here.
+            await self.update(user=user, user_update=updated_user)  # ty: ignore[invalid-argument-type]
 
     @override
     async def on_after_register(
@@ -136,7 +138,9 @@ async def create_default_admin_user() -> None:
             async with get_user_db_context(session) as user_db:
                 async with get_user_manager_context(user_db) as user_manager:
                     # Check if any users exist
-                    stmt = select(func.count(User.id))
+                    # User.id is a Mapped[UUID]; ty resolves it to plain
+                    # UUID and rejects it as a count() arg.
+                    stmt = select(func.count(User.id))  # ty: ignore[invalid-argument-type]
                     result = await session.execute(stmt)
                     user_count = result.scalar()
                     config = MediaManagerConfig()
@@ -221,8 +225,15 @@ openid_cookie_auth_backend = AuthenticationBackend(
     get_strategy=get_jwt_strategy,
 )
 
+# AuthenticationBackend is invariant in its generic params, so ty rejects
+# our concrete backends against the FastAPIUsers / get_auth_router / get_oauth_router
+# TypeVars. The runtime API accepts them. Suppression sites:
+#   - this file (FastAPIUsers ctor below)
+#   - media_manager/main.py (get_auth_router)
+#   - media_manager/auth/router.py (get_oauth_router)
 fastapi_users = FastAPIUsers[User, uuid.UUID](
-    get_user_manager, [bearer_auth_backend, cookie_auth_backend]
+    get_user_manager,
+    [bearer_auth_backend, cookie_auth_backend],  # ty: ignore[invalid-argument-type]
 )
 
 current_active_user = fastapi_users.current_user(active=True, verified=True)

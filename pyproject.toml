@@ -30,7 +30,6 @@ dependencies = [
     "taskiq-fastapi>=0.4.0",
     "taskiq-postgresql[psycopg]>=0.4.0",
     "alembic>=1.16.1",
-    "pytest>=8.4.0",
     "pillow>=11.3.0",
     "sabnzbd-api>=0.1.2",
     "transmission-rpc>=7.0.11",
@@ -43,8 +42,23 @@ dependencies = [
 dev = [
     "ruff",
     "ty>=0.0.33",
+    "pytest>=9.0.3,<10.0.0",
+    "pytest-asyncio>=1.3.0,<2.0.0",
 ]
 
 [tool.setuptools.packages.find]
 include = ["media_manager*"]
-exclude = ["web*", "Writerside*", "metadata_relay*", "tests*"]
+exclude = ["web*", "Writerside*", "metadata_relay*", "tests*", "media_manager/**/tests*"]
+
+[tool.pytest.ini_options]
+# Unit tests live next to source under `media_manager/<feature>/tests/`.
+# Integration / DB / API tests live in `tests/`.
+testpaths = ["media_manager", "tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers"
+markers = [
+    "db: requires a test database (backend selected by fixtures via TEST_DATABASE_URL)",
+    "indexer: hits a real indexer; requires INDEXER_CONFIG",
+]
+asyncio_mode = "strict"

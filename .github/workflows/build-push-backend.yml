@@ -33,14 +33,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint-backend:
-    name: Lint Python Code
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/ruff-action@v3
-        with:
-          src: "./media_manager"
+  # Reuse workflow instead of duplicating ruff/pytest calls here
+  backend-test-lint:
+    uses: ./.github/workflows/backend-test-lint.yml
 
   lint-frontend:
     name: Lint Frontend
@@ -61,7 +56,7 @@ jobs:
         working-directory: ./web
 
   build-and-push:
-    needs: [lint-frontend, lint-backend]
+    needs: [lint-frontend, backend-test-lint]
     strategy:
       fail-fast: false
       matrix:

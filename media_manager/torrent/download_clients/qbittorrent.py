@@ -60,7 +60,9 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         categories = self.api_client.torrents_categories()
         log.debug(f"Found following categories in qBittorrent: {categories}")
         if self.config.category_name in categories:
-            category = categories.get(self.config.category_name)
+            # torrents_categories returns a Divergent type tree; the value
+            # under a known category is always a dict in practice.
+            category: dict = categories.get(self.config.category_name)  # ty: ignore[invalid-assignment]
             if category.get("savePath") == self.config.category_save_path:
                 log.debug(
                     f"Category '{self.config.category_name}' already exists in qBittorrent with the correct save path."
@@ -172,7 +174,9 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         if not info:
             log.warning(f"No information found for torrent: {torrent.id}")
             return TorrentStatus.unknown
-        state: str = info[0]["state"]
+        # torrents_info entries expose state as str at runtime; the stub
+        # type is a union covering raw API shapes.
+        state: str = info[0]["state"]  # ty: ignore[invalid-assignment]
 
         if state in self.DOWNLOADING_STATE:
             return TorrentStatus.downloading

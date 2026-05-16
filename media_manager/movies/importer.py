@@ -35,7 +35,7 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
         super().__init__(
             repository=movie_repository,
             torrent_service=torrent_service,
-            indexer_service=None,  # type: ignore[arg-type]
+            indexer_service=None,  # ty: ignore[invalid-argument-type]
             notification_service=notification_service,
         )
         self.movie_repository = movie_repository
@@ -122,7 +122,7 @@ class MovieImportService(BaseMediaService[Movie, Movie]):
     def get_import_candidates(
         self, movie_path: Path, metadata_provider: AbstractMetadataProvider
     ) -> MediaImportSuggestion:
-        return super().get_import_candidates(
+        return super()._get_import_candidates_base(
             directory=movie_path,
             metadata_provider=metadata_provider,
             search_func=self.movie_metadata_service.search_for_movie,

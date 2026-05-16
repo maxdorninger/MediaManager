@@ -1,21 +1,22 @@
 import logging
-from typing import Any, TypeVar
+from typing import Any, cast
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from pydantic import BaseModel
+from sqlalchemy import CursorResult, delete, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from media_manager.common.schemas import BaseMedia
+from media_manager.database import Base
 from media_manager.exceptions import ConflictError, NotFoundError
 
 log = logging.getLogger(__name__)
 
-T = TypeVar("T")
-S = TypeVar("S")
 EntityId = UUID | int | str
 
 
-class BaseRepository[T, S]:
+class BaseRepository[T: Base, S: BaseMedia]:
     """
     Base repository providing common CRUD operations for media models.
     """
@@ -138,11 +139,15 @@ class BaseRepository[T, S]:
 
         return self.schema.model_validate(db_obj)
 
-    def add_media_file_base(
-        self, file_schema: S, model_class: type[T], schema_class: type[S]
-    ) -> S:
+    def add_media_file_base[FT: Base, FS: BaseModel](
+        self, file_schema: FS, model_class: type[FT], schema_class: type[FS]
+    ) -> FS:
         """
         Generic method to add a media file record.
+
+        The file model / schema can differ from the repository's own T/S
+        (e.g. a MoviesRepository[Movie, MovieSchema] inserts MovieFile rows),
+        so this method carries its own type parameters.
         """
         db_model = model_class(**file_schema.model_dump())
         try:
@@ -172,4 +177,6 @@ class BaseRepository[T, S]:
             self.db.rollback()
             raise
         else:
-            return result.rowcount
+            # execute(delete(...)) returns a CursorResult, which exposes
+            # rowcount; the public Result interface does not.
+            return cast(CursorResult, result).rowcount

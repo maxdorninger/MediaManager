@@ -144,12 +144,12 @@ async def hello_world() -> dict:
 
 
 api_app.include_router(
-    fastapi_users.get_auth_router(bearer_auth_backend),
+    fastapi_users.get_auth_router(bearer_auth_backend),  # ty: ignore[invalid-argument-type]
     prefix="/auth/jwt",
     tags=["auth"],
 )
 api_app.include_router(
-    fastapi_users.get_auth_router(cookie_auth_backend),
+    fastapi_users.get_auth_router(cookie_auth_backend),  # ty: ignore[invalid-argument-type]
     prefix="/auth/cookie",
     tags=["auth"],
 )

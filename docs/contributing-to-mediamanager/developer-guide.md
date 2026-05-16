@@ -197,19 +197,45 @@ uv run alembic upgrade head
 uv run fastapi run media_manager/main.py --reload --port 8000
 ```
 
-### Formatting & linting
+### Formatting, linting & type-checking
 
-* Format code:
-
-```bash
-ruff format .
-```
-
-* Lint code:
+* Format code with [ruff](https://github.com/astral-sh/ruff):
 
 ```bash
-ruff check .
+uv run ruff format .
 ```
+
+* Lint code with [ruff](https://github.com/astral-sh/ruff):
+
+```bash
+uv run ruff check .
+```
+
+* Type-check code with [ty](https://github.com/astral-sh/ty):
+
+```bash
+# metadata_relay is a separate project with its own pyproject.toml,
+# so it's excluded from the root check.
+uv run ty check media_manager/ conftest.py tests/
+```
+
+  The `# ty: ignore[<rule>]` comment is the supported suppression
+  (NOT `# type: ignore[...]` — that's mypy, silently dropped by ty).
+
+### Running tests
+
+Unit tests live next to source under `media_manager/<feature>/tests/`;
+integration and API tests live in `tests/`. 
+
+```bash
+uv run pytest
+```
+
+* `db` and `indexer` markers gate tests that need a real database or live indexer
+respectively — neither runs by default.
+
+
+---
 
 ## Setting up the frontend development environment (Local, Optional)
 

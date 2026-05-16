@@ -1,6 +1,7 @@
 import logging
+from typing import cast
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import CursorResult, delete, select, update
 from sqlalchemy.exc import (
     IntegrityError,
     SQLAlchemyError,
@@ -90,7 +91,7 @@ class NotificationRepository:
 
     def delete_notification(self, nid: NotificationId) -> None:
         stmt = delete(Notification).where(Notification.id == nid)
-        result = self.db.execute(stmt)
+        result = cast(CursorResult, self.db.execute(stmt))
         if result.rowcount == 0:
             msg = f"Notification with id {nid} not found."
             raise NotFoundError(msg)

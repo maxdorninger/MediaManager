@@ -88,7 +88,7 @@ class MovieService(BaseMediaService[Movie, Movie]):
                         self.torrent_service.cancel_download(
                             torrent=torrent, delete_files=True
                         )
-                        log.info(f"Deleted torrent: {torrent.torrent_title}")
+                        log.info(f"Deleted torrent: {torrent.title}")
                     except Exception:
                         log.exception(f"Failed to delete torrent {torrent.hash}")
 

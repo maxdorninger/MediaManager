@@ -1,0 +1,65 @@
+name: Backend Test and Lint
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+
+  workflow_dispatch:
+
+  # Allow this workflow to be invoked from build-push-backend.yml so the
+  # build/push job can depend on lint + type-check + tests in one place.
+  workflow_call:
+
+
+concurrency:
+  group: backend-test-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  ruff:
+    name: ruff (lint + format)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv python install 3.13
+      - run: uv sync --group dev
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
+  ty:
+    name: ty (type check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv python install 3.13
+      - run: uv sync --group dev
+      # metadata_relay is a separate project with its own pyproject.toml.
+      - run: uv run ty check media_manager/ conftest.py tests/
+
+  pytest:
+    name: pytest (unit & integrations)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv python install 3.13
+      - run: uv sync --group dev
+      - run: uv run pytest

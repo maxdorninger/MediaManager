@@ -11,7 +11,7 @@ from media_manager.metadataProvider.abstract_metadata_provider import (
 )
 from media_manager.notification.service import NotificationService
 from media_manager.schemas import MediaImportSuggestion
-from media_manager.torrent.schemas import Quality, Torrent
+from media_manager.torrent.schemas import Quality, Torrent, TorrentId
 from media_manager.torrent.service import TorrentService
 from media_manager.torrent.utils import (
     get_files_for_import,
@@ -37,7 +37,7 @@ class TvImportService(BaseMediaService[Show, Show]):
         super().__init__(
             repository=tv_repository,
             torrent_service=torrent_service,
-            indexer_service=None,  # type: ignore[arg-type]
+            indexer_service=None,  # ty: ignore[invalid-argument-type]
             notification_service=notification_service,
         )
         self.tv_repository = tv_repository
@@ -56,7 +56,7 @@ class TvImportService(BaseMediaService[Show, Show]):
         show: Show,
         source_directory: Path,
         quality: Quality = Quality.unknown,
-        torrent_id: str | None = None,
+        torrent_id: TorrentId | None = None,
         file_path_suffix: str = "",
     ) -> bool:
         video_files, _, _ = get_files_for_import(directory=source_directory)
@@ -118,7 +118,7 @@ class TvImportService(BaseMediaService[Show, Show]):
     def get_import_candidates(
         self, tv_path: Path, metadata_provider: AbstractMetadataProvider
     ) -> MediaImportSuggestion:
-        return super().get_import_candidates(
+        return super()._get_import_candidates_base(
             directory=tv_path,
             metadata_provider=metadata_provider,
             search_func=self.tv_metadata_service.search_for_show,

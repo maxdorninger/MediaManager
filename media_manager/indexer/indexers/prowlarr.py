@@ -132,7 +132,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
 
         for indexer in indexers:
             log.debug("Preparing search for indexer: " + indexer.name)
-            search_params = {
+            search_params: dict[str, str | int | None] = {
                 "cat": "5000",
                 "q": query,
                 "t": "tvsearch",
@@ -161,7 +161,7 @@ class Prowlarr(GenericIndexer, TorznabMixin):
         for indexer in indexers:
             log.debug("Preparing search for indexer: " + indexer.name)
 
-            search_params = {
+            search_params: dict[str, str | int | None] = {
                 "cat": "2000",
                 "q": query,
                 "t": "movie",

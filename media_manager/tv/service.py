@@ -22,6 +22,7 @@ from media_manager.tv.schemas import (
     EpisodeFile,
     EpisodeId,
     EpisodeNumber,
+    PublicEpisode,
     PublicEpisodeFile,
     PublicSeason,
     PublicShow,
@@ -220,7 +221,7 @@ class TvService(BaseMediaService[Show, Show]):
         return True
 
     def is_episode_downloaded(
-        self, episode: Episode, season: Season, show: Show
+        self, episode: Episode | PublicEpisode, season: Season, show: Show
     ) -> bool:
         """
         Check if an episode is downloaded and imported (file exists on disk).

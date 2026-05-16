@@ -90,8 +90,10 @@ class Jackett(GenericIndexer, TorznabMixin):
         xml_tree = ET.fromstring(xml)  # noqa: S314  # trusted source, since it is user controlled
         tv_search = xml_tree.find("./*/tv-search")
         movie_search = xml_tree.find("./*/movie-search")
-        log.debug(tv_search.attrib)
-        log.debug(movie_search.attrib)
+        if tv_search is not None:
+            log.debug(tv_search.attrib)
+        if movie_search is not None:
+            log.debug(movie_search.attrib)
 
         tv_search_capabilities = []
         movie_search_capabilities = []
@@ -198,7 +200,7 @@ class Jackett(GenericIndexer, TorznabMixin):
 
     def search_movie(self, query: str, movie: Movie) -> list[IndexerQueryResult]:
         log.debug(f"Searching for movie {movie.name}")
-        params = {
+        params: dict[str, str | int] = {
             "t": "movie",
             "q": query,
         }
