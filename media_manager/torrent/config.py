@@ -9,7 +9,8 @@ class QbittorrentConfig(BaseSettings):
     enabled: bool = False
 
     category_name: str = "MediaManager"
-    category_save_path: str = "/data/torrents"  # Must match QBittorrent's container path
+    category_save_path: str = "/data/torrents"  # Default path for container deployments.
+    # For host deployments, ensure this path exists in QBittorrent's accessible locations.
 
 
 class TransmissionConfig(BaseSettings):
