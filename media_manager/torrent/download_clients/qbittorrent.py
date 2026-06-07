@@ -110,14 +110,18 @@ class QbittorrentDownloadClient(AbstractDownloadClient):
         try:
             self.api_client.auth_log_in()
             answer = self.api_client.torrents_add(
-                category="MediaManager",
+                category=self.config.category_name,
                 urls=indexer_result.download_url,
                 save_path=indexer_result.title,
             )
         finally:
             self.api_client.auth_log_out()
 
-        if answer != "Ok.":
+        if answer != "Ok." and not (
+            hasattr(answer, "pending_count") and answer.pending_count > 0
+        ) and not (
+            hasattr(answer, "success_count") and answer.success_count > 0
+        ):
             log.error(
                 f"Failed to download torrent, API-Answer isn't 'Ok.'; API Answer: {answer}"
             )
