@@ -1077,7 +1077,7 @@ requires-dist = [
     { name = "cachetools", specifier = ">=6.0.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.12" },
     { name = "fastapi-restful", extras = ["all"], specifier = ">=0.6.0" },
-    { name = "fastapi-users", extras = ["sqlalchemy"], specifier = ">=15.0.2" },
+    { name = "fastapi-users", extras = ["sqlalchemy"], specifier = ">=15.0.5" },
     { name = "fastapi-utils", specifier = ">=0.8.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "httpx-oauth", specifier = ">=0.16.1" },
