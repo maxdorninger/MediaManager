@@ -418,7 +418,7 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.136.1" },
     { name = "starlette-exporter", specifier = ">=0.23.0" },
-    { name = "tmdbsimple", specifier = ">=2.9.1" },
+    { name = "tmdbsimple", specifier = ">=2.9.6" },
     { name = "tvdb-v4-official", specifier = ">=1.1.0" },
     { name = "uvicorn", specifier = ">=0.46.0" },
 ]
@@ -739,14 +739,14 @@ wheels = [
 
 [[package]]
 name = "tmdbsimple"
-version = "2.9.1"
+version = "2.9.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a1/87/3309cb03df1c9f9895fccd87e9875050f19e2cfec5a50b9d72e50d420fc8/tmdbsimple-2.9.1.tar.gz", hash = "sha256:636eaaaec82027929e8a91c2166e01f552ec63f869bf1fcd65aa561b705c7464", size = 33772, upload-time = "2022-01-25T21:48:36.477Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/98/d5e8fa15647eda4410d120e869f42fa8674a758742937baa7bfc327112a2/tmdbsimple-2.9.6.tar.gz", hash = "sha256:68ae5700a6297c66fe6d2eb849f1b76d42aa759adee51df59e2a86970055ee31", size = 42743, upload-time = "2026-05-25T23:52:34.385Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/dd/ade05d202db728b23e54aa0959622d090776023917e7308c1b2469a07b76/tmdbsimple-2.9.1-py3-none-any.whl", hash = "sha256:b52387c667bad1dccf5f776a576a971622a111fc08b7f731e360fabcc9860616", size = 38954, upload-time = "2022-01-25T21:48:34.653Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/53/ef0e08fcba60fce2ed7541c7aac682f7ed1bcdcf7b8954b01839996d1b0c/tmdbsimple-2.9.6-py3-none-any.whl", hash = "sha256:42052f2a77cd237553a620b1f090f54e9f5ea3e5a8d8a4081cb12e77c5dc1c4f", size = 40197, upload-time = "2026-05-25T23:52:33.235Z" },
 ]
 
 [[package]]
