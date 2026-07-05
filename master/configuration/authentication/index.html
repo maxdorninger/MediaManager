@@ -1538,10 +1538,20 @@
   A list of email addresses for administrator accounts. This is required.</li>
 <li><code>email_password_resets</code>\
   Enables password resets via email. Default is <code>false</code>.</li>
+<li><code>registration_enabled</code>\
+  Allows new users to sign up for an account. Default is <code>false</code>.</li>
 </ul>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p>To use email password resets, you must also configure SMTP settings in the <code>[notifications.smtp_config]</code> section.</p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>When <code>registration_enabled</code> is <code>false</code>, the sign-up page is hidden, <code>/auth/register</code> returns 403, and OIDC rejects unknown users (existing users keep working). The bootstrap admin (see <code>admin_emails</code>) is unaffected.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Adding users when registration is disabled</p>
+<p>Administrators can add users at any time from the <strong>Settings → Users</strong> page via the "Add User" button. For OIDC-only users, leave the password field blank — a random password is generated and the user is matched to their OIDC account by email on first sign-in.</p>
 </div>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
@@ -1580,6 +1590,7 @@
 <span class="n">session_lifetime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">604800</span><span class="w">  </span><span class="c1"># 1 week</span>
 <span class="n">admin_emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;admin@example.com&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;manager@example.com&quot;</span><span class="p">]</span>
 <span class="n">email_password_resets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">registration_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
 
 <span class="k">[auth.openid_connect]</span>
 <span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
