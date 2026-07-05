@@ -1541,22 +1541,10 @@
 <li><code>registration_enabled</code>\
   Allows new users to sign up for an account. Default is <code>false</code>.</li>
 </ul>
-<div class="admonition info">
-<p class="admonition-title">Info</p>
-<p>To use email password resets, you must also configure SMTP settings in the <code>[notifications.smtp_config]</code> section.</p>
-</div>
-<div class="admonition info">
-<p class="admonition-title">Info</p>
-<p>When <code>registration_enabled</code> is <code>false</code>, the sign-up page is hidden, <code>/auth/register</code> returns 403, and OIDC rejects unknown users (existing users keep working). The bootstrap admin (see <code>admin_emails</code>) is unaffected.</p>
-</div>
-<div class="admonition tip">
-<p class="admonition-title">Adding users when registration is disabled</p>
-<p>Administrators can add users at any time from the <strong>Settings → Users</strong> page via the "Add User" button. For OIDC-only users, leave the password field blank — a random password is generated and the user is matched to their OIDC account by email on first sign-in.</p>
-</div>
-<div class="admonition info">
-<p class="admonition-title">Info</p>
-<p>When setting up MediaManager for the first time, you should add your email to <code>admin_emails</code> in the <code>[auth]</code> config section. MediaManager will then use this email instead of the default admin email. Your account will automatically be created as an admin account, allowing you to manage other users, media and settings.</p>
-</div>
+<p>!!! info To use email password resets, you must also configure SMTP settings in the <code>[notifications.smtp_config]</code> section.</p>
+<p>!!! info When <code>registration_enabled</code> is <code>false</code>, the sign-up page is hidden, <code>/auth/register</code> returns 403, and OIDC rejects unknown users (existing users keep working). The bootstrap admin (see <code>admin_emails</code>) is unaffected.</p>
+<p>!!! tip "Adding users when registration is disabled" Administrators can add users at any time from the <strong>Settings → Users</strong> page via the "Add User" button. For OIDC-only users, leave the password field blank — a random password is generated and the user is matched to their OIDC account by email on first sign-in.</p>
+<p>!!! info When setting up MediaManager for the first time, you should add your email to <code>admin_emails</code> in the <code>[auth]</code> config section. MediaManager will then use this email instead of the default admin email. Your account will automatically be created as an admin account, allowing you to manage other users, media and settings.</p>
 <h2 id="openid-connect-settings-authopenid_connect">OpenID Connect Settings (<code>[auth.openid_connect]</code>)</h2>
 <p>OpenID Connect allows you to integrate with external identity providers like Google, Microsoft Azure AD, Keycloak, or any other OIDC-compliant provider.</p>
 <ul>
@@ -1576,16 +1564,13 @@
 <p>The OpenID server will likely require a redirect URI. This URL will usually look something like this:</p>
 <div class="highlight"><pre><span></span><code>{MEDIAMANAGER_URL}/api/v1/auth/oauth/callback
 </code></pre></div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>It is very important that you set the correct callback URI, otherwise it won't work!</p>
-</div>
+<p>!!! warning It is very important that you set the correct callback URI, otherwise it won't work!</p>
 <h4 id="authentik-example">Authentik Example</h4>
 <p>Here is an example configuration for the OpenID Connect provider for Authentik.</p>
-<p><img alt="authentik-redirect-url-example" src="../../assets/assets/authentik%20redirect%20url%20example.png" /></p>
+<p><img alt="authentik-redirect-url-example" src="../../.gitbook/assets/authentik%20redirect%20url%20example.png" /></p>
 <h2 id="example-configuration">Example Configuration</h2>
 <p>Here's a complete example of the authentication section in your <code>config.toml</code>:</p>
-<div class="highlight"><span class="filename">config.toml</span><pre><span></span><code><span class="k">[auth]</span>
+<div class="highlight"><pre><span></span><code><span class="k">[auth]</span>
 <span class="n">token_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6&quot;</span>
 <span class="n">session_lifetime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">604800</span><span class="w">  </span><span class="c1"># 1 week</span>
 <span class="n">admin_emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;admin@example.com&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;manager@example.com&quot;</span><span class="p">]</span>
