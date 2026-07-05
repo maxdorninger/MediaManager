@@ -107,22 +107,24 @@
 	description="Search and download torrents using a fully custom query string."
 >
 	<div class="grid w-full items-center gap-1.5">
-		<Label for="query-override">Enter a custom query</Label>
+		<form on:submit|preventDefault={search}>
+			<Label for="query-override">Enter a custom query</Label>
 
-		<div class="flex w-full max-w-sm items-center space-x-2">
-			<Input
-				bind:value={queryOverride}
-				id="query-override"
-				type="text"
-				placeholder={`e.g. ${getFullyQualifiedMediaName(show)} S01 1080p BluRay`}
-			/>
-			<Button disabled={isLoading} class="w-fit" onclick={search}>Search</Button>
-		</div>
+			<div class="flex w-full max-w-sm items-center space-x-2">
+				<Input
+					bind:value={queryOverride}
+					id="query-override"
+					type="text"
+					placeholder={`e.g. ${getFullyQualifiedMediaName(show)} S01 1080p BluRay`}
+				/>
+				<Button disabled={isLoading} class="w-fit" type="submit">Search</Button>
+			</div>
 
-		<p class="text-sm text-muted-foreground">
-			The custom query completely overrides the default search logic. Make sure the torrent title
-			matches the episodes you want imported.
-		</p>
+			<p class="text-sm text-muted-foreground">
+				The custom query completely overrides the default search logic. Make sure the torrent title
+				matches the episodes you want imported.
+			</p>
+		</form>
 	</div>
 
 	{#if torrentsError}
