@@ -7,6 +7,7 @@ from media_manager.torrent.download_clients.abstract_download_client import (
     AbstractDownloadClient,
 )
 from media_manager.torrent.download_clients.qbittorrent import QbittorrentDownloadClient
+from media_manager.torrent.download_clients.rtorrent import RtorrentDownloadClient
 from media_manager.torrent.download_clients.sabnzbd import SabnzbdDownloadClient
 from media_manager.torrent.download_clients.transmission import (
     TransmissionDownloadClient,
@@ -52,6 +53,13 @@ class DownloadManager:
                 self._torrent_client = TransmissionDownloadClient()
             except Exception:
                 log.exception("Failed to initialize Transmission client")
+
+        # If no torrent client is available yet, try rTorrent/ruTorrent
+        if self._torrent_client is None and self.config.rtorrent.enabled:
+            try:
+                self._torrent_client = RtorrentDownloadClient()
+            except Exception:
+                log.exception("Failed to initialize rTorrent client")
 
         # Initialize SABnzbd client for usenet
         if self.config.sabnzbd.enabled:

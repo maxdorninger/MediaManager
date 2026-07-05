@@ -105,6 +105,17 @@ host = "localhost"
 port = 9091
 path = "/transmission/rpc" # RPC request path target, usually "/transmission/rpc"
 
+# rTorrent / ruTorrent settings
+[torrents.rtorrent]
+enabled = false
+host = "localhost"
+port = 8080
+path = "/RPC2"           # XML-RPC endpoint exposed by ruTorrent/the web server
+https_enabled = false
+username = ""
+password = ""
+label = "MediaManager"  # stored in rTorrent's custom1 field, like a category
+
 # SABnzbd settings
 [torrents.sabnzbd]
 enabled = false

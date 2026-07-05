@@ -1,6 +1,6 @@
 # Download Clients
 
-Download client settings are configured in the `[torrents]` section of your `config.toml` file. MediaManager supports both qBittorrent and SABnzbd as download clients.
+Download client settings are configured in the `[torrents]` section of your `config.toml` file. MediaManager supports qBittorrent, Transmission and rTorrent/ruTorrent as torrent clients, and SABnzbd as a Usenet client.
 
 ## qBittorrent Settings (`[torrents.qbittorrent]`)
 
@@ -38,6 +38,33 @@ Transmission is a BitTorrent client that MediaManager can integrate with for dow
   Port of the Transmission RPC endpoint. Default is `9091`.
 * `path`\
   RPC request path target. Usually `/transmission/rpc`.
+
+## rTorrent / ruTorrent Settings (`[torrents.rtorrent]`)
+
+!!! info
+    MediaManager talks to rTorrent through its XML-RPC interface. ruTorrent is only a web UI on top of rTorrent, so configure the XML-RPC endpoint that ruTorrent (or your web server) exposes — usually `/RPC2`.
+
+!!! info
+    The downloads path in rTorrent and MediaManager must be the same, i.e. the path `/data/torrents` must link to the same volume for both containers.
+
+rTorrent is a BitTorrent client (commonly paired with the ruTorrent web UI) that MediaManager can integrate with for downloading torrents.
+
+* `enabled`\
+  Set to `true` to enable rTorrent integration. Default is `false`.
+* `host`\
+  Hostname or IP of the rTorrent/ruTorrent server (without protocol).
+* `port`\
+  Port of the XML-RPC endpoint. Default is `8080`.
+* `path`\
+  Path of the XML-RPC endpoint. Usually `/RPC2`. Default is `/RPC2`.
+* `https_enabled`\
+  Set to `true` if your XML-RPC endpoint uses HTTPS. Default is `false`.
+* `username`\
+  Username for HTTP authentication. Leave empty if not required.
+* `password`\
+  Password for HTTP authentication. Leave empty if not required.
+* `label`\
+  Label stored in rTorrent's `custom1` field (the ruTorrent label), similar to a qBittorrent category. Default is `MediaManager`.
 
 ## SABnzbd Settings (`[torrents.sabnzbd]`)
 
@@ -77,6 +104,17 @@ Here's a complete example of the download clients section in your `config.toml`:
     host = "transmission"
     port = 9091
     path = "/transmission/rpc"
+
+    # rTorrent / ruTorrent configuration
+    [torrents.rtorrent]
+    enabled = false
+    host = "rtorrent"
+    port = 8080
+    path = "/RPC2"
+    https_enabled = false
+    username = ""
+    password = ""
+    label = "MediaManager"
 
     # SABnzbd configuration
     [torrents.sabnzbd]

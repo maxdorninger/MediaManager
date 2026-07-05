@@ -22,6 +22,17 @@ class TransmissionConfig(BaseSettings):
     enabled: bool = False
 
 
+class RtorrentConfig(BaseSettings):
+    host: str = "localhost"
+    port: int = 8080
+    path: str = "/RPC2"  # XML-RPC endpoint exposed by ruTorrent/the web server
+    https_enabled: bool = False
+    username: str = ""
+    password: str = ""
+    enabled: bool = False
+    label: str = "MediaManager"  # stored in rTorrent's d.custom1, like a category
+
+
 class SabnzbdConfig(BaseSettings):
     host: str = "localhost"
     port: int = 8080
@@ -33,4 +44,5 @@ class SabnzbdConfig(BaseSettings):
 class TorrentConfig(BaseSettings):
     qbittorrent: QbittorrentConfig = QbittorrentConfig()
     transmission: TransmissionConfig = TransmissionConfig()
+    rtorrent: RtorrentConfig = RtorrentConfig()
     sabnzbd: SabnzbdConfig = SabnzbdConfig()
