@@ -132,34 +132,56 @@ class Jackett(GenericIndexer, TorznabMixin):
             indexer=indexer, session=session
         )
         if params["t"] == "tvsearch":
-            if not search_capabilities.supports_tv_search:
-                msg = f"Indexer {indexer} does not support TV search"
-                raise RuntimeError(msg)
-            if search_capabilities.supports_tv_search_season and "season" in params:
-                query_params["season"] = params["season"]
-            if search_capabilities.supports_tv_search_episode and "ep" in params:
-                query_params["ep"] = params["ep"]
-            if search_capabilities.supports_tv_search_imdb and "imdbid" in params:
-                query_params["imdbid"] = params["imdbid"]
-            elif search_capabilities.supports_tv_search_tvdb and "tvdbid" in params:
-                query_params["tvdbid"] = params["tvdbid"]
-            elif search_capabilities.supports_tv_search_tmdb and "tmdbid" in params:
-                query_params["tmdbid"] = params["tmdbid"]
-            else:
-                query_params["q"] = params["q"]
+            self.__add_tv_query_params(
+                indexer, params, query_params, search_capabilities
+            )
         if params["t"] == "movie":
-            if not search_capabilities.supports_movie_search:
-                msg = f"Indexer {indexer} does not support Movie search"
-                raise RuntimeError(msg)
-            if search_capabilities.supports_movie_search_imdb and "imdbid" in params:
-                query_params["imdbid"] = params["imdbid"]
-            elif search_capabilities.supports_tv_search_tvdb and "tvdbid" in params:
-                query_params["tvdbid"] = params["tvdbid"]
-            elif search_capabilities.supports_tv_search_tmdb and "tmdbid" in params:
-                query_params["tmdbid"] = params["tmdbid"]
-            else:
-                query_params["q"] = params["q"]
+            self.__add_movie_query_params(
+                indexer, params, query_params, search_capabilities
+            )
         return query_params
+
+    def __add_tv_query_params(
+        self,
+        indexer: str,
+        params: dict,
+        query_params: dict[str, str],
+        search_capabilities: IndexerInfo,
+    ) -> None:
+        if not search_capabilities.supports_tv_search:
+            msg = f"Indexer {indexer} does not support TV search"
+            raise RuntimeError(msg)
+        if search_capabilities.supports_tv_search_season and "season" in params:
+            query_params["season"] = params["season"]
+        if search_capabilities.supports_tv_search_episode and "ep" in params:
+            query_params["ep"] = params["ep"]
+        if search_capabilities.supports_tv_search_imdb and "imdbid" in params:
+            query_params["imdbid"] = params["imdbid"]
+        elif search_capabilities.supports_tv_search_tvdb and "tvdbid" in params:
+            query_params["tvdbid"] = params["tvdbid"]
+        elif search_capabilities.supports_tv_search_tmdb and "tmdbid" in params:
+            query_params["tmdbid"] = params["tmdbid"]
+        else:
+            query_params["q"] = params["q"]
+
+    def __add_movie_query_params(
+        self,
+        indexer: str,
+        params: dict,
+        query_params: dict[str, str],
+        search_capabilities: IndexerInfo,
+    ) -> None:
+        if not search_capabilities.supports_movie_search:
+            msg = f"Indexer {indexer} does not support Movie search"
+            raise RuntimeError(msg)
+        if search_capabilities.supports_movie_search_imdb and "imdbid" in params:
+            query_params["imdbid"] = params["imdbid"]
+        elif search_capabilities.supports_tv_search_tvdb and "tvdbid" in params:
+            query_params["tvdbid"] = params["tvdbid"]
+        elif search_capabilities.supports_tv_search_tmdb and "tmdbid" in params:
+            query_params["tmdbid"] = params["tmdbid"]
+        else:
+            query_params["q"] = params["q"]
 
     def get_torrents_by_indexer(
         self, indexer: str, params: dict, session: requests.Session

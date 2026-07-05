@@ -6,10 +6,10 @@ line-ending = "lf"
 quote-style = "double"
 
 [lint]
-# to be enabled: BLE, C90, CPY, D, DOC, DTZ, FBT, G, PL, RSE, SLF, SIM, TC
+# to be enabled: BLE, CPY, D, DOC, DTZ, FBT, G, PL, RSE, SLF, SIM, TC
 extend-select = [
     "A", "ARG", "ASYNC", "ANN",
-    "B",
+    "B", "C90",
     "C4", "COM",
     "DTZ",
     "E", "EM", "EXE",
