@@ -14,11 +14,22 @@ class NotificationService:
     async def get_notification(self, nid: NotificationId) -> Notification:
         return await self.notification_repository.get_notification(nid=nid)
 
-    async def get_unread_notifications(self) -> list[Notification]:
-        return await self.notification_repository.get_unread_notifications()
+    async def get_unread_notifications(
+        self, limit: int, offset: int = 0
+    ) -> list[Notification]:
+        return await self.notification_repository.get_unread_notifications(
+            limit=limit, offset=offset
+        )
 
-    async def get_all_notifications(self) -> list[Notification]:
-        return await self.notification_repository.get_all_notifications()
+    async def get_all_notifications(
+        self, limit: int, offset: int = 0, read: bool | None = None
+    ) -> list[Notification]:
+        return await self.notification_repository.get_all_notifications(
+            limit=limit, offset=offset, read=read
+        )
+
+    async def count_notifications(self, read: bool | None = None) -> int:
+        return await self.notification_repository.count_notifications(read=read)
 
     async def save_notification(self, notification: Notification) -> None:
         return await self.notification_repository.save_notification(notification)
@@ -28,6 +39,9 @@ class NotificationService:
 
     async def mark_notification_as_unread(self, nid: NotificationId) -> None:
         return await self.notification_repository.mark_notification_as_unread(nid=nid)
+
+    async def mark_all_notifications_as_read(self) -> None:
+        return await self.notification_repository.mark_all_notifications_as_read()
 
     async def delete_notification(self, nid: NotificationId) -> None:
         return await self.notification_repository.delete_notification(nid=nid)

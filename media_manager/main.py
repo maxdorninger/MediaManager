@@ -141,6 +141,7 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "PUT", "POST", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+    expose_headers=["X-Total-Count"],
 )
 app.add_middleware(CorrelationIdMiddleware, header_name="X-Correlation-ID")
 api_app = APIRouter(prefix="/api/v1")

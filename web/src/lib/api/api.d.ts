@@ -942,7 +942,10 @@ export interface paths {
 		};
 		/**
 		 * Get All Notifications
-		 * @description Get all notifications.
+		 * @description Get a page of notifications, newest first.
+		 *
+		 *     The total number of matching notifications is returned in the
+		 *     `X-Total-Count` response header.
 		 */
 		get: operations['get_all_notifications_api_v1_notification_get'];
 		put?: never;
@@ -962,7 +965,10 @@ export interface paths {
 		};
 		/**
 		 * Get Unread Notifications
-		 * @description Get all unread notifications.
+		 * @description Get a page of unread notifications, newest first.
+		 *
+		 *     The total number of unread notifications is returned in the `X-Total-Count`
+		 *     response header.
 		 */
 		get: operations['get_unread_notifications_api_v1_notification_unread_get'];
 		put?: never;
@@ -995,6 +1001,29 @@ export interface paths {
 		options?: never;
 		head?: never;
 		patch?: never;
+		trace?: never;
+	};
+	'/api/v1/notification/read': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		/**
+		 * Mark All Notifications As Read
+		 * @description Mark every unread notification as read.
+		 *
+		 *     The client only holds a page of notifications, so it cannot mark them all
+		 *     read by iterating over the ones it has.
+		 */
+		patch: operations['mark_all_notifications_as_read_api_v1_notification_read_patch'];
 		trace?: never;
 	};
 	'/api/v1/notification/{notification_id}/read': {
@@ -3694,7 +3723,14 @@ export interface operations {
 	};
 	get_all_notifications_api_v1_notification_get: {
 		parameters: {
-			query?: never;
+			query?: {
+				/** @description Maximum number of notifications to return */
+				limit?: number;
+				/** @description Number of notifications to skip */
+				offset?: number;
+				/** @description Only return read (true) or unread (false) notifications */
+				read?: boolean | null;
+			};
 			header?: never;
 			path?: never;
 			cookie?: never;
@@ -3710,11 +3746,25 @@ export interface operations {
 					'application/json': components['schemas']['Notification'][];
 				};
 			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
 		};
 	};
 	get_unread_notifications_api_v1_notification_unread_get: {
 		parameters: {
-			query?: never;
+			query?: {
+				/** @description Maximum number of notifications to return */
+				limit?: number;
+				/** @description Number of notifications to skip */
+				offset?: number;
+			};
 			header?: never;
 			path?: never;
 			cookie?: never;
@@ -3728,6 +3778,15 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['Notification'][];
+				};
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
 				};
 			};
 		};
@@ -3803,6 +3862,24 @@ export interface operations {
 				content: {
 					'application/json': components['schemas']['HTTPValidationError'];
 				};
+			};
+		};
+	};
+	mark_all_notifications_as_read_api_v1_notification_read_patch: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
 			};
 		};
 	};
