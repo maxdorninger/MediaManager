@@ -28,8 +28,10 @@
 	$: hasMoreRead = readNotifications.length < readTotal;
 
 	function totalCountOf(response: Response, fallback: number): number {
-		const total = Number(response.headers.get('X-Total-Count'));
-		return Number.isNaN(total) ? fallback : total;
+		const header = response.headers.get('X-Total-Count');
+		if (!header) return fallback;
+		const total = Number(header);
+		return Number.isFinite(total) ? total : fallback;
 	}
 
 	function timeOf(notification: Notification): number {
@@ -51,15 +53,26 @@
 		return [...notifications.slice(0, index), notification, ...notifications.slice(index)];
 	}
 
-	async function loadUnread({ reset = false } = {}) {
-		const offset = reset ? 0 : unreadNotifications.length;
-		const { data, response } = await client.GET('/api/v1/notification/unread', {
-			params: { query: { limit: PAGE_SIZE, offset } }
-		});
-		if (!data) return;
+	// The 30s poll and a "Load More" click both write unreadNotifications, so they
+	// are queued rather than run concurrently: overlapping, whichever landed last
+	// would win, dropping a page or repeating an id in the keyed {#each}. Queuing
+	// also means each request reads its offset only once the one before it is done.
+	let unreadQueue: Promise<void> = Promise.resolve();
 
-		unreadNotifications = reset ? data : [...unreadNotifications, ...data];
-		unreadTotal = totalCountOf(response, unreadNotifications.length);
+	function loadUnread({ reset = false } = {}): Promise<void> {
+		const fetchPage = async () => {
+			const offset = reset ? 0 : unreadNotifications.length;
+			const { data, response } = await client.GET('/api/v1/notification/unread', {
+				params: { query: { limit: PAGE_SIZE, offset } }
+			});
+			if (!data) return;
+
+			unreadNotifications = reset ? data : [...unreadNotifications, ...data];
+			unreadTotal = totalCountOf(response, unreadNotifications.length);
+		};
+
+		unreadQueue = unreadQueue.then(fetchPage, fetchPage);
+		return unreadQueue;
 	}
 
 	async function loadRead({ reset = false } = {}) {
@@ -166,7 +179,7 @@
 		loadUnread({ reset: true }).finally(() => (loading = false));
 
 		const interval = setInterval(() => {
-			if (loading || markingAllAsRead) return;
+			if (loading || markingAllAsRead || loadingMoreUnread) return;
 			// Only refresh while a single page is shown, so polling cannot discard
 			// pages the user has loaded.
 			if (unreadNotifications.length > PAGE_SIZE) return;
