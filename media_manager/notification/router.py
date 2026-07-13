@@ -1,10 +1,25 @@
-from fastapi import APIRouter, Depends, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from media_manager.auth.users import current_active_user
 from media_manager.notification.dependencies import notification_service_dep
 from media_manager.notification.schemas import Notification, NotificationId
 
 router = APIRouter()
+
+DEFAULT_PAGE_SIZE = 50
+MAX_PAGE_SIZE = 200
+
+TOTAL_COUNT_HEADER = "X-Total-Count"
+
+limit_dep = Annotated[
+    int,
+    Query(
+        ge=1, le=MAX_PAGE_SIZE, description="Maximum number of notifications to return"
+    ),
+]
+offset_dep = Annotated[int, Query(ge=0, description="Number of notifications to skip")]
 
 
 # --------------------------------
@@ -18,11 +33,25 @@ router = APIRouter()
 )
 async def get_all_notifications(
     notification_service: notification_service_dep,
+    response: Response,
+    limit: limit_dep = DEFAULT_PAGE_SIZE,
+    offset: offset_dep = 0,
+    read: Annotated[
+        bool | None,
+        Query(description="Only return read (true) or unread (false) notifications"),
+    ] = None,
 ) -> list[Notification]:
     """
-    Get all notifications.
+    Get a page of notifications, newest first.
+
+    The total number of matching notifications is returned in the
+    `X-Total-Count` response header.
     """
-    return await notification_service.get_all_notifications()
+    total = await notification_service.count_notifications(read=read)
+    response.headers[TOTAL_COUNT_HEADER] = str(total)
+    return await notification_service.get_all_notifications(
+        limit=limit, offset=offset, read=read
+    )
 
 
 @router.get(
@@ -31,11 +60,21 @@ async def get_all_notifications(
 )
 async def get_unread_notifications(
     notification_service: notification_service_dep,
+    response: Response,
+    limit: limit_dep = DEFAULT_PAGE_SIZE,
+    offset: offset_dep = 0,
 ) -> list[Notification]:
     """
-    Get all unread notifications.
+    Get a page of unread notifications, newest first.
+
+    The total number of unread notifications is returned in the `X-Total-Count`
+    response header.
     """
-    return await notification_service.get_unread_notifications()
+    total = await notification_service.count_notifications(read=False)
+    response.headers[TOTAL_COUNT_HEADER] = str(total)
+    return await notification_service.get_unread_notifications(
+        limit=limit, offset=offset
+    )
 
 
 @router.get(
@@ -57,6 +96,23 @@ async def get_notification(
 # --------------------------------
 # MANAGE NOTIFICATIONS
 # --------------------------------
+
+
+@router.patch(
+    "/read",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(current_active_user)],
+)
+async def mark_all_notifications_as_read(
+    notification_service: notification_service_dep,
+) -> None:
+    """
+    Mark every unread notification as read.
+
+    The client only holds a page of notifications, so it cannot mark them all
+    read by iterating over the ones it has.
+    """
+    await notification_service.mark_all_notifications_as_read()
 
 
 @router.patch(

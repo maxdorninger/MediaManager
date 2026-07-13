@@ -9,33 +9,130 @@
 	import type { Notification } from '$lib/api/api';
 	import { resolve } from '$app/paths';
 
+	// The notification table grows without bound (a live instance had ~437k rows),
+	// so the page only ever holds the pages it has explicitly loaded.
+	const PAGE_SIZE = 50;
+
 	let unreadNotifications: Notification[] = [];
 	let readNotifications: Notification[] = [];
+	// Totals come from the X-Total-Count header, so "load more" knows when to stop.
+	let unreadTotal = 0;
+	let readTotal = 0;
 	let loading = true;
+	let loadingMoreUnread = false;
+	let loadingMoreRead = false;
 	let showRead = false;
 	let markingAllAsRead = false;
 
-	async function fetchNotifications() {
-		loading = true;
-		const unread = await client.GET('/api/v1/notification/unread');
-		const all = await client.GET('/api/v1/notification');
-		unreadNotifications = unread.data!;
-		readNotifications = all.data!.filter((n) => n.read);
-		loading = false;
+	$: hasMoreUnread = unreadNotifications.length < unreadTotal;
+	$: hasMoreRead = readNotifications.length < readTotal;
+
+	function totalCountOf(response: Response, fallback: number): number {
+		const header = response.headers.get('X-Total-Count');
+		if (!header) return fallback;
+		const total = Number(header);
+		return Number.isFinite(total) ? total : fallback;
+	}
+
+	function timeOf(notification: Notification): number {
+		return new Date(notification.timestamp ?? 0).getTime();
+	}
+
+	/** Insert into a newest-first list, keeping it ordered. */
+	function insertNewestFirst(
+		notifications: Notification[],
+		notification: Notification,
+		hasMore: boolean
+	): Notification[] {
+		const index = notifications.findIndex((n) => timeOf(n) < timeOf(notification));
+		if (index === -1) {
+			// Older than everything loaded: if further pages exist it belongs to one
+			// of them, so leave it to be fetched in order rather than tacking it on.
+			return hasMore ? notifications : [...notifications, notification];
+		}
+		return [...notifications.slice(0, index), notification, ...notifications.slice(index)];
+	}
+
+	// The 30s poll and a "Load More" click both write unreadNotifications, so they
+	// are queued rather than run concurrently: overlapping, whichever landed last
+	// would win, dropping a page or repeating an id in the keyed {#each}. Queuing
+	// also means each request reads its offset only once the one before it is done.
+	let unreadQueue: Promise<void> = Promise.resolve();
+
+	function loadUnread({ reset = false } = {}): Promise<void> {
+		const fetchPage = async () => {
+			const offset = reset ? 0 : unreadNotifications.length;
+			const { data, response } = await client.GET('/api/v1/notification/unread', {
+				params: { query: { limit: PAGE_SIZE, offset } }
+			});
+			if (!data) return;
+
+			unreadNotifications = reset ? data : [...unreadNotifications, ...data];
+			unreadTotal = totalCountOf(response, unreadNotifications.length);
+		};
+
+		unreadQueue = unreadQueue.then(fetchPage, fetchPage);
+		return unreadQueue;
+	}
+
+	async function loadRead({ reset = false } = {}) {
+		const offset = reset ? 0 : readNotifications.length;
+		const { data, response } = await client.GET('/api/v1/notification', {
+			params: { query: { limit: PAGE_SIZE, offset, read: true } }
+		});
+		if (!data) return;
+
+		readNotifications = reset ? data : [...readNotifications, ...data];
+		readTotal = totalCountOf(response, readNotifications.length);
+	}
+
+	async function loadMoreUnread() {
+		loadingMoreUnread = true;
+		try {
+			await loadUnread();
+		} finally {
+			loadingMoreUnread = false;
+		}
+	}
+
+	async function loadMoreRead() {
+		loadingMoreRead = true;
+		try {
+			await loadRead();
+		} finally {
+			loadingMoreRead = false;
+		}
+	}
+
+	async function toggleShowRead() {
+		showRead = !showRead;
+		// Read notifications are the bulk of the table, so they are not fetched at
+		// all until the section is opened.
+		if (showRead && readNotifications.length === 0) {
+			loadingMoreRead = true;
+			try {
+				await loadRead({ reset: true });
+			} finally {
+				loadingMoreRead = false;
+			}
+		}
 	}
 
 	async function markAsRead(notificationId: string) {
 		const { response } = await client.PATCH('/api/v1/notification/{notification_id}/read', {
 			params: { path: { notification_id: notificationId } }
 		});
+		if (!response.ok) return;
 
-		if (response.ok) {
-			const notification = unreadNotifications.find((n) => n.id === notificationId);
-			if (notification) {
-				notification.read = true;
-				readNotifications = [notification, ...readNotifications];
-				unreadNotifications = unreadNotifications.filter((n) => n.id !== notificationId);
-			}
+		const notification = unreadNotifications.find((n) => n.id === notificationId);
+		if (!notification) return;
+
+		notification.read = true;
+		unreadNotifications = unreadNotifications.filter((n) => n.id !== notificationId);
+		unreadTotal = Math.max(0, unreadTotal - 1);
+		readTotal += 1;
+		if (showRead) {
+			readNotifications = insertNewestFirst(readNotifications, notification, hasMoreRead);
 		}
 	}
 
@@ -43,36 +140,33 @@
 		const { response } = await client.PATCH('/api/v1/notification/{notification_id}/unread', {
 			params: { path: { notification_id: notificationId } }
 		});
+		if (!response.ok) return;
 
-		if (response.ok) {
-			const notification = readNotifications.find((n) => n.id === notificationId);
-			if (notification) {
-				notification.read = false;
-				unreadNotifications = [notification, ...unreadNotifications];
-				readNotifications = readNotifications.filter((n) => n.id !== notificationId);
-			}
-		}
+		const notification = readNotifications.find((n) => n.id === notificationId);
+		if (!notification) return;
+
+		notification.read = false;
+		readNotifications = readNotifications.filter((n) => n.id !== notificationId);
+		readTotal = Math.max(0, readTotal - 1);
+		unreadTotal += 1;
+		unreadNotifications = insertNewestFirst(unreadNotifications, notification, hasMoreUnread);
 	}
 
 	async function markAllAsRead() {
-		if (unreadNotifications.length === 0) return;
+		if (unreadTotal === 0) return;
 
 		try {
 			markingAllAsRead = true;
-			const promises = unreadNotifications.map((notification) =>
-				client.PATCH('/api/v1/notification/{notification_id}/read', {
-					params: { path: { notification_id: notification.id! } }
-				})
-			);
+			// One request: the client no longer holds every notification, so it cannot
+			// mark them all read by looping over the ones it happens to have.
+			const { response } = await client.PATCH('/api/v1/notification/read');
+			if (!response.ok) return;
 
-			await Promise.all(promises);
-
-			// Move all unread to read
-			readNotifications = [
-				...unreadNotifications.map((n) => ({ ...n, read: true })),
-				...readNotifications
-			];
 			unreadNotifications = [];
+			unreadTotal = 0;
+			readNotifications = [];
+			readTotal = 0;
+			if (showRead) await loadRead({ reset: true });
 		} catch (error) {
 			console.error('Failed to mark all notifications as read:', error);
 		} finally {
@@ -81,9 +175,16 @@
 	}
 
 	onMount(() => {
-		fetchNotifications();
+		loading = true;
+		loadUnread({ reset: true }).finally(() => (loading = false));
 
-		const interval = setInterval(fetchNotifications, 30000);
+		const interval = setInterval(() => {
+			if (loading || markingAllAsRead || loadingMoreUnread) return;
+			// Only refresh while a single page is shown, so polling cannot discard
+			// pages the user has loaded.
+			if (unreadNotifications.length > PAGE_SIZE) return;
+			loadUnread({ reset: true });
+		}, 30000);
 		return () => clearInterval(interval);
 	});
 </script>
@@ -117,7 +218,7 @@
 <main class="container mx-auto px-4 py-8">
 	<div class="mb-6 flex items-center justify-between">
 		<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
-		{#if unreadNotifications.length > 0}
+		{#if unreadTotal > 0}
 			<Button onclick={() => markAllAsRead()} disabled={markingAllAsRead} class="flex items-center">
 				{#if markingAllAsRead}
 					<div class="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
@@ -137,8 +238,8 @@
 			<div class="mb-4 flex items-center gap-2">
 				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
 					Unread Notifications
-					{#if unreadNotifications.length > 0}:
-						{unreadNotifications.length}
+					{#if unreadTotal > 0}:
+						{unreadTotal}
 					{/if}
 				</h2>
 			</div>
@@ -188,13 +289,32 @@
 						</div>
 					{/each}
 				</div>
+
+				{#if hasMoreUnread}
+					<div class="mt-4 flex flex-col items-center gap-2">
+						<Button
+							onclick={() => loadMoreUnread()}
+							disabled={loadingMoreUnread}
+							variant="outline"
+							class="flex items-center gap-2"
+						>
+							{#if loadingMoreUnread}
+								<div class="h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
+							{/if}
+							Load More
+						</Button>
+						<p class="text-sm text-gray-500 dark:text-gray-400">
+							Showing {unreadNotifications.length} of {unreadTotal}
+						</p>
+					</div>
+				{/if}
 			{/if}
 		</div>
 
 		<!-- Read Notifications Toggle -->
 		<div class="mb-4">
 			<button
-				on:click={() => (showRead = !showRead)}
+				on:click={() => toggleShowRead()}
 				class="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
 			>
 				<svg
@@ -206,7 +326,7 @@
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
 					></path>
 				</svg>
-				<span>Read Notifications ({readNotifications.length})</span>
+				<span>Read Notifications{showRead ? ` (${readTotal})` : ''}</span>
 			</button>
 		</div>
 
@@ -214,11 +334,17 @@
 		{#if showRead}
 			<div>
 				{#if readNotifications.length === 0}
-					<div
-						class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800"
-					>
-						<p class="text-gray-500 dark:text-gray-400">No read notifications</p>
-					</div>
+					{#if loadingMoreRead}
+						<div class="flex items-center justify-center py-6">
+							<div class="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
+						</div>
+					{:else}
+						<div
+							class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800"
+						>
+							<p class="text-gray-500 dark:text-gray-400">No read notifications</p>
+						</div>
+					{/if}
 				{:else}
 					<div class="space-y-3">
 						{#each readNotifications as notification (notification.id)}
@@ -257,6 +383,25 @@
 							</div>
 						{/each}
 					</div>
+
+					{#if hasMoreRead}
+						<div class="mt-4 flex flex-col items-center gap-2">
+							<Button
+								onclick={() => loadMoreRead()}
+								disabled={loadingMoreRead}
+								variant="outline"
+								class="flex items-center gap-2"
+							>
+								{#if loadingMoreRead}
+									<div class="h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
+								{/if}
+								Load More
+							</Button>
+							<p class="text-sm text-gray-500 dark:text-gray-400">
+								Showing {readNotifications.length} of {readTotal}
+							</p>
+						</div>
+					{/if}
 				{/if}
 			</div>
 		{/if}

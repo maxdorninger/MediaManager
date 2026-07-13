@@ -1,12 +1,13 @@
 import logging
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import (
     IntegrityError,
     SQLAlchemyError,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import false
+from sqlalchemy.sql import Select
+from sqlalchemy.sql.expression import false, true
 
 from media_manager.exceptions import ConflictError, NotFoundError
 from media_manager.notification.models import Notification
@@ -18,6 +19,12 @@ from media_manager.notification.schemas import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def _filtered_by_read(stmt: Select, read: bool | None) -> Select:
+    if read is None:
+        return stmt
+    return stmt.where(Notification.read == (true() if read else false()))
 
 
 class NotificationRepository:
@@ -33,12 +40,15 @@ class NotificationRepository:
 
         return NotificationSchema.model_validate(result)
 
-    async def get_unread_notifications(self) -> list[NotificationSchema]:
+    async def get_unread_notifications(
+        self, limit: int, offset: int = 0
+    ) -> list[NotificationSchema]:
         try:
             stmt = (
-                select(Notification)
-                .where(Notification.read == false())
+                _filtered_by_read(select(Notification), read=False)
                 .order_by(Notification.timestamp.desc())
+                .limit(limit)
+                .offset(offset)
             )
             results = (await self.db.execute(stmt)).scalars().all()
             return [
@@ -49,9 +59,21 @@ class NotificationRepository:
             log.exception("Database error while retrieving unread notifications")
             raise
 
-    async def get_all_notifications(self) -> list[NotificationSchema]:
+    async def get_all_notifications(
+        self, limit: int, offset: int = 0, read: bool | None = None
+    ) -> list[NotificationSchema]:
+        """Return one page of notifications, newest first.
+
+        ``read`` optionally restricts the page to read or unread notifications;
+        ``None`` returns both.
+        """
         try:
-            stmt = select(Notification).order_by(Notification.timestamp.desc())
+            stmt = (
+                _filtered_by_read(select(Notification), read=read)
+                .order_by(Notification.timestamp.desc())
+                .limit(limit)
+                .offset(offset)
+            )
             results = (await self.db.execute(stmt)).scalars().all()
             return [
                 NotificationSchema.model_validate(notification)
@@ -59,6 +81,17 @@ class NotificationRepository:
             ]
         except SQLAlchemyError:
             log.exception("Database error while retrieving notifications")
+            raise
+
+    async def count_notifications(self, read: bool | None = None) -> int:
+        """Count the notifications a matching page would be taken from."""
+        try:
+            stmt = _filtered_by_read(
+                select(func.count()).select_from(Notification), read=read
+            )
+            return (await self.db.execute(stmt)).scalar_one()
+        except SQLAlchemyError:
+            log.exception("Database error while counting notifications")
             raise
 
     async def save_notification(self, notification: NotificationSchema) -> None:
@@ -88,6 +121,18 @@ class NotificationRepository:
 
     async def mark_notification_as_unread(self, nid: NotificationId) -> None:
         stmt = update(Notification).where(Notification.id == nid).values(read=False)
+        await self.db.execute(stmt)
+        return
+
+    async def mark_all_notifications_as_read(self) -> None:
+        """Mark every unread notification as read in a single statement.
+
+        The UI only holds a page of notifications now, so it can no longer mark
+        them all read by looping over the ones it has.
+        """
+        stmt = (
+            update(Notification).where(Notification.read == false()).values(read=True)
+        )
         await self.db.execute(stmt)
         return
 
