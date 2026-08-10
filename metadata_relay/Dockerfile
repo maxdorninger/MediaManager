@@ -14,14 +14,14 @@ RUN groupadd -g 1000 mediamanager && \
 WORKDIR /app
 RUN chown -R mediamanager:mediamanager /app
 
-ENV UV_CACHE_DIR=/home/mediamanager/.cache/uv \
+ENV UV_CACHE_DIR=/tmp/uv-cache \
     UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1
 
 COPY --chown=mediamanager:mediamanager pyproject.toml uv.lock ./
 
 USER mediamanager
-RUN --mount=type=cache,target=/home/mediamanager/.cache/uv,uid=1000,gid=1000 \
+RUN --mount=type=cache,target=/tmp/uv-cache,uid=1000,gid=1000 \
     uv sync --frozen --no-install-project --no-dev
 
 COPY --chown=mediamanager:mediamanager . .
