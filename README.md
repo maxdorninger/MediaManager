@@ -64,7 +64,7 @@ docker compose up -d
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=maxdorninger/MediaManager&type=Date)](https://www.star-history.com/#maxdorninger/MediaManager&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=maxdorninger/MediaManager&type=Date)](https://star-history.dera.page/#maxdorninger/MediaManager&Date)
 
 ## Screenshots
 
