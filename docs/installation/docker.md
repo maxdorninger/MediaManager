@@ -55,6 +55,14 @@ docker compose up -d
 !!! info
     When setting up MediaManager for the first time, you should add your email to `admin_emails` in the `[auth]` config section. MediaManager will then use this email instead of the default admin email. Your account will automatically be created as an admin account, allowing you to manage other users, media, and settings.
 
+## Easypanel
+
+[Easypanel](https://easypanel.io/) is a self-hosted Docker deployment platform. MediaManager has a one-click deployment template there, as an alternative to the manual docker-compose setup above:
+
+[![Deploy on Easypanel][easypanel-btn]][easypanel-deploy]
+
+![mediamanager deployed on Easypanel](<../.gitbook/assets/easypanel-deployed.png>)
+
 ## Docker Images
 
 MediaManager is available as a Docker image on both Red Hat Quay.io and GitHub Container Registry (GHCR):
@@ -82,3 +90,6 @@ Both registries support the following tags:
 * X.Y: Points to the latest release in the X.Y series (e.g., `1.12`).
 * X: Points to the latest release in the X series (e.g., `1`).
 * pr-\<number>: Points to the latest commit in the specified pull request (e.g., `pr-67`).
+
+[easypanel-btn]: https://easypanel.io/img/deploy-on-easypanel-40.svg
+[easypanel-deploy]: https://easypanel.io/templates/mediamanager
